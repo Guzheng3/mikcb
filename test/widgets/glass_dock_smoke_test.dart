@@ -40,10 +40,7 @@ void main() {
           locale: const Locale('zh'),
           home: FrostedAppearanceScope(
             appearance: FrostedAppearance.defaults,
-            child: TimetableScreen(
-              enableUpdateCheck: false,
-              enableProgressTimer: false,
-            ),
+            child: TimetableScreen(enableProgressTimer: false),
           ),
         ),
       ),
@@ -65,8 +62,9 @@ void main() {
   /// 玻璃坞药丸固定占用高度（与屏幕源码 _glassDockPillOccupancy 一致）。
   const double kGlassDockPillOccupancy = 62.0;
 
-  testWidgets('glass dock overlay layout: timetable reaches screen bottom',
-      (tester) async {
+  testWidgets('glass dock overlay layout: timetable reaches screen bottom', (
+    tester,
+  ) async {
     final pagerBottom = await pumpDockAndWeekPagerBottom(
       tester,
       HomeNavigationForm.glassDock,
@@ -78,139 +76,136 @@ void main() {
     // 药丸下方留出一条只有壁纸的空带，看起来「没有全屏」）。
     // 测试环境无壁纸，课表面板内部还有 8px 的无壁纸底部内边距。
     const noWallpaperInnerPadding = 8.0;
-    expect(pagerBottom,
-        closeTo(screenHeight - noWallpaperInnerPadding, 0.5),
-        reason: '满屏悬浮模式下课表应延伸到屏幕底部');
-  });
-
-
-  testWidgets(
-      'glass dock overlay day view: list keeps scroll relief above pill',
-      (tester) async {
-    await pumpDockAndWeekPagerBottom(
-      tester,
-      HomeNavigationForm.glassDock,
-    );
-    await tester.tap(find.text('日课表').first);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(tester.takeException(), isNull, reason: '切日视图不应有异常');
-
-    final screenHeight =
-        tester.view.physicalSize.height / tester.view.devicePixelRatio;
-    const noWallpaperInnerPadding = 8.0;
-    // 满屏悬浮下日课表视口仍延伸到屏幕底（美学不变）。
-    final panelRect = tester.getRect(
-      find.byKey(const ValueKey('timetable-day-view-panel')),
-    );
     expect(
-      panelRect.bottom,
+      pagerBottom,
       closeTo(screenHeight - noWallpaperInnerPadding, 0.5),
-      reason: 'overlay 下日课表视口应保持全屏',
-    );
-
-    // 但滚动余量必须兜底药丸占用（此前 overlay 余量为 0，下滑到底时
-    // 最后一张卡压在药丸后面无法滑出来看）。
-    final columnPads = tester
-        .widgetList<Padding>(
-          find.descendant(
-            of: find.byKey(const ValueKey('timetable-day-view-panel')),
-            matching: find.byType(Padding),
-          ),
-        )
-        .toList(growable: false);
-    final expectedBottom = noWallpaperInnerPadding + kGlassDockPillOccupancy;
-    expect(
-      columnPads.any(
-        (p) =>
-            (p.padding is EdgeInsets) &&
-            ((p.padding as EdgeInsets).bottom - expectedBottom).abs() < 0.5,
-      ),
-      isTrue,
-      reason: 'overlay 下日课表底部滚动余量应为药丸占用（62）+ 原有 8px 底距',
+      reason: '满屏悬浮模式下课表应延伸到屏幕底部',
     );
   });
 
   testWidgets(
-      'glass dock overlay week grid: vertical scroll gains bottom relief',
-      (tester) async {
-    await pumpDockAndWeekPagerBottom(
-      tester,
-      HomeNavigationForm.glassDock,
-    );
-    // 默认非自适应：周网格在纵向 SingleChildScrollView 里滚动。
-    final scrollFinder = find.byKey(
-      const PageStorageKey<String>('week-scroll-1'),
-    );
-    expect(scrollFinder, findsOneWidget);
-    final scrollView = tester.widget<SingleChildScrollView>(scrollFinder);
-    final child = scrollView.child;
-    expect(child, isA<Padding>(),
-        reason: 'overlay 下周网格滚动应包一层底部余量 padding');
-    final bottom = ((child! as Padding).padding as EdgeInsets).bottom;
-    expect(bottom, closeTo(kGlassDockPillOccupancy, 0.5),
-        reason: '被药丸遮住的最后几节课程应能整体滑到药丸上方');
-  });
+    'glass dock overlay day view: list keeps scroll relief above pill',
+    (tester) async {
+      await pumpDockAndWeekPagerBottom(tester, HomeNavigationForm.glassDock);
+      await tester.tap(find.text('日课表').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull, reason: '切日视图不应有异常');
+
+      final screenHeight =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      const noWallpaperInnerPadding = 8.0;
+      // 满屏悬浮下日课表视口仍延伸到屏幕底（美学不变）。
+      final panelRect = tester.getRect(
+        find.byKey(const ValueKey('timetable-day-view-panel')),
+      );
+      expect(
+        panelRect.bottom,
+        closeTo(screenHeight - noWallpaperInnerPadding, 0.5),
+        reason: 'overlay 下日课表视口应保持全屏',
+      );
+
+      // 但滚动余量必须兜底药丸占用（此前 overlay 余量为 0，下滑到底时
+      // 最后一张卡压在药丸后面无法滑出来看）。
+      final columnPads = tester
+          .widgetList<Padding>(
+            find.descendant(
+              of: find.byKey(const ValueKey('timetable-day-view-panel')),
+              matching: find.byType(Padding),
+            ),
+          )
+          .toList(growable: false);
+      final expectedBottom = noWallpaperInnerPadding + kGlassDockPillOccupancy;
+      expect(
+        columnPads.any(
+          (p) =>
+              (p.padding is EdgeInsets) &&
+              ((p.padding as EdgeInsets).bottom - expectedBottom).abs() < 0.5,
+        ),
+        isTrue,
+        reason: 'overlay 下日课表底部滚动余量应为药丸占用（62）+ 原有 8px 底距',
+      );
+    },
+  );
 
   testWidgets(
-      'glass dock overlay autofit grid: spans under pill with scroll relief',
-      (tester) async {
-    await pumpDockApp(
-      tester,
-      HomeNavigationForm.glassDock,
-      autoFitSectionHeight: true,
-    );
-    // 自适应与非自适应在玻璃坞下统一：节高按完整可用高度计算，网格
-    // 满屏铺到药丸底下（静止时最后几节停在药丸后面），并包滚动余量
-    // ——上滑整段课表完全滑出到药丸上方，下滑再让药丸盖回内容。
-    final scrollFinder = find.byKey(
-      const PageStorageKey<String>('week-scroll-1'),
-    );
-    expect(
-      scrollFinder,
-      findsOneWidget,
-      reason: '自适应网格在玻璃坞下也应可纵向滚动',
-    );
-    final scrollView = tester.widget<SingleChildScrollView>(scrollFinder);
-    final child = scrollView.child;
-    expect(child, isA<Padding>(),
-        reason: '玻璃坞下周网格滚动应包一层底部余量 padding');
-    final bottom = ((child! as Padding).padding as EdgeInsets).bottom;
-    expect(bottom, closeTo(kGlassDockPillOccupancy, 0.5),
-        reason: '底部余量应兜底药丸固定占用');
+    'glass dock overlay week grid: vertical scroll gains bottom relief',
+    (tester) async {
+      await pumpDockAndWeekPagerBottom(tester, HomeNavigationForm.glassDock);
+      // 默认非自适应：周网格在纵向 SingleChildScrollView 里滚动。
+      final scrollFinder = find.byKey(
+        const PageStorageKey<String>('week-scroll-1'),
+      );
+      expect(scrollFinder, findsOneWidget);
+      final scrollView = tester.widget<SingleChildScrollView>(scrollFinder);
+      final child = scrollView.child;
+      expect(child, isA<Padding>(), reason: 'overlay 下周网格滚动应包一层底部余量 padding');
+      final bottom = ((child! as Padding).padding as EdgeInsets).bottom;
+      expect(
+        bottom,
+        closeTo(kGlassDockPillOccupancy, 0.5),
+        reason: '被药丸遮住的最后几节课程应能整体滑到药丸上方',
+      );
+    },
+  );
 
-    // 时间列/网格盒本身会被 body 拉伸到满高，量不到内容底边；
-    // 改量时间列的节单元格：内容底边 = 首格顶 + 各节高之和。
-    final columnFinder = find.byKey(const ValueKey('timetable-time-column'));
-    final column = tester.widget<Column>(
-      find.descendant(of: columnFinder, matching: find.byType(Column)).first,
-    );
-    final sectionCells = column.children.whereType<Container>().toList();
-    expect(sectionCells, isNotEmpty);
-    // Container 的 height 参数没有公开 getter，直接量渲染矩形。
-    double measureBottom(List<Rect> rects) => rects.first.top +
-        rects.fold<double>(0, (sum, r) => sum + r.height);
-    final cellRects = sectionCells
-        .map((c) => tester.getRect(find.byWidget(c)))
-        .toList(growable: false);
-    final pagerBottom =
-        tester.getBottomRight(find.byType(PageView).first).dy;
-    expect(
-      measureBottom(cellRects),
-      closeTo(pagerBottom, 1.5),
-      reason: '自适应网格应满屏延伸、从药丸下方穿过（不再上方留白）',
-    );
+  testWidgets(
+    'glass dock overlay autofit grid: spans under pill with scroll relief',
+    (tester) async {
+      await pumpDockApp(
+        tester,
+        HomeNavigationForm.glassDock,
+        autoFitSectionHeight: true,
+      );
+      // 自适应与非自适应在玻璃坞下统一：节高按完整可用高度计算，网格
+      // 满屏铺到药丸底下（静止时最后几节停在药丸后面），并包滚动余量
+      // ——上滑整段课表完全滑出到药丸上方，下滑再让药丸盖回内容。
+      final scrollFinder = find.byKey(
+        const PageStorageKey<String>('week-scroll-1'),
+      );
+      expect(scrollFinder, findsOneWidget, reason: '自适应网格在玻璃坞下也应可纵向滚动');
+      final scrollView = tester.widget<SingleChildScrollView>(scrollFinder);
+      final child = scrollView.child;
+      expect(child, isA<Padding>(), reason: '玻璃坞下周网格滚动应包一层底部余量 padding');
+      final bottom = ((child! as Padding).padding as EdgeInsets).bottom;
+      expect(
+        bottom,
+        closeTo(kGlassDockPillOccupancy, 0.5),
+        reason: '底部余量应兜底药丸固定占用',
+      );
 
-    // 上滑：最大滚动 = 底部余量，整段课表恰好完全升到药丸上方。
-    await tester.drag(scrollFinder, const Offset(0, -120));
-    await tester.pump();
-    final draggedRects = sectionCells
-        .map((c) => tester.getRect(find.byWidget(c)))
-        .toList(growable: false);
-    expect(
-      measureBottom(draggedRects),
-      closeTo(pagerBottom - kGlassDockPillOccupancy, 1.5),
-      reason: '上滑到底后课程内容应整体停到药丸上方、不被遮挡',
-    );
-  });
+      // 时间列/网格盒本身会被 body 拉伸到满高，量不到内容底边；
+      // 改量时间列的节单元格：内容底边 = 首格顶 + 各节高之和。
+      final columnFinder = find.byKey(const ValueKey('timetable-time-column'));
+      final column = tester.widget<Column>(
+        find.descendant(of: columnFinder, matching: find.byType(Column)).first,
+      );
+      final sectionCells = column.children.whereType<Container>().toList();
+      expect(sectionCells, isNotEmpty);
+      // Container 的 height 参数没有公开 getter，直接量渲染矩形。
+      double measureBottom(List<Rect> rects) =>
+          rects.first.top + rects.fold<double>(0, (sum, r) => sum + r.height);
+      final cellRects = sectionCells
+          .map((c) => tester.getRect(find.byWidget(c)))
+          .toList(growable: false);
+      final pagerBottom = tester.getBottomRight(find.byType(PageView).first).dy;
+      expect(
+        measureBottom(cellRects),
+        closeTo(pagerBottom, 1.5),
+        reason: '自适应网格应满屏延伸、从药丸下方穿过（不再上方留白）',
+      );
+
+      // 上滑：最大滚动 = 底部余量，整段课表恰好完全升到药丸上方。
+      await tester.drag(scrollFinder, const Offset(0, -120));
+      await tester.pump();
+      final draggedRects = sectionCells
+          .map((c) => tester.getRect(find.byWidget(c)))
+          .toList(growable: false);
+      expect(
+        measureBottom(draggedRects),
+        closeTo(pagerBottom - kGlassDockPillOccupancy, 1.5),
+        reason: '上滑到底后课程内容应整体停到药丸上方、不被遮挡',
+      );
+    },
+  );
 }

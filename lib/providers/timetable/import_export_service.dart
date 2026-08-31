@@ -362,16 +362,6 @@ Future<String?> _timetableImportFullAppDataBackup(
         ),
       );
 
-      // Full backup schema does not carry partner binding; drop orphans when
-      // the partner profile is missing from the restored profiles list.
-      final hasPartnerProfile = host._profiles.any(
-        (profile) => profile.id == PartnerTimetableService.partnerProfileId,
-      );
-      if (!hasPartnerProfile && host._partnerBinding != null) {
-        host._partnerBinding = null;
-        await host._profileRepository.savePartnerTimetableBinding(null);
-      }
-
       host._currentLiveCourseId = null;
       host._notifyStateChanged();
       unawaited(host._syncExamReminders());

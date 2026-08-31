@@ -102,9 +102,9 @@ Future<void> _pumpHome(
   bool weekdayBlur = false,
   String? weekdayHex,
 }) async {
-  await tester.runAsync(() async {
-    await provider.updateTimetableSettings(
-      provider.settings.copyWith(
+    await tester.runAsync(() async {
+      await provider.updateTimetableSettings(
+        provider.settings.copyWith(
         homePageWallpaperPath: wallpaperPath,
         homePageBackgroundScope: scope,
         homePageHeaderBlurEnabled: headerBlur,
@@ -112,17 +112,15 @@ Future<void> _pumpHome(
         weekdayBarFontColorLight: weekdayHex,
         semesterStartDate: DateTime(2026, 7, 27),
       ),
-    );
-  });
+      );
+    });
+    await tester.runAsync(() async {
+      await provider.setCurrentWeek(1);
+    });
   await tester.pumpWidget(
     ChangeNotifierProvider.value(
       value: provider,
-      child: const TestApp(
-        home: TimetableScreen(
-          enableUpdateCheck: false,
-          enableProgressTimer: false,
-        ),
-      ),
+      child: const TestApp(home: TimetableScreen(enableProgressTimer: false)),
     ),
   );
   await tester.pump();

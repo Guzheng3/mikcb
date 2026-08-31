@@ -159,240 +159,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dataTransferEntrySubtitle => '导出完整课表文件，给别人直接导入使用';
 
   @override
-  String get coupleTimetableEntryTitle => '情侣课表';
-
-  @override
-  String get coupleTimetableEntryBound => '已绑定';
-
-  @override
-  String get coupleTimetableModeEnableTooltip => '开启情侣课表';
-
-  @override
-  String get coupleTimetableModeDisableTooltip => '关闭情侣课表';
-
-  @override
-  String get coupleTimetableTitle => '情侣课表';
-
-  @override
-  String get coupleTimetableIntro =>
-      '导出你的课表发给 TA，或导入 TA 分享的课表文件，导入后可在叠加视图中查看双方课程';
-
-  @override
-  String get coupleTimetableBoundTitle => '已绑定对方课表';
-
-  @override
-  String get coupleTimetableUnboundTitle => '尚未绑定对方课表';
-
-  @override
-  String get coupleTimetablePartnerNameLabel => '对方名称';
-
-  @override
-  String coupleTimetableLastImportedAt(String time) {
-    return '上次导入：$time';
-  }
-
-  @override
-  String get coupleTimetableExportForPartner => '导出我的课表给对方';
-
-  @override
-  String get coupleTimetableImportPartner => '导入对方课表';
-
-  @override
-  String get coupleTimetableUnlink => '解除绑定';
-
-  @override
-  String get coupleTimetableOpenOverlay => '进入叠加视图';
-
-  @override
-  String get coupleTimetableImportSuccess => '已导入对方课表';
-
-  @override
-  String get coupleTimetableImportUpdated => '已更新对方课表';
-
-  @override
-  String get coupleTimetableUnlinkConfirmTitle => '解除情侣课表绑定？';
-
-  @override
-  String get coupleTimetableUnlinkConfirmMessage => '解除后将删除本地保存的对方课表，叠加视图也会关闭';
-
-  @override
-  String get coupleTimetableUnlinkSuccess => '已解除绑定';
-
-  @override
-  String get coupleTimetablePrivacyHint => '对方只能看到你导出文件中包含的课表内容';
-
-  @override
-  String get coupleTimetableOverlayTitle => '情侣叠加';
-
-  @override
-  String get coupleTimetableLegendMine => '我的课';
-
-  @override
-  String get coupleTimetableLegendPartner => 'TA的课';
-
-  @override
-  String get coupleTimetableLegendTogether => '一起上课';
-
-  @override
-  String get coupleTimetableLegendFree => '共同空闲';
-
-  @override
-  String get coupleTimetableSharedFreeTitle => '今日共同空闲';
-
-  @override
-  String get coupleTimetableSharedFreeTitleOtherDay => '该日共同空闲';
-
-  @override
-  String get coupleTimetableNoSharedFree => '今天没有共同空闲时段';
-
-  @override
-  String get coupleTimetableNoSharedFreeOtherDay => '该日没有共同空闲时段';
-
-  @override
-  String coupleTimetableSharedFreeMeta(int count) {
-    return '共 $count 段';
-  }
-
-  @override
-  String coupleTimetableSharedFreeMoreCount(int count) {
-    return '还有 $count 段';
-  }
-
-  @override
-  String get coupleTimetableSharedFreeUnavailable => '暂时算不出共同空闲';
-
-  @override
-  String get coupleTimetableSharedFreeStaleHint => '对方课表可能不是最新';
-
-  @override
-  String get coupleTimetablePartnerReadOnlyBadge => '对方课表（只读）';
-
-  @override
-  String get coupleTimetableNotBoundMessage => '请先导入对方课表后再查看叠加视图';
-
-  @override
-  String get coupleTimetableShareText => '这是我的课表，导入到轻屿课表的情侣课表即可一起查看';
-
-  @override
-  String get coupleTimetableShareSubject => '轻屿课表 · 情侣课表分享';
-
-  @override
-  String get coupleTimetableWeekOffsetTitle => '周次偏移';
-
-  @override
-  String get coupleTimetableWeekOffsetSubtitle =>
-      '查看你的第 N 周时，读取对方课表的第 N+偏移 周，例如 +1 表示对方学期进度比你快一周';
-
-  @override
-  String get coupleTimetableWeekOffsetZero => '无偏移';
-
-  @override
-  String coupleTimetableWeekOffsetSigned(String offset) {
-    return '$offset 周';
-  }
-
-  @override
-  String coupleTimetableWeekOffsetPreview(int myWeek, int partnerWeek) {
-    return '查看你的第 $myWeek 周时，显示对方第 $partnerWeek 周的课';
-  }
-
-  @override
-  String get coupleTimetableColorsTitle => '叠加颜色';
-
-  @override
-  String get coupleTimetableColorsSubtitle =>
-      '自定义「我的课」「TA的课」「一起上课」在叠加视图中的显示颜色，可按喜好自由搭配';
-
-  @override
-  String get partnerImportRequiresSingleProfile => '请导入单课表备份文件，不支持全量备份';
-
-  @override
-  String get coupleWebdavTitle => '坚果云拉取';
-
-  @override
-  String get coupleWebdavSubtitle =>
-      '登录对方（或你们共用的）坚果云账号，自动下载对方上传的课表文件，与「云同步」账号独立，互不影响';
-
-  @override
-  String get coupleWebdavNotConnected => '尚未连接坚果云';
-
-  @override
-  String coupleWebdavConnectedAs(String username) {
-    return '已连接：$username';
-  }
-
-  @override
-  String coupleWebdavRemotePathHint(String path) {
-    return '远程文件路径：$path';
-  }
-
-  @override
-  String coupleWebdavLastPulledAt(String time) {
-    return '上次拉取：$time';
-  }
-
-  @override
-  String get coupleWebdavConnect => '连接坚果云';
-
-  @override
-  String get coupleWebdavDisconnect => '断开连接';
-
-  @override
-  String get coupleWebdavPullNow => '立即拉取对方课表';
-
-  @override
-  String get coupleWebdavUploadForPartner => '上传我的课表到坚果云';
-
-  @override
-  String get coupleWebdavLoginSheetTitle => '连接坚果云（情侣课表）';
-
-  @override
-  String get coupleWebdavLoginSheetSubtitle =>
-      '请使用应用专用密码，对方需先将课表上传到约定路径，或由你在对方设备上登录同一账号并上传';
-
-  @override
-  String get coupleWebdavConfirmConnect => '连接并拉取';
-
-  @override
-  String get coupleWebdavMySlotLabel => '本机槽位';
-
-  @override
-  String get coupleWebdavMySlotHint => '双方必须选不同槽位：一方选 1，另一方选 2，否则会互相读不到课表';
-
-  @override
-  String get coupleWebdavSlotOne => '槽位 1';
-
-  @override
-  String get coupleWebdavSlotTwo => '槽位 2';
-
-  @override
-  String get coupleWebdavTestSuccess => '坚果云连接成功';
-
-  @override
-  String get coupleWebdavTestFailed => '连接失败，请检查账号、应用专用密码与网络';
-
-  @override
-  String get coupleWebdavPullImported => '已从坚果云导入对方课表';
-
-  @override
-  String get coupleWebdavPullUpdated => '已从坚果云更新对方课表';
-
-  @override
-  String get coupleWebdavPullUnchanged => '对方课表无变化';
-
-  @override
-  String get coupleWebdavUploadSuccess => '已上传课表，对方可拉取';
-
-  @override
-  String get coupleWebdavPartnerFileMissing => '未找到对方课表文件，请让对方先上传';
-
-  @override
-  String get coupleWebdavPullFailed => '拉取对方课表失败，请稍后重试';
-
-  @override
-  String get coupleWebdavNotConnectedError => '请先连接坚果云';
-
-  @override
   String get cloudSyncEntryTitle => '云同步';
 
   @override
@@ -1498,37 +1264,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get openOldAppFailed => '未能打开旧版应用，请手动返回桌面打开旧版';
 
   @override
-  String get supportCreatorTitle => '请作者喝杯咖啡';
-
-  @override
-  String get supportHeroTitle => '支持轻屿课表继续更新';
-
-  @override
-  String get supportHeroSubtitle => '你的支持会直接用于维护课表、教务导入适配与体验优化';
-
-  @override
-  String get supportChipFixes => '修复问题';
-
-  @override
-  String get supportChipAdapters => '教务适配';
-
-  @override
-  String get supportChipPolish => '体验优化';
-
-  @override
-  String get supportMethodTitle => '选择支持方式';
-
-  @override
   String get wechatLabel => '微信';
 
   @override
   String get alipayLabel => '支付宝';
-
-  @override
-  String get supportWeChatHint => '使用微信扫一扫支持作者';
-
-  @override
-  String get supportAlipayHint => '使用支付宝扫一扫支持作者';
 
   @override
   String get viewLargeImage => '查看大图';
@@ -1537,27 +1276,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get saveToGallery => '保存到相册';
 
   @override
-  String get supportCompleteThanks => '感谢你支持轻屿课表继续打磨 ❤️';
-
-  @override
-  String get supportConfirmed => '我已经支持了';
-
-  @override
-  String get donorListTitle => '鸣谢名单';
-
-  @override
-  String get donorListLoadFailed => '暂时无法加载在线鸣谢名单';
-
-  @override
   String get reloadAction => '重新加载';
 
   @override
   String updatedAtLabel(String time) {
     return '更新于 $time';
   }
-
-  @override
-  String get donorListEmpty => '名单还没有填写，你可以直接编辑 docs/donors.json 后重新发布';
 
   @override
   String get savedToGallery => '已保存到相册';
@@ -1569,51 +1293,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String saveFailedWithError(String error) {
     return '保存失败：$error';
   }
-
-  @override
-  String get supportRunningBadge => '运行中';
-
-  @override
-  String get supportTapQrHint => '点击放大扫码';
-
-  @override
-  String get supportSaveShort => '保存';
-
-  @override
-  String get supportConfirmedShort => '已支持';
-
-  @override
-  String get donorSearchHint => '搜昵称/寄语...';
-
-  @override
-  String get donorSortLargeFirst => '大额优先';
-
-  @override
-  String get donorSortSmallFirst => '小额优先';
-
-  @override
-  String get supportMonthlyGoalLabel => '本月服务器和证书续期进度';
-
-  @override
-  String supportGoalRaised(String raised, String goal) {
-    return '已筹: $raised / 目标 $goal';
-  }
-
-  @override
-  String supportBackerCount(int count) {
-    return '已有 $count 人献出爱心';
-  }
-
-  @override
-  String get supportDonorListFooter => '名单永久保留 💖';
-
-  @override
-  String supportMarqueeThanks(String name, String amount) {
-    return '🎉 感谢 $name 赞助 $amount';
-  }
-
-  @override
-  String get supportMarqueeTail => '轻屿课表正在稳定运行中，期待你的每一次陪伴与爱心！';
 
   @override
   String get scanQrWechatTitle => '使用微信扫描二维码';
@@ -5040,9 +4719,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get homeMenuUpdateTitle => '软件更新';
-
-  @override
   String get homeMenuProfilesTitle => '课表管理';
 
   @override
@@ -5056,9 +4732,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeMenuSettingsTitle => '课表设置';
-
-  @override
-  String get homeMenuCoffeeTitle => '请喝咖啡';
 
   @override
   String get homeMenuFeedbackTitle => '问题反馈';
@@ -6026,17 +5699,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get courseActionConflictSwitchAction => '切换';
-
-  @override
-  String courseActionCoupleRelatedCount(int count) {
-    return '还有 $count 节情侣课表课程';
-  }
-
-  @override
-  String get courseActionCoupleExpandHint => '展开查看 TA 的课或一起上课，点击可切换预览';
-
-  @override
-  String get courseActionCoupleCollapseHint => '点击收起情侣课表课程列表';
 
   @override
   String courseActionMixedRelatedCount(int count) {
@@ -7801,11 +7463,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String serviceMsgMacroReplayPaused(String reason) {
     return '等待手动操作: $reason';
-  }
-
-  @override
-  String serviceMsgSupportDonorsLoadFailed(String detail) {
-    return '加载鸣谢名单失败：$detail';
   }
 
   @override
@@ -9782,9 +9439,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsDataShareSectionTitle => '数据与共享';
 
   @override
-  String get coupleTimetableEntryUnboundLabel => '未绑定';
-
-  @override
   String get settingsAboutSectionTitle => '关于';
 
   @override
@@ -10491,240 +10145,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get dataTransferEntrySubtitle => '匯出完整課表檔案，給別人直接匯入使用';
-
-  @override
-  String get coupleTimetableEntryTitle => '情侶課表';
-
-  @override
-  String get coupleTimetableEntryBound => '已綁定';
-
-  @override
-  String get coupleTimetableModeEnableTooltip => '開啟情侶課表';
-
-  @override
-  String get coupleTimetableModeDisableTooltip => '關閉情侶課表';
-
-  @override
-  String get coupleTimetableTitle => '情侶課表';
-
-  @override
-  String get coupleTimetableIntro =>
-      '匯出你的課表發給對方，或匯入對方分享的課表檔案，匯入後可在疊加檢視中查看雙方的課程';
-
-  @override
-  String get coupleTimetableBoundTitle => '已綁定對方課表';
-
-  @override
-  String get coupleTimetableUnboundTitle => '尚未綁定對方課表';
-
-  @override
-  String get coupleTimetablePartnerNameLabel => '對方名稱';
-
-  @override
-  String coupleTimetableLastImportedAt(String time) {
-    return '上次匯入：$time';
-  }
-
-  @override
-  String get coupleTimetableExportForPartner => '匯出我的課表給對方';
-
-  @override
-  String get coupleTimetableImportPartner => '匯入對方課表';
-
-  @override
-  String get coupleTimetableUnlink => '解除綁定';
-
-  @override
-  String get coupleTimetableOpenOverlay => '進入疊加檢視';
-
-  @override
-  String get coupleTimetableImportSuccess => '已匯入對方課表';
-
-  @override
-  String get coupleTimetableImportUpdated => '已更新對方課表';
-
-  @override
-  String get coupleTimetableUnlinkConfirmTitle => '解除情侶課表綁定？';
-
-  @override
-  String get coupleTimetableUnlinkConfirmMessage => '解除後將刪除本機儲存的對方課表，疊加檢視也會關閉';
-
-  @override
-  String get coupleTimetableUnlinkSuccess => '已解除綁定';
-
-  @override
-  String get coupleTimetablePrivacyHint => '對方只能看到你匯出檔案中所包含的課表內容';
-
-  @override
-  String get coupleTimetableOverlayTitle => '情侶疊加';
-
-  @override
-  String get coupleTimetableLegendMine => '我的課';
-
-  @override
-  String get coupleTimetableLegendPartner => '對方課程';
-
-  @override
-  String get coupleTimetableLegendTogether => '一起上課';
-
-  @override
-  String get coupleTimetableLegendFree => '共同空閒';
-
-  @override
-  String get coupleTimetableSharedFreeTitle => '今日共同空閒';
-
-  @override
-  String get coupleTimetableSharedFreeTitleOtherDay => '當日共同空閒';
-
-  @override
-  String get coupleTimetableNoSharedFree => '今天沒有共同空閒時段';
-
-  @override
-  String get coupleTimetableNoSharedFreeOtherDay => '當日沒有共同空閒時段';
-
-  @override
-  String coupleTimetableSharedFreeMeta(int count) {
-    return '共 $count 段';
-  }
-
-  @override
-  String coupleTimetableSharedFreeMoreCount(int count) {
-    return '還有 $count 段';
-  }
-
-  @override
-  String get coupleTimetableSharedFreeUnavailable => '暫時算不出共同空閒';
-
-  @override
-  String get coupleTimetableSharedFreeStaleHint => '對方課表可能不是最新';
-
-  @override
-  String get coupleTimetablePartnerReadOnlyBadge => '對方課表（唯讀）';
-
-  @override
-  String get coupleTimetableNotBoundMessage => '請先匯入對方課表後再查看疊加檢視';
-
-  @override
-  String get coupleTimetableShareText => '這是我的課表，匯入到輕嶼課表的情侶課表即可一起查看';
-
-  @override
-  String get coupleTimetableShareSubject => '輕嶼課表・情侶課表分享';
-
-  @override
-  String get coupleTimetableWeekOffsetTitle => '週次偏移';
-
-  @override
-  String get coupleTimetableWeekOffsetSubtitle =>
-      '查看你的第 N 週時，讀取對方課表的第 N+偏移 週，例如 +1 表示對方學期進度比你快一週';
-
-  @override
-  String get coupleTimetableWeekOffsetZero => '無偏移';
-
-  @override
-  String coupleTimetableWeekOffsetSigned(String offset) {
-    return '$offset 週';
-  }
-
-  @override
-  String coupleTimetableWeekOffsetPreview(int myWeek, int partnerWeek) {
-    return '查看你的第 $myWeek 週時，顯示對方第 $partnerWeek 週的課';
-  }
-
-  @override
-  String get coupleTimetableColorsTitle => '疊加顏色';
-
-  @override
-  String get coupleTimetableColorsSubtitle =>
-      '自訂「我的課」「對方課程」「一起上課」在疊加檢視中的顯示顏色，可按喜好自由搭配';
-
-  @override
-  String get partnerImportRequiresSingleProfile => '請匯入單一課表備份檔案，不支援全量備份';
-
-  @override
-  String get coupleWebdavTitle => '堅果雲拉取';
-
-  @override
-  String get coupleWebdavSubtitle =>
-      '登入對方（或你們共用的）堅果雲帳號，自動下載對方上傳的課表檔案，與「雲端同步」帳號獨立，互不蠅響';
-
-  @override
-  String get coupleWebdavNotConnected => '尚未連接堅果雲';
-
-  @override
-  String coupleWebdavConnectedAs(String username) {
-    return '已連接：$username';
-  }
-
-  @override
-  String coupleWebdavRemotePathHint(String path) {
-    return '遠端檔案路徑：$path';
-  }
-
-  @override
-  String coupleWebdavLastPulledAt(String time) {
-    return '上次拉取：$time';
-  }
-
-  @override
-  String get coupleWebdavConnect => '連接堅果雲';
-
-  @override
-  String get coupleWebdavDisconnect => '中斷連接';
-
-  @override
-  String get coupleWebdavPullNow => '立即拉取對方課表';
-
-  @override
-  String get coupleWebdavUploadForPartner => '上傳我的課表到堅果雲';
-
-  @override
-  String get coupleWebdavLoginSheetTitle => '連接堅果雲（情侶課表）';
-
-  @override
-  String get coupleWebdavLoginSheetSubtitle =>
-      '請使用應用程式專用密碼，對方需先將課表上傳到約定路徑，或由你在對方裝置上登入同一帳號並上傳';
-
-  @override
-  String get coupleWebdavConfirmConnect => '連接並拉取';
-
-  @override
-  String get coupleWebdavMySlotLabel => '本機槽位';
-
-  @override
-  String get coupleWebdavMySlotHint => '雙方必須選不同槽位：一方選 1，另一方選 2，否則會互相讀不到課表';
-
-  @override
-  String get coupleWebdavSlotOne => '槽位 1';
-
-  @override
-  String get coupleWebdavSlotTwo => '槽位 2';
-
-  @override
-  String get coupleWebdavTestSuccess => '堅果雲連接成功';
-
-  @override
-  String get coupleWebdavTestFailed => '連接失敗，請檢查帳號、應用程式專用密碼與網路';
-
-  @override
-  String get coupleWebdavPullImported => '已從堅果雲匯入對方課表';
-
-  @override
-  String get coupleWebdavPullUpdated => '已從堅果雲更新對方課表';
-
-  @override
-  String get coupleWebdavPullUnchanged => '對方課表無變化';
-
-  @override
-  String get coupleWebdavUploadSuccess => '已上傳課表，對方可拉取';
-
-  @override
-  String get coupleWebdavPartnerFileMissing => '找不到對方課表檔案，請讓對方先上傳';
-
-  @override
-  String get coupleWebdavPullFailed => '拉取對方課表失敗，請稍後重試';
-
-  @override
-  String get coupleWebdavNotConnectedError => '請先連接堅果雲';
 
   @override
   String get cloudSyncEntryTitle => '雲端同步';
@@ -11833,37 +11253,10 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get openOldAppFailed => '未能打開舊版應用，請手動返回桌面打開舊版';
 
   @override
-  String get supportCreatorTitle => '請作者喝杯咖啡';
-
-  @override
-  String get supportHeroTitle => '支持輕嶼課表繼續更新';
-
-  @override
-  String get supportHeroSubtitle => '你的支持會直接用於維護課表、教務匯入適配與體驗優化';
-
-  @override
-  String get supportChipFixes => '修複問題';
-
-  @override
-  String get supportChipAdapters => '教務適配';
-
-  @override
-  String get supportChipPolish => '體驗優化';
-
-  @override
-  String get supportMethodTitle => '選擇支持方式';
-
-  @override
   String get wechatLabel => '微信';
 
   @override
   String get alipayLabel => '支付寶';
-
-  @override
-  String get supportWeChatHint => '使用微信掃一掃支持作者';
-
-  @override
-  String get supportAlipayHint => '使用支付寶掃一掃支持作者';
 
   @override
   String get viewLargeImage => '查看大圖';
@@ -11872,27 +11265,12 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get saveToGallery => '保存到相冊';
 
   @override
-  String get supportCompleteThanks => '感谢你支持輕嶼課表繼續打磨 ❤️';
-
-  @override
-  String get supportConfirmed => '我已經支持了';
-
-  @override
-  String get donorListTitle => '鳴谢名單';
-
-  @override
-  String get donorListLoadFailed => '暫時無法加載在線鳴谢名單';
-
-  @override
   String get reloadAction => '重新加載';
 
   @override
   String updatedAtLabel(String time) {
     return '更新於 $time';
   }
-
-  @override
-  String get donorListEmpty => '名單還沒有有填寫，你可以直接編輯 docs/donors.json 後重新發布';
 
   @override
   String get savedToGallery => '已保存到相冊';
@@ -11904,51 +11282,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String saveFailedWithError(String error) {
     return '保存失敗：$error';
   }
-
-  @override
-  String get supportRunningBadge => '運行中';
-
-  @override
-  String get supportTapQrHint => '點擊放大掃碼';
-
-  @override
-  String get supportSaveShort => '保存';
-
-  @override
-  String get supportConfirmedShort => '已支持';
-
-  @override
-  String get donorSearchHint => '搜暱稱/寄語...';
-
-  @override
-  String get donorSortLargeFirst => '大額優先';
-
-  @override
-  String get donorSortSmallFirst => '小額優先';
-
-  @override
-  String get supportMonthlyGoalLabel => '本月伺服器和證書續期進度';
-
-  @override
-  String supportGoalRaised(String raised, String goal) {
-    return '已籌: $raised / 目標 $goal';
-  }
-
-  @override
-  String supportBackerCount(int count) {
-    return '已有 $count 人獻出愛心';
-  }
-
-  @override
-  String get supportDonorListFooter => '名單永久保留 💖';
-
-  @override
-  String supportMarqueeThanks(String name, String amount) {
-    return '🎉 感謝 $name 贊助 $amount';
-  }
-
-  @override
-  String get supportMarqueeTail => '輕嶼課表正在穩定運行中，期待你的每一次陪伴與愛心！';
 
   @override
   String get scanQrWechatTitle => '使用微信掃描二維碼';
@@ -15374,9 +14707,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   }
 
   @override
-  String get homeMenuUpdateTitle => '軟體更新';
-
-  @override
   String get homeMenuProfilesTitle => '課表管理';
 
   @override
@@ -15390,9 +14720,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get homeMenuSettingsTitle => '課表設定';
-
-  @override
-  String get homeMenuCoffeeTitle => '請喝咖啡';
 
   @override
   String get homeMenuFeedbackTitle => '問題回饋';
@@ -16360,17 +15687,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get courseActionConflictSwitchAction => '切換';
-
-  @override
-  String courseActionCoupleRelatedCount(int count) {
-    return '還有 $count 節情侶課表課程';
-  }
-
-  @override
-  String get courseActionCoupleExpandHint => '展開查看對方的課或一起上課，點擊可切換預覽';
-
-  @override
-  String get courseActionCoupleCollapseHint => '點擊收起情侶課表課程列表';
 
   @override
   String courseActionMixedRelatedCount(int count) {
@@ -18179,11 +17495,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   @override
   String serviceMsgMacroReplayPaused(String reason) {
     return 'Waiting for manual action: $reason';
-  }
-
-  @override
-  String serviceMsgSupportDonorsLoadFailed(String detail) {
-    return 'Failed to load supporters list: $detail';
   }
 
   @override
@@ -20160,9 +19471,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get settingsDataShareSectionTitle => '資料與共享';
 
   @override
-  String get coupleTimetableEntryUnboundLabel => '未綁定';
-
-  @override
   String get settingsAboutSectionTitle => '關於';
 
   @override
@@ -20869,240 +20177,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get dataTransferEntrySubtitle => '匯出完整課表檔案，給別人直接匯入使用';
-
-  @override
-  String get coupleTimetableEntryTitle => '情侶課表';
-
-  @override
-  String get coupleTimetableEntryBound => '已綁定';
-
-  @override
-  String get coupleTimetableModeEnableTooltip => '開啟情侶課表';
-
-  @override
-  String get coupleTimetableModeDisableTooltip => '關閉情侶課表';
-
-  @override
-  String get coupleTimetableTitle => '情侶課表';
-
-  @override
-  String get coupleTimetableIntro =>
-      '匯出你的課表發給對方，或匯入對方分享的課表檔案，匯入後可在疊加檢視中查看雙方的課程';
-
-  @override
-  String get coupleTimetableBoundTitle => '已綁定對方課表';
-
-  @override
-  String get coupleTimetableUnboundTitle => '尚未綁定對方課表';
-
-  @override
-  String get coupleTimetablePartnerNameLabel => '對方名稱';
-
-  @override
-  String coupleTimetableLastImportedAt(String time) {
-    return '上次匯入：$time';
-  }
-
-  @override
-  String get coupleTimetableExportForPartner => '匯出我的課表給對方';
-
-  @override
-  String get coupleTimetableImportPartner => '匯入對方課表';
-
-  @override
-  String get coupleTimetableUnlink => '解除綁定';
-
-  @override
-  String get coupleTimetableOpenOverlay => '進入疊加檢視';
-
-  @override
-  String get coupleTimetableImportSuccess => '已匯入對方課表';
-
-  @override
-  String get coupleTimetableImportUpdated => '已更新對方課表';
-
-  @override
-  String get coupleTimetableUnlinkConfirmTitle => '解除情侶課表綁定？';
-
-  @override
-  String get coupleTimetableUnlinkConfirmMessage => '解除後將刪除本機儲存的對方課表，疊加檢視也會關閉';
-
-  @override
-  String get coupleTimetableUnlinkSuccess => '已解除綁定';
-
-  @override
-  String get coupleTimetablePrivacyHint => '對方只能看到你匯出檔案中所包含的課表內容';
-
-  @override
-  String get coupleTimetableOverlayTitle => '情侶疊加';
-
-  @override
-  String get coupleTimetableLegendMine => '我的課';
-
-  @override
-  String get coupleTimetableLegendPartner => '對方課程';
-
-  @override
-  String get coupleTimetableLegendTogether => '一起上課';
-
-  @override
-  String get coupleTimetableLegendFree => '共同空閒';
-
-  @override
-  String get coupleTimetableSharedFreeTitle => '今日共同空閒';
-
-  @override
-  String get coupleTimetableSharedFreeTitleOtherDay => '當日共同空閒';
-
-  @override
-  String get coupleTimetableNoSharedFree => '今天沒有共同空閒時段';
-
-  @override
-  String get coupleTimetableNoSharedFreeOtherDay => '當日沒有共同空閒時段';
-
-  @override
-  String coupleTimetableSharedFreeMeta(int count) {
-    return '共 $count 段';
-  }
-
-  @override
-  String coupleTimetableSharedFreeMoreCount(int count) {
-    return '還有 $count 段';
-  }
-
-  @override
-  String get coupleTimetableSharedFreeUnavailable => '暫時算不出共同空閒';
-
-  @override
-  String get coupleTimetableSharedFreeStaleHint => '對方課表可能不是最新';
-
-  @override
-  String get coupleTimetablePartnerReadOnlyBadge => '對方課表（唯讀）';
-
-  @override
-  String get coupleTimetableNotBoundMessage => '請先匯入對方課表後再查看疊加檢視';
-
-  @override
-  String get coupleTimetableShareText => '這是我的課表，匯入到輕嶼課表的情侶課表即可一起查看';
-
-  @override
-  String get coupleTimetableShareSubject => '輕嶼課表・情侶課表分享';
-
-  @override
-  String get coupleTimetableWeekOffsetTitle => '週次偏移';
-
-  @override
-  String get coupleTimetableWeekOffsetSubtitle =>
-      '查看你的第 N 週時，讀取對方課表的第 N+偏移 週，例如 +1 表示對方學期進度比你快一週';
-
-  @override
-  String get coupleTimetableWeekOffsetZero => '無偏移';
-
-  @override
-  String coupleTimetableWeekOffsetSigned(String offset) {
-    return '$offset 週';
-  }
-
-  @override
-  String coupleTimetableWeekOffsetPreview(int myWeek, int partnerWeek) {
-    return '查看你的第 $myWeek 週時，顯示對方第 $partnerWeek 週的課';
-  }
-
-  @override
-  String get coupleTimetableColorsTitle => '疊加顏色';
-
-  @override
-  String get coupleTimetableColorsSubtitle =>
-      '自訂「我的課」「對方課程」「一起上課」在疊加檢視中的顯示顏色，可按喜好自由搭配';
-
-  @override
-  String get partnerImportRequiresSingleProfile => '請匯入單一課表備份檔案，不支援全量備份';
-
-  @override
-  String get coupleWebdavTitle => '堅果雲拉取';
-
-  @override
-  String get coupleWebdavSubtitle =>
-      '登入對方（或你們共用的）堅果雲帳號，自動下載對方上傳的課表檔案，與「雲端同步」帳號獨立，互不影響';
-
-  @override
-  String get coupleWebdavNotConnected => '尚未連接堅果雲';
-
-  @override
-  String coupleWebdavConnectedAs(String username) {
-    return '已連接：$username';
-  }
-
-  @override
-  String coupleWebdavRemotePathHint(String path) {
-    return '遠端檔案路徑：$path';
-  }
-
-  @override
-  String coupleWebdavLastPulledAt(String time) {
-    return '上次拉取：$time';
-  }
-
-  @override
-  String get coupleWebdavConnect => '連接堅果雲';
-
-  @override
-  String get coupleWebdavDisconnect => '中斷連接';
-
-  @override
-  String get coupleWebdavPullNow => '立即拉取對方課表';
-
-  @override
-  String get coupleWebdavUploadForPartner => '上傳我的課表到堅果雲';
-
-  @override
-  String get coupleWebdavLoginSheetTitle => '連接堅果雲（情侶課表）';
-
-  @override
-  String get coupleWebdavLoginSheetSubtitle =>
-      '請使用應用程式專用密碼，對方需先將課表上傳到約定路徑，或由你在對方裝置上登入同一帳號並上傳';
-
-  @override
-  String get coupleWebdavConfirmConnect => '連接並拉取';
-
-  @override
-  String get coupleWebdavMySlotLabel => '本機槽位';
-
-  @override
-  String get coupleWebdavMySlotHint => '雙方必須選不同槽位：一方選 1，另一方選 2，否則會互相讀不到課表';
-
-  @override
-  String get coupleWebdavSlotOne => '槽位 1';
-
-  @override
-  String get coupleWebdavSlotTwo => '槽位 2';
-
-  @override
-  String get coupleWebdavTestSuccess => '堅果雲連接成功';
-
-  @override
-  String get coupleWebdavTestFailed => '連接失敗，請檢查帳號、應用程式專用密碼與網路';
-
-  @override
-  String get coupleWebdavPullImported => '已從堅果雲匯入對方課表';
-
-  @override
-  String get coupleWebdavPullUpdated => '已從堅果雲更新對方課表';
-
-  @override
-  String get coupleWebdavPullUnchanged => '對方課表無變化';
-
-  @override
-  String get coupleWebdavUploadSuccess => '已上傳課表，對方可拉取';
-
-  @override
-  String get coupleWebdavPartnerFileMissing => '找不到對方課表檔案，請讓對方先上傳';
-
-  @override
-  String get coupleWebdavPullFailed => '拉取對方課表失敗，請稍後重試';
-
-  @override
-  String get coupleWebdavNotConnectedError => '請先連接堅果雲';
 
   @override
   String get cloudSyncEntryTitle => '雲端同步';
@@ -22211,37 +21285,10 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get openOldAppFailed => '未能打開舊版應用，請手動返回桌面打開舊版';
 
   @override
-  String get supportCreatorTitle => '請作者喝杯咖啡';
-
-  @override
-  String get supportHeroTitle => '支持輕嶼課表繼續更新';
-
-  @override
-  String get supportHeroSubtitle => '你的支持會直接用於維護課表、教務匯入適配與體驗優化';
-
-  @override
-  String get supportChipFixes => '修複問題';
-
-  @override
-  String get supportChipAdapters => '教務適配';
-
-  @override
-  String get supportChipPolish => '體驗優化';
-
-  @override
-  String get supportMethodTitle => '選擇支持方式';
-
-  @override
   String get wechatLabel => '微信';
 
   @override
   String get alipayLabel => '支付寶';
-
-  @override
-  String get supportWeChatHint => '使用微信掃一掃支持作者';
-
-  @override
-  String get supportAlipayHint => '使用支付寶掃一掃支持作者';
 
   @override
   String get viewLargeImage => '查看大圖';
@@ -22250,27 +21297,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get saveToGallery => '保存到相冊';
 
   @override
-  String get supportCompleteThanks => '感谢你支持輕嶼課表繼續打磨 ❤️';
-
-  @override
-  String get supportConfirmed => '我已經支持了';
-
-  @override
-  String get donorListTitle => '鳴谢名單';
-
-  @override
-  String get donorListLoadFailed => '暫時無法加載在線鳴谢名單';
-
-  @override
   String get reloadAction => '重新加載';
 
   @override
   String updatedAtLabel(String time) {
     return '更新於 $time';
   }
-
-  @override
-  String get donorListEmpty => '名單還沒有有填寫，你可以直接編輯 docs/donors.json 後重新發布';
 
   @override
   String get savedToGallery => '已保存到相冊';
@@ -22282,51 +21314,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String saveFailedWithError(String error) {
     return '保存失敗：$error';
   }
-
-  @override
-  String get supportRunningBadge => '運行中';
-
-  @override
-  String get supportTapQrHint => '點擊放大掃碼';
-
-  @override
-  String get supportSaveShort => '保存';
-
-  @override
-  String get supportConfirmedShort => '已支持';
-
-  @override
-  String get donorSearchHint => '搜暱稱/寄語...';
-
-  @override
-  String get donorSortLargeFirst => '大額優先';
-
-  @override
-  String get donorSortSmallFirst => '小額優先';
-
-  @override
-  String get supportMonthlyGoalLabel => '本月伺服器和證書續期進度';
-
-  @override
-  String supportGoalRaised(String raised, String goal) {
-    return '已籌: $raised / 目標 $goal';
-  }
-
-  @override
-  String supportBackerCount(int count) {
-    return '已有 $count 人獻出愛心';
-  }
-
-  @override
-  String get supportDonorListFooter => '名單永久保留 💖';
-
-  @override
-  String supportMarqueeThanks(String name, String amount) {
-    return '🎉 感謝 $name 贊助 $amount';
-  }
-
-  @override
-  String get supportMarqueeTail => '輕嶼課表正在穩定運行中，期待你的每一次陪伴與愛心！';
 
   @override
   String get scanQrWechatTitle => '使用微信掃描二維碼';
@@ -25752,9 +24739,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String get homeMenuUpdateTitle => '軟體更新';
-
-  @override
   String get homeMenuProfilesTitle => '課表管理';
 
   @override
@@ -25768,9 +24752,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get homeMenuSettingsTitle => '課表設定';
-
-  @override
-  String get homeMenuCoffeeTitle => '請喝咖啡';
 
   @override
   String get homeMenuFeedbackTitle => '問題回饋';
@@ -26738,17 +25719,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get courseActionConflictSwitchAction => '切換';
-
-  @override
-  String courseActionCoupleRelatedCount(int count) {
-    return '還有 $count 節情侶課表課程';
-  }
-
-  @override
-  String get courseActionCoupleExpandHint => '展開查看對方的課或一起上課，點擊可切換預覽';
-
-  @override
-  String get courseActionCoupleCollapseHint => '點擊收起情侶課表課程列表';
 
   @override
   String courseActionMixedRelatedCount(int count) {
@@ -28557,11 +27527,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String serviceMsgMacroReplayPaused(String reason) {
     return 'Waiting for manual action: $reason';
-  }
-
-  @override
-  String serviceMsgSupportDonorsLoadFailed(String detail) {
-    return 'Failed to load supporters list: $detail';
   }
 
   @override
@@ -30536,9 +29501,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get settingsDataShareSectionTitle => '資料與共享';
-
-  @override
-  String get coupleTimetableEntryUnboundLabel => '未綁定';
 
   @override
   String get settingsAboutSectionTitle => '關於';

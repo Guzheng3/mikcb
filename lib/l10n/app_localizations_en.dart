@@ -167,259 +167,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Export a complete timetable file for others to import directly';
 
   @override
-  String get coupleTimetableEntryTitle => 'Couple Timetable';
-
-  @override
-  String get coupleTimetableEntryBound => 'Linked';
-
-  @override
-  String get coupleTimetableModeEnableTooltip => 'Couple timetable on';
-
-  @override
-  String get coupleTimetableModeDisableTooltip => 'Couple timetable off';
-
-  @override
-  String get coupleTimetableTitle => 'Couple Timetable';
-
-  @override
-  String get coupleTimetableIntro =>
-      'Export your timetable for your partner, or import their shared file. After binding, open the overlay view to compare schedules';
-
-  @override
-  String get coupleTimetableBoundTitle => 'Partner timetable linked';
-
-  @override
-  String get coupleTimetableUnboundTitle => 'No partner timetable yet';
-
-  @override
-  String get coupleTimetablePartnerNameLabel => 'Partner name';
-
-  @override
-  String coupleTimetableLastImportedAt(String time) {
-    return 'Last imported: $time';
-  }
-
-  @override
-  String get coupleTimetableExportForPartner =>
-      'Export my timetable for partner';
-
-  @override
-  String get coupleTimetableImportPartner => 'Import partner timetable';
-
-  @override
-  String get coupleTimetableUnlink => 'Unlink';
-
-  @override
-  String get coupleTimetableOpenOverlay => 'Open overlay view';
-
-  @override
-  String get coupleTimetableImportSuccess => 'Partner timetable imported';
-
-  @override
-  String get coupleTimetableImportUpdated => 'Partner timetable updated';
-
-  @override
-  String get coupleTimetableUnlinkConfirmTitle => 'Unlink partner timetable?';
-
-  @override
-  String get coupleTimetableUnlinkConfirmMessage =>
-      'This removes the locally stored partner timetable and closes the overlay view';
-
-  @override
-  String get coupleTimetableUnlinkSuccess => 'Partner timetable unlinked';
-
-  @override
-  String get coupleTimetablePrivacyHint =>
-      'Your partner only sees the timetable content included in the exported file';
-
-  @override
-  String get coupleTimetableOverlayTitle => 'Couple overlay';
-
-  @override
-  String get coupleTimetableLegendMine => 'Mine';
-
-  @override
-  String get coupleTimetableLegendPartner => 'Partner';
-
-  @override
-  String get coupleTimetableLegendTogether => 'Together';
-
-  @override
-  String get coupleTimetableLegendFree => 'Shared free';
-
-  @override
-  String get coupleTimetableSharedFreeTitle => 'Shared free time today';
-
-  @override
-  String get coupleTimetableSharedFreeTitleOtherDay =>
-      'Shared free time this day';
-
-  @override
-  String get coupleTimetableNoSharedFree => 'No shared free time today';
-
-  @override
-  String get coupleTimetableNoSharedFreeOtherDay =>
-      'No shared free time this day';
-
-  @override
-  String coupleTimetableSharedFreeMeta(int count) {
-    return '$count slots';
-  }
-
-  @override
-  String coupleTimetableSharedFreeMoreCount(int count) {
-    return '$count more slots';
-  }
-
-  @override
-  String get coupleTimetableSharedFreeUnavailable =>
-      'Shared free time unavailable';
-
-  @override
-  String get coupleTimetableSharedFreeStaleHint =>
-      'Partner schedule may be outdated';
-
-  @override
-  String get coupleTimetablePartnerReadOnlyBadge =>
-      'Partner timetable (read-only)';
-
-  @override
-  String get coupleTimetableNotBoundMessage =>
-      'Import a partner timetable before opening the overlay view';
-
-  @override
-  String get coupleTimetableShareText =>
-      'Here is my timetable. Import it in Qingyu Timetable > Couple Timetable to view together.';
-
-  @override
-  String get coupleTimetableShareSubject => 'Qingyu Timetable · Couple share';
-
-  @override
-  String get coupleTimetableWeekOffsetTitle => 'Week offset';
-
-  @override
-  String get coupleTimetableWeekOffsetSubtitle =>
-      'When you view week N, partner courses are read from week N + offset. For example, +1 means their semester is one week ahead';
-
-  @override
-  String get coupleTimetableWeekOffsetZero => 'No offset';
-
-  @override
-  String coupleTimetableWeekOffsetSigned(String offset) {
-    return '$offset wk';
-  }
-
-  @override
-  String coupleTimetableWeekOffsetPreview(int myWeek, int partnerWeek) {
-    return 'Viewing your week $myWeek shows partner week $partnerWeek';
-  }
-
-  @override
-  String get coupleTimetableColorsTitle => 'Overlay colors';
-
-  @override
-  String get coupleTimetableColorsSubtitle =>
-      'Choose colors for your courses, partner courses, and shared classes in overlay view';
-
-  @override
-  String get partnerImportRequiresSingleProfile =>
-      'Please import a single-profile backup, not a full backup';
-
-  @override
-  String get coupleWebdavTitle => 'Nutstore pull';
-
-  @override
-  String get coupleWebdavSubtitle =>
-      'Sign in to your partner\'s (or shared) Nutstore account to download their uploaded timetable. Separate from Cloud Sync credentials';
-
-  @override
-  String get coupleWebdavNotConnected => 'Not connected to Nutstore';
-
-  @override
-  String coupleWebdavConnectedAs(String username) {
-    return 'Connected as $username';
-  }
-
-  @override
-  String coupleWebdavRemotePathHint(String path) {
-    return 'Remote file: $path';
-  }
-
-  @override
-  String coupleWebdavLastPulledAt(String time) {
-    return 'Last pulled: $time';
-  }
-
-  @override
-  String get coupleWebdavConnect => 'Connect Nutstore';
-
-  @override
-  String get coupleWebdavDisconnect => 'Disconnect';
-
-  @override
-  String get coupleWebdavPullNow => 'Pull partner timetable';
-
-  @override
-  String get coupleWebdavUploadForPartner => 'Upload my timetable to Nutstore';
-
-  @override
-  String get coupleWebdavLoginSheetTitle =>
-      'Connect Nutstore (couple timetable)';
-
-  @override
-  String get coupleWebdavLoginSheetSubtitle =>
-      'Use an app-specific password. Your partner must upload their timetable to the agreed path first, or upload from their device on the same account';
-
-  @override
-  String get coupleWebdavConfirmConnect => 'Connect and pull';
-
-  @override
-  String get coupleWebdavMySlotLabel => 'This device slot';
-
-  @override
-  String get coupleWebdavMySlotHint =>
-      'Both devices must pick different slots: one chooses 1, the other 2, or neither can read the partner timetable';
-
-  @override
-  String get coupleWebdavSlotOne => 'Slot 1';
-
-  @override
-  String get coupleWebdavSlotTwo => 'Slot 2';
-
-  @override
-  String get coupleWebdavTestSuccess => 'Nutstore connection successful';
-
-  @override
-  String get coupleWebdavTestFailed =>
-      'Connection failed. Check account, app password, and network.';
-
-  @override
-  String get coupleWebdavPullImported =>
-      'Partner timetable imported from Nutstore';
-
-  @override
-  String get coupleWebdavPullUpdated =>
-      'Partner timetable updated from Nutstore';
-
-  @override
-  String get coupleWebdavPullUnchanged => 'Partner timetable is up to date';
-
-  @override
-  String get coupleWebdavUploadSuccess =>
-      'Timetable uploaded for your partner to pull';
-
-  @override
-  String get coupleWebdavPartnerFileMissing =>
-      'Partner timetable file not found. Ask them to upload first.';
-
-  @override
-  String get coupleWebdavPullFailed =>
-      'Failed to pull partner timetable. Try again later.';
-
-  @override
-  String get coupleWebdavNotConnectedError => 'Connect Nutstore first';
-
-  @override
   String get cloudSyncEntryTitle => 'Cloud Sync';
 
   @override
@@ -1596,38 +1343,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Failed to open the old app. Please return to the home screen and open it manually.';
 
   @override
-  String get supportCreatorTitle => 'Buy the Creator a Coffee';
-
-  @override
-  String get supportHeroTitle => 'Support Qingyu Timetable';
-
-  @override
-  String get supportHeroSubtitle =>
-      'Your support goes directly into timetable maintenance, academic adapter updates, and overall experience improvements';
-
-  @override
-  String get supportChipFixes => 'Bug Fixes';
-
-  @override
-  String get supportChipAdapters => 'Adapters';
-
-  @override
-  String get supportChipPolish => 'Polish';
-
-  @override
-  String get supportMethodTitle => 'Choose a Support Method';
-
-  @override
   String get wechatLabel => 'WeChat';
 
   @override
   String get alipayLabel => 'Alipay';
-
-  @override
-  String get supportWeChatHint => 'Use WeChat to scan and support the creator';
-
-  @override
-  String get supportAlipayHint => 'Use Alipay to scan and support the creator';
 
   @override
   String get viewLargeImage => 'View Large Image';
@@ -1636,30 +1355,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveToGallery => 'Save to Gallery';
 
   @override
-  String get supportCompleteThanks =>
-      'Thanks for supporting Qingyu Timetable ❤️';
-
-  @override
-  String get supportConfirmed => 'I’ve Supported';
-
-  @override
-  String get donorListTitle => 'Acknowledgements';
-
-  @override
-  String get donorListLoadFailed =>
-      'The online donor list is temporarily unavailable.';
-
-  @override
   String get reloadAction => 'Reload';
 
   @override
   String updatedAtLabel(String time) {
     return 'Updated at $time';
   }
-
-  @override
-  String get donorListEmpty =>
-      'The donor list is still empty. You can edit docs/donors.json and publish again.';
 
   @override
   String get savedToGallery => 'Saved to gallery';
@@ -1671,52 +1372,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String saveFailedWithError(String error) {
     return 'Save failed: $error';
   }
-
-  @override
-  String get supportRunningBadge => 'Active';
-
-  @override
-  String get supportTapQrHint => 'Tap to enlarge';
-
-  @override
-  String get supportSaveShort => 'Save';
-
-  @override
-  String get supportConfirmedShort => 'Supported';
-
-  @override
-  String get donorSearchHint => 'Search name or message...';
-
-  @override
-  String get donorSortLargeFirst => 'Largest first';
-
-  @override
-  String get donorSortSmallFirst => 'Smallest first';
-
-  @override
-  String get supportMonthlyGoalLabel => 'Monthly server & certificate renewal';
-
-  @override
-  String supportGoalRaised(String raised, String goal) {
-    return 'Raised: $raised / Goal $goal';
-  }
-
-  @override
-  String supportBackerCount(int count) {
-    return '$count supporters so far';
-  }
-
-  @override
-  String get supportDonorListFooter => 'Names are kept permanently 💖';
-
-  @override
-  String supportMarqueeThanks(String name, String amount) {
-    return '🎉 Thanks to $name for $amount';
-  }
-
-  @override
-  String get supportMarqueeTail =>
-      'Qingyu Timetable keeps running — thank you for your support!';
 
   @override
   String get scanQrWechatTitle => 'Scan with WeChat';
@@ -5366,9 +5021,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get homeMenuUpdateTitle => 'Software update';
-
-  @override
   String get homeMenuProfilesTitle => 'Timetables';
 
   @override
@@ -5382,9 +5034,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeMenuSettingsTitle => 'Timetable settings';
-
-  @override
-  String get homeMenuCoffeeTitle => 'Buy me a coffee';
 
   @override
   String get homeMenuFeedbackTitle => 'Feedback';
@@ -6382,19 +6031,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get courseActionConflictSwitchAction => 'Switch';
-
-  @override
-  String courseActionCoupleRelatedCount(int count) {
-    return '$count more couple timetable course(s)';
-  }
-
-  @override
-  String get courseActionCoupleExpandHint =>
-      'Expand to preview partner or shared classes. Tap to switch';
-
-  @override
-  String get courseActionCoupleCollapseHint =>
-      'Tap to collapse couple timetable courses';
 
   @override
   String courseActionMixedRelatedCount(int count) {
@@ -8243,11 +7879,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String serviceMsgMacroReplayPaused(String reason) {
     return 'Waiting for manual action: $reason';
-  }
-
-  @override
-  String serviceMsgSupportDonorsLoadFailed(String detail) {
-    return 'Failed to load supporters list: $detail';
   }
 
   @override
@@ -10353,9 +9984,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDataShareSectionTitle => 'Data & Sharing';
-
-  @override
-  String get coupleTimetableEntryUnboundLabel => 'Unbound';
 
   @override
   String get settingsAboutSectionTitle => 'About';

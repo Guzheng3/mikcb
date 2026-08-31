@@ -143,7 +143,6 @@ ZH_VALUES = {
     "serviceMsgMacroReplayDelay": "等待中...",
     "serviceMsgMacroReplayFailed": "失败: {detail}",
     "serviceMsgMacroReplayPaused": "等待手动操作: {reason}",
-    "serviceMsgSupportDonorsLoadFailed": "加载鸣谢名单失败：{detail}",
     "serviceMsgStatisticsShareFailed": "分享失败: {detail}",
     "serviceMsgAuthFailed": "账号或密码错误",
     "serviceMsgAccessDenied": "没有访问权限",

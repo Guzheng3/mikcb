@@ -55,7 +55,7 @@ void main() {
     // 切回 A 再切回 B：各自对齐各自的日历周，而不是带着上一份的周数。
     final profileAId = provider.profiles
         .firstWhere(
-          (profile) => !profile.isPartnerImported && profile.id != profileB.id,
+          (profile) => profile.id != profileB.id,
         )
         .id;
     await provider.switchProfile(profileAId);
@@ -86,7 +86,7 @@ void main() {
 
     final profileAId = provider.profiles
         .firstWhere(
-          (profile) => !profile.isPartnerImported && profile.id != profileB.id,
+          (profile) => profile.id != profileB.id,
         )
         .id;
     await provider.switchProfile(profileAId);

@@ -4,7 +4,6 @@ import 'package:crypto/crypto.dart';
 
 import '../models/holiday_entry.dart';
 import '../models/location_time_group.dart';
-import '../models/partner_timetable_binding.dart';
 import '../models/schedule_date_rule.dart';
 import '../models/time_scheme.dart';
 import '../models/timetable_profile.dart';
@@ -35,9 +34,6 @@ class AppSyncSnapshot {
   final DateTime exportedAt;
   final String deviceId;
   final String contentSha256;
-  final PartnerTimetableBinding? partnerTimetableBinding;
-  final bool includesPartnerTimetableBinding;
-
   /// Last successful seasonal date-rule bulk-apply signature (ruleId|scheme|range).
   /// Absent on older snapshots; treated as null so apply can re-run once if needed.
   final String? scheduleDateRuleLastAppliedSignature;
@@ -56,8 +52,6 @@ class AppSyncSnapshot {
     required this.exportedAt,
     required this.deviceId,
     required this.contentSha256,
-    this.partnerTimetableBinding,
-    this.includesPartnerTimetableBinding = false,
     this.scheduleDateRuleLastAppliedSignature,
   });
 
@@ -65,7 +59,7 @@ class AppSyncSnapshot {
   /// not be silently overwritten on first-sync background pull.
   ///
   /// Covers full snapshot identity fields (courses, schemes, place-routing,
-  /// date rules, warehouse prefs, macros, holidays, partner binding), not
+  /// date rules, warehouse prefs, macros, holidays), not
   /// only non-empty timetable lists.
   bool get hasUserAuthoredData {
     if (teacherRecords.isNotEmpty || locationRecords.isNotEmpty) {
@@ -75,9 +69,6 @@ class AppSyncSnapshot {
       return true;
     }
     if (customHolidays.isNotEmpty || macros.isNotEmpty) {
-      return true;
-    }
-    if (partnerTimetableBinding != null) {
       return true;
     }
     if (warehouse.rememberedLogins.isNotEmpty ||
@@ -97,9 +88,6 @@ class AppSyncSnapshot {
           profile.tasks.isNotEmpty ||
           profile.exams.isNotEmpty ||
           profile.scheduleItems.isNotEmpty) {
-        return true;
-      }
-      if (profile.isPartnerImported) {
         return true;
       }
       // Renamed away from the factory default profile name.
@@ -248,8 +236,6 @@ class AppSyncSnapshotService {
     final customHolidays = await _holidayService.loadCustomHolidays();
     final teacherRecords = await _storageService.getTeacherRecords();
     final locationRecords = await _storageService.getLocationRecords();
-    final partnerTimetableBinding = await _storageService
-        .getPartnerTimetableBinding();
     final timestamp = exportedAt ?? DateTime.now();
 
     final profilesForSync = stripLiveTestingFixtureCourses(provider.profiles);
@@ -268,7 +254,6 @@ class AppSyncSnapshotService {
       customHolidays: customHolidays,
       exportedAt: timestamp,
       deviceId: deviceId,
-      partnerTimetableBinding: partnerTimetableBinding,
       scheduleDateRuleLastAppliedSignature: lastAppliedSignature,
     );
     final contentSha256 = computeContentSha256(payload);
@@ -287,8 +272,6 @@ class AppSyncSnapshotService {
       exportedAt: timestamp,
       deviceId: deviceId,
       contentSha256: contentSha256,
-      partnerTimetableBinding: partnerTimetableBinding,
-      includesPartnerTimetableBinding: true,
       scheduleDateRuleLastAppliedSignature: lastAppliedSignature,
     );
   }
@@ -320,7 +303,6 @@ class AppSyncSnapshotService {
       customHolidays: snapshot.customHolidays,
       exportedAt: snapshot.exportedAt,
       deviceId: snapshot.deviceId,
-      partnerTimetableBinding: snapshot.partnerTimetableBinding,
       scheduleDateRuleLastAppliedSignature:
           snapshot.scheduleDateRuleLastAppliedSignature,
     );
@@ -389,21 +371,6 @@ class AppSyncSnapshotService {
       throw FormatException('invalid_sync_snapshot_warehouse', error);
     }
 
-    final includesPartnerTimetableBinding = json.containsKey(
-      'partnerTimetableBinding',
-    );
-    PartnerTimetableBinding? partnerTimetableBinding;
-    final rawPartnerBinding = json['partnerTimetableBinding'];
-    if (includesPartnerTimetableBinding && rawPartnerBinding is Map) {
-      try {
-        partnerTimetableBinding = PartnerTimetableBinding.fromJson(
-          Map<String, dynamic>.from(rawPartnerBinding),
-        );
-      } on TypeError catch (error) {
-        throw FormatException('invalid_sync_snapshot_partner_binding', error);
-      }
-    }
-
     final decodedProfiles = <TimetableProfile>[];
     for (final item in rawProfiles) {
       try {
@@ -430,7 +397,7 @@ class AppSyncSnapshotService {
         continue;
       }
     }
-    // Empty collections are valid for first-install/partner snapshots. A
+    // Empty collections are valid for first-install snapshots. A
     // non-empty collection that yields no valid records is different: it is a
     // corrupt core payload and must not be treated as an empty timetable.
     if ((rawProfiles.isNotEmpty && decodedProfiles.isEmpty) ||
@@ -496,8 +463,6 @@ class AppSyncSnapshotService {
           DateTime.now(),
       deviceId: _optionalString(json['deviceId']) ?? '',
       contentSha256: expectedHash.isEmpty ? actualHash : expectedHash,
-      partnerTimetableBinding: partnerTimetableBinding,
-      includesPartnerTimetableBinding: includesPartnerTimetableBinding,
       scheduleDateRuleLastAppliedSignature: _normalizedOptionalString(
         json['scheduleDateRuleLastAppliedSignature'],
       ),
@@ -541,7 +506,7 @@ class AppSyncSnapshotService {
 
   /// Builds the same entity-level preview used by file, QR and LAN imports.
   /// Cloud snapshots retain their existing envelope because they also carry
-  /// warehouse, holiday and partner-binding data outside the timetable core.
+  /// warehouse and holiday data outside the timetable core.
   /// Converts a cloud snapshot to the same transport-neutral package used by
   /// file, QR and LAN previews. Extra cloud fields stay on [AppSyncSnapshot]
   /// and are applied by this service after the timetable core is validated.
@@ -645,7 +610,7 @@ class AppSyncSnapshotService {
           },
         );
 
-        // Keep cloud-only fields (warehouse, holidays and partner binding)
+        // Keep cloud-only fields (warehouse and holidays)
         // in the snapshot applier; the package is the shared schema/diff
         // boundary and has already been previewed above.
         applyError = await _applySnapshotData(
@@ -898,14 +863,8 @@ class AppSyncSnapshotService {
     await _warehouseMacroService.importAllMacros(snapshot.macros);
     await _holidayService.saveCustomHolidays(snapshot.customHolidays);
 
-    if (snapshot.includesPartnerTimetableBinding) {
-      await _storageService.savePartnerTimetableBinding(
-        snapshot.partnerTimetableBinding,
-      );
-    }
-
     // Force full in-memory reload: initialize() is process-idempotent and
-    // would skip partner/teachers/locations after the first start (C4).
+    // would skip teachers/locations after the first start (C4).
     await provider.reloadFromStorageAfterExternalApply();
     return null;
   }
@@ -936,9 +895,6 @@ class AppSyncSnapshotService {
       exportedAt: now,
       deviceId: 'local-rollback',
       contentSha256: '',
-      partnerTimetableBinding: externalData.partnerTimetableBinding,
-      includesPartnerTimetableBinding:
-          externalData.includesPartnerTimetableBinding,
       scheduleDateRuleLastAppliedSignature:
           provider.scheduleDateRuleLastAppliedSignature,
     );
@@ -1003,7 +959,6 @@ class AppSyncSnapshotService {
     required List<HolidayEntry> customHolidays,
     required DateTime exportedAt,
     required String deviceId,
-    PartnerTimetableBinding? partnerTimetableBinding,
     String? scheduleDateRuleLastAppliedSignature,
   }) {
     return {
@@ -1031,7 +986,6 @@ class AppSyncSnapshotService {
         'macros': macros.map((macro) => macro.toJson()).toList(),
       },
       'customHolidays': customHolidays.map((entry) => entry.toJson()).toList(),
-      'partnerTimetableBinding': partnerTimetableBinding?.toJson(),
     };
   }
 

@@ -53,10 +53,7 @@ void main() {
           locale: const Locale('zh'),
           home: FrostedAppearanceScope(
             appearance: FrostedAppearance.defaults,
-            child: TimetableScreen(
-              enableUpdateCheck: false,
-              enableProgressTimer: false,
-            ),
+            child: TimetableScreen(enableProgressTimer: false),
           ),
         ),
       ),
@@ -105,9 +102,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('HyperosListView 消费余量：取 max(默认底距, 余量)，坞外行为不变', (
-    tester,
-  ) async {
+  testWidgets('HyperosListView 消费余量：取 max(默认底距, 余量)，坞外行为不变', (tester) async {
     Future<double> pumpListBottom({
       double? inset,
       EdgeInsetsGeometry? padding,

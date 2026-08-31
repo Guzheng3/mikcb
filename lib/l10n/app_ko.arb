@@ -650,23 +650,10 @@
   "backupDoneGoImport": "백업 완료, 가져오기로 이동",
   "startFreshWithoutMigration": "새 앱으로 시작, 마이그레이션 안 함",
   "openOldAppFailed": "이전 버전을 열지 못했습니다. 홈 화면에서 수동으로 이전 버전을 여세요",
-  "supportCreatorTitle": "개발자에게 커피 한 잔",
-  "supportHeroTitle": "경屿 시간표의 지속적 업데이트를 지원",
-  "supportHeroSubtitle": "여러분의 지원은 시간표 유지보수, 교무 가져오기 적응 및 UX 개선에 직접 사용됩니다",
-  "supportChipFixes": "문제 수정",
-  "supportChipAdapters": "교무 적응",
-  "supportChipPolish": "UX 개선",
-  "supportMethodTitle": "지원 방법 선택",
   "wechatLabel": "WeChat",
   "alipayLabel": "Alipay",
-  "supportWeChatHint": "WeChat으로 QR 코드를 스캔하여 개발자 지원",
-  "supportAlipayHint": "Alipay로 QR 코드를 스캔하여 개발자 지원",
   "viewLargeImage": "큰 이미지 보기",
   "saveToGallery": "갤러리에 저장",
-  "supportCompleteThanks": "경屿 시간표의 지속적인 개선을 지원해 주셔서 감사합니다 ❤️",
-  "supportConfirmed": "지원했습니다",
-  "donorListTitle": "감사 목록",
-  "donorListLoadFailed": "온라인 감사 목록을 불러올 수 없습니다.",
   "reloadAction": "다시 불러오기",
   "updatedAtLabel": "{time}에 업데이트",
   "@updatedAtLabel": {
@@ -676,7 +663,6 @@
       }
     }
   },
-  "donorListEmpty": "목록이 아직 작성되지 않았습니다. docs/donors.json을 직접 편집한 뒤 재발행할 수 있습니다.",
   "savedToGallery": "갤러리에 저장되었습니다",
   "saveToGalleryFailed": "갤러리 저장에 실패했습니다",
   "saveFailedWithError": "저장 실패: {error}",
@@ -687,46 +673,6 @@
       }
     }
   },
-  "supportRunningBadge": "운영 중",
-  "supportTapQrHint": "탭하여 확대",
-  "supportSaveShort": "저장",
-  "supportConfirmedShort": "후원함",
-  "donorSearchHint": "닉네임/메시지 검색...",
-  "donorSortLargeFirst": "금액 높은 순",
-  "donorSortSmallFirst": "금액 낮은 순",
-  "supportMonthlyGoalLabel": "이번 달 서버·인증서 갱신 진행률",
-  "supportGoalRaised": "모금: {raised} / 목표 {goal}",
-  "@supportGoalRaised": {
-    "placeholders": {
-      "raised": {
-        "type": "String"
-      },
-      "goal": {
-        "type": "String"
-      }
-    }
-  },
-  "supportBackerCount": "이미 {count}명이 후원",
-  "@supportBackerCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "supportDonorListFooter": "명단은 영구 보존됩니다 💖",
-  "supportMarqueeThanks": "🎉 {name}님 {amount} 감사합니다",
-  "@supportMarqueeThanks": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "supportMarqueeTail": "경屿 시간표가 안정적으로 운영 중 — 여러분의 후원을 기다립니다!",
   "scanQrWechatTitle": "WeChat으로 QR 코드 스캔",
   "scanQrAlipayTitle": "Alipay로 QR 코드 스캔",
   "scanQrSubtitle": "스크린샷 후 스캔, 후원 감사합니다!",
@@ -2243,8 +2189,8 @@
   },
   "aboutMirrorUnknownSizeHint": "미러 소스가 파일 총 크기를 반환하지 않아 다운로드된 크기를 먼저 표시합니다",
   "aboutCancelDownloadAction": "다운로드 취소",
-"aboutContinueDownloadAction": "다운로드 재개",
-"aboutDismissDialogAction": "닫기",
+  "aboutContinueDownloadAction": "다운로드 재개",
+  "aboutDismissDialogAction": "닫기",
   "aboutContributorsScreenTitle": "코드 기여자",
   "aboutDevelopersTitle": "개발자",
   "aboutDeveloperMaintainerSubtitle": "경屿 시간표 개발 및 유지보수",
@@ -2613,13 +2559,11 @@
       }
     }
   },
-  "homeMenuUpdateTitle": "소프트웨어 업데이트",
   "homeMenuProfilesTitle": "시간표 관리",
   "homeMenuOverviewTitle": "수업 전체보기",
   "homeMenuAddCourseTitle": "수업 추가",
   "homeMenuImportTitle": "수업 가져오기",
   "homeMenuSettingsTitle": "시간표 설정",
-  "homeMenuCoffeeTitle": "커피 한 잔",
   "homeMenuFeedbackTitle": "문제 제보",
   "switchTimetableTitle": "시간표 전환",
   "todayTimetableTitle": "오늘 시간표",
@@ -3671,19 +3615,33 @@
   "weeklyReportBody": "{week}주차 · 총 {sections}교시 · {courses}과목\n지난주 대비 {delta}교시\n가장 바쁜 날: {busiestDay}",
   "@weeklyReportBody": {
     "placeholders": {
-      "week": { "type": "int" },
-      "sections": { "type": "int" },
-      "courses": { "type": "int" },
-      "delta": { "type": "String" },
-      "busiestDay": { "type": "String" }
+      "week": {
+        "type": "int"
+      },
+      "sections": {
+        "type": "int"
+      },
+      "courses": {
+        "type": "int"
+      },
+      "delta": {
+        "type": "String"
+      },
+      "busiestDay": {
+        "type": "String"
+      }
     }
   },
   "weeklyReportBodyEmpty": "이번 주 수업이 없어요. 푹 쉬세요",
   "weeklyReportNextFire": "다음 알림 {date} {time}",
   "@weeklyReportNextFire": {
     "placeholders": {
-      "date": { "type": "String" },
-      "time": { "type": "String" }
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
     }
   },
   "weeklyReportEnabledHint": "주간 리포트가 켜졌습니다",
@@ -3694,7 +3652,9 @@
   "statisticsCompareDelta": "현재 대비 {delta}교시",
   "@statisticsCompareDelta": {
     "placeholders": {
-      "delta": { "type": "String" }
+      "delta": {
+        "type": "String"
+      }
     }
   },
   "statisticsCompareDetailTitle": "비교 상세",
@@ -3725,22 +3685,34 @@
   "statisticsSemesterProgressRange": "학기 {start} - {end}",
   "@statisticsSemesterProgressRange": {
     "placeholders": {
-      "start": { "type": "String" },
-      "end": { "type": "String" }
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
     }
   },
   "statisticsSemesterProgressAsOf": "오늘 {date}",
   "@statisticsSemesterProgressAsOf": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "statisticsSemesterProgressDetail": "{week}주차 기준, 수강 {done}교시 / 총 {total}교시",
   "@statisticsSemesterProgressDetail": {
     "placeholders": {
-      "week": { "type": "int" },
-      "done": { "type": "int" },
-      "total": { "type": "int" }
+      "week": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "statisticsSemesterProgressNotStarted": "학기가 아직 시작하지 않았어요",
@@ -3748,15 +3720,21 @@
   "statisticsSemesterProgressRemaining": "남은 {count}교시",
   "@statisticsSemesterProgressRemaining": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "statisticsTrendTitle": "주별 수업 시간 추이",
   "statisticsTrendTooltip": "{week}주차 · {sections}교시",
   "@statisticsTrendTooltip": {
     "placeholders": {
-      "week": { "type": "int" },
-      "sections": { "type": "int" }
+      "week": {
+        "type": "int"
+      },
+      "sections": {
+        "type": "int"
+      }
     }
   },
   "statisticsComparisonTitle": "이번 주 요약",
@@ -3765,13 +3743,17 @@
   "statisticsComparisonVsLastWeek": "지난주 대비 {delta}교시",
   "@statisticsComparisonVsLastWeek": {
     "placeholders": {
-      "delta": { "type": "String" }
+      "delta": {
+        "type": "String"
+      }
     }
   },
   "statisticsComparisonVsAverage": "평균 대비 {delta}교시",
   "@statisticsComparisonVsAverage": {
     "placeholders": {
-      "delta": { "type": "String" }
+      "delta": {
+        "type": "String"
+      }
     }
   },
   "statisticsComparisonNew": "새 학기 첫 주",
@@ -3788,7 +3770,9 @@
   "statisticsTimeGapValue": "{sections}교시",
   "@statisticsTimeGapValue": {
     "placeholders": {
-      "sections": { "type": "int" }
+      "sections": {
+        "type": "int"
+      }
     }
   },
   "statisticsVenueTitle": "강의실과 건물",
@@ -3797,14 +3781,18 @@
   "statisticsVenueVisits": "{count}회",
   "@statisticsVenueVisits": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "statisticsTeacherTitle": "교수별 수업 랭킹",
   "statisticsTeacherCourseCount": "{count}과목",
   "@statisticsTeacherCourseCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "statisticsAchievementFullDayKingName": "풀타임 킹",
@@ -3814,8 +3802,12 @@
   "statisticsAchievementProgress": "{current}/{target}",
   "@statisticsAchievementProgress": {
     "placeholders": {
-      "current": { "type": "int" },
-      "target": { "type": "int" }
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
     }
   },
   "statisticsAchievementDone": "달성 완료",
@@ -3823,7 +3815,9 @@
   "statisticsWeekDailyHint": "탭하여 {week}주차 세부 정보 보기",
   "@statisticsWeekDailyHint": {
     "placeholders": {
-      "week": { "type": "int" }
+      "week": {
+        "type": "int"
+      }
     }
   },
   "weekListSeparator": ", ",
@@ -4538,14 +4532,6 @@
   "@serviceMsgMacroReplayPaused": {
     "placeholders": {
       "reason": {
-        "type": "String"
-      }
-    }
-  },
-  "serviceMsgSupportDonorsLoadFailed": "Failed to load supporters list: {detail}",
-  "@serviceMsgSupportDonorsLoadFailed": {
-    "placeholders": {
-      "detail": {
         "type": "String"
       }
     }
@@ -5372,13 +5358,6 @@
       }
     }
   },
-  "coupleWebdavTitle": "견과클라우드 가져오기",
-  "coupleWebdavSubtitle": "상대(또는 공용) 견과클라우드에 로그인하여 업로드된 시간표를 가져옵니다. 클라우드 동기화 계정과 별개입니다",
-  "coupleWebdavNotConnected": "견과클라우드 미연결",
-  "coupleWebdavMySlotLabel": "이 기기 슬롯",
-  "coupleWebdavMySlotHint": "양쪽이 서로 다른 슬롯을 선택해야 합니다. 한쪽은 1, 다른 쪽은 2. 같으면 상대 시간표를 읽을 수 없습니다",
-  "coupleWebdavSlotOne": "슬롯 1",
-  "coupleWebdavSlotTwo": "슬롯 2",
   "locationTimeMatchEntryTitle": "Location-based schedule",
   "locationTimeMatchEntrySubtitle": "Auto-select time schemes by classroom keywords",
   "locationTimeMatchTitle": "Location-based schedule",
@@ -5715,7 +5694,6 @@
   "settingsReminderDesktopSectionTitle": "알림 및 데스크톱",
   "settingsAppSectionTitle": "앱",
   "settingsDataShareSectionTitle": "데이터 및 공유",
-  "coupleTimetableEntryUnboundLabel": "연결 안 됨",
   "settingsAboutSectionTitle": "정보",
   "diagnosticsEntrySubtitle": "로그 · 셀프 점검 · 메모리",
   "settingsSemesterScreenTitle": "학기 설정",
@@ -5822,75 +5800,9 @@
   "icsExportShareText": "轻屿课表에서 내보낸 캘린더 파일",
   "icsExportShareSubject": "轻屿课表 캘린더",
   "appLogsRecordingPausedHint": "기록이 꺼져 있습니다. 아래는 과거 로그이며, 끈 후에는 새로 추가되지 않습니다",
-  "@coupleTimetableLastImportedAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "@coupleTimetableSharedFreeMeta": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@coupleTimetableSharedFreeMoreCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@coupleTimetableWeekOffsetSigned": {
-    "placeholders": {
-      "offset": {
-        "type": "String"
-      }
-    }
-  },
-  "@coupleTimetableWeekOffsetPreview": {
-    "placeholders": {
-      "myWeek": {
-        "type": "int"
-      },
-      "partnerWeek": {
-        "type": "int"
-      }
-    }
-  },
-  "@coupleWebdavConnectedAs": {
-    "placeholders": {
-      "username": {
-        "type": "String"
-      }
-    }
-  },
-  "@coupleWebdavRemotePathHint": {
-    "placeholders": {
-      "path": {
-        "type": "String"
-      }
-    }
-  },
-  "@coupleWebdavLastPulledAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "@courseNoteSessionHint": {
     "placeholders": {
       "week": {
-        "type": "int"
-      }
-    }
-  },
-  "@courseActionCoupleRelatedCount": {
-    "placeholders": {
-      "count": {
         "type": "int"
       }
     }
@@ -5902,70 +5814,6 @@
       }
     }
   },
-  "coupleTimetableEntryTitle": "커플 시간표",
-  "coupleTimetableEntryBound": "연결됨",
-  "coupleTimetableModeEnableTooltip": "커플 시간표 켜기",
-  "coupleTimetableModeDisableTooltip": "커플 시간표 끄기",
-  "coupleTimetableTitle": "커플 시간표",
-  "coupleTimetableIntro": "내 시간표를 내보내서 상대방에게 보내거나, 상대방이 공유한 시간표 파일을 가져올 수 있습니다. 가져오면 겹쳐 보기에서 양쪽 수업을 확인할 수 있습니다",
-  "coupleTimetableBoundTitle": "상대방 시간표 연결됨",
-  "coupleTimetableUnboundTitle": "상대방 시간표가 연결되지 않음",
-  "coupleTimetablePartnerNameLabel": "상대방 이름",
-  "coupleTimetableLastImportedAt": "마지막 가져오기: {time}",
-  "coupleTimetableExportForPartner": "내 시간표를 상대방에게 내보내기",
-  "coupleTimetableImportPartner": "상대방 시간표 가져오기",
-  "coupleTimetableUnlink": "연결 해제",
-  "coupleTimetableOpenOverlay": "겹쳐 보기 열기",
-  "coupleTimetableImportSuccess": "상대방 시간표를 가져왔습니다",
-  "coupleTimetableImportUpdated": "상대방 시간표를 업데이트했습니다",
-  "coupleTimetableUnlinkConfirmTitle": "커플 시간표 연결을 해제할까요?",
-  "coupleTimetableUnlinkConfirmMessage": "해제하면 기기에 저장된 상대방 시간표가 삭제되고 겹쳐 보기도 닫힙니다",
-  "coupleTimetableUnlinkSuccess": "연결이 해제되었습니다",
-  "coupleTimetablePrivacyHint": "상대방은 내보낸 파일에 포함된 시간표 내용만 볼 수 있습니다",
-  "coupleTimetableOverlayTitle": "커플 겹쳐 보기",
-  "coupleTimetableLegendMine": "내 수업",
-  "coupleTimetableLegendPartner": "상대방 수업",
-  "coupleTimetableLegendTogether": "함께 듣는 수업",
-  "coupleTimetableLegendFree": "공통 공강",
-  "coupleTimetableSharedFreeTitle": "오늘 공통 공강 시간",
-  "coupleTimetableSharedFreeTitleOtherDay": "이날 공통 공강 시간",
-  "coupleTimetableNoSharedFree": "오늘 공통 공강 시간이 없습니다",
-  "coupleTimetableNoSharedFreeOtherDay": "이날 공통 공강 시간이 없습니다",
-  "coupleTimetableSharedFreeMeta": "총 {count}개 구간",
-  "coupleTimetableSharedFreeMoreCount": "{count}개 구간 더",
-  "coupleTimetableSharedFreeUnavailable": "지금은 공통 공강 시간을 계산할 수 없습니다",
-  "coupleTimetableSharedFreeStaleHint": "상대방 시간표가 최신이 아닐 수 있습니다",
-  "coupleTimetablePartnerReadOnlyBadge": "상대방 시간표(읽기 전용)",
-  "coupleTimetableNotBoundMessage": "먼저 상대방 시간표를 가져온 후 겹쳐 보기를 확인하세요",
-  "coupleTimetableShareText": "이것은 내 시간표입니다. 경屿 시간표의 커플 시간표로 가져오면 함께 확인할 수 있습니다",
-  "coupleTimetableShareSubject": "경屿 시간표 · 커플 시간표 공유",
-  "coupleTimetableWeekOffsetTitle": "주차 오프셋",
-  "coupleTimetableWeekOffsetSubtitle": "내 N주차를 볼 때 상대방 시간표의 N+오프셋 주차를 읽습니다. 예: +1은 상대방의 학기 진도가 한 주 빠르다는 뜻입니다",
-  "coupleTimetableWeekOffsetZero": "오프셋 없음",
-  "coupleTimetableWeekOffsetSigned": "{offset}주",
-  "coupleTimetableWeekOffsetPreview": "내 {myWeek}주차를 볼 때 상대방의 {partnerWeek}주차 수업을 표시합니다",
-  "coupleTimetableColorsTitle": "겹쳐 보기 색상",
-  "coupleTimetableColorsSubtitle": "'내 수업', '상대방 수업', '함께 듣는 수업'의 겹쳐 보기 색상을 자유롭게 설정할 수 있습니다",
-  "partnerImportRequiresSingleProfile": "단일 시간표 백업 파일을 가져오세요. 전체 백업은 지원하지 않습니다",
-  "coupleWebdavConnectedAs": "연결됨: {username}",
-  "coupleWebdavRemotePathHint": "원격 파일 경로: {path}",
-  "coupleWebdavLastPulledAt": "마지막 가져오기: {time}",
-  "coupleWebdavConnect": "너트스토어 연결",
-  "coupleWebdavDisconnect": "연결 끊기",
-  "coupleWebdavPullNow": "상대방 시간표 즉시 가져오기",
-  "coupleWebdavUploadForPartner": "내 시간표를 너트스토어에 업로드",
-  "coupleWebdavLoginSheetTitle": "너트스토어 연결(커플 시간표)",
-  "coupleWebdavLoginSheetSubtitle": "앱 전용 비밀번호를 사용하세요. 상대방이 미리 시간표를 약속된 경로에 업로드하거나, 상대방 기기에서 같은 계정으로 로그인해 업로드해야 합니다",
-  "coupleWebdavConfirmConnect": "연결하고 가져오기",
-  "coupleWebdavTestSuccess": "너트스토어 연결 성공",
-  "coupleWebdavTestFailed": "연결에 실패했습니다. 계정, 앱 전용 비밀번호, 네트워크를 확인하세요",
-  "coupleWebdavPullImported": "너트스토어에서 상대방 시간표를 가져왔습니다",
-  "coupleWebdavPullUpdated": "너트스토어에서 상대방 시간표를 업데이트했습니다",
-  "coupleWebdavPullUnchanged": "상대방 시간표에 변화가 없습니다",
-  "coupleWebdavUploadSuccess": "시간표를 업로드했습니다. 상대방이 가져올 수 있습니다",
-  "coupleWebdavPartnerFileMissing": "상대방 시간표 파일을 찾을 수 없습니다. 상대방이 먼저 업로드하도록 하세요",
-  "coupleWebdavPullFailed": "상대방 시간표를 가져오지 못했습니다. 잠시 후 다시 시도하세요",
-  "coupleWebdavNotConnectedError": "먼저 너트스토어에 연결하세요",
   "appLogsSourceApp": "앱",
   "appLogsSourceNative": "슈퍼 아일랜드",
   "timeCorrectionTitle": "벨 시간 보정",
@@ -6037,9 +5885,6 @@
   "courseNoteTileSubtitleBoth": "수업 소개와 이번 수업 메모가 모두 있습니다",
   "courseNoteReadOnlyNotice": "상대방 수업은 메모만 볼 수 있으며 편집할 수 없습니다.",
   "courseNoteDoneEditingAction": "완료",
-  "courseActionCoupleRelatedCount": "커플 시간표 수업 {count}개 더",
-  "courseActionCoupleExpandHint": "펼쳐서 상대방 수업이나 함께 듣는 수업을 확인하세요. 탭하면 미리보기를 전환할 수 있습니다",
-  "courseActionCoupleCollapseHint": "탭하면 커플 시간표 수업 목록이 접힙니다",
   "courseActionMixedRelatedCount": "관련 수업 {count}개 더",
   "courseActionPartnerReadOnlyNotice": "상대방 시간표의 수업으로, 볼 수만 있고 편집이나 변경은 할 수 없습니다",
   "homeNavigationTitle": "홈 및 탐색",
@@ -6071,7 +5916,7 @@
   "glassDockShowAddButtonTitle": "원형 버튼 표시",
   "glassDockShowAddButtonSubtitle": "알약 오른쪽에 독립된 원형 버튼을 표시 — 기능과 아이콘은 아래에서 설정",
   "glassDockButtonBackToWeekLabel": "이번 주로 / 오늘",
-    "glassDockExtraButtonSemanticLabel": "수업 추가",
+  "glassDockExtraButtonSemanticLabel": "수업 추가",
   "homeMenuStyleLabel": "오른쪽 위 메뉴 스타일",
   "homeMenuStyleList": "리스트 메뉴",
   "homeMenuStyleGrid": "여덟 칸 격자 메뉴",
@@ -6081,14 +5926,20 @@
   "homeGridCustomizeDetails": "{count}/{max}개 사용 중",
   "@homeGridCustomizeDetails": {
     "placeholders": {
-      "count": { "type": "int" },
-      "max": { "type": "int" }
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
     }
   },
   "homeGridEditorHintBody": "최대 {max}개의 버튼을 배치할 수 있으며, 항목을 길게 눌러 드래그하면 순서가 바뀝니다.",
   "@homeGridEditorHintBody": {
     "placeholders": {
-      "max": { "type": "int" }
+      "max": {
+        "type": "int"
+      }
     }
   },
   "homeGridEditorEnabledTitle": "사용 중",
@@ -6096,7 +5947,7 @@
   "homeGridEditorRemoveTooltip": "제거",
   "homeGridEditorAddTooltip": "추가",
   "homeGridEditorResetAction": "기본 배열로 되돌리기",
-    "homeGridEditorAllAdded": "모든 항목이 사용 중입니다",
+  "homeGridEditorAllAdded": "모든 항목이 사용 중입니다",
   "homeGridEditorMaxReached": "한도 초과",
   "homeGridEditorPinnedTooltip": "이 항목은 이 페이지를 다시 여는 경로이므로 제거할 수 없습니다",
   "homeMenuCategoryFeatures": "기능",
@@ -6106,7 +5957,9 @@
   "classAlarmLeadMinutesLabel": "{minutes}분 전",
   "@classAlarmLeadMinutesLabel": {
     "placeholders": {
-      "minutes": { "type": "int" }
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "classAlarmInvalidTimeToast": "이 수업의 교시가 시간표 템플릿 범위를 벗어나 알람을 설정할 수 없습니다",
@@ -6120,9 +5973,21 @@
   "classAlarmNoSemesterToast": "설정에서 학기 시작일을 먼저 입력하세요",
   "classAlarmActionLabel": "이 수업 알람 설정",
   "classAlarmConfirmMessage": "시계 앱에 생성합니다: {detail}. 시스템 알람은 공휴일과 휴강을 인식하지 못하고 그대로 울립니다. 삭제는 시계 앱에서 하세요.",
-  "@classAlarmConfirmMessage": {"placeholders":{"detail":{"type":"String"}}},
+  "@classAlarmConfirmMessage": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
   "classAlarmVariableSuffix": "또한 {days}의 첫 수업 시간은 주마다 달라 해당 요일에는 알람을 만들지 않았습니다.",
-  "@classAlarmVariableSuffix": {"placeholders":{"days":{"type":"String"}}},
+  "@classAlarmVariableSuffix": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "classAlarmEntryTitle": "수업 알람",
   "classAlarmGroupSetup": "알람 추가",
   "classAlarmGroupBehavior": "동작 설정",
@@ -6143,7 +6008,22 @@
   "classAlarmLaunchFailedToast": "처리할 시계 앱을 찾을 수 없습니다",
   "classAlarmCourseConfirmTitle": "이 수업의 반복 알람을 추가할까요?",
   "classAlarmCourseConfirmMessage": "시스템 시계에 매주 {weekday} {time} 반복 알람을 만듭니다(수업 {lead}분 전 울림, 대상 주차: {weeks}). 휴일·휴강 주에도 울리니 삭제는 시스템 시계에서 해주세요.",
-  "@classAlarmCourseConfirmMessage": {"placeholders":{"weekday":{"type":"String"},"time":{"type":"String"},"lead":{"type":"int"},"weeks":{"type":"String"}}},
+  "@classAlarmCourseConfirmMessage": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "lead": {
+        "type": "int"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
   "classAlarmDaySeparator": ", ",
   "classAlarmDetailSeparator": "; "
 }

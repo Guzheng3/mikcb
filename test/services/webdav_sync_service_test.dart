@@ -125,7 +125,6 @@ void main() {
       'locationRecords': const <String>[],
       'warehouse': const <String, dynamic>{},
       'customHolidays': const <dynamic>[],
-      'partnerTimetableBinding': null,
     };
     final a = AppSyncSnapshotService.computeContentSha256({
       ...base,

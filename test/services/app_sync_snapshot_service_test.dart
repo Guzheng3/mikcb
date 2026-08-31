@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:university_timetable/models/course.dart';
 import 'package:university_timetable/models/course_task.dart';
 import 'package:university_timetable/models/location_time_group.dart';
-import 'package:university_timetable/models/partner_timetable_binding.dart';
 import 'package:university_timetable/models/schedule_date_rule.dart';
 import 'package:university_timetable/models/time_scheme.dart';
 import 'package:university_timetable/models/timetable_profile.dart';
@@ -19,7 +18,6 @@ void main() {
   TimetableProfile factoryDefaultProfile({
     List<Course> courses = const [],
     String name = '默认课表',
-    TimetableProfileKind profileKind = TimetableProfileKind.normal,
   }) {
     return TimetableProfile(
       id: 'profile-1',
@@ -29,7 +27,6 @@ void main() {
       currentWeek: 1,
       createdAt: exportedAt,
       lastUsedAt: exportedAt,
-      profileKind: profileKind,
     );
   }
 
@@ -52,7 +49,6 @@ void main() {
     List<String> teacherRecords = const [],
     List<String> locationRecords = const [],
     WarehouseSyncBundle warehouse = const WarehouseSyncBundle(),
-    PartnerTimetableBinding? partnerTimetableBinding,
   }) {
     return AppSyncSnapshot(
       profiles: profiles ?? [factoryDefaultProfile()],
@@ -68,8 +64,6 @@ void main() {
       exportedAt: exportedAt,
       deviceId: 'device-a',
       contentSha256: '',
-      partnerTimetableBinding: partnerTimetableBinding,
-      includesPartnerTimetableBinding: partnerTimetableBinding != null,
     );
   }
 
@@ -126,22 +120,10 @@ void main() {
       );
     });
 
-    test(
-      'true when warehouse prefs, partner binding, or multi scheme/profile',
-      () {
+    test('true when warehouse prefs or multi scheme/profile', () {
         expect(
           emptyAuthoredSnapshot(
             warehouse: const WarehouseSyncBundle(recentSchoolIds: ['school-a']),
-          ).hasUserAuthoredData,
-          isTrue,
-        );
-        expect(
-          emptyAuthoredSnapshot(
-            partnerTimetableBinding: PartnerTimetableBinding(
-              partnerProfileId: 'partner-1',
-              partnerName: '小明',
-              linkedAt: exportedAt,
-            ),
           ).hasUserAuthoredData,
           isTrue,
         );
@@ -210,19 +192,6 @@ void main() {
       expect(
         emptyAuthoredSnapshot(
           profiles: [factoryDefaultProfile(name: '我的课表')],
-        ).hasUserAuthoredData,
-        isTrue,
-      );
-    });
-
-    test('true when profile is partner-imported even without courses', () {
-      expect(
-        emptyAuthoredSnapshot(
-          profiles: [
-            factoryDefaultProfile(
-              profileKind: TimetableProfileKind.partnerImported,
-            ),
-          ],
         ).hasUserAuthoredData,
         isTrue,
       );
@@ -346,7 +315,6 @@ void main() {
         'customHolidays': snapshot.customHolidays
             .map((entry) => entry.toJson())
             .toList(),
-        'partnerTimetableBinding': null,
       };
       final hash = AppSyncSnapshotService.computeContentSha256(
         payloadWithoutHash,
@@ -604,7 +572,6 @@ void main() {
         'macros': const <dynamic>[],
       },
       'customHolidays': const <dynamic>[],
-      'partnerTimetableBinding': null,
     };
     final hash = AppSyncSnapshotService.computeContentSha256(
       payloadWithoutHash,
@@ -632,107 +599,6 @@ void main() {
     expect(parsed.locationTimeGroups.first.keywords.single.pattern, 'A主');
     expect(parsed.locationTimeGroups.last.keywordSummary, 'A1, A6');
     expect(parsed.contentSha256, hash);
-  });
-
-  test('sync snapshot preserves partner timetable binding metadata', () {
-    final service = AppSyncSnapshotService();
-    final exportedAt = DateTime.utc(2026, 7, 8, 12);
-    final binding = PartnerTimetableBinding(
-      partnerProfileId: 'partner-imported',
-      partnerName: '小明的课表',
-      linkedAt: exportedAt,
-      lastImportedAt: exportedAt,
-      weekOffset: 1,
-      mineColorHex: '#FF5722',
-      partnerColorHex: '#4CAF50',
-      togetherColorHex: '#9C27B0',
-    );
-    final snapshot = AppSyncSnapshot(
-      profiles: [
-        TimetableProfile(
-          id: 'profile-1',
-          name: '我的课表',
-          courses: const [],
-          settings: TimetableSettings.defaults(),
-          currentWeek: 2,
-          createdAt: exportedAt,
-          lastUsedAt: exportedAt,
-        ),
-        TimetableProfile(
-          id: 'partner-imported',
-          name: '小明的课表',
-          courses: const [],
-          settings: TimetableSettings.defaults(),
-          currentWeek: 3,
-          createdAt: exportedAt,
-          lastUsedAt: exportedAt,
-          profileKind: TimetableProfileKind.partnerImported,
-        ),
-      ],
-      activeProfileId: 'profile-1',
-      timeSchemes: const [],
-      teacherRecords: const [],
-      locationRecords: const [],
-      warehouse: const WarehouseSyncBundle(),
-      macros: const [],
-      customHolidays: const [],
-      exportedAt: exportedAt,
-      deviceId: 'device-a',
-      contentSha256: '',
-      partnerTimetableBinding: binding,
-      includesPartnerTimetableBinding: true,
-    );
-    final payloadWithoutHash = {
-      'app': 'mikcb',
-      'schemaVersion': AppSyncSnapshotService.schemaVersion,
-      'backupType': AppSyncSnapshotService.backupType,
-      'exportedAt': exportedAt.toIso8601String(),
-      'deviceId': 'device-a',
-      'activeProfileId': 'profile-1',
-      'profiles': snapshot.profiles.map((profile) => profile.toJson()).toList(),
-      'timeSchemes': const <dynamic>[],
-      'locationTimeGroups': const <dynamic>[],
-      'scheduleDateRules': const <dynamic>[],
-      'scheduleDateRuleLastAppliedSignature': null,
-      'teacherRecords': const <String>[],
-      'locationRecords': const <String>[],
-      'warehouse': {
-        ...snapshot.warehouse.toJson(),
-        'macros': const <dynamic>[],
-      },
-      'customHolidays': const <dynamic>[],
-      'partnerTimetableBinding': binding.toJson(),
-    };
-    final hash = AppSyncSnapshotService.computeContentSha256(
-      payloadWithoutHash,
-    );
-    final json = service.buildSnapshotJsonFromSnapshot(
-      AppSyncSnapshot(
-        profiles: snapshot.profiles,
-        activeProfileId: snapshot.activeProfileId,
-        timeSchemes: snapshot.timeSchemes,
-        teacherRecords: snapshot.teacherRecords,
-        locationRecords: snapshot.locationRecords,
-        warehouse: snapshot.warehouse,
-        macros: snapshot.macros,
-        customHolidays: snapshot.customHolidays,
-        exportedAt: snapshot.exportedAt,
-        deviceId: snapshot.deviceId,
-        contentSha256: hash,
-        partnerTimetableBinding: binding,
-        includesPartnerTimetableBinding: true,
-      ),
-    );
-    final parsed = service.parseSnapshotJson(json);
-
-    expect(parsed.includesPartnerTimetableBinding, isTrue);
-    expect(parsed.partnerTimetableBinding?.partnerName, '小明的课表');
-    expect(parsed.partnerTimetableBinding?.weekOffset, 1);
-    expect(parsed.partnerTimetableBinding?.mineColorHex, '#FF5722');
-    expect(
-      parsed.profiles.any((profile) => profile.id == 'partner-imported'),
-      isTrue,
-    );
   });
 
   test('resolveSyncConflictAutomatically prefers newer exportedAt', () {
@@ -848,7 +714,6 @@ void main() {
           'macros': const <dynamic>[],
         },
         'customHolidays': const <dynamic>[],
-        'partnerTimetableBinding': null,
       };
       final hash = AppSyncSnapshotService.computeContentSha256(
         payloadWithoutHash,

@@ -463,7 +463,7 @@ HomeWidgetSnapshot? _liveBuildHomeWidgetSnapshot(
   );
 }
 
-/// 按任意课表（含 TA 课表）构建桌面卡片快照，与上面的 active 路径平行：
+/// 按任意课表构建桌面卡片快照，与上面的 active 路径平行：
 /// 周次/课程/节假日开关/外观设置全部取自 [profile] 自身，而非当前课表。
 /// active 路径不能直接委托这里——active 的内存态课程可能尚未 flush 回
 /// profile 列表，两者的数据源语义不同。

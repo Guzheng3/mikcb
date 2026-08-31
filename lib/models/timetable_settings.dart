@@ -5,8 +5,6 @@ import 'package:university_timetable/models/class_reminder.dart';
 
 enum AppUpdateDownloadSource { original, mirror }
 
-enum AppUpdateDownloadChannel { pgyer, github }
-
 enum AppUpdateMirrorPreset {
   ghfast,
   ghproxyCn,
@@ -95,8 +93,7 @@ abstract final class HomePageBackgroundScope {
   static const int statusBar = 8;
 
   /// 默认铺满状态栏、顶栏、信息栏与课表区域（无壁纸时无感知）。
-  static const int defaultValue =
-      timetable | weekdayBar | header | statusBar;
+  static const int defaultValue = timetable | weekdayBar | header | statusBar;
 
   static bool includes(int scope, int region) => (scope & region) != 0;
 
@@ -149,14 +146,12 @@ abstract final class HomeGridMenu {
 
   /// v2.0.5.5 已发布版本的默认排列（不含后来新增的任务入口）。
   static const List<String> defaultActions = [
-    'update',
     'overview',
     'statistics',
     'addCourse',
     'exams',
     'importCourses',
     pinnedActionId,
-    'support',
   ];
 
   /// 去重、剔除非字符串项并截断到 [maxSlots]，最后保证钉住项在场。
@@ -382,7 +377,6 @@ extension HomeNavigationFormX on HomeNavigationForm {
     );
   }
 }
-
 
 extension BackToCurrentWeekButtonStyleX on BackToCurrentWeekButtonStyle {
   String get value => switch (this) {
@@ -649,20 +643,6 @@ extension AppUpdateDownloadSourceX on AppUpdateDownloadSource {
     return AppUpdateDownloadSource.values.firstWhere(
       (item) => item.value == value,
       orElse: () => AppUpdateDownloadSource.mirror,
-    );
-  }
-}
-
-extension AppUpdateDownloadChannelX on AppUpdateDownloadChannel {
-  String get value => switch (this) {
-    AppUpdateDownloadChannel.pgyer => 'pgyer',
-    AppUpdateDownloadChannel.github => 'github',
-  };
-
-  static AppUpdateDownloadChannel fromValue(String? value) {
-    return AppUpdateDownloadChannel.values.firstWhere(
-      (item) => item.value == value,
-      orElse: () => AppUpdateDownloadChannel.pgyer,
     );
   }
 }
@@ -1243,8 +1223,6 @@ class TimetableSettings {
   final double timetableFloatingBackToCurrentWeekButtonOpacity;
   final int timetableLastViewedDayOfWeek;
 
-  /// Whether couple-timetable overlay (header heart) was last left on.
-  final bool coupleTimetableOverlayEnabled;
   final SectionTimeDisplayMode timetableSectionTimeDisplayMode;
   final bool timetableHideWeekends;
   final bool enableHaptics;
@@ -1328,14 +1306,9 @@ class TimetableSettings {
   final bool timetableUseUnifiedCardColor;
   final String timetableUnifiedCardColor;
   final String appUpdateDownloadSource;
-  final String appUpdateDownloadChannel;
-  final bool appUpdateUseSystemDownloader;
   final String appUpdateMirrorPreset;
-  final bool appUpdateIncludePrerelease;
   final String appUpdateMirrorUrlPrefix;
 
-  /// 检测到新版本时是否在首页自动弹出更新提醒；关闭后仅显示红点角标。
-  final bool appUpdatePromptEnabled;
   final bool holidayOverrideEnabled;
 
   /// 上课闹钟：提前量与是否跳过系统时钟确认页。
@@ -1369,7 +1342,7 @@ class TimetableSettings {
     liquidGlassSheetDialogEnabled: liquidGlassSheetDialogEnabled,
     liquidGlassHomeChromeEnabled: liquidGlassHomeChromeEnabled,
     liquidGlassDockEnabled: liquidGlassDockEnabled,
-  liquidGlassPickerButtonsEnabled: liquidGlassPickerButtonsEnabled,
+    liquidGlassPickerButtonsEnabled: liquidGlassPickerButtonsEnabled,
   );
 
   final bool linkCourseCardColors; // 标题和详情颜色是否关联
@@ -1441,18 +1414,17 @@ class TimetableSettings {
     this.homeNavigationForm = HomeNavigationForm.classic,
     this.homeMenuStyle = HomeMenuStyle.list,
     this.homeGridMenuActions = const <String>[],
-  this.glassDockActions = HomeDockMenu.defaultActions,
+    this.glassDockActions = HomeDockMenu.defaultActions,
     this.glassDockShowDayTab = true,
     this.glassDockShowSettingsTab = true,
     this.glassDockShowWeekTab = true,
     this.glassDockButtonEntryId = 'addCourse',
-  this.glassDockButtonIconName = null,
+    this.glassDockButtonIconName,
     this.glassDockShowAddButton = false,
     this.timetableBackToCurrentWeekButtonStyle =
         BackToCurrentWeekButtonStyle.floating,
     this.timetableFloatingBackToCurrentWeekButtonOpacity = 0.96,
     this.timetableLastViewedDayOfWeek = 1,
-    this.coupleTimetableOverlayEnabled = false,
     this.timetableSectionTimeDisplayMode = SectionTimeDisplayMode.startAndEnd,
     this.timetableHideWeekends = false,
     this.enableHaptics = true,
@@ -1532,12 +1504,8 @@ class TimetableSettings {
     this.timetableUseUnifiedCardColor = false,
     this.timetableUnifiedCardColor = '#2563EB',
     this.appUpdateDownloadSource = 'mirror',
-    this.appUpdateDownloadChannel = 'pgyer',
-    this.appUpdateUseSystemDownloader = false,
     this.appUpdateMirrorPreset = 'ghfast',
-    this.appUpdateIncludePrerelease = false,
     this.appUpdateMirrorUrlPrefix = defaultAppUpdateMirrorUrlPrefix,
-    this.appUpdatePromptEnabled = true,
     this.holidayOverrideEnabled = false,
     this.classAlarmLeadMinutes = 30,
     this.classAlarmSkipUi = false,
@@ -1559,12 +1527,9 @@ class TimetableSettings {
     this.frostedBlurEnabled = defaultFrostedBlurEnabled,
     this.frostedGlassMode = FrostedGlassMode.frosted,
     this.liquidGlassPopupEnabled = defaultLiquidGlassPopupEnabled,
-    this.liquidGlassSelectSheetEnabled =
-        defaultLiquidGlassSelectSheetEnabled,
-    this.liquidGlassSheetDialogEnabled =
-        defaultLiquidGlassSheetDialogEnabled,
-    this.liquidGlassHomeChromeEnabled =
-        defaultLiquidGlassHomeChromeEnabled,
+    this.liquidGlassSelectSheetEnabled = defaultLiquidGlassSelectSheetEnabled,
+    this.liquidGlassSheetDialogEnabled = defaultLiquidGlassSheetDialogEnabled,
+    this.liquidGlassHomeChromeEnabled = defaultLiquidGlassHomeChromeEnabled,
     this.liquidGlassDockEnabled = defaultLiquidGlassDockEnabled,
     this.liquidGlassPickerButtonsEnabled =
         defaultLiquidGlassPickerButtonsEnabled,
@@ -1636,7 +1601,6 @@ class TimetableSettings {
           BackToCurrentWeekButtonStyle.floating,
       timetableFloatingBackToCurrentWeekButtonOpacity: 0.96,
       timetableLastViewedDayOfWeek: 1,
-      coupleTimetableOverlayEnabled: false,
       timetableSectionTimeDisplayMode: SectionTimeDisplayMode.startAndEnd,
       timetableHideWeekends: false,
       enableHaptics: true,
@@ -1713,9 +1677,7 @@ class TimetableSettings {
       timetableUnifiedCardColor: '#2563EB',
       appUpdateDownloadSource: 'mirror',
       appUpdateMirrorPreset: 'ghfast',
-      appUpdateIncludePrerelease: false,
       appUpdateMirrorUrlPrefix: defaultAppUpdateMirrorUrlPrefix,
-      appUpdatePromptEnabled: true,
       holidayOverrideEnabled: false,
       classAlarmLeadMinutes: 30,
       classAlarmSkipUi: false,
@@ -1791,7 +1753,6 @@ class TimetableSettings {
       'timetableFloatingBackToCurrentWeekButtonOpacity':
           timetableFloatingBackToCurrentWeekButtonOpacity,
       'timetableLastViewedDayOfWeek': timetableLastViewedDayOfWeek,
-      'coupleTimetableOverlayEnabled': coupleTimetableOverlayEnabled,
       'timetableSectionTimeDisplayMode': timetableSectionTimeDisplayMode.value,
       'timetableHideWeekends': timetableHideWeekends,
       'enableHaptics': enableHaptics,
@@ -1883,18 +1844,12 @@ class TimetableSettings {
       'timetableUseUnifiedCardColor': timetableUseUnifiedCardColor,
       'timetableUnifiedCardColor': timetableUnifiedCardColor,
       'appUpdateDownloadSource': appUpdateDownloadSource,
-      'appUpdateDownloadChannel': appUpdateDownloadChannel,
-      'appUpdateUseSystemDownloader': appUpdateUseSystemDownloader,
       'appUpdateMirrorPreset': appUpdateMirrorPreset,
-      'appUpdateIncludePrerelease': appUpdateIncludePrerelease,
       'appUpdateMirrorUrlPrefix': appUpdateMirrorUrlPrefix,
-      'appUpdatePromptEnabled': appUpdatePromptEnabled,
       'holidayOverrideEnabled': holidayOverrideEnabled,
       'classAlarmLeadMinutes': classAlarmLeadMinutes,
       'classAlarmSkipUi': classAlarmSkipUi,
-      'classReminders': [
-        for (final entry in classReminders) entry.toJson(),
-      ],
+      'classReminders': [for (final entry in classReminders) entry.toJson()],
       'courseCardTitleColorLight': courseCardTitleColorLight,
       'courseCardTitleColorDark': courseCardTitleColorDark,
       'courseCardDetailColorLight': courseCardDetailColorLight,
@@ -1937,8 +1892,7 @@ class TimetableSettings {
     // 联动开时详情字色回填为标题字色，规则与 copyWith 的联动回填一致：
     // 旧版本数据 / 主题备份可能残留「联动开、详情色不同」的脏状态（白标题
     // +黑简介混色卡的根源）；独立模式（联动关）保留用户显式选择。
-    final linkedCardTextColors =
-        json['linkCourseCardColors'] as bool? ?? true;
+    final linkedCardTextColors = json['linkCourseCardColors'] as bool? ?? true;
     final parsedTitleColorLight =
         json['courseCardTitleColorLight'] as String? ??
         defaultCourseCardTitleColor;
@@ -1967,9 +1921,7 @@ class TimetableSettings {
       for (final item in rawSections) {
         try {
           if (item is! Map) continue;
-          parsed.add(
-            SectionTime.fromJson(Map<String, dynamic>.from(item)),
-          );
+          parsed.add(SectionTime.fromJson(Map<String, dynamic>.from(item)));
         } catch (_) {
           continue;
         }
@@ -2065,9 +2017,7 @@ class TimetableSettings {
       homeNavigationForm: HomeNavigationFormX.fromValue(
         json['homeNavigationForm'] as String?,
       ),
-      homeMenuStyle: HomeMenuStyleX.fromValue(
-        json['homeMenuStyle'] as String?,
-      ),
+      homeMenuStyle: HomeMenuStyleX.fromValue(json['homeMenuStyle'] as String?),
       glassDockActions: HomeDockMenu.normalize(
         (json['glassDockActions'] as List<Object?>?) ??
             [
@@ -2102,8 +2052,6 @@ class TimetableSettings {
             1,
             7,
           ),
-      coupleTimetableOverlayEnabled:
-          json['coupleTimetableOverlayEnabled'] as bool? ?? false,
       timetableSectionTimeDisplayMode: SectionTimeDisplayModeX.fromValue(
         json['timetableSectionTimeDisplayMode'] as String?,
       ),
@@ -2263,8 +2211,7 @@ class TimetableSettings {
         json['liveBeforeClassQuickAction'] as String?,
       ),
       liveBeforeClassQuickActionAutoMinutes:
-          (json['liveBeforeClassQuickActionAutoMinutes'] as num?)?.toInt() ??
-          0,
+          (json['liveBeforeClassQuickActionAutoMinutes'] as num?)?.toInt() ?? 0,
       themeSeedColor: json['themeSeedColor'] as String? ?? '#2563EB',
       foruiTheme: ForuiThemeX.fromValue(json['foruiTheme'] as String?),
       timetablePageBackgroundColor:
@@ -2288,20 +2235,12 @@ class TimetableSettings {
           json['timetableUnifiedCardColor'] as String? ?? '#2563EB',
       appUpdateDownloadSource:
           json['appUpdateDownloadSource'] as String? ?? 'mirror',
-      appUpdateDownloadChannel:
-          json['appUpdateDownloadChannel'] as String? ?? 'pgyer',
-      appUpdateUseSystemDownloader:
-          json['appUpdateUseSystemDownloader'] as bool? ?? false,
       appUpdateMirrorPreset: (rawAppUpdateMirrorPreset == null
           ? AppUpdateMirrorPresetX.fromUrlPrefix(
               rawAppUpdateMirrorUrlPrefix,
             ).value
           : AppUpdateMirrorPresetX.fromValue(rawAppUpdateMirrorPreset).value),
-      appUpdateIncludePrerelease:
-          json['appUpdateIncludePrerelease'] as bool? ?? false,
       appUpdateMirrorUrlPrefix: rawAppUpdateMirrorUrlPrefix,
-      appUpdatePromptEnabled:
-          json['appUpdatePromptEnabled'] as bool? ?? true,
       holidayOverrideEnabled: json['holidayOverrideEnabled'] as bool? ?? false,
       classAlarmLeadMinutes:
           (json['classAlarmLeadMinutes'] as num?)?.toInt() ?? 30,
@@ -2461,18 +2400,17 @@ class TimetableSettings {
     HomeNavigationForm? homeNavigationForm,
     HomeMenuStyle? homeMenuStyle,
     List<String>? homeGridMenuActions,
-  List<String>? glassDockActions,
+    List<String>? glassDockActions,
     bool? glassDockShowDayTab,
     bool? glassDockShowSettingsTab,
     bool? glassDockShowWeekTab,
     String? glassDockButtonEntryId,
-  String? glassDockButtonIconName,
+    String? glassDockButtonIconName,
     bool clearGlassDockButtonIconName = false,
     bool? glassDockShowAddButton,
     BackToCurrentWeekButtonStyle? timetableBackToCurrentWeekButtonStyle,
     double? timetableFloatingBackToCurrentWeekButtonOpacity,
     int? timetableLastViewedDayOfWeek,
-    bool? coupleTimetableOverlayEnabled,
     SectionTimeDisplayMode? timetableSectionTimeDisplayMode,
     bool? timetableHideWeekends,
     bool? enableHaptics,
@@ -2552,12 +2490,8 @@ class TimetableSettings {
     bool? timetableUseUnifiedCardColor,
     String? timetableUnifiedCardColor,
     String? appUpdateDownloadSource,
-    String? appUpdateDownloadChannel,
-    bool? appUpdateUseSystemDownloader,
     String? appUpdateMirrorPreset,
-    bool? appUpdateIncludePrerelease,
     String? appUpdateMirrorUrlPrefix,
-    bool? appUpdatePromptEnabled,
     bool? holidayOverrideEnabled,
     int? classAlarmLeadMinutes,
     bool? classAlarmSkipUi,
@@ -2676,14 +2610,12 @@ class TimetableSettings {
       homeNavigationForm: homeNavigationForm ?? this.homeNavigationForm,
       homeMenuStyle: homeMenuStyle ?? this.homeMenuStyle,
       // 写入也过一遍归一：钉住项不因调用方疏漏而丢失（解析路径同）。
-      homeGridMenuActions:
-          homeGridMenuActions == null
-              ? this.homeGridMenuActions
-              : HomeGridMenu.normalize(homeGridMenuActions),
-      glassDockActions:
-          glassDockActions == null
-              ? this.glassDockActions
-              : HomeDockMenu.normalize(glassDockActions),
+      homeGridMenuActions: homeGridMenuActions == null
+          ? this.homeGridMenuActions
+          : HomeGridMenu.normalize(homeGridMenuActions),
+      glassDockActions: glassDockActions == null
+          ? this.glassDockActions
+          : HomeDockMenu.normalize(glassDockActions),
       glassDockShowDayTab: glassDockShowDayTab ?? this.glassDockShowDayTab,
       glassDockShowSettingsTab:
           glassDockShowSettingsTab ?? this.glassDockShowSettingsTab,
@@ -2705,8 +2637,6 @@ class TimetableSettings {
       timetableLastViewedDayOfWeek:
           (timetableLastViewedDayOfWeek ?? this.timetableLastViewedDayOfWeek)
               .clamp(1, 7),
-      coupleTimetableOverlayEnabled:
-          coupleTimetableOverlayEnabled ?? this.coupleTimetableOverlayEnabled,
       timetableSectionTimeDisplayMode:
           timetableSectionTimeDisplayMode ??
           this.timetableSectionTimeDisplayMode,
@@ -2871,18 +2801,10 @@ class TimetableSettings {
           timetableUnifiedCardColor ?? this.timetableUnifiedCardColor,
       appUpdateDownloadSource:
           appUpdateDownloadSource ?? this.appUpdateDownloadSource,
-      appUpdateDownloadChannel:
-          appUpdateDownloadChannel ?? this.appUpdateDownloadChannel,
-      appUpdateUseSystemDownloader:
-          appUpdateUseSystemDownloader ?? this.appUpdateUseSystemDownloader,
       appUpdateMirrorPreset:
           appUpdateMirrorPreset ?? this.appUpdateMirrorPreset,
-      appUpdateIncludePrerelease:
-          appUpdateIncludePrerelease ?? this.appUpdateIncludePrerelease,
       appUpdateMirrorUrlPrefix:
           appUpdateMirrorUrlPrefix ?? this.appUpdateMirrorUrlPrefix,
-      appUpdatePromptEnabled:
-          appUpdatePromptEnabled ?? this.appUpdatePromptEnabled,
       holidayOverrideEnabled:
           holidayOverrideEnabled ?? this.holidayOverrideEnabled,
       // 提前量允许 0（下课即提醒的场景不存在，但保留合法输入区间）。

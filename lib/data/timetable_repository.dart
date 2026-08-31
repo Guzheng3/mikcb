@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import '../models/location_time_group.dart';
-import '../models/partner_timetable_binding.dart';
 import '../models/schedule_date_rule.dart';
 import '../models/time_scheme.dart';
 import '../models/timetable_profile.dart';
@@ -77,14 +76,6 @@ class TimetableRepository {
 
   Future<void> saveScheduleDateRuleLastAppliedSignature(String signature) =>
       _storage.saveScheduleDateRuleLastAppliedSignature(signature);
-
-  // —— 情侣课表绑定 ——
-
-  Future<PartnerTimetableBinding?> getPartnerTimetableBinding() =>
-      _storage.getPartnerTimetableBinding();
-
-  Future<void> savePartnerTimetableBinding(PartnerTimetableBinding? binding) =>
-      _storage.savePartnerTimetableBinding(binding);
 
   // —— 教师 / 教室输入记录 ——
 

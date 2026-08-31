@@ -159,248 +159,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get dataTransferEntrySubtitle => '時間割ファイルをエクスポートして、他の人が直接インポート可能';
 
   @override
-  String get coupleTimetableEntryTitle => 'ペア時間割';
-
-  @override
-  String get coupleTimetableEntryBound => '連携済み';
-
-  @override
-  String get coupleTimetableModeEnableTooltip => 'ペア時間割を有効にする';
-
-  @override
-  String get coupleTimetableModeDisableTooltip => 'ペア時間割を無効にする';
-
-  @override
-  String get coupleTimetableTitle => 'ペア時間割';
-
-  @override
-  String get coupleTimetableIntro =>
-      '自分の時間割を書き出して相手に送るか、相手が共有した時間割ファイルをインポートできます。インポート後は重ね合わせ表示で両方の授業を確認できます';
-
-  @override
-  String get coupleTimetableBoundTitle => '相手の時間割と連携済み';
-
-  @override
-  String get coupleTimetableUnboundTitle => '相手の時間割は未連携';
-
-  @override
-  String get coupleTimetablePartnerNameLabel => '相手の名前';
-
-  @override
-  String coupleTimetableLastImportedAt(String time) {
-    return '前回インポート：$time';
-  }
-
-  @override
-  String get coupleTimetableExportForPartner => '自分の時間割を相手に書き出す';
-
-  @override
-  String get coupleTimetableImportPartner => '相手の時間割をインポート';
-
-  @override
-  String get coupleTimetableUnlink => '連携を解除';
-
-  @override
-  String get coupleTimetableOpenOverlay => '重ね合わせ表示を開く';
-
-  @override
-  String get coupleTimetableImportSuccess => '相手の時間割をインポートしました';
-
-  @override
-  String get coupleTimetableImportUpdated => '相手の時間割を更新しました';
-
-  @override
-  String get coupleTimetableUnlinkConfirmTitle => 'ペア時間割の連携を解除しますか？';
-
-  @override
-  String get coupleTimetableUnlinkConfirmMessage =>
-      '解除すると、端末に保存された相手の時間割が削除され、重ね合わせ表示も閉じます';
-
-  @override
-  String get coupleTimetableUnlinkSuccess => '連携を解除しました';
-
-  @override
-  String get coupleTimetablePrivacyHint =>
-      '相手は、あなたが書き出したファイルに含まれる時間割の内容だけを見られます';
-
-  @override
-  String get coupleTimetableOverlayTitle => 'ペア重ね合わせ';
-
-  @override
-  String get coupleTimetableLegendMine => '自分の授業';
-
-  @override
-  String get coupleTimetableLegendPartner => '相手の授業';
-
-  @override
-  String get coupleTimetableLegendTogether => '一緒の授業';
-
-  @override
-  String get coupleTimetableLegendFree => '両方とも空き';
-
-  @override
-  String get coupleTimetableSharedFreeTitle => '今日の共同空き時間';
-
-  @override
-  String get coupleTimetableSharedFreeTitleOtherDay => 'この日の共同空き時間';
-
-  @override
-  String get coupleTimetableNoSharedFree => '今日は共同の空き時間がありません';
-
-  @override
-  String get coupleTimetableNoSharedFreeOtherDay => 'この日は共同の空き時間がありません';
-
-  @override
-  String coupleTimetableSharedFreeMeta(int count) {
-    return '全$countコマ';
-  }
-
-  @override
-  String coupleTimetableSharedFreeMoreCount(int count) {
-    return 'あと$countコマ';
-  }
-
-  @override
-  String get coupleTimetableSharedFreeUnavailable => '現在、共同の空き時間を計算できません';
-
-  @override
-  String get coupleTimetableSharedFreeStaleHint => '相手の時間割は最新でない可能性があります';
-
-  @override
-  String get coupleTimetablePartnerReadOnlyBadge => '相手の時間割（読み取り専用）';
-
-  @override
-  String get coupleTimetableNotBoundMessage =>
-      '先に相手の時間割をインポートしてから、重ね合わせ表示をご覧ください';
-
-  @override
-  String get coupleTimetableShareText =>
-      'これは私の時間割です。軽屿時間割のペア時間割にインポートすると、一緒に確認できます';
-
-  @override
-  String get coupleTimetableShareSubject => '軽屿時間割・ペア時間割の共有';
-
-  @override
-  String get coupleTimetableWeekOffsetTitle => '週オフセット';
-
-  @override
-  String get coupleTimetableWeekOffsetSubtitle =>
-      'あなたの第N週を表示するとき、相手の時間割の第N+オフセット週を読みます。例：+1 は相手の学期進度があなたより1週間進んでいることを示します';
-
-  @override
-  String get coupleTimetableWeekOffsetZero => 'オフセットなし';
-
-  @override
-  String coupleTimetableWeekOffsetSigned(String offset) {
-    return '$offset週';
-  }
-
-  @override
-  String coupleTimetableWeekOffsetPreview(int myWeek, int partnerWeek) {
-    return 'あなたの第$myWeek周を表示するとき、相手の第$partnerWeek周の授業を表示します';
-  }
-
-  @override
-  String get coupleTimetableColorsTitle => '重ね合わせの色';
-
-  @override
-  String get coupleTimetableColorsSubtitle =>
-      '「自分の授業」「相手の授業」「一緒の授業」の重ね合わせ表示での色を自由にカスタマイズできます';
-
-  @override
-  String get partnerImportRequiresSingleProfile =>
-      '単一の時間割バックアップファイルをインポートしてください。全量バックアップには対応していません';
-
-  @override
-  String get coupleWebdavTitle => 'Nutstoreで取得';
-
-  @override
-  String get coupleWebdavSubtitle =>
-      'パートナー（または共有）のNutstoreにログインし、相手がアップロードした時間割を取得します。クラウド同期のアカウントとは独立です';
-
-  @override
-  String get coupleWebdavNotConnected => 'Nutstore未接続';
-
-  @override
-  String coupleWebdavConnectedAs(String username) {
-    return '接続済み：$username';
-  }
-
-  @override
-  String coupleWebdavRemotePathHint(String path) {
-    return 'リモートファイルパス：$path';
-  }
-
-  @override
-  String coupleWebdavLastPulledAt(String time) {
-    return '前回取得：$time';
-  }
-
-  @override
-  String get coupleWebdavConnect => 'ナットストアに接続';
-
-  @override
-  String get coupleWebdavDisconnect => '接続を切断';
-
-  @override
-  String get coupleWebdavPullNow => '相手の時間割を今すぐ取得';
-
-  @override
-  String get coupleWebdavUploadForPartner => '自分の時間割をナットストアにアップロード';
-
-  @override
-  String get coupleWebdavLoginSheetTitle => 'ナットストアに接続（ペア時間割）';
-
-  @override
-  String get coupleWebdavLoginSheetSubtitle =>
-      'アプリ専用パスワードを使用してください。相手が事前に時間割を共有パスにアップロードするか、相手の端末で同じアカウントにログインしてアップロードする必要があります';
-
-  @override
-  String get coupleWebdavConfirmConnect => '接続して取得';
-
-  @override
-  String get coupleWebdavMySlotLabel => 'この端末のスロット';
-
-  @override
-  String get coupleWebdavMySlotHint =>
-      '双方で異なるスロットを選んでください。一方が1、もう一方が2。同じだと相手の時間割を読めません';
-
-  @override
-  String get coupleWebdavSlotOne => 'スロット 1';
-
-  @override
-  String get coupleWebdavSlotTwo => 'スロット 2';
-
-  @override
-  String get coupleWebdavTestSuccess => 'ナットストアへの接続に成功しました';
-
-  @override
-  String get coupleWebdavTestFailed =>
-      '接続に失敗しました。アカウント、アプリ専用パスワード、ネットワークを確認してください';
-
-  @override
-  String get coupleWebdavPullImported => 'ナットストアから相手の時間割をインポートしました';
-
-  @override
-  String get coupleWebdavPullUpdated => 'ナットストアから相手の時間割を更新しました';
-
-  @override
-  String get coupleWebdavPullUnchanged => '相手の時間割に変更はありません';
-
-  @override
-  String get coupleWebdavUploadSuccess => '時間割をアップロードしました。相手は取得できます';
-
-  @override
-  String get coupleWebdavPartnerFileMissing =>
-      '相手の時間割ファイルが見つかりません。先に相手にアップロードしてもらってください';
-
-  @override
-  String get coupleWebdavPullFailed => '相手の時間割の取得に失敗しました。後でもう一度お試しください';
-
-  @override
-  String get coupleWebdavNotConnectedError => '先にナットストアに接続してください';
-
-  @override
   String get cloudSyncEntryTitle => 'クラウド同期';
 
   @override
@@ -1527,37 +1285,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get openOldAppFailed => '旧バージョンを開けませんでした。手動でホーム画面から旧バージョンを開いてください';
 
   @override
-  String get supportCreatorTitle => '作者にコーヒーをおごる';
-
-  @override
-  String get supportHeroTitle => '軽屿時間割の継続的更新を支援';
-
-  @override
-  String get supportHeroSubtitle => 'あなたの支援は時間割のメンテナンス、教務インポート適応とUX改善に直接活用されます';
-
-  @override
-  String get supportChipFixes => '問題修正';
-
-  @override
-  String get supportChipAdapters => '教務適応';
-
-  @override
-  String get supportChipPolish => 'UX改善';
-
-  @override
-  String get supportMethodTitle => '支援方法を選択';
-
-  @override
   String get wechatLabel => 'WeChat';
 
   @override
   String get alipayLabel => 'Alipay';
-
-  @override
-  String get supportWeChatHint => 'WeChatでQRコードをスキャンして作者を支援';
-
-  @override
-  String get supportAlipayHint => 'AlipayでQRコードをスキャンして作者を支援';
 
   @override
   String get viewLargeImage => '大きな画像を見る';
@@ -1566,28 +1297,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get saveToGallery => 'ギャラリーに保存';
 
   @override
-  String get supportCompleteThanks => '軽屿時間割の継続的な改善を支援していただきありがとうございます ❤️';
-
-  @override
-  String get supportConfirmed => '支援しました';
-
-  @override
-  String get donorListTitle => '謝辞リスト';
-
-  @override
-  String get donorListLoadFailed => 'オンライン謝辞リストを読み込めません。';
-
-  @override
   String get reloadAction => '再読み込み';
 
   @override
   String updatedAtLabel(String time) {
     return '$timeに更新';
   }
-
-  @override
-  String get donorListEmpty =>
-      'リストがまだ記入されていません。docs/donors.jsonを直接編集して再公開できます。';
 
   @override
   String get savedToGallery => 'ギャラリーに保存しました';
@@ -1599,51 +1314,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String saveFailedWithError(String error) {
     return '保存失敗：$error';
   }
-
-  @override
-  String get supportRunningBadge => '稼働中';
-
-  @override
-  String get supportTapQrHint => 'タップで拡大';
-
-  @override
-  String get supportSaveShort => '保存';
-
-  @override
-  String get supportConfirmedShort => '支援済み';
-
-  @override
-  String get donorSearchHint => '名前/メッセージ検索...';
-
-  @override
-  String get donorSortLargeFirst => '高額順';
-
-  @override
-  String get donorSortSmallFirst => '低額順';
-
-  @override
-  String get supportMonthlyGoalLabel => '今月のサーバー・証明書更新進捗';
-
-  @override
-  String supportGoalRaised(String raised, String goal) {
-    return '集まった: $raised / 目標 $goal';
-  }
-
-  @override
-  String supportBackerCount(int count) {
-    return 'すでに $count 人が支援';
-  }
-
-  @override
-  String get supportDonorListFooter => '名前は永久に残ります 💖';
-
-  @override
-  String supportMarqueeThanks(String name, String amount) {
-    return '🎉 $name さん $amount ありがとう';
-  }
-
-  @override
-  String get supportMarqueeTail => '軽屿時間割は安定稼働中 — あなたの支援を待っています！';
 
   @override
   String get scanQrWechatTitle => 'WeChatでQRコードをスキャン';
@@ -5137,9 +4807,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get homeMenuUpdateTitle => 'ソフトウェア更新';
-
-  @override
   String get homeMenuProfilesTitle => '時間割管理';
 
   @override
@@ -5153,9 +4820,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeMenuSettingsTitle => '時間割設定';
-
-  @override
-  String get homeMenuCoffeeTitle => 'コーヒーをおごる';
 
   @override
   String get homeMenuFeedbackTitle => '問題報告';
@@ -6126,18 +5790,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get courseActionConflictSwitchAction => '切替';
-
-  @override
-  String courseActionCoupleRelatedCount(int count) {
-    return 'あと$countコマのペア時間割授業';
-  }
-
-  @override
-  String get courseActionCoupleExpandHint =>
-      '展開して相手の授業や一緒の授業を表示します。タップでプレビューを切り替えできます';
-
-  @override
-  String get courseActionCoupleCollapseHint => 'タップでペア時間割の授業リストを閉じます';
 
   @override
   String courseActionMixedRelatedCount(int count) {
@@ -7958,11 +7610,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String serviceMsgMacroReplayPaused(String reason) {
     return 'Waiting for manual action: $reason';
-  }
-
-  @override
-  String serviceMsgSupportDonorsLoadFailed(String detail) {
-    return 'Failed to load supporters list: $detail';
   }
 
   @override
@@ -10061,9 +9708,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsDataShareSectionTitle => 'データと共有';
-
-  @override
-  String get coupleTimetableEntryUnboundLabel => '未バインド';
 
   @override
   String get settingsAboutSectionTitle => 'このアプリについて';

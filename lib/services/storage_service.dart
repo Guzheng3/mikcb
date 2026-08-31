@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/partner_timetable_binding.dart';
 import '../models/course.dart';
 import '../models/location_time_group.dart';
 import '../models/schedule_date_rule.dart';
@@ -32,7 +31,6 @@ class StorageService {
       'did_migrate_app_logs_default';
   static const String _hidePrefixDefaultMigrationKey =
       'did_migrate_live_hide_prefix_default';
-  static const String _partnerTimetableBindingKey = 'partner_timetable_binding';
   static const String _profilesSchemaVersionKey =
       'timetable_profiles_schema_version';
 
@@ -1196,37 +1194,4 @@ class StorageService {
     _hidePrefixMigrated = true;
   }
 
-  Future<PartnerTimetableBinding?> getPartnerTimetableBinding() async {
-    if (_prefs == null) await init();
-    final raw = _prefs?.getString(_partnerTimetableBindingKey);
-    if (raw == null || raw.isEmpty) {
-      return null;
-    }
-    try {
-      final decoded = jsonDecode(raw);
-      if (decoded is! Map) {
-        return null;
-      }
-      return PartnerTimetableBinding.fromJson(
-        Map<String, dynamic>.from(decoded),
-      );
-    } catch (_) {
-      await _backupAndRemoveCorruptString(_partnerTimetableBindingKey, raw);
-      return null;
-    }
-  }
-
-  Future<void> savePartnerTimetableBinding(
-    PartnerTimetableBinding? binding,
-  ) async {
-    if (_prefs == null) await init();
-    if (binding == null) {
-      await _prefs?.remove(_partnerTimetableBindingKey);
-      return;
-    }
-    await _prefs?.setString(
-      _partnerTimetableBindingKey,
-      jsonEncode(binding.toJson()),
-    );
-  }
 }

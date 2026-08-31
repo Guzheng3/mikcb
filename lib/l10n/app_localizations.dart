@@ -398,432 +398,6 @@ abstract class AppLocalizations {
   /// **'导出完整课表文件，给别人直接导入使用'**
   String get dataTransferEntrySubtitle;
 
-  /// No description provided for @coupleTimetableEntryTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'情侣课表'**
-  String get coupleTimetableEntryTitle;
-
-  /// No description provided for @coupleTimetableEntryBound.
-  ///
-  /// In zh, this message translates to:
-  /// **'已绑定'**
-  String get coupleTimetableEntryBound;
-
-  /// No description provided for @coupleTimetableModeEnableTooltip.
-  ///
-  /// In zh, this message translates to:
-  /// **'开启情侣课表'**
-  String get coupleTimetableModeEnableTooltip;
-
-  /// No description provided for @coupleTimetableModeDisableTooltip.
-  ///
-  /// In zh, this message translates to:
-  /// **'关闭情侣课表'**
-  String get coupleTimetableModeDisableTooltip;
-
-  /// No description provided for @coupleTimetableTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'情侣课表'**
-  String get coupleTimetableTitle;
-
-  /// No description provided for @coupleTimetableIntro.
-  ///
-  /// In zh, this message translates to:
-  /// **'导出你的课表发给 TA，或导入 TA 分享的课表文件，导入后可在叠加视图中查看双方课程'**
-  String get coupleTimetableIntro;
-
-  /// No description provided for @coupleTimetableBoundTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'已绑定对方课表'**
-  String get coupleTimetableBoundTitle;
-
-  /// No description provided for @coupleTimetableUnboundTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'尚未绑定对方课表'**
-  String get coupleTimetableUnboundTitle;
-
-  /// No description provided for @coupleTimetablePartnerNameLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'对方名称'**
-  String get coupleTimetablePartnerNameLabel;
-
-  /// No description provided for @coupleTimetableLastImportedAt.
-  ///
-  /// In zh, this message translates to:
-  /// **'上次导入：{time}'**
-  String coupleTimetableLastImportedAt(String time);
-
-  /// No description provided for @coupleTimetableExportForPartner.
-  ///
-  /// In zh, this message translates to:
-  /// **'导出我的课表给对方'**
-  String get coupleTimetableExportForPartner;
-
-  /// No description provided for @coupleTimetableImportPartner.
-  ///
-  /// In zh, this message translates to:
-  /// **'导入对方课表'**
-  String get coupleTimetableImportPartner;
-
-  /// No description provided for @coupleTimetableUnlink.
-  ///
-  /// In zh, this message translates to:
-  /// **'解除绑定'**
-  String get coupleTimetableUnlink;
-
-  /// No description provided for @coupleTimetableOpenOverlay.
-  ///
-  /// In zh, this message translates to:
-  /// **'进入叠加视图'**
-  String get coupleTimetableOpenOverlay;
-
-  /// No description provided for @coupleTimetableImportSuccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'已导入对方课表'**
-  String get coupleTimetableImportSuccess;
-
-  /// No description provided for @coupleTimetableImportUpdated.
-  ///
-  /// In zh, this message translates to:
-  /// **'已更新对方课表'**
-  String get coupleTimetableImportUpdated;
-
-  /// No description provided for @coupleTimetableUnlinkConfirmTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'解除情侣课表绑定？'**
-  String get coupleTimetableUnlinkConfirmTitle;
-
-  /// No description provided for @coupleTimetableUnlinkConfirmMessage.
-  ///
-  /// In zh, this message translates to:
-  /// **'解除后将删除本地保存的对方课表，叠加视图也会关闭'**
-  String get coupleTimetableUnlinkConfirmMessage;
-
-  /// No description provided for @coupleTimetableUnlinkSuccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'已解除绑定'**
-  String get coupleTimetableUnlinkSuccess;
-
-  /// No description provided for @coupleTimetablePrivacyHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'对方只能看到你导出文件中包含的课表内容'**
-  String get coupleTimetablePrivacyHint;
-
-  /// No description provided for @coupleTimetableOverlayTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'情侣叠加'**
-  String get coupleTimetableOverlayTitle;
-
-  /// No description provided for @coupleTimetableLegendMine.
-  ///
-  /// In zh, this message translates to:
-  /// **'我的课'**
-  String get coupleTimetableLegendMine;
-
-  /// No description provided for @coupleTimetableLegendPartner.
-  ///
-  /// In zh, this message translates to:
-  /// **'TA的课'**
-  String get coupleTimetableLegendPartner;
-
-  /// No description provided for @coupleTimetableLegendTogether.
-  ///
-  /// In zh, this message translates to:
-  /// **'一起上课'**
-  String get coupleTimetableLegendTogether;
-
-  /// No description provided for @coupleTimetableLegendFree.
-  ///
-  /// In zh, this message translates to:
-  /// **'共同空闲'**
-  String get coupleTimetableLegendFree;
-
-  /// No description provided for @coupleTimetableSharedFreeTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'今日共同空闲'**
-  String get coupleTimetableSharedFreeTitle;
-
-  /// No description provided for @coupleTimetableSharedFreeTitleOtherDay.
-  ///
-  /// In zh, this message translates to:
-  /// **'该日共同空闲'**
-  String get coupleTimetableSharedFreeTitleOtherDay;
-
-  /// No description provided for @coupleTimetableNoSharedFree.
-  ///
-  /// In zh, this message translates to:
-  /// **'今天没有共同空闲时段'**
-  String get coupleTimetableNoSharedFree;
-
-  /// No description provided for @coupleTimetableNoSharedFreeOtherDay.
-  ///
-  /// In zh, this message translates to:
-  /// **'该日没有共同空闲时段'**
-  String get coupleTimetableNoSharedFreeOtherDay;
-
-  /// No description provided for @coupleTimetableSharedFreeMeta.
-  ///
-  /// In zh, this message translates to:
-  /// **'共 {count} 段'**
-  String coupleTimetableSharedFreeMeta(int count);
-
-  /// No description provided for @coupleTimetableSharedFreeMoreCount.
-  ///
-  /// In zh, this message translates to:
-  /// **'还有 {count} 段'**
-  String coupleTimetableSharedFreeMoreCount(int count);
-
-  /// No description provided for @coupleTimetableSharedFreeUnavailable.
-  ///
-  /// In zh, this message translates to:
-  /// **'暂时算不出共同空闲'**
-  String get coupleTimetableSharedFreeUnavailable;
-
-  /// No description provided for @coupleTimetableSharedFreeStaleHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'对方课表可能不是最新'**
-  String get coupleTimetableSharedFreeStaleHint;
-
-  /// No description provided for @coupleTimetablePartnerReadOnlyBadge.
-  ///
-  /// In zh, this message translates to:
-  /// **'对方课表（只读）'**
-  String get coupleTimetablePartnerReadOnlyBadge;
-
-  /// No description provided for @coupleTimetableNotBoundMessage.
-  ///
-  /// In zh, this message translates to:
-  /// **'请先导入对方课表后再查看叠加视图'**
-  String get coupleTimetableNotBoundMessage;
-
-  /// No description provided for @coupleTimetableShareText.
-  ///
-  /// In zh, this message translates to:
-  /// **'这是我的课表，导入到轻屿课表的情侣课表即可一起查看'**
-  String get coupleTimetableShareText;
-
-  /// No description provided for @coupleTimetableShareSubject.
-  ///
-  /// In zh, this message translates to:
-  /// **'轻屿课表 · 情侣课表分享'**
-  String get coupleTimetableShareSubject;
-
-  /// No description provided for @coupleTimetableWeekOffsetTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'周次偏移'**
-  String get coupleTimetableWeekOffsetTitle;
-
-  /// No description provided for @coupleTimetableWeekOffsetSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'查看你的第 N 周时，读取对方课表的第 N+偏移 周，例如 +1 表示对方学期进度比你快一周'**
-  String get coupleTimetableWeekOffsetSubtitle;
-
-  /// No description provided for @coupleTimetableWeekOffsetZero.
-  ///
-  /// In zh, this message translates to:
-  /// **'无偏移'**
-  String get coupleTimetableWeekOffsetZero;
-
-  /// No description provided for @coupleTimetableWeekOffsetSigned.
-  ///
-  /// In zh, this message translates to:
-  /// **'{offset} 周'**
-  String coupleTimetableWeekOffsetSigned(String offset);
-
-  /// No description provided for @coupleTimetableWeekOffsetPreview.
-  ///
-  /// In zh, this message translates to:
-  /// **'查看你的第 {myWeek} 周时，显示对方第 {partnerWeek} 周的课'**
-  String coupleTimetableWeekOffsetPreview(int myWeek, int partnerWeek);
-
-  /// No description provided for @coupleTimetableColorsTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'叠加颜色'**
-  String get coupleTimetableColorsTitle;
-
-  /// No description provided for @coupleTimetableColorsSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'自定义「我的课」「TA的课」「一起上课」在叠加视图中的显示颜色，可按喜好自由搭配'**
-  String get coupleTimetableColorsSubtitle;
-
-  /// No description provided for @partnerImportRequiresSingleProfile.
-  ///
-  /// In zh, this message translates to:
-  /// **'请导入单课表备份文件，不支持全量备份'**
-  String get partnerImportRequiresSingleProfile;
-
-  /// No description provided for @coupleWebdavTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'坚果云拉取'**
-  String get coupleWebdavTitle;
-
-  /// No description provided for @coupleWebdavSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'登录对方（或你们共用的）坚果云账号，自动下载对方上传的课表文件，与「云同步」账号独立，互不影响'**
-  String get coupleWebdavSubtitle;
-
-  /// No description provided for @coupleWebdavNotConnected.
-  ///
-  /// In zh, this message translates to:
-  /// **'尚未连接坚果云'**
-  String get coupleWebdavNotConnected;
-
-  /// No description provided for @coupleWebdavConnectedAs.
-  ///
-  /// In zh, this message translates to:
-  /// **'已连接：{username}'**
-  String coupleWebdavConnectedAs(String username);
-
-  /// No description provided for @coupleWebdavRemotePathHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'远程文件路径：{path}'**
-  String coupleWebdavRemotePathHint(String path);
-
-  /// No description provided for @coupleWebdavLastPulledAt.
-  ///
-  /// In zh, this message translates to:
-  /// **'上次拉取：{time}'**
-  String coupleWebdavLastPulledAt(String time);
-
-  /// No description provided for @coupleWebdavConnect.
-  ///
-  /// In zh, this message translates to:
-  /// **'连接坚果云'**
-  String get coupleWebdavConnect;
-
-  /// No description provided for @coupleWebdavDisconnect.
-  ///
-  /// In zh, this message translates to:
-  /// **'断开连接'**
-  String get coupleWebdavDisconnect;
-
-  /// No description provided for @coupleWebdavPullNow.
-  ///
-  /// In zh, this message translates to:
-  /// **'立即拉取对方课表'**
-  String get coupleWebdavPullNow;
-
-  /// No description provided for @coupleWebdavUploadForPartner.
-  ///
-  /// In zh, this message translates to:
-  /// **'上传我的课表到坚果云'**
-  String get coupleWebdavUploadForPartner;
-
-  /// No description provided for @coupleWebdavLoginSheetTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'连接坚果云（情侣课表）'**
-  String get coupleWebdavLoginSheetTitle;
-
-  /// No description provided for @coupleWebdavLoginSheetSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'请使用应用专用密码，对方需先将课表上传到约定路径，或由你在对方设备上登录同一账号并上传'**
-  String get coupleWebdavLoginSheetSubtitle;
-
-  /// No description provided for @coupleWebdavConfirmConnect.
-  ///
-  /// In zh, this message translates to:
-  /// **'连接并拉取'**
-  String get coupleWebdavConfirmConnect;
-
-  /// No description provided for @coupleWebdavMySlotLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'本机槽位'**
-  String get coupleWebdavMySlotLabel;
-
-  /// No description provided for @coupleWebdavMySlotHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'双方必须选不同槽位：一方选 1，另一方选 2，否则会互相读不到课表'**
-  String get coupleWebdavMySlotHint;
-
-  /// No description provided for @coupleWebdavSlotOne.
-  ///
-  /// In zh, this message translates to:
-  /// **'槽位 1'**
-  String get coupleWebdavSlotOne;
-
-  /// No description provided for @coupleWebdavSlotTwo.
-  ///
-  /// In zh, this message translates to:
-  /// **'槽位 2'**
-  String get coupleWebdavSlotTwo;
-
-  /// No description provided for @coupleWebdavTestSuccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'坚果云连接成功'**
-  String get coupleWebdavTestSuccess;
-
-  /// No description provided for @coupleWebdavTestFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'连接失败，请检查账号、应用专用密码与网络'**
-  String get coupleWebdavTestFailed;
-
-  /// No description provided for @coupleWebdavPullImported.
-  ///
-  /// In zh, this message translates to:
-  /// **'已从坚果云导入对方课表'**
-  String get coupleWebdavPullImported;
-
-  /// No description provided for @coupleWebdavPullUpdated.
-  ///
-  /// In zh, this message translates to:
-  /// **'已从坚果云更新对方课表'**
-  String get coupleWebdavPullUpdated;
-
-  /// No description provided for @coupleWebdavPullUnchanged.
-  ///
-  /// In zh, this message translates to:
-  /// **'对方课表无变化'**
-  String get coupleWebdavPullUnchanged;
-
-  /// No description provided for @coupleWebdavUploadSuccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'已上传课表，对方可拉取'**
-  String get coupleWebdavUploadSuccess;
-
-  /// No description provided for @coupleWebdavPartnerFileMissing.
-  ///
-  /// In zh, this message translates to:
-  /// **'未找到对方课表文件，请让对方先上传'**
-  String get coupleWebdavPartnerFileMissing;
-
-  /// No description provided for @coupleWebdavPullFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'拉取对方课表失败，请稍后重试'**
-  String get coupleWebdavPullFailed;
-
-  /// No description provided for @coupleWebdavNotConnectedError.
-  ///
-  /// In zh, this message translates to:
-  /// **'请先连接坚果云'**
-  String get coupleWebdavNotConnectedError;
-
   /// No description provided for @cloudSyncEntryTitle.
   ///
   /// In zh, this message translates to:
@@ -2852,48 +2426,6 @@ abstract class AppLocalizations {
   /// **'未能打开旧版应用，请手动返回桌面打开旧版'**
   String get openOldAppFailed;
 
-  /// No description provided for @supportCreatorTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'请作者喝杯咖啡'**
-  String get supportCreatorTitle;
-
-  /// No description provided for @supportHeroTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'支持轻屿课表继续更新'**
-  String get supportHeroTitle;
-
-  /// No description provided for @supportHeroSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'你的支持会直接用于维护课表、教务导入适配与体验优化'**
-  String get supportHeroSubtitle;
-
-  /// No description provided for @supportChipFixes.
-  ///
-  /// In zh, this message translates to:
-  /// **'修复问题'**
-  String get supportChipFixes;
-
-  /// No description provided for @supportChipAdapters.
-  ///
-  /// In zh, this message translates to:
-  /// **'教务适配'**
-  String get supportChipAdapters;
-
-  /// No description provided for @supportChipPolish.
-  ///
-  /// In zh, this message translates to:
-  /// **'体验优化'**
-  String get supportChipPolish;
-
-  /// No description provided for @supportMethodTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'选择支持方式'**
-  String get supportMethodTitle;
-
   /// No description provided for @wechatLabel.
   ///
   /// In zh, this message translates to:
@@ -2905,18 +2437,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'支付宝'**
   String get alipayLabel;
-
-  /// No description provided for @supportWeChatHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'使用微信扫一扫支持作者'**
-  String get supportWeChatHint;
-
-  /// No description provided for @supportAlipayHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'使用支付宝扫一扫支持作者'**
-  String get supportAlipayHint;
 
   /// No description provided for @viewLargeImage.
   ///
@@ -2930,30 +2450,6 @@ abstract class AppLocalizations {
   /// **'保存到相册'**
   String get saveToGallery;
 
-  /// No description provided for @supportCompleteThanks.
-  ///
-  /// In zh, this message translates to:
-  /// **'感谢你支持轻屿课表继续打磨 ❤️'**
-  String get supportCompleteThanks;
-
-  /// No description provided for @supportConfirmed.
-  ///
-  /// In zh, this message translates to:
-  /// **'我已经支持了'**
-  String get supportConfirmed;
-
-  /// No description provided for @donorListTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'鸣谢名单'**
-  String get donorListTitle;
-
-  /// No description provided for @donorListLoadFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'暂时无法加载在线鸣谢名单'**
-  String get donorListLoadFailed;
-
   /// No description provided for @reloadAction.
   ///
   /// In zh, this message translates to:
@@ -2965,12 +2461,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'更新于 {time}'**
   String updatedAtLabel(String time);
-
-  /// No description provided for @donorListEmpty.
-  ///
-  /// In zh, this message translates to:
-  /// **'名单还没有填写，你可以直接编辑 docs/donors.json 后重新发布'**
-  String get donorListEmpty;
 
   /// No description provided for @savedToGallery.
   ///
@@ -2989,84 +2479,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'保存失败：{error}'**
   String saveFailedWithError(String error);
-
-  /// No description provided for @supportRunningBadge.
-  ///
-  /// In zh, this message translates to:
-  /// **'运行中'**
-  String get supportRunningBadge;
-
-  /// No description provided for @supportTapQrHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'点击放大扫码'**
-  String get supportTapQrHint;
-
-  /// No description provided for @supportSaveShort.
-  ///
-  /// In zh, this message translates to:
-  /// **'保存'**
-  String get supportSaveShort;
-
-  /// No description provided for @supportConfirmedShort.
-  ///
-  /// In zh, this message translates to:
-  /// **'已支持'**
-  String get supportConfirmedShort;
-
-  /// No description provided for @donorSearchHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'搜昵称/寄语...'**
-  String get donorSearchHint;
-
-  /// No description provided for @donorSortLargeFirst.
-  ///
-  /// In zh, this message translates to:
-  /// **'大额优先'**
-  String get donorSortLargeFirst;
-
-  /// No description provided for @donorSortSmallFirst.
-  ///
-  /// In zh, this message translates to:
-  /// **'小额优先'**
-  String get donorSortSmallFirst;
-
-  /// No description provided for @supportMonthlyGoalLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'本月服务器和证书续期进度'**
-  String get supportMonthlyGoalLabel;
-
-  /// No description provided for @supportGoalRaised.
-  ///
-  /// In zh, this message translates to:
-  /// **'已筹: {raised} / 目标 {goal}'**
-  String supportGoalRaised(String raised, String goal);
-
-  /// No description provided for @supportBackerCount.
-  ///
-  /// In zh, this message translates to:
-  /// **'已有 {count} 人献出爱心'**
-  String supportBackerCount(int count);
-
-  /// No description provided for @supportDonorListFooter.
-  ///
-  /// In zh, this message translates to:
-  /// **'名单永久保留 💖'**
-  String get supportDonorListFooter;
-
-  /// No description provided for @supportMarqueeThanks.
-  ///
-  /// In zh, this message translates to:
-  /// **'🎉 感谢 {name} 赞助 {amount}'**
-  String supportMarqueeThanks(String name, String amount);
-
-  /// No description provided for @supportMarqueeTail.
-  ///
-  /// In zh, this message translates to:
-  /// **'轻屿课表正在稳定运行中，期待你的每一次陪伴与爱心！'**
-  String get supportMarqueeTail;
 
   /// No description provided for @scanQrWechatTitle.
   ///
@@ -9253,12 +8665,6 @@ abstract class AppLocalizations {
   /// **'第 {week} 周'**
   String goToWeekLabel(int week);
 
-  /// No description provided for @homeMenuUpdateTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'软件更新'**
-  String get homeMenuUpdateTitle;
-
   /// No description provided for @homeMenuProfilesTitle.
   ///
   /// In zh, this message translates to:
@@ -9288,12 +8694,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'课表设置'**
   String get homeMenuSettingsTitle;
-
-  /// No description provided for @homeMenuCoffeeTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'请喝咖啡'**
-  String get homeMenuCoffeeTitle;
 
   /// No description provided for @homeMenuFeedbackTitle.
   ///
@@ -10996,24 +10396,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'切换'**
   String get courseActionConflictSwitchAction;
-
-  /// No description provided for @courseActionCoupleRelatedCount.
-  ///
-  /// In zh, this message translates to:
-  /// **'还有 {count} 节情侣课表课程'**
-  String courseActionCoupleRelatedCount(int count);
-
-  /// No description provided for @courseActionCoupleExpandHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'展开查看 TA 的课或一起上课，点击可切换预览'**
-  String get courseActionCoupleExpandHint;
-
-  /// No description provided for @courseActionCoupleCollapseHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'点击收起情侣课表课程列表'**
-  String get courseActionCoupleCollapseHint;
 
   /// No description provided for @courseActionMixedRelatedCount.
   ///
@@ -14092,12 +13474,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'等待手动操作: {reason}'**
   String serviceMsgMacroReplayPaused(String reason);
-
-  /// No description provided for @serviceMsgSupportDonorsLoadFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'加载鸣谢名单失败：{detail}'**
-  String serviceMsgSupportDonorsLoadFailed(String detail);
 
   /// No description provided for @serviceMsgStatisticsShareFailed.
   ///
@@ -17730,12 +17106,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'数据与共享'**
   String get settingsDataShareSectionTitle;
-
-  /// No description provided for @coupleTimetableEntryUnboundLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'未绑定'**
-  String get coupleTimetableEntryUnboundLabel;
 
   /// No description provided for @settingsAboutSectionTitle.
   ///

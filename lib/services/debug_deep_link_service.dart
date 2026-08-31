@@ -11,7 +11,6 @@ import 'package:flutter/services.dart';
 /// - `mikcb-debug://settings/live`
 /// - `mikcb-debug://settings/live/testing`
 /// - `mikcb-debug://settings/live/keep-alive`
-/// - `mikcb-debug://settings/couple`
 /// - `mikcb-debug://settings/lan-edit`
 /// - `mikcb-debug://courses/import`
 /// - `mikcb-debug://action/resume`

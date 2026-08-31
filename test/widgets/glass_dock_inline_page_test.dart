@@ -30,9 +30,9 @@ void main() {
     final log = <MethodCall>[];
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (call) async {
-      log.add(call);
-      return null;
-    });
+          log.add(call);
+          return null;
+        });
     return log;
   }
 
@@ -87,10 +87,7 @@ void main() {
           locale: const Locale('zh'),
           home: FrostedAppearanceScope(
             appearance: FrostedAppearance.defaults,
-            child: TimetableScreen(
-              enableUpdateCheck: false,
-              enableProgressTimer: false,
-            ),
+            child: TimetableScreen(enableProgressTimer: false),
           ),
         ),
       ),

@@ -11,11 +11,7 @@ class BundledAssets {
   BundledAssets._();
 
   static const launcherIcon = 'assets/branding/launcher_icon.png';
-  static const wechatPayQr = 'assets/donate/wechatpay.png';
-  static const alipayQr = 'assets/donate/alipay.png';
-
-
-  static const _warmUpPaths = <String>[wechatPayQr, alipayQr];
+  static const _warmUpPaths = <String>[launcherIcon];
 
   static final Map<String, Uint8List> _bytesByPath = {};
 

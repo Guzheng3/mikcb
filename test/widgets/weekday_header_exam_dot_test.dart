@@ -116,12 +116,7 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider.value(
         value: provider,
-        child: TestApp(
-          home: TimetableScreen(
-            enableUpdateCheck: false,
-            enableProgressTimer: false,
-          ),
-        ),
+        child: TestApp(home: TimetableScreen(enableProgressTimer: false)),
       ),
     );
     await tester.pump();

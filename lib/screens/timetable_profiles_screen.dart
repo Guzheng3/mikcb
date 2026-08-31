@@ -46,27 +46,18 @@ class TimetableProfilesScreen extends StatelessWidget {
                     _TimetableProfileTile(
                       profile: profiles[index],
                       isActive: profiles[index].id == activeProfileId,
-                      canDelete:
-                          profiles.length > 1 &&
-                          !profiles[index].isPartnerImported,
-                      isPartnerImported: profiles[index].isPartnerImported,
-                      onSwitch: profiles[index].isPartnerImported
-                          ? () {}
-                          : () => _switchProfile(
+                      canDelete: profiles.length > 1,
+                      onSwitch: () => _switchProfile(
                               context,
                               profiles[index].id,
                               profiles[index].name,
                             ),
-                      onRename: profiles[index].isPartnerImported
-                          ? () {}
-                          : () => _renameProfile(
+                      onRename: () => _renameProfile(
                               context,
                               profiles[index].id,
                               profiles[index].name,
                             ),
-                      onDuplicate: profiles[index].isPartnerImported
-                          ? () {}
-                          : () async {
+                      onDuplicate: () async {
                               await provider.switchProfile(profiles[index].id);
                               await provider.duplicateActiveProfile();
                               if (context.mounted) {
@@ -78,16 +69,14 @@ class TimetableProfilesScreen extends StatelessWidget {
                               }
                             },
                       onClear:
-                          profiles[index].id == activeProfileId &&
-                              !profiles[index].isPartnerImported
+                          profiles[index].id == activeProfileId
                           ? () => _clearActiveProfileCourses(
                               context,
                               profiles[index].name,
                             )
                           : null,
                       onDelete:
-                          profiles.length > 1 &&
-                              !profiles[index].isPartnerImported
+                          profiles.length > 1
                           ? () => _deleteProfile(
                               context,
                               profiles[index].id,
@@ -255,7 +244,6 @@ class _TimetableProfileTile extends StatefulWidget {
     required this.profile,
     required this.isActive,
     required this.canDelete,
-    this.isPartnerImported = false,
     required this.onSwitch,
     required this.onRename,
     required this.onDuplicate,
@@ -266,7 +254,6 @@ class _TimetableProfileTile extends StatefulWidget {
   final TimetableProfile profile;
   final bool isActive;
   final bool canDelete;
-  final bool isPartnerImported;
   final VoidCallback onSwitch;
   final VoidCallback onRename;
   final VoidCallback onDuplicate;
@@ -364,12 +351,10 @@ class _TimetableProfileTileState extends State<_TimetableProfileTile> {
     final primaryText = HyperosColors.primaryText(context);
     final primaryColor = HyperosColors.primary(context);
 
-    final summary = widget.isPartnerImported
-        ? l10n.coupleTimetablePartnerReadOnlyBadge
-        : l10n.coursesAndWeekSummary(
-            widget.profile.courses.length,
-            widget.profile.currentWeek,
-          );
+    final summary = l10n.coursesAndWeekSummary(
+      widget.profile.courses.length,
+      widget.profile.currentWeek,
+    );
 
     // Match [HyperosListTile] row padding and [titleChevronGap]; trailing
     // indicator uses a fixed slot so check/chevron share one center.
@@ -403,42 +388,38 @@ class _TimetableProfileTileState extends State<_TimetableProfileTile> {
               ],
             ),
           ),
-          if (!widget.isPartnerImported) ...[
-            HyperosIconButton(
-              icon: Icons.more_horiz_rounded,
-              tooltip: l10n.moreActionsTooltip,
-              // Same gray as [HyperosChevron] / settings trailing actions.
-              color: HyperosColors.actionIcon(context),
-              onPressed: _openMoreMenu,
+          HyperosIconButton(
+            icon: Icons.more_horiz_rounded,
+            tooltip: l10n.moreActionsTooltip,
+            // Same gray as [HyperosChevron] / settings trailing actions.
+            color: HyperosColors.actionIcon(context),
+            onPressed: _openMoreMenu,
+          ),
+          SizedBox(width: HyperosTokens.titleChevronGap),
+          // Fixed slot for check / chevron so the more button never shifts
+          // and both glyphs share the same geometric center.
+          SizedBox(
+            width: _profileTrailingIndicatorSlot,
+            height: _profileTrailingIndicatorSlot,
+            child: Center(
+              child: widget.isActive
+                  ? Transform.translate(
+                      // Material [Icons.check] sits slightly low-right;
+                      // nudge back onto the chevron centerline.
+                      offset: const Offset(-0.5, -1),
+                      child: const HyperosSelectedCheckmark(
+                        size: _profileTrailingCheckSize,
+                      ),
+                    )
+                  : const HyperosChevron(),
             ),
-            SizedBox(width: HyperosTokens.titleChevronGap),
-            // Fixed slot for check / chevron so the more button never shifts
-            // and both glyphs share the same geometric center.
-            SizedBox(
-              width: _profileTrailingIndicatorSlot,
-              height: _profileTrailingIndicatorSlot,
-              child: Center(
-                child: widget.isActive
-                    ? Transform.translate(
-                        // Material [Icons.check] sits slightly low-right;
-                        // nudge back onto the chevron centerline.
-                        offset: const Offset(-0.5, -1),
-                        child: const HyperosSelectedCheckmark(
-                          size: _profileTrailingCheckSize,
-                        ),
-                      )
-                    : const HyperosChevron(),
-              ),
-            ),
-          ],
+          ),
         ],
       ),
     );
 
     return HyperosPressableRow(
-      onTap: widget.isActive || widget.isPartnerImported
-          ? null
-          : widget.onSwitch,
+      onTap: widget.isActive ? null : widget.onSwitch,
       backgroundColor: cardColor,
       highlightColor: highlightColor,
       child: row,

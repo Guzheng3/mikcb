@@ -784,12 +784,6 @@ button {
   font-size: 0.74rem;
 }
 
-.ps-heart {
-  font-size: 0.95rem;
-  color: var(--pink);
-  filter: drop-shadow(0 0 6px rgba(244, 114, 182, 0.6));
-}
-
 .ps-list {
   display: grid;
   gap: 9px;
@@ -814,11 +808,6 @@ button {
 .ps-row.is-now {
   background: rgba(45, 212, 191, 0.09);
   border-color: rgba(45, 212, 191, 0.3);
-}
-
-.ps-row.is-couple {
-  background: rgba(244, 114, 182, 0.07);
-  border-color: rgba(244, 114, 182, 0.22);
 }
 
 .ps-bar {
@@ -1136,43 +1125,6 @@ button {
 .island-demo-hint {
   color: var(--text-faint);
   font-size: 0.76rem;
-}
-
-.couple-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-top: 18px;
-  color: var(--text-soft);
-  font-size: 0.8rem;
-}
-
-.couple-legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.couple-legend i {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-}
-
-.dot-blue {
-  background: var(--blue);
-}
-
-.dot-violet {
-  background: var(--violet);
-}
-
-.dot-teal {
-  background: var(--teal);
-}
-
-.dot-green {
-  background: var(--green);
 }
 
 /* ---------- 更新日志时间线 ---------- */

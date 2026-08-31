@@ -118,7 +118,7 @@ function Show-Help {
     Write-Host ""
     Write-Host "Paths for open:"
     Write-Host "  home, settings, settings/live, settings/live/testing,"
-    Write-Host "  settings/live/keep-alive, settings/couple, settings/lan-edit,"
+    Write-Host "  settings/live/keep-alive, settings/lan-edit,"
     Write-Host "  courses/import"
 }
 
@@ -136,7 +136,6 @@ switch ($Command) {
             "settings/live",
             "settings/live/testing",
             "settings/live/keep-alive",
-            "settings/couple",
             "settings/lan-edit",
             "courses/import",
             "action/resume",

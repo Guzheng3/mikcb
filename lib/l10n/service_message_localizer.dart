@@ -72,14 +72,6 @@ String localizeServiceMessage(
       return l10n.serviceMsgImportNoProfilesInBackup;
     case 'unrecognized_mikcb_data_file':
       return l10n.serviceMsgUnrecognizedMikcbDataFile;
-    case 'partner_import_requires_single_profile':
-      return l10n.partnerImportRequiresSingleProfile;
-    case 'couple_webdav_not_connected':
-      return l10n.coupleWebdavNotConnectedError;
-    case 'couple_webdav_partner_file_missing':
-      return l10n.coupleWebdavPartnerFileMissing;
-    case 'couple_webdav_pull_failed':
-      return l10n.coupleWebdavPullFailed;
     case 'missing_settings_data':
       return l10n.serviceMsgMissingSettingsData;
     case 'unrecognized_mikcb_full_backup':
@@ -466,11 +458,7 @@ String localizeServiceMessage(
         resolvedArgs['reason']?.toString() ?? '',
       );
 
-    // Support / statistics
-    case 'support_donors_load_failed':
-      return l10n.serviceMsgSupportDonorsLoadFailed(
-        resolvedArgs['detail']?.toString() ?? '',
-      );
+    // Statistics
     case 'statistics_share_failed':
       return l10n.serviceMsgStatisticsShareFailed(
         resolvedArgs['detail']?.toString() ?? '',

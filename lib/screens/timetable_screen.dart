@@ -16,10 +16,8 @@ import 'package:university_timetable/l10n/service_message_localizer.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../models/class_reminder.dart';
 import '../models/course.dart';
@@ -27,11 +25,7 @@ import '../models/exam.dart';
 import '../models/schedule_item.dart';
 import '../models/liquid_glass_tuning.dart';
 import '../models/timetable_settings.dart';
-import '../domain/couple_timetable_logic.dart';
 import '../providers/timetable_provider.dart';
-import '../services/app_update_service.dart';
-import '../services/support_creator_service.dart';
-import '../services/widget_launch_router.dart';
 import '../widgets/class_reminder_sheet.dart';
 import '../utils/app_toast.dart';
 import '../utils/hex_color.dart';
@@ -51,7 +45,6 @@ import '../widgets/course_surface.dart';
 import '../widgets/course_grid_surface_host.dart';
 import '../widgets/home_menu_catalog.dart';
 import '../widgets/home_top_menu.dart';
-import '../widgets/home_update_prompt.dart';
 import '../widgets/preblurred_wallpaper_glass.dart';
 import '../widgets/profile_quick_switch_sheet.dart';
 import '../widgets/week_selector_picker_sheet.dart';
@@ -59,19 +52,13 @@ import 'add_course_screen.dart';
 import 'add_exam_screen.dart';
 import 'add_schedule_item_screen.dart';
 import 'add_task_screen.dart';
-import 'about_screen.dart';
 import 'course_import_screen.dart';
 import 'timetable_profiles_screen.dart';
 
 class TimetableScreen extends StatefulWidget {
-  final bool enableUpdateCheck;
   final bool enableProgressTimer;
 
-  const TimetableScreen({
-    super.key,
-    this.enableUpdateCheck = true,
-    this.enableProgressTimer = true,
-  });
+  const TimetableScreen({super.key, this.enableProgressTimer = true});
 
   @override
   State<TimetableScreen> createState() => _TimetableScreenState();
@@ -176,7 +163,6 @@ class _TimetableScreenState extends State<TimetableScreen>
   late final PageController _weekPageController;
   late final AnimationController _dayViewExpandController;
 
-
   /// 日视图锚点展开/收起与设置页拖动转场期间，卡片玻璃 fill 需要每帧
   /// 重采样（壁纸屏幕固定、卡片移动），否则纹理停留在旧位置：
   /// 卡片左半是旧壁纸、右半透明（撕裂）。
@@ -208,17 +194,6 @@ class _TimetableScreenState extends State<TimetableScreen>
 
   /// Anchor for the top-right "more" menu popup (positioned below this key).
   final GlobalKey _topMenuButtonKey = GlobalKey();
-  final AppUpdateService _updateService = AppUpdateService();
-  final SupportCreatorService _supportCreatorService = SupportCreatorService();
-  final HomeUpdatePromptController _updatePromptController =
-      HomeUpdatePromptController();
-  bool _hasAvailableUpdate = false;
-  bool _isUpdatePromptVisible = false;
-  bool _hasPresentedUpdatePrompt = false;
-  AppUpdateDownloadController? _homeDownloadController;
-  StreamSubscription<SystemDownloadProgress>? _systemDownloadSubscription;
-  bool? _lastUpdateCheckIncludePrerelease;
-  bool _isCheckingForUpdate = false;
   TimetableProvider? _lastSyncedProvider;
   String? _lastSyncedProfileId;
   Timer? _dayAgendaProgressTimer;
@@ -292,12 +267,6 @@ class _TimetableScreenState extends State<TimetableScreen>
   /// 底栏点选的内嵌页 id（非 null 时内容区切换为该页，玻璃坞常驻）。
   String? _dockInlinePageId;
 
-  bool _coupleOverlayEnabled = false;
-  bool _sharedFreeSegmentsExpanded = false;
-
-  static const int _sharedFreeVisibleSegmentLimit = 2;
-  static const Duration _partnerScheduleStaleAfter = Duration(days: 7);
-
   /// Finger travel (after resistance) required to fire quick import.
   static const double _homePullQuickImportTriggerDistance =
       HyperosHomePullPhysics.triggerDistance;
@@ -308,7 +277,8 @@ class _TimetableScreenState extends State<TimetableScreen>
       HyperosHomePullPhysics.maxVisualDistance;
 
   /// Damping range for the cubic curve f(x)=x - x\u00B2 + x\u00B3/3; f(1)\u00B7range = maxVisual.
-  static const double _homePullDampingRange = HyperosHomePullPhysics.dampingRange;
+  static const double _homePullDampingRange =
+      HyperosHomePullPhysics.dampingRange;
 
   // Raw finger travel (clamped); visual offset = damped(touch/range)*range.
   double _homePullTouchDistance = 0;
@@ -345,9 +315,6 @@ class _TimetableScreenState extends State<TimetableScreen>
   String? _weekdayInkWarnedSignature;
   bool _weekdayInkWarningShowing = false;
 
-  bool _isCoupleOverlayActive(TimetableProvider provider) =>
-      _coupleOverlayEnabled && provider.hasPartnerBinding;
-
   Color _colorFromHex(String hexColor, Color fallback) {
     return parseHexColorOrFallback(hexColor, fallback: fallback);
   }
@@ -356,9 +323,6 @@ class _TimetableScreenState extends State<TimetableScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    WidgetLaunchRouter.coupleOverlayRequestTick.addListener(
-      _onExternalCoupleOverlayRequest,
-    );
     final provider = context.read<TimetableProvider>();
     final initialWeek = provider.currentWeek;
     _visibleWeek = initialWeek;
@@ -396,23 +360,12 @@ class _TimetableScreenState extends State<TimetableScreen>
     _homePullSettleSpring = AnimationController.unbounded(vsync: this)
       ..addListener(_driveHomePullSettle);
     _restoreViewStateFromProvider(provider);
-    if (widget.enableUpdateCheck) {
-      _checkForAppUpdate(
-        includePrerelease: provider.settings.appUpdateIncludePrerelease,
-      );
-    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    WidgetLaunchRouter.coupleOverlayRequestTick.removeListener(
-      _onExternalCoupleOverlayRequest,
-    );
     _homePullQuickImportCancel?.call();
-    _homeDownloadController?.cancel();
-    _systemDownloadSubscription?.cancel();
-    _updatePromptController.dispose();
     _homePullSettleSpring?.dispose();
     _weekPageController.dispose();
     _dayViewExpandController.dispose();
@@ -441,11 +394,6 @@ class _TimetableScreenState extends State<TimetableScreen>
       // was backgrounded and started the service with stale snapshot settings;
       // this ensures the correct style is applied as soon as the user returns.
       unawaited(provider.refreshLiveActivityNow());
-      if (widget.enableUpdateCheck) {
-        _checkForAppUpdate(
-          includePrerelease: provider.settings.appUpdateIncludePrerelease,
-        );
-      }
     }
   }
 
@@ -455,7 +403,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     return Consumer<TimetableProvider>(
       builder: (context, provider, child) {
         _syncViewStateIfNeeded(provider);
-        _scheduleUpdateCheckIfNeeded(provider);
         _syncWeekPageWithProvider(provider.currentWeek, provider.settings);
         final colorScheme = Theme.of(context).colorScheme;
         final foruiTheme = context.theme;
@@ -589,165 +536,124 @@ class _TimetableScreenState extends State<TimetableScreen>
           child: Stack(
             fit: StackFit.expand,
             children: [
-            if (hasBackdrop)
-              followsWeekPager
-                  ? HomePageSlidingBackdropLayer(
-                      controller: _weekPageController,
-                      pageCount: settings.semesterWeekCount,
-                      settings: settings,
-                    )
-                  : homePageBackdropLayer(settings: settings),
-            if (hasBackdrop && !statusBarShowsBackdrop)
-              HomePageStatusBarBackdropMask(color: pageBackgroundColor),
-            // 组内首个 grouped filter：缓存未压暗的全屏壁纸供玻璃带采样，
-            // 与预览的 UndimmedBackdropCapture 同款、同相对位置。
-            if (continuousChromeBlur)
-              const Positioned.fill(child: UndimmedBackdropCapture()),
-            // Single continuous glass for title + weekday (no time-column blur).
-            // Stays fixed above the sliding wallpaper so chrome text stays sharp
-            // while the photo moves as one continuous sheet.
-            if (continuousChromeBlur)
-              HomePageContinuousChromeFrostedOverlay(
-                headerBlurEnabled: settings.homePageHeaderBlurEnabled,
-                weekdayBarBlurEnabled: settings.homePageWeekdayBarBlurEnabled,
-                includeStatusBar: statusBarShowsBackdrop,
-                weekdayBarHeight: _weekDayHeaderHeight,
-              ),
-            HyperosRootPage(
-              overlayHeader: false,
-              resizeToAvoidBottomInset: false,
-              backgroundColor: scaffoldBackgroundColor,
-              headerDecoration: BoxDecoration(color: headerBarColor),
-              headerPadding: EdgeInsets.fromLTRB(
-                8,
-                0,
-                8,
-                headerUsesFrostedChrome ? 0.0 : 2.0,
-              ),
-              systemOverlayStyle: HyperosColors.systemOverlayForBackground(
-                systemOverlayBackground,
-              ),
-              title: _buildProfileSwitcherTrigger(
-                provider,
-                foreground: chromeForeground,
-                mutedForeground: chromeMutedForeground,
-              ),
-              suffixes: [
-                if (provider.hasPartnerBinding)
-                  FHeaderAction(
-                    icon: Icon(
-                      _isCoupleOverlayActive(provider)
-                          ? Icons.favorite_rounded
-                          : Icons.favorite_outline_rounded,
-                      color: _isCoupleOverlayActive(provider)
-                          ? const Color(0xFFE91E63)
-                          : chromeForeground,
+              if (hasBackdrop)
+                followsWeekPager
+                    ? HomePageSlidingBackdropLayer(
+                        controller: _weekPageController,
+                        pageCount: settings.semesterWeekCount,
+                        settings: settings,
+                      )
+                    : homePageBackdropLayer(settings: settings),
+              if (hasBackdrop && !statusBarShowsBackdrop)
+                HomePageStatusBarBackdropMask(color: pageBackgroundColor),
+              // 组内首个 grouped filter：缓存未压暗的全屏壁纸供玻璃带采样，
+              // 与预览的 UndimmedBackdropCapture 同款、同相对位置。
+              if (continuousChromeBlur)
+                const Positioned.fill(child: UndimmedBackdropCapture()),
+              // Single continuous glass for title + weekday (no time-column blur).
+              // Stays fixed above the sliding wallpaper so chrome text stays sharp
+              // while the photo moves as one continuous sheet.
+              if (continuousChromeBlur)
+                HomePageContinuousChromeFrostedOverlay(
+                  headerBlurEnabled: settings.homePageHeaderBlurEnabled,
+                  weekdayBarBlurEnabled: settings.homePageWeekdayBarBlurEnabled,
+                  includeStatusBar: statusBarShowsBackdrop,
+                  weekdayBarHeight: _weekDayHeaderHeight,
+                ),
+              HyperosRootPage(
+                overlayHeader: false,
+                resizeToAvoidBottomInset: false,
+                backgroundColor: scaffoldBackgroundColor,
+                headerDecoration: BoxDecoration(color: headerBarColor),
+                headerPadding: EdgeInsets.fromLTRB(
+                  8,
+                  0,
+                  8,
+                  headerUsesFrostedChrome ? 0.0 : 2.0,
+                ),
+                systemOverlayStyle: HyperosColors.systemOverlayForBackground(
+                  systemOverlayBackground,
+                ),
+                title: _buildProfileSwitcherTrigger(
+                  provider,
+                  foreground: chromeForeground,
+                  mutedForeground: chromeMutedForeground,
+                ),
+                suffixes: [
+                  KeyedSubtree(
+                    key: _topMenuButtonKey,
+                    child: FHeaderAction(
+                      icon: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(
+                            Icons.more_vert_rounded,
+                            color: chromeForeground,
+                          ),
+                        ],
+                      ),
+                      semanticsLabel: l10n.moreTooltip,
+                      onPress: _showTopActionsSheet,
                     ),
-                    semanticsLabel: _isCoupleOverlayActive(provider)
-                        ? l10n.coupleTimetableModeDisableTooltip
-                        : l10n.coupleTimetableModeEnableTooltip,
-                    onPress: () {
-                      setState(() {
-                        _coupleOverlayEnabled = !_coupleOverlayEnabled;
-                        _sharedFreeSegmentsExpanded = false;
-                      });
-                      _persistCoupleOverlayEnabled(
-                        provider,
-                        enabled: _coupleOverlayEnabled,
-                      );
-                    },
                   ),
-                KeyedSubtree(
-                  key: _topMenuButtonKey,
-                  child: FHeaderAction(
-                    icon: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Icon(Icons.more_vert_rounded, color: chromeForeground),
-                        if (_hasAvailableUpdate)
-                          Positioned(
-                            right: -1,
-                            top: -1,
-                            child: Container(
-                              width: 9,
-                              height: 9,
-                              decoration: BoxDecoration(
-                                color: HyperosColors.destructive, // 更新红点与危险语义统一色
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: headerBarColor.a == 0
-                                      ? colorScheme.surface
-                                      : headerBarColor,
-                                  width: 1.5,
+                ],
+                childPad: false,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    // 日课表的列表视口保持全屏：避让改为列表自身的滚动
+                    // padding（见 _buildExpandedDayColumnView），滚动中卡片
+                    // 连续穿过底部避让带，不在避让边界被硬裁出一条与磨砂
+                    // 卡片色差明显的「生壁纸」空带；周课表网格不可滚动，
+                    // 避让仍由这里的布局 padding 承担。
+                    bottom: glassDockForm && !_isDayView ? 0.0 : 0,
+                  ),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: provider.isLoading
+                        // Single-stage: system splash already covers loading;
+                        // render matching background to avoid spinner flash
+                        // if provider momentarily reports loading post-splash.
+                        ? ColoredBox(
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF121212)
+                                : Colors.white,
+                          )
+                        : MediaQuery.removeViewInsets(
+                            context: context,
+                            removeBottom: true,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                _buildHomePullQuickImportSurface(
+                                  provider: provider,
+                                  settings: settings,
+                                  hasBackdrop: hasBackdrop,
                                 ),
-                              ),
+                                if (_isHomePullQuickImportRunning ||
+                                    _homePullDragDistance > 0)
+                                  _buildHomePullQuickImportIndicator(l10n),
+                                ValueListenableBuilder<int>(
+                                  valueListenable: _visibleWeekListenable,
+                                  builder: (context, visibleWeek, child) {
+                                    if (!_shouldShowFloatingBackToCurrentWeekButton(
+                                      provider,
+                                      provider.settings,
+                                      visibleWeek,
+                                    )) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    return _buildFloatingBackToCurrentWeekButton(
+                                      provider,
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                           ),
-                      ],
-                    ),
-                    semanticsLabel: l10n.moreTooltip,
-                    onPress: _showTopActionsSheet,
                   ),
                 ),
-              ],
-              childPad: false,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  // 日课表的列表视口保持全屏：避让改为列表自身的滚动
-                  // padding（见 _buildExpandedDayColumnView），滚动中卡片
-                  // 连续穿过底部避让带，不在避让边界被硬裁出一条与磨砂
-                  // 卡片色差明显的「生壁纸」空带；周课表网格不可滚动，
-                  // 避让仍由这里的布局 padding 承担。
-                  bottom: glassDockForm && !_isDayView
-                      ? 0.0
-                      : 0,
-                ),
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: provider.isLoading
-                      // Single-stage: system splash already covers loading;
-                      // render matching background to avoid spinner flash
-                      // if provider momentarily reports loading post-splash.
-                      ? ColoredBox(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? const Color(0xFF121212)
-                              : Colors.white,
-                        )
-                      : MediaQuery.removeViewInsets(
-                          context: context,
-                          removeBottom: true,
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              _buildHomePullQuickImportSurface(
-                                provider: provider,
-                                settings: settings,
-                                hasBackdrop: hasBackdrop,
-                              ),
-                              if (_isHomePullQuickImportRunning ||
-                                  _homePullDragDistance > 0)
-                                _buildHomePullQuickImportIndicator(l10n),
-                              ValueListenableBuilder<int>(
-                                valueListenable: _visibleWeekListenable,
-                                builder: (context, visibleWeek, child) {
-                                  if (!_shouldShowFloatingBackToCurrentWeekButton(
-                                    provider,
-                                    provider.settings,
-                                    visibleWeek,
-                                  )) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  return _buildFloatingBackToCurrentWeekButton(
-                                    provider,
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                ),
               ),
-            ),
             ],
           ),
         );
@@ -789,7 +695,9 @@ class _TimetableScreenState extends State<TimetableScreen>
         // 玻璃坞常驻悬浮），仅未登记的流程页才推入新路由。系统返回
         // 优先收回内嵌页而不是退出应用。
         final inlineId = _dockInlinePageId;
-        final inlineBuilder = inlineId == null ? null : inlineDockPageFor(inlineId);
+        final inlineBuilder = inlineId == null
+            ? null
+            : inlineDockPageFor(inlineId);
         Widget hostedContent = inlineBuilder == null
             ? dockContent
             : Stack(
@@ -801,8 +709,9 @@ class _TimetableScreenState extends State<TimetableScreen>
                     child: Material(
                       type: MaterialType.transparency,
                       child: Scaffold(
-                        backgroundColor:
-                            Theme.of(context).scaffoldBackgroundColor,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).scaffoldBackgroundColor,
                         body: HyperosSubpageNoBack(
                           // 玻璃坞满屏悬浮对所有内嵌页生效：注入底部滚动
                           // 余量（与日/周课表同口径），列表末尾可整体滑到
@@ -912,8 +821,6 @@ class _TimetableScreenState extends State<TimetableScreen>
       _selectedDayOfWeek = null;
       _dayViewExpandController.value = 0;
     }
-    _coupleOverlayEnabled = settings.coupleTimetableOverlayEnabled;
-    _sharedFreeSegmentsExpanded = false;
   }
 
   void _applyVisibleWeek(
@@ -971,41 +878,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     unawaited(
       provider.persistHomeViewState(mode: mode, dayOfWeek: resolvedDayOfWeek),
     );
-  }
-
-  void _persistCoupleOverlayEnabled(
-    TimetableProvider provider, {
-    required bool enabled,
-  }) {
-    if (provider.settings.coupleTimetableOverlayEnabled == enabled) {
-      return;
-    }
-    unawaited(
-      provider.updateTimetableSettings(
-        provider.settings.copyWith(coupleTimetableOverlayEnabled: enabled),
-      ),
-    );
-  }
-
-  /// 外部入口（TA 课表的桌面卡片点击）请求显示情侣覆盖层：路由器先持久化
-  /// 打开覆盖层（覆盖冷启动），再 bump 请求计数；本页只在「本地状态与持久化
-  /// 值发散」时单向跟随持久化值，与页内爱心开关（先 setState 后异步持久化）
-  /// 不竞态。
-  void _onExternalCoupleOverlayRequest() {
-    if (!mounted) {
-      return;
-    }
-    final provider = context.read<TimetableProvider>();
-    if (!provider.hasPartnerBinding) {
-      return;
-    }
-    final persisted = provider.settings.coupleTimetableOverlayEnabled;
-    if (persisted == _coupleOverlayEnabled) {
-      return;
-    }
-    setState(() {
-      _coupleOverlayEnabled = persisted;
-    });
   }
 
   bool _isSelectedDay(int week, int dayOfWeek) {
@@ -1082,7 +954,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     setState(() {
       _selectedWeekForDayView = normalizedWeek;
       _selectedDayOfWeek = dayOfWeek;
-      _sharedFreeSegmentsExpanded = false;
     });
     _persistViewState(
       context.read<TimetableProvider>(),
@@ -1237,7 +1108,7 @@ class _TimetableScreenState extends State<TimetableScreen>
       return;
     }
 
-    // The replacement widget tree builds and detaches over a couple of
+    // The replacement widget tree builds and detaches over a few
     // frames. Disposal waits until nothing can reach the controller any
     // more: the field was swapped (no future build will hand it out) and no
     // live PageView still holds it. The pre-blur fill re-latches its
@@ -1661,9 +1532,7 @@ class _TimetableScreenState extends State<TimetableScreen>
   ///
   /// 只在冷启动首帧前的空窗期生效一次：本页任何亮度字段已被赋值或常规
   /// 异步采样已启动（requestedKey 非空）时直接返回，绝不覆盖精确采样结果。
-  void _seedWallpaperLuminanceFromStartupPrimer(
-    TimetableSettings settings,
-  ) {
+  void _seedWallpaperLuminanceFromStartupPrimer(TimetableSettings settings) {
     if (_wallpaperTopLuminance != null ||
         _wallpaperWeekdayLuminance != null ||
         _wallpaperBodyLuminance != null ||
@@ -2544,12 +2413,11 @@ class _TimetableScreenState extends State<TimetableScreen>
                   dayOfWeek,
                   settings,
                 );
-                final displayItems = _buildHomeDayDisplayItems(
-                  provider: provider,
+                final displayItems = _buildDayCourseDisplayItems(
+                  courses: dayCourses,
+                  conflictMap: provider.courseConflictMapForWeek(week),
                   settings: settings,
                   week: week,
-                  dayOfWeek: dayOfWeek,
-                  myCourses: dayCourses,
                 );
                 return SizedBox(
                   width: dayWidth,
@@ -2657,10 +2525,11 @@ class _TimetableScreenState extends State<TimetableScreen>
     final pill = Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       decoration: BoxDecoration(
-        color: (isDark
-                ? HyperosMiuixDarkColors.surfaceContainerHigh
-                : HyperosMiuixLightColors.surfaceContainer)
-            .withValues(alpha: isDark ? 0.88 : 0.92),
+        color:
+            (isDark
+                    ? HyperosMiuixDarkColors.surfaceContainerHigh
+                    : HyperosMiuixLightColors.surfaceContainer)
+                .withValues(alpha: isDark ? 0.88 : 0.92),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
           color: (isDark ? Colors.white : HyperosMiuixLightColors.outline)
@@ -2703,15 +2572,19 @@ class _TimetableScreenState extends State<TimetableScreen>
             Text(
               l10n.homePullQuickImportFetchingCourses,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: HyperosColors.primaryText(context),
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.1,
-                  ),
+                color: HyperosColors.primaryText(context),
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.1,
+              ),
             ),
           ],
           if (_isHomePullQuickImportRunning) ...[
             const SizedBox(width: 10),
-            Container(width: 0.8, height: 14, color: HyperosColors.dividerLine(context)),
+            Container(
+              width: 0.8,
+              height: 14,
+              color: HyperosColors.dividerLine(context),
+            ),
             const SizedBox(width: 10),
             Material(
               type: MaterialType.transparency,
@@ -2719,13 +2592,16 @@ class _TimetableScreenState extends State<TimetableScreen>
                 borderRadius: BorderRadius.circular(999),
                 onTap: _cancelHomePullQuickImport,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   child: Text(
                     l10n.quickImportCancelImportAction,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: HyperosColors.primary(context),
-                          fontWeight: FontWeight.w600,
-                        ),
+                      color: HyperosColors.primary(context),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -2776,7 +2652,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     if (_isHomePullQuickImportRunning) {
       return;
     }
-    final atRest = _homePullDragDistance <= 0.5 && _homePullTouchDistance <= 0.5;
+    final atRest =
+        _homePullDragDistance <= 0.5 && _homePullTouchDistance <= 0.5;
     if (deltaDy <= 0 && atRest) {
       return;
     }
@@ -2805,8 +2682,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     final crossedUp =
         _homePullDragDistance < threshold && nextVisual >= threshold;
     final reArmed =
-        _homePullDragDistance >= threshold &&
-        nextVisual < threshold * 0.88;
+        _homePullDragDistance >= threshold && nextVisual < threshold * 0.88;
     if (reArmed) _homePullHapticArmed = true;
     if (nextVisual == _homePullDragDistance && !crossedUp) {
       return;
@@ -2846,9 +2722,10 @@ class _TimetableScreenState extends State<TimetableScreen>
     if (!mounted) return;
     setState(() {
       _homePullDragDistance = v.clamp(0.0, _homePullQuickImportMaxDistance);
-      _homePullTouchDistance =
-          HyperosHomePullPhysics.touchForOffset(v, _homePullDampingRange)
-              .clamp(0.0, _homePullDampingRange);
+      _homePullTouchDistance = HyperosHomePullPhysics.touchForOffset(
+        v,
+        _homePullDampingRange,
+      ).clamp(0.0, _homePullDampingRange);
     });
   }
 
@@ -2857,8 +2734,10 @@ class _TimetableScreenState extends State<TimetableScreen>
     if (spring == null) {
       setState(() {
         _homePullDragDistance = target;
-        _homePullTouchDistance =
-            HyperosHomePullPhysics.touchForOffset(target, _homePullDampingRange);
+        _homePullTouchDistance = HyperosHomePullPhysics.touchForOffset(
+          target,
+          _homePullDampingRange,
+        );
       });
       return;
     }
@@ -2871,14 +2750,19 @@ class _TimetableScreenState extends State<TimetableScreen>
       0,
     );
     // ignore: discarded_futures
-    spring.animateWith(sim).then((_) {
-      if (!mounted || generation != _homePullSettleGeneration) return;
-      setState(() {
-        _homePullDragDistance = target;
-        _homePullTouchDistance =
-            HyperosHomePullPhysics.touchForOffset(target, _homePullDampingRange);
-      });
-    }).catchError((Object _) {});
+    spring
+        .animateWith(sim)
+        .then((_) {
+          if (!mounted || generation != _homePullSettleGeneration) return;
+          setState(() {
+            _homePullDragDistance = target;
+            _homePullTouchDistance = HyperosHomePullPhysics.touchForOffset(
+              target,
+              _homePullDampingRange,
+            );
+          });
+        })
+        .catchError((Object _) {});
   }
 
   /// Clamping overscroll at the top of the week/day vertical scrollables.
@@ -3583,12 +3467,11 @@ class _TimetableScreenState extends State<TimetableScreen>
               .map((course) => course.id)
               .toSet()
         : const <String>{};
-    final displayItems = _buildHomeDayDisplayItems(
-      provider: provider,
+    final displayItems = _buildDayCourseDisplayItems(
+      courses: courses,
+      conflictMap: provider.courseConflictMapForWeek(target.week),
       settings: settings,
       week: target.week,
-      dayOfWeek: target.dayOfWeek,
-      myCourses: courses,
       currentCourseIds: currentCourseIds,
     );
     final agendaItems = _buildDayAgendaItems(
@@ -3849,8 +3732,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     final useChromeGlass =
         matchesChromeBand ||
         (backdropBlurOn &&
-            settings.courseCardSurfaceStyle ==
-                CourseCardSurfaceStyle.gaussian);
+            settings.courseCardSurfaceStyle == CourseCardSurfaceStyle.gaussian);
     // Ink: 与顶部玻璃带同材质时沿用壁纸亮度自动黑白；否则卡面就是主题底色
     // （或亮磨砂），墨色必须跟主题走 —— 按原始壁纸亮度翻白会让白墨落在
     // 亮色卡面上不可读。
@@ -3864,7 +3746,8 @@ class _TimetableScreenState extends State<TimetableScreen>
                 : TimetableSettings.defaultWeekdayBarFontColorLight,
             themeFallback: foruiTheme.colors.foreground,
             hasBackdrop: hasBackdrop,
-            wallpaperLuminance: _wallpaperBodyLuminance ?? _wallpaperTopLuminance,
+            wallpaperLuminance:
+                _wallpaperBodyLuminance ?? _wallpaperTopLuminance,
           )
         : foruiTheme.colors.foreground;
     final summaryMutedInk = homePageOverWallpaperMutedInk(summaryInk);
@@ -3874,7 +3757,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     final countBadgeTextColor = summaryMutedInk;
     return _dayAgendaSurface(
       key: key,
-      settings: useChromeGlass ||
+      settings:
+          useChromeGlass ||
               settings.courseCardSurfaceStyle == CourseCardSurfaceStyle.solid
           ? settings
           // 无壁纸/模糊被关掉时高斯档没有可用的磨砂来源，退化为实心亮卡。
@@ -4107,17 +3991,6 @@ class _TimetableScreenState extends State<TimetableScreen>
                 ],
               ),
             ],
-            if (_isCoupleOverlayActive(provider)) ...[
-              const SizedBox(height: 12),
-              _buildDayViewSharedFreeSummary(
-                provider: provider,
-                settings: settings,
-                week: week,
-                dayOfWeek: dayOfWeek,
-                isToday: isToday,
-                ink: summaryInk,
-              ),
-            ],
           ],
         ),
       ),
@@ -4152,251 +4025,6 @@ class _TimetableScreenState extends State<TimetableScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  List<SectionTime> _sectionsForSharedFree(
-    TimetableProvider provider,
-    TimetableSettings settings,
-  ) {
-    final schemeSections = provider.activeTimeScheme?.sections;
-    if (schemeSections != null && schemeSections.isNotEmpty) {
-      return schemeSections;
-    }
-    return settings.sections;
-  }
-
-  bool _isPartnerScheduleStale(TimetableProvider provider) {
-    final importedAt = provider.partnerBinding?.lastImportedAt;
-    if (importedAt == null) {
-      return true;
-    }
-    return DateTime.now().difference(importedAt) > _partnerScheduleStaleAfter;
-  }
-
-  List<MinuteInterval> _sharedFreeIntervalsForDayView({
-    required TimetableProvider provider,
-    required TimetableSettings settings,
-    required int week,
-    required int dayOfWeek,
-  }) {
-    final sections = _sectionsForSharedFree(provider, settings);
-    return CoupleTimetableLogic.sharedFreeIntervalsForDay(
-      myCourses: provider.courses,
-      partnerCourses: provider.partnerCourses,
-      dayOfWeek: dayOfWeek,
-      week: week,
-      partnerWeekOffset: provider.partnerWeekOffset,
-      sections: sections,
-    );
-  }
-
-  Widget _buildDayViewSharedFreeSummary({
-    required TimetableProvider provider,
-    required TimetableSettings settings,
-    required int week,
-    required int dayOfWeek,
-    required bool isToday,
-    // 摘要卡当前材质的墨色极性（玻璃下随壁纸自动黑白）。嵌套的空闲面板
-    // 与其中的文字必须跟母卡同极性，而不是主题 onSurface：高斯模糊档下
-    // 母卡是亮磨砂玻璃，主题墨色可能与实际卡面对比不足。
-    required Color ink,
-  }) {
-    final l10n = AppLocalizations.of(context)!;
-    final foruiTheme = context.theme;
-    // #4CAF50 是中明度绿，直接当文字色在透壁纸的浅色卡面上对比不足
-    // 2.8:1（亮粉壁纸上更低）。「共 N 段」徽标、时间胶囊与展开按钮的
-    // 文字和底洗统一走按母卡墨色极性调出的可读变体（浅卡压暗/深卡提亮）。
-    final freeAccent = readableAccentOnCardInk(
-      _colorFromHex(
-        CoupleTimetableLogic.freeSlotColorHex,
-        foruiTheme.colors.primary,
-      ),
-      ink,
-    );
-    final isStale = _isPartnerScheduleStale(provider);
-    final title = isToday
-        ? l10n.coupleTimetableSharedFreeTitle
-        : l10n.coupleTimetableSharedFreeTitleOtherDay;
-    final emptyLabel = isToday
-        ? l10n.coupleTimetableNoSharedFree
-        : l10n.coupleTimetableNoSharedFreeOtherDay;
-    final mutedStyle = foruiTheme.typography.body.xs2.copyWith(
-      color: ink.withValues(alpha: 0.62),
-      fontWeight: FontWeight.w400,
-      height: 1.25,
-    );
-
-    final intervals = _sharedFreeIntervalsForDayView(
-      provider: provider,
-      settings: settings,
-      week: week,
-      dayOfWeek: dayOfWeek,
-    );
-
-    if (intervals.isEmpty) {
-      return _buildSharedFreeSummaryShell(
-        key: const ValueKey('shared-free-summary-empty'),
-        ink: ink,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: foruiTheme.typography.body.sm.copyWith(
-                color: ink,
-                fontWeight: FontWeight.w400,
-                height: 1.2,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(emptyLabel, style: mutedStyle),
-            if (isStale) ...[
-              const SizedBox(height: 4),
-              Text(l10n.coupleTimetableSharedFreeStaleHint, style: mutedStyle),
-            ],
-          ],
-        ),
-      );
-    }
-
-    final visibleLimit = _sharedFreeSegmentsExpanded
-        ? intervals.length
-        : math.min(_sharedFreeVisibleSegmentLimit, intervals.length);
-    final visibleIntervals = intervals.take(visibleLimit).toList();
-    final hiddenCount = intervals.length - visibleIntervals.length;
-
-    return _buildSharedFreeSummaryShell(
-      key: const ValueKey('shared-free-summary'),
-      ink: ink,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: foruiTheme.typography.body.sm.copyWith(
-                    color: ink,
-                    fontWeight: FontWeight.w400,
-                    height: 1.2,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: freeAccent.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                child: Text(
-                  l10n.coupleTimetableSharedFreeMeta(intervals.length),
-                  style: foruiTheme.typography.body.xs2.copyWith(
-                    color: freeAccent,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              for (final interval in visibleIntervals)
-                _buildSharedFreeTimeChip(
-                  label: CoupleTimetableLogic.formatMinuteInterval(interval),
-                  accent: freeAccent,
-                ),
-              if (hiddenCount > 0)
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    key: const ValueKey('shared-free-expand-button'),
-                    onTap: () {
-                      setState(() {
-                        _sharedFreeSegmentsExpanded = true;
-                      });
-                    },
-                    borderRadius: BorderRadius.circular(999),
-                    child: Ink(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 9,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: freeAccent.withValues(alpha: 0.10),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        l10n.coupleTimetableSharedFreeMoreCount(hiddenCount),
-                        style: foruiTheme.typography.body.xs.copyWith(
-                          color: freeAccent,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          if (isStale) ...[
-            const SizedBox(height: 8),
-            Text(l10n.coupleTimetableSharedFreeStaleHint, style: mutedStyle),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSharedFreeTimeChip({
-    required String label,
-    required Color accent,
-  }) {
-    final foruiTheme = context.theme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: foruiTheme.typography.body.xs.copyWith(
-          color: accent,
-          fontWeight: FontWeight.w400,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSharedFreeSummaryShell({
-    required Key key,
-    required Color ink,
-    required Widget child,
-  }) {
-    return DecoratedBox(
-      key: key,
-      decoration: BoxDecoration(
-        // 摘要卡内的嵌套面板跟随摘要墨色：浅洗底 + 细描边，玻璃/实心、
-        // 明暗主题都与母卡同极性。此前误用 colorScheme.secondary（M3 基线
-        // 浅色 #625B71 近黑），高斯模糊下整张卡在亮磨砂上读作发黑的一块，
-        // 标题墨色（onSurface 近黑）也低于可读下限。
-        color: ink.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: ink.withValues(alpha: 0.10)),
-      ),
-      child: Padding(
-        // 与摘要卡内其它区块同一套水平节奏，避免再套一层 14 造成左右过空。
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-        child: child,
       ),
     );
   }
@@ -4486,12 +4114,11 @@ class _TimetableScreenState extends State<TimetableScreen>
               .map((course) => course.id)
               .toSet()
         : const <String>{};
-    final displayItems = _buildHomeDayDisplayItems(
-      provider: provider,
+    final displayItems = _buildDayCourseDisplayItems(
+      courses: courses,
+      conflictMap: provider.courseConflictMapForWeek(week),
       settings: settings,
       week: week,
-      dayOfWeek: dayOfWeek,
-      myCourses: courses,
       currentCourseIds: currentCourseIds,
     );
     final agendaItems = _buildDayAgendaItems(
@@ -4671,28 +4298,6 @@ class _TimetableScreenState extends State<TimetableScreen>
           textColor: Colors.white,
           backgroundColor: colorScheme.error,
         ),
-      if (courseItem.coupleKind == CoupleCourseKind.together)
-        _buildDayAgendaStatusBadge(
-          text: l10n.coupleTimetableLegendTogether,
-          textColor: Colors.white,
-          backgroundColor: _colorFromHex(
-            context.read<TimetableProvider>().coupleColorForKind(
-              CoupleCourseKind.together,
-            ),
-            Colors.purple,
-          ),
-        ),
-      if (courseItem.coupleKind == CoupleCourseKind.partner)
-        _buildDayAgendaStatusBadge(
-          text: l10n.coupleTimetableLegendPartner,
-          textColor: Colors.white,
-          backgroundColor: _colorFromHex(
-            context.read<TimetableProvider>().coupleColorForKind(
-              CoupleCourseKind.partner,
-            ),
-            Colors.pink,
-          ),
-        ),
       if (!courseItem.isCurrentWeekCourse)
         _buildDayAgendaStatusBadge(
           text: l10n.nonCurrentWeekLabel,
@@ -4705,8 +4310,7 @@ class _TimetableScreenState extends State<TimetableScreen>
           textColor: Colors.white,
           backgroundColor: Colors.red.shade700,
         ),
-      if (!courseItem.isPartnerCourse &&
-          courseItem.course.hasHomeworkInWeek(week))
+      if (courseItem.course.hasHomeworkInWeek(week))
         _buildDayAgendaHomeworkDot(),
     ];
     final cardDecoration = BoxDecoration(
@@ -4753,42 +4357,7 @@ class _TimetableScreenState extends State<TimetableScreen>
         context,
         course: courseItem.course,
         week: week,
-        readOnly: courseItem.isPartnerCourse,
       );
-    }
-
-    if (courseItem.isPartnerCourse) {
-      void openCoursePreview() {
-        _showCourseActions(courseItem.course, week, displayItem: courseItem);
-      }
-
-      final partnerCard = progressInfo != null
-          ? _buildCurrentDayAgendaCard(
-              item: courseItem,
-              week: week,
-              settings: settings,
-              progressInfo: progressInfo,
-              l10n: l10n,
-              colorScheme: colorScheme,
-              ink: palette.foregroundColor,
-              openContainer: openCoursePreview,
-              onOpenNotes: openCourseNotes,
-              opacityScale: effectiveOpacity,
-            )
-          : _buildDefaultDayAgendaCard(
-              item: courseItem,
-              week: week,
-              settings: settings,
-              l10n: l10n,
-              palette: palette,
-              statusBadges: statusBadges,
-              cardDecoration: cardDecoration,
-              openContainer: openCoursePreview,
-              onOpenNotes: openCourseNotes,
-              opacityScale: effectiveOpacity,
-            );
-
-      return Material(color: Colors.transparent, child: partnerCard);
     }
 
     // Released behaviour: tap expands the card into the editor via a container
@@ -5118,8 +4687,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                                 textColor: Colors.white,
                                 backgroundColor: colorScheme.error,
                               ),
-                            if (!item.isPartnerCourse &&
-                                item.course.hasHomeworkInWeek(week))
+                            if (item.course.hasHomeworkInWeek(week))
                               _buildDayAgendaHomeworkDot(),
                           ],
                         ),
@@ -5895,7 +5463,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     // 同色系时（如蓝字配蓝卡）替换为黑白最优墨色。玻璃档按壁纸亮度走玻璃
     // 规则（彩色墨回落自动黑白、中性墨对比度门槛），与 CourseCard 行为
     // 一致；壁纸亮度未知时保留用户选择。
-    final showsWallpaper = settings != null &&
+    final showsWallpaper =
+        settings != null &&
         courseCardSurfaceShowsWallpaper(settings.courseCardSurfaceStyle);
     final foregroundColor = customInk == null
         ? _dayAgendaAutoInk(fillColor, settings: settings)
@@ -5924,7 +5493,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     if (settings == null) {
       return Colors.white;
     }
-    final glassOverWallpaper = hasHomePageBackdropImage(settings) &&
+    final glassOverWallpaper =
+        hasHomePageBackdropImage(settings) &&
         settings.courseCardSurfaceStyle == CourseCardSurfaceStyle.gaussian;
     if (!glassOverWallpaper) {
       return Colors.white;
@@ -6051,16 +5621,15 @@ class _TimetableScreenState extends State<TimetableScreen>
                 showConflictBadge,
               ),
               // 日课表：这节课（课程×真实日期）已设单节课提醒时，在备注
-              // 角标旁亮铃铛；情侣对方的只读课不显示。
-              hasReminder: date != null &&
-                  !item.isPartnerCourse &&
+              // 角标旁亮铃铛。
+              hasReminder:
+                  date != null &&
                   provider.classReminderFor(
                         item.course.id,
                         ClassReminderEntry.formatDate(date),
                       ) !=
                       null,
-              showHomeworkIndicator:
-                  !item.isPartnerCourse && item.course.hasHomeworkInWeek(week),
+              showHomeworkIndicator: item.course.hasHomeworkInWeek(week),
               isHighlighted: item.isCurrentCourse,
               isHoliday: isDayHoliday,
               isSuspended: item.course.isSuspendedInWeek(week),
@@ -6074,8 +5643,7 @@ class _TimetableScreenState extends State<TimetableScreen>
               showDescription: settings.courseCardShowDescription,
               verticalAlign: settings.courseCardVerticalAlign,
               horizontalAlign: settings.courseCardHorizontalAlign,
-              onTap: () =>
-                  _showCourseActions(item.course, week, displayItem: item),
+              onTap: () => _showCourseActions(item.course, week),
               compactTitleFontSize: settings.courseCardFontSize,
               compactSubtitleFontSize: (settings.courseCardFontSize - 1).clamp(
                 7.0,
@@ -6146,147 +5714,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     return items.where((item) => item.course.startSection == section).toList();
   }
 
-  List<_DayCourseDisplayItem> _buildHomeDayDisplayItems({
-    required TimetableProvider provider,
-    required TimetableSettings settings,
-    required int week,
-    required int dayOfWeek,
-    required List<Course> myCourses,
-    Set<String> currentCourseIds = const <String>{},
-  }) {
-    final conflictMap = provider.courseConflictMapForWeek(week);
-    if (!_isCoupleOverlayActive(provider)) {
-      return _buildDayCourseDisplayItems(
-        courses: myCourses,
-        week: week,
-        settings: settings,
-        conflictMap: conflictMap,
-        currentCourseIds: currentCourseIds,
-      );
-    }
-
-    final partnerWeek = provider.partnerWeekFor(week);
-    final partnerCourses = _getCoursesForDay(
-      provider.partnerCourses,
-      partnerWeek,
-      dayOfWeek,
-      settings,
-    );
-    return _buildCoupleDayCourseDisplayItems(
-      myCourses: myCourses,
-      partnerCourses: partnerCourses,
-      week: week,
-      partnerWeek: partnerWeek,
-      partnerWeekOffset: provider.partnerWeekOffset,
-      settings: settings,
-      conflictMap: conflictMap,
-      currentCourseIds: currentCourseIds,
-    );
-  }
-
-  List<_DayCourseDisplayItem> _buildCoupleDayCourseDisplayItems({
-    required List<Course> myCourses,
-    required List<Course> partnerCourses,
-    required int week,
-    required int partnerWeek,
-    required int partnerWeekOffset,
-    required TimetableSettings settings,
-    required Map<String, List<Course>> conflictMap,
-    Set<String> currentCourseIds = const <String>{},
-  }) {
-    final usedPartnerIds = <String>{};
-    final items = <_DayCourseDisplayItem>[];
-
-    for (final course in myCourses) {
-      final isCurrentWeekCourse = course.isInWeek(week);
-      if (!isCurrentWeekCourse &&
-          _hasCurrentWeekOverlap(myCourses, course, week)) {
-        continue;
-      }
-      if (!isCurrentWeekCourse &&
-          !_isPreferredNonCurrentCourse(myCourses, course, week)) {
-        continue;
-      }
-
-      var kind = CoupleCourseKind.mine;
-      for (final partner in partnerCourses) {
-        if (CoupleTimetableLogic.isTogetherClass(
-          course,
-          partner,
-          week: week,
-          partnerWeekOffset: partnerWeekOffset,
-        )) {
-          kind = CoupleCourseKind.together;
-          usedPartnerIds.add(partner.id);
-          break;
-        }
-      }
-
-      items.add(
-        _DayCourseDisplayItem(
-          course: course,
-          isCurrentWeekCourse: isCurrentWeekCourse,
-          isConflicting: conflictMap.containsKey(course.id),
-          isCurrentCourse: currentCourseIds.contains(course.id),
-          opacity: !isCurrentWeekCourse
-              ? 0.62
-              : (conflictMap.containsKey(course.id)
-                    ? settings.timetableConflictCourseOpacity
-                    : 1),
-          coupleKind: kind,
-        ),
-      );
-    }
-
-    for (final course in partnerCourses) {
-      if (usedPartnerIds.contains(course.id)) {
-        continue;
-      }
-      final isCurrentWeekCourse = course.isInWeek(partnerWeek);
-      if (!isCurrentWeekCourse &&
-          _hasCurrentWeekOverlap(partnerCourses, course, partnerWeek)) {
-        continue;
-      }
-      if (!isCurrentWeekCourse &&
-          !_isPreferredNonCurrentCourse(partnerCourses, course, partnerWeek)) {
-        continue;
-      }
-
-      items.add(
-        _DayCourseDisplayItem(
-          course: course,
-          isCurrentWeekCourse: isCurrentWeekCourse,
-          isConflicting: false,
-          isCurrentCourse: false,
-          opacity: isCurrentWeekCourse ? 1 : 0.62,
-          coupleKind: CoupleCourseKind.partner,
-          isPartnerCourse: true,
-        ),
-      );
-    }
-
-    return items..sort((left, right) {
-      final startCompare = left.course.startSection.compareTo(
-        right.course.startSection,
-      );
-      if (startCompare != 0) {
-        return startCompare;
-      }
-      final leftCurrent = left.isCurrentWeekCourse;
-      final rightCurrent = right.isCurrentWeekCourse;
-      if (leftCurrent != rightCurrent) {
-        return leftCurrent ? 1 : -1;
-      }
-      final endCompare = left.course.endSection.compareTo(
-        right.course.endSection,
-      );
-      if (endCompare != 0) {
-        return endCompare;
-      }
-      return left.course.id.compareTo(right.course.id);
-    });
-  }
-
   List<_DayCourseDisplayItem> _buildDayCourseDisplayItems({
     required List<Course> courses,
     required int week,
@@ -6345,11 +5772,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     _DayCourseDisplayItem item, {
     required TimetableSettings settings,
   }) {
-    if (item.coupleKind != null) {
-      return context.read<TimetableProvider>().coupleColorForKind(
-        item.coupleKind!,
-      );
-    }
     if (!item.isCurrentWeekCourse) {
       return '#94A3B8';
     }
@@ -6363,12 +5785,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     bool showConflictBadge,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    if (item.coupleKind == CoupleCourseKind.together) {
-      return l10n.coupleTimetableLegendTogether;
-    }
-    if (item.coupleKind == CoupleCourseKind.partner) {
-      return l10n.coupleTimetableLegendPartner;
-    }
     if (!item.isCurrentWeekCourse) {
       return l10n.nonCurrentWeekLabel;
     }
@@ -6384,9 +5800,6 @@ class _TimetableScreenState extends State<TimetableScreen>
   ) {
     final l10n = AppLocalizations.of(context)!;
     final labels = <String>[];
-    if (item.coupleKind == CoupleCourseKind.together) {
-      labels.add(l10n.coupleTimetableLegendTogether);
-    }
     if (item.isCurrentCourse) {
       labels.add(l10n.ongoingCourseBadge);
     }
@@ -6643,8 +6056,9 @@ class _TimetableScreenState extends State<TimetableScreen>
                 withBlur: true,
               ),
             );
-      dockBtnQuality =
-          dockUseLiquidGlass ? GlassQuality.premium : GlassQuality.minimal;
+      dockBtnQuality = dockUseLiquidGlass
+          ? GlassQuality.premium
+          : GlassQuality.minimal;
     }
     return Stack(
       fit: StackFit.expand,
@@ -6659,8 +6073,11 @@ class _TimetableScreenState extends State<TimetableScreen>
             // 官方 iOS 26 形态：居中药丸 + 右侧独立圆钮，整组居中。
             // 圆钮固定展开（加课程唯一主动入口，不再随页收起）；
             // 材质经 dockBtnSettings 与药丸显式同源。
-            child: Builder(builder: (context) {
-                final lum = _dockInlinePageId != null ? null : _wallpaperBodyLuminance; // 内嵌页表态只看主题
+            child: Builder(
+              builder: (context) {
+                final lum = _dockInlinePageId != null
+                    ? null
+                    : _wallpaperBodyLuminance; // 内嵌页表态只看主题
                 final isDarkTheme =
                     Theme.of(context).brightness == Brightness.dark;
                 final ink = (lum != null ? lum < 0.45 : isDarkTheme)
@@ -6694,7 +6111,6 @@ class _TimetableScreenState extends State<TimetableScreen>
             ),
           ),
         ),
-
       ],
     );
   }
@@ -6726,8 +6142,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     final selectedColor = barUsesLightInk
         ? Colors.white
         : (isDark && wallpaperLuminance != null && wallpaperLuminance >= 0.45
-            ? Colors.black.withValues(alpha: 0.80)
-            : colorScheme.primary);
+              ? Colors.black.withValues(alpha: 0.80)
+              : colorScheme.primary);
     // 底栏材质（[_kStockDockGlass]=true 时下面全部走包原版默认，此段
     // 仅在实验关闭时参与计算）：
     // - 跟随「高级材质」设置（与弹窗/顶部/卡片统一）：液态玻璃用
@@ -6735,7 +6151,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     // - 标准/高斯：退化为高斯模糊药丸（blur/tint 与弹窗 frosted 一致）。
     final appearance = FrostedAppearanceScope.of(context);
     // 「液态玻璃作用范围 → 玻璃坞导航」关闭时底栏回退磨砂药丸。
-    final useLiquidGlass = !_kStockDockGlass &&
+    final useLiquidGlass =
+        !_kStockDockGlass &&
         appearance.glassMode == FrostedGlassMode.liquidGlass &&
         appearance.liquidGlassDockEnabled &&
         !LiquidGlassDegradation.shouldDegrade(context);
@@ -6743,12 +6160,9 @@ class _TimetableScreenState extends State<TimetableScreen>
     // （'day'/'week' 视图动作 + 目录任意条目，含设置页）。
     final dockIds = resolveGlassDockActionIds(settings);
     return GlassTabBar.bottom(
-      tabs: [
-        for (final id in dockIds) _dockTabForId(id, l10n),
-      ],
+      tabs: [for (final id in dockIds) _dockTabForId(id, l10n)],
       selectedIndex: _dockSelectedIndex(dockIds),
-      onTabSelected: (index) =>
-          _handleDockTap(dockIds[index], settings),
+      onTabSelected: (index) => _handleDockTap(dockIds[index], settings),
       // 独立圆钮改由坞层「水滴合并槽」渲染（见 _wrapWithGlassDock）：
       // 整颗按钮滑入药丸并被圆形裁切，运动与遮罩都贴合药丸端帽弧度。
       barHeight: 56,
@@ -6770,17 +6184,17 @@ class _TimetableScreenState extends State<TimetableScreen>
       settings: _kStockDockGlass
           ? MikcbLiquidGlassTokens.stockBottomBarGlass
           : (useLiquidGlass
-              ? MikcbLiquidGlassTokens.sheetSettingsFor(
-                  isDark ? Brightness.dark : Brightness.light,
-                  tuning: appearance.liquidGlassTuning,
-                )
-              : LiquidGlassSettings(
-                  blur: appearance.sheetBlurSigma,
-                  glassColor: HyperosBlurredHeader.sheetTintColor(
-                    context,
-                    withBlur: true,
-                  ),
-                )),
+                ? MikcbLiquidGlassTokens.sheetSettingsFor(
+                    isDark ? Brightness.dark : Brightness.light,
+                    tuning: appearance.liquidGlassTuning,
+                  )
+                : LiquidGlassSettings(
+                    blur: appearance.sheetBlurSigma,
+                    glassColor: HyperosBlurredHeader.sheetTintColor(
+                      context,
+                      withBlur: true,
+                    ),
+                  )),
       indicatorSettings: _kStockDockGlass
           ? null
           : (useLiquidGlass ? MikcbLiquidGlassTokens.dragLensSettings : null),
@@ -6826,12 +6240,9 @@ class _TimetableScreenState extends State<TimetableScreen>
       width: 56,
       height: 56,
       child: GlassButton(
-        icon: _roundButtonIcon(
-          context.read<TimetableProvider>().settings,
-        ),
-        onTap: () => _handleRoundButtonTap(
-          context.read<TimetableProvider>().settings,
-        ),
+        icon: _roundButtonIcon(context.read<TimetableProvider>().settings),
+        onTap: () =>
+            _handleRoundButtonTap(context.read<TimetableProvider>().settings),
         label: l10n.glassDockExtraButtonSemanticLabel,
         width: 56,
         height: 56,
@@ -6978,6 +6389,7 @@ class _TimetableScreenState extends State<TimetableScreen>
         }
     }
   }
+
   Widget _buildFloatingBackToCurrentWeekButton(TimetableProvider provider) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
@@ -7022,10 +6434,7 @@ class _TimetableScreenState extends State<TimetableScreen>
           MediaQuery.viewPaddingOf(context).bottom;
     }
     return SafeArea(
-      minimum: EdgeInsets.only(
-        right: 20,
-        bottom: dockBackButtonBottom,
-      ),
+      minimum: EdgeInsets.only(right: 20, bottom: dockBackButtonBottom),
       child: Align(
         alignment: Alignment.bottomRight,
         child: Tooltip(
@@ -7105,9 +6514,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                       child: Material(
                         type: MaterialType.transparency,
                         child: InkWell(
-                          key: const ValueKey(
-                            'back-to-current-week-button',
-                          ),
+                          key: const ValueKey('back-to-current-week-button'),
                           onTap: () => _jumpToCurrentWeek(provider),
                           borderRadius: borderRadius,
                           child: Padding(
@@ -7123,7 +6530,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                                   size: 15,
                                   color: colorScheme.primary.withValues(
                                     alpha:
-                                    colorScheme.primary.a * contentOpacity,
+                                        colorScheme.primary.a * contentOpacity,
                                   ),
                                 ),
                                 const SizedBox(width: 4),
@@ -7133,7 +6540,8 @@ class _TimetableScreenState extends State<TimetableScreen>
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
                                     color: colorScheme.onSurface.withValues(
-                                      alpha: colorScheme.onSurface.a *
+                                      alpha:
+                                          colorScheme.onSurface.a *
                                           contentOpacity,
                                     ),
                                     height: 1,
@@ -7459,16 +6867,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  Future<void> _showCourseActions(
-    Course course,
-    int week, {
-    _DayCourseDisplayItem? displayItem,
-  }) async {
-    final previewItems = _buildCourseActionPreviewItems(
-      course,
-      week,
-      displayItem: displayItem,
-    );
+  Future<void> _showCourseActions(Course course, int week) async {
+    final previewItems = _buildCourseActionPreviewItems(course, week);
     await showCourseActionSheet(
       context,
       previewItems: previewItems,
@@ -7509,162 +6909,19 @@ class _TimetableScreenState extends State<TimetableScreen>
 
   List<CourseActionPreviewItem> _buildCourseActionPreviewItems(
     Course course,
-    int week, {
-    _DayCourseDisplayItem? displayItem,
-  }) {
-    final provider = context.read<TimetableProvider>();
-    final isPartner = displayItem?.isPartnerCourse ?? false;
-    final partnerWeekOffset = provider.partnerWeekOffset;
-    var coupleKind = displayItem?.coupleKind;
-    if (coupleKind == null &&
-        !isPartner &&
-        _isCoupleOverlayActive(provider) &&
-        _findTogetherPartnerCourse(
-              course,
-              week,
-              partnerWeekOffset: partnerWeekOffset,
-            ) !=
-            null) {
-      coupleKind = CoupleCourseKind.together;
-    }
-    if (coupleKind == null &&
-        isPartner &&
-        _isCoupleOverlayActive(provider) &&
-        provider.courses.any(
-          (mine) => CoupleTimetableLogic.isTogetherClass(
-            mine,
-            course,
-            week: week,
-            partnerWeekOffset: partnerWeekOffset,
-          ),
-        )) {
-      coupleKind = CoupleCourseKind.together;
-    }
-    if (coupleKind == null && isPartner && _isCoupleOverlayActive(provider)) {
-      coupleKind = CoupleCourseKind.partner;
-    }
+    int week,
+  ) {
     final items = <CourseActionPreviewItem>[
-      CourseActionPreviewItem(
-        course: course,
-        isPartnerCourse: isPartner,
-        coupleKind: coupleKind,
-      ),
+      CourseActionPreviewItem(course: course),
     ];
 
-    if (!isPartner) {
-      for (final conflict in _conflictsForCourseInWeek(course, week)) {
-        if (items.any((item) => item.course.id == conflict.id)) {
-          continue;
-        }
-        items.add(CourseActionPreviewItem(course: conflict, isConflict: true));
-      }
-    }
-
-    if (!_isCoupleOverlayActive(provider)) {
-      return items;
-    }
-
-    if (coupleKind == CoupleCourseKind.together) {
-      final partner = _findTogetherPartnerCourse(
-        course,
-        week,
-        partnerWeekOffset: partnerWeekOffset,
-      );
-      if (partner != null &&
-          !items.any((item) => item.course.id == partner.id)) {
-        items.add(
-          CourseActionPreviewItem(
-            course: partner,
-            isPartnerCourse: true,
-            coupleKind: CoupleCourseKind.together,
-          ),
-        );
-      }
-      return items;
-    }
-
-    if (isPartner) {
-      for (final mine in provider.courses) {
-        if (CoupleTimetableLogic.isTogetherClass(
-              mine,
-              course,
-              week: week,
-              partnerWeekOffset: partnerWeekOffset,
-            ) &&
-            !items.any((item) => item.course.id == mine.id)) {
-          items.add(
-            CourseActionPreviewItem(
-              course: mine,
-              coupleKind: CoupleCourseKind.together,
-            ),
-          );
-          break;
-        }
-      }
-      return items;
-    }
-
-    for (final partner in _overlappingPartnerCourses(
-      course,
-      week,
-      partnerWeekOffset: partnerWeekOffset,
-    )) {
-      if (items.any((item) => item.course.id == partner.id)) {
+    for (final conflict in _conflictsForCourseInWeek(course, week)) {
+      if (items.any((item) => item.course.id == conflict.id)) {
         continue;
       }
-      items.add(
-        CourseActionPreviewItem(
-          course: partner,
-          isPartnerCourse: true,
-          coupleKind: CoupleCourseKind.partner,
-        ),
-      );
+      items.add(CourseActionPreviewItem(course: conflict, isConflict: true));
     }
     return items;
-  }
-
-  Course? _findTogetherPartnerCourse(
-    Course mine,
-    int week, {
-    required int partnerWeekOffset,
-  }) {
-    final provider = context.read<TimetableProvider>();
-    for (final partner in provider.partnerCourses) {
-      if (CoupleTimetableLogic.isTogetherClass(
-        mine,
-        partner,
-        week: week,
-        partnerWeekOffset: partnerWeekOffset,
-      )) {
-        return partner;
-      }
-    }
-    return null;
-  }
-
-  List<Course> _overlappingPartnerCourses(
-    Course mine,
-    int week, {
-    required int partnerWeekOffset,
-  }) {
-    final provider = context.read<TimetableProvider>();
-    return provider.partnerCourses
-        .where(
-          (partner) =>
-              CoupleTimetableLogic.coursesOverlapForCoupleView(
-                mine,
-                partner,
-                myWeek: week,
-                partnerWeekOffset: partnerWeekOffset,
-              ) &&
-              !CoupleTimetableLogic.isTogetherClass(
-                mine,
-                partner,
-                week: week,
-                partnerWeekOffset: partnerWeekOffset,
-              ),
-        )
-        .toList();
   }
 
   List<Course> _conflictsForCourseInWeek(Course course, int week) {
@@ -7963,11 +7220,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     final provider = context.read<TimetableProvider>();
     final selected = await showProfileQuickSwitchSheet(
       context,
-      // TA 课表是覆盖层叠加，不是切换对象；switchProfile 对它静默守卫，
-      // 列出来只会造成「点了没反应」。
-      profiles: provider.profiles
-          .where((profile) => !profile.isPartnerImported)
-          .toList(growable: false),
+      profiles: provider.profiles.toList(growable: false),
       activeProfileId: provider.activeProfileId,
       onManageTimetables: (buttonContext) {
         _openPopupActionPage(
@@ -8018,14 +7271,12 @@ class _TimetableScreenState extends State<TimetableScreen>
     if (settings.homeMenuStyle == HomeMenuStyle.grid) {
       selectedId = await showHomeTopGridMenuSheet(
         context,
-        hasAvailableUpdate: _hasAvailableUpdate,
         entries: resolveHomeGridMenuEntries(settings),
         themeSeedHex: settings.themeSeedColor,
       );
     } else {
       selectedId = await showHomeTopMenuSheet(
         context,
-        hasAvailableUpdate: _hasAvailableUpdate,
         entries: resolveHomeGridMenuEntries(settings),
         anchorKey: _topMenuButtonKey,
         foregroundColor: menuForeground,
@@ -8043,309 +7294,16 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
 
     switch (selectedId) {
-      // 这两项依赖首页宿主上下文：添加课程要带日视图选中日期弹层，
-      // 更新入口要先做版本检查再进详情页。其余全部走目录分发。
+      // 这一项依赖首页宿主上下文：添加课程要带日视图选中日期弹层。
+      // 其余全部走目录分发。
       case 'addCourse':
         await _navigateToAddCourse(context);
-      case 'update':
-        await _openTopMenuUpdatePage();
       default:
         final entry = homeMenuEntryById(selectedId);
         if (entry != null) {
           await entry.open(context);
         }
     }
-  }
-
-  Future<void> _openTopMenuUpdatePage() async {
-    final packageInfo = await PackageInfo.fromPlatform();
-    if (!mounted) {
-      return;
-    }
-    await Navigator.of(context).push<void>(
-      HyperosPageRoute<void>(
-        builder: (_) => AboutUpdateScreen(packageInfo: packageInfo),
-      ),
-    );
-  }
-
-  void _scheduleUpdateCheckIfNeeded(TimetableProvider provider) {
-    if (!widget.enableUpdateCheck) {
-      return;
-    }
-    final includePrerelease = provider.settings.appUpdateIncludePrerelease;
-    if (_lastUpdateCheckIncludePrerelease == includePrerelease) {
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      _checkForAppUpdate(includePrerelease: includePrerelease);
-    });
-  }
-
-  Future<void> _checkForAppUpdate({required bool includePrerelease}) async {
-    if (_isCheckingForUpdate) {
-      return;
-    }
-    _isCheckingForUpdate = true;
-    _lastUpdateCheckIncludePrerelease = includePrerelease;
-    if (!kReleaseMode) {
-      if (!mounted) {
-        _isCheckingForUpdate = false;
-        return;
-      }
-      setState(() {
-        _hasAvailableUpdate = true;
-      });
-      _isCheckingForUpdate = false;
-      return;
-    }
-
-    try {
-      final settings = context.read<TimetableProvider>().settings;
-      final downloadSource = AppUpdateDownloadSourceX.fromValue(
-        settings.appUpdateDownloadSource,
-      );
-      final mirrorPreset = AppUpdateMirrorPresetX.fromValue(
-        settings.appUpdateMirrorPreset,
-      );
-      final effectiveMirrorUrlPrefix = resolveAppUpdateMirrorUrlPrefix(
-        preset: mirrorPreset,
-        customUrlPrefix: settings.appUpdateMirrorUrlPrefix,
-      );
-      final packageInfo = await PackageInfo.fromPlatform();
-      final result = await _updateService.checkForUpdates(
-        currentVersion: packageInfo.version,
-        includePrerelease: includePrerelease,
-        preferredSource: downloadSource,
-        mirrorUrlPrefix: effectiveMirrorUrlPrefix,
-      );
-      if (!mounted) {
-        _isCheckingForUpdate = false;
-        return;
-      }
-      setState(() {
-        _hasAvailableUpdate = result.hasUpdate;
-      });
-      _scheduleHomeUpdatePrompt(result);
-    } catch (_) {
-      // Ignore update check failures on home screen; About page provides details.
-    } finally {
-      _isCheckingForUpdate = false;
-    }
-  }
-
-  /// 检测到新版本后在首页弹出更新提醒（受「弹窗提醒」开关控制，
-  /// 关闭时保持静默，仅依赖 ⋮ 菜单红点角标）。
-  void _scheduleHomeUpdatePrompt(AppUpdateCheckResult result) {
-    if (!result.hasUpdate ||
-        result.latestRelease == null ||
-        _hasPresentedUpdatePrompt ||
-        _isUpdatePromptVisible) {
-      return;
-    }
-    final provider = context.read<TimetableProvider>();
-    final settings = provider.settings;
-    if (!settings.appUpdatePromptEnabled) {
-      return;
-    }
-    final release = result.latestRelease!;
-    final channel = AppUpdateDownloadChannelX.fromValue(
-      settings.appUpdateDownloadChannel,
-    );
-    final source = AppUpdateDownloadSourceX.fromValue(
-      settings.appUpdateDownloadSource,
-    );
-    final mirrorPreset = AppUpdateMirrorPresetX.fromValue(
-      settings.appUpdateMirrorPreset,
-    );
-    final mirrorPrefix = resolveAppUpdateMirrorUrlPrefix(
-      preset: mirrorPreset,
-      customUrlPrefix: settings.appUpdateMirrorUrlPrefix,
-    );
-    final effectiveDownloadUrl = _updateService.getEffectiveDownloadUrl(
-      release: release,
-      channel: channel,
-      source: source,
-      mirrorUrlPrefix: mirrorPrefix,
-    );
-    final hasDirectDownload =
-        effectiveDownloadUrl != null && effectiveDownloadUrl.trim().isNotEmpty;
-    final promptDownloadUrl = effectiveDownloadUrl ?? release.releaseUrl;
-    if (promptDownloadUrl.trim().isEmpty) {
-      return;
-    }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _hasPresentedUpdatePrompt || _isUpdatePromptVisible) {
-        return;
-      }
-      // 首页不在栈顶时（例如启动直达二级页）不打断用户。
-      if (ModalRoute.of(context)?.isCurrent != true) {
-        return;
-      }
-      _hasPresentedUpdatePrompt = true;
-      _isUpdatePromptVisible = true;
-      unawaited(
-        _showHomeUpdatePromptAndTrackState(
-          release: release,
-          currentVersion: result.currentVersion,
-          channel: channel,
-          downloadUrl: promptDownloadUrl,
-          hasDirectDownload: hasDirectDownload,
-        ),
-      );
-    });
-  }
-
-  Future<void> _showHomeUpdatePromptAndTrackState({
-    required AppReleaseInfo release,
-    required String currentVersion,
-    required AppUpdateDownloadChannel channel,
-    required String downloadUrl,
-    required bool hasDirectDownload,
-  }) async {
-    try {
-      await showHomeUpdatePrompt(
-        context,
-        release: release,
-        currentVersion: currentVersion,
-        downloadChannel: channel,
-        hasDirectDownload: hasDirectDownload,
-        controller: _updatePromptController,
-        onDownload: () async {
-          if (!hasDirectDownload) {
-            await _openUpdateReleasePage(release.releaseUrl);
-            return false;
-          }
-          return _startHomeUpdateDownload(
-            release: release,
-            channel: channel,
-            downloadUrl: downloadUrl,
-          );
-        },
-        onViewRelease: () => _openUpdateReleasePage(release.releaseUrl),
-        onCancelDownload: _cancelHomeUpdateDownload,
-        onResumeDownload: () => _startHomeUpdateDownload(
-          release: release,
-          channel: channel,
-          downloadUrl: downloadUrl,
-        ),
-      );
-    } finally {
-      _isUpdatePromptVisible = false;
-    }
-  }
-
-  Future<bool> _startHomeUpdateDownload({
-    required AppReleaseInfo release,
-    required AppUpdateDownloadChannel channel,
-    required String downloadUrl,
-  }) async {
-    if (channel == AppUpdateDownloadChannel.pgyer) {
-      await _openUpdateReleasePage(downloadUrl);
-      return false;
-    }
-
-    final settings = context.read<TimetableProvider>().settings;
-    if (settings.appUpdateDownloadChannel ==
-        AppUpdateDownloadChannel.pgyer.value) {
-      await _openUpdateReleasePage(downloadUrl);
-      return false;
-    }
-
-    if (_useSystemUpdateDownloader(settings)) {
-      final version = release.version.trim().replaceAll(' ', '_');
-      final downloadId = await _supportCreatorService.enqueueSystemDownload(
-        url: downloadUrl,
-        fileName: version.isEmpty ? 'mikcb_update.apk' : 'mikcb_v$version.apk',
-        title: AppLocalizations.of(context)!.aboutUpdatePackageTitle,
-        description: AppLocalizations.of(
-          context,
-        )!.aboutUpdatePackageDescription,
-      );
-      if (downloadId == null) {
-        return false;
-      }
-      final initialProgress = await _supportCreatorService
-          .querySystemDownloadProgress(downloadId);
-      if (initialProgress != null) {
-        _updatePromptController.beginSystemDownload(
-          downloadId: downloadId,
-          progress: initialProgress,
-        );
-      }
-      _watchSystemUpdateDownload(downloadId);
-      return true;
-    }
-
-    final controller = AppUpdateDownloadController();
-    _homeDownloadController = controller;
-    _updatePromptController.beginInAppDownload();
-    final mirrorPreset = AppUpdateMirrorPresetX.fromValue(
-      settings.appUpdateMirrorPreset,
-    );
-    final mirrorPrefix = resolveAppUpdateMirrorUrlPrefix(
-      preset: mirrorPreset,
-      customUrlPrefix: settings.appUpdateMirrorUrlPrefix,
-    );
-    final error = await _updateService.downloadAndInstallUpdate(
-      downloadUrl,
-      (downloadedBytes, totalBytes) {
-        _updatePromptController.updateInAppProgress(
-          downloadedBytes,
-          totalBytes,
-        );
-      },
-      controller,
-      mirrorUrlPrefix: mirrorPrefix,
-    );
-    if (!mounted) {
-      return true;
-    }
-    _homeDownloadController = null;
-    final wasCancelled = error == AppUpdateService.downloadCancelledMessage;
-    _updatePromptController.finishInAppDownload(
-      success: error == null,
-      cancelled: wasCancelled,
-    );
-    return true;
-  }
-
-  bool _useSystemUpdateDownloader(TimetableSettings settings) {
-    return settings.appUpdateUseSystemDownloader;
-  }
-
-  void _watchSystemUpdateDownload(int downloadId) {
-    unawaited(() async {
-      try {
-        await for (final progress
-            in _supportCreatorService.watchSystemDownloadProgress(downloadId)) {
-          if (!mounted) {
-            return;
-          }
-          _updatePromptController.updateSystemDownload(progress);
-        }
-      } catch (_) {
-        // The system queue can briefly disappear while the provider starts;
-        // keep the prompt visible and let the next observation recover.
-      }
-    }());
-  }
-
-  void _cancelHomeUpdateDownload() {
-    _homeDownloadController?.cancel();
-    _updatePromptController.markCancelling();
-  }
-
-  Future<void> _openUpdateReleasePage(String url) async {
-    final uri = Uri.tryParse(url);
-    if (uri == null) {
-      return;
-    }
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }
 
@@ -8559,8 +7517,6 @@ class _DayCourseDisplayItem {
   final bool isConflicting;
   final bool isCurrentCourse;
   final double opacity;
-  final CoupleCourseKind? coupleKind;
-  final bool isPartnerCourse;
 
   const _DayCourseDisplayItem({
     required this.course,
@@ -8568,8 +7524,6 @@ class _DayCourseDisplayItem {
     required this.isConflicting,
     required this.isCurrentCourse,
     required this.opacity,
-    this.coupleKind,
-    this.isPartnerCourse = false,
   });
 }
 

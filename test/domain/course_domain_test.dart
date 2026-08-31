@@ -94,7 +94,7 @@ void main() {
       expect(CourseDomain.conflict(a, c), isTrue);
     });
 
-    test('overlapInWeek 不做同 id 排除（情侣课表口径）', () {
+    test('overlapInWeek 不做同 id 排除', () {
       expect(
         CourseDomain.overlapInWeek(_course(id: 'a'), _course(id: 'a')),
         isTrue,

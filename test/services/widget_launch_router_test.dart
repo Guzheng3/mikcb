@@ -1,11 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:university_timetable/models/course.dart';
-import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/providers/timetable_provider.dart';
 import 'package:university_timetable/services/miui_live_activities_service.dart';
-import 'package:university_timetable/services/partner_timetable_service.dart';
 import 'package:university_timetable/services/storage_service.dart';
 import 'package:university_timetable/services/widget_launch_router.dart';
 
@@ -83,19 +80,6 @@ void main() {
     expect(provider.activeProfileId, other.id);
   });
 
-  test('绑定 TA 课表但已解绑 → bindingMissing，不切课表不弹覆盖层', () async {
-    final provider = await createProvider();
-    final before = provider.activeProfileId;
-
-    pendingWidgetId = 34;
-    bindings[34] = PartnerTimetableService.partnerProfileId;
-    final outcome = await WidgetLaunchRouter.handleWith(provider: provider);
-
-    expect(outcome, WidgetLaunchOutcome.bindingMissing);
-    expect(provider.activeProfileId, before);
-    expect(popToRootCalls, 0);
-  });
-
   test('未登记卡片 → none，保持当前课表', () async {
     final provider = await createProvider();
     final before = provider.activeProfileId;
@@ -123,43 +107,4 @@ void main() {
     expect(provider.activeProfileId, before);
   });
 
-  test('绑定 TA 课表 → partnerOverlay：不切课表、持久化开启覆盖层、回根回调', () async {
-    final provider = await createProvider();
-    final before = provider.activeProfileId;
-    expect(provider.settings.coupleTimetableOverlayEnabled, isFalse);
-
-    final backup = provider.dataTransferService.buildBackupJson(
-      profileName: 'TA的课表',
-      courses: [
-        Course(
-          id: 'c1',
-          name: '高数',
-          teacher: '张老师',
-          location: 'A101',
-          dayOfWeek: 1,
-          startSection: 1,
-          endSection: 2,
-          startTime: '08:00',
-          endTime: '09:40',
-        ),
-      ],
-      settings: TimetableSettings.defaults(),
-      currentWeek: 1,
-    );
-    await provider.importPartnerTimetable(backup);
-
-    pendingWidgetId = 37;
-    bindings[37] = PartnerTimetableService.partnerProfileId;
-    final outcome = await WidgetLaunchRouter.handleWith(
-      provider: provider,
-      onRequestPopToRoot: () => popToRootCalls++,
-    );
-
-    expect(outcome, WidgetLaunchOutcome.partnerOverlay);
-    // 不真的切到 TA 课表。
-    expect(provider.activeProfileId, before);
-    expect(provider.settings.coupleTimetableOverlayEnabled, isTrue);
-    expect(popToRootCalls, 1);
-    expect(WidgetLaunchRouter.coupleOverlayRequestTick.value, greaterThan(0));
-  });
 }

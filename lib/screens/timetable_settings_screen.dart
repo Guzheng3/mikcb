@@ -47,7 +47,6 @@ import '../services/live_testing_trigger.dart';
 import '../widgets/bundled_asset_image.dart';
 import '../services/memory_stats_service.dart';
 import 'about_screen.dart';
-import 'couple_timetable_settings_screen.dart';
 import 'data_transfer_screen.dart';
 import 'cloud_sync_screen.dart';
 import 'lan_edit_screen.dart';
@@ -205,15 +204,6 @@ class TimetableSettingsScreen extends StatelessWidget {
           );
         }
 
-        void openCoupleTimetable() {
-          HyperosNavigation.push(
-            context,
-            // Canonical name; deep link also accepts `/settings/couple`.
-            settings: const RouteSettings(name: '/settings/couple-timetable'),
-            builder: (_) => const CoupleTimetableSettingsScreen(),
-          );
-        }
-
         void openCloudSync() {
           HyperosNavigation.push(
             context,
@@ -339,7 +329,6 @@ class TimetableSettingsScreen extends StatelessWidget {
             openDataTransfer: openDataTransfer,
             openCloudSync: openCloudSync,
             openLanEdit: openLanEdit,
-            openCoupleTimetable: openCoupleTimetable,
             openAbout: openAbout,
             openUserGuide: openUserGuide,
             openDiagnostics: openDiagnostics,
@@ -395,7 +384,6 @@ class TimetableSettingsScreen extends StatelessWidget {
     required VoidCallback openDataTransfer,
     required VoidCallback openCloudSync,
     required VoidCallback openLanEdit,
-    required VoidCallback openCoupleTimetable,
     required VoidCallback openAbout,
     required VoidCallback openUserGuide,
     required VoidCallback openDiagnostics,
@@ -606,22 +594,6 @@ class TimetableSettingsScreen extends StatelessWidget {
                 ),
                 title: l10n.lanEditEntryTitle,
                 onClick: openLanEdit,
-              ),
-              _MiuixSettingsPreference(
-                startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('favoritesFill')!,
-                  HyperosIconColors.purple,
-                ),
-                title: l10n.coupleTimetableEntryTitle,
-                endActions: [
-                  Text(
-                    provider.hasPartnerBinding
-                        ? l10n.coupleTimetableEntryBound
-                        : l10n.coupleTimetableEntryUnboundLabel,
-                    style: HyperosTypography.listDetail(context),
-                  ),
-                ],
-                onClick: openCoupleTimetable,
               ),
             ],
           ),

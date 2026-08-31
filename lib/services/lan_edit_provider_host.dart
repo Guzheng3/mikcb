@@ -72,7 +72,6 @@ class LanEditProviderHost implements LanEditHost, LanTransferHost {
   List<Map<String, dynamic>> listProfilesSummary() {
     final activeId = _provider.activeProfile?.id;
     return _provider.profiles
-        .where((profile) => !profile.isPartnerImported)
         .map(
           (profile) => <String, dynamic>{
             'id': profile.id,
@@ -92,7 +91,7 @@ class LanEditProviderHost implements LanEditHost, LanTransferHost {
       throw ArgumentError('profile_id_required');
     }
     final exists = _provider.profiles.any(
-      (profile) => profile.id == trimmedId && !profile.isPartnerImported,
+      (profile) => profile.id == trimmedId,
     );
     if (!exists) {
       throw ArgumentError('profile_not_found');

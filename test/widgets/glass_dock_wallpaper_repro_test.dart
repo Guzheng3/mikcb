@@ -33,10 +33,7 @@ void main() {
     return (dir, file.path);
   }
 
-  Future<void> pumpApp(
-    WidgetTester tester,
-    TimetableProvider provider,
-  ) async {
+  Future<void> pumpApp(WidgetTester tester, TimetableProvider provider) async {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
@@ -52,10 +49,7 @@ void main() {
           locale: const Locale('zh'),
           home: FrostedAppearanceScope(
             appearance: FrostedAppearance.defaults,
-            child: TimetableScreen(
-              enableUpdateCheck: false,
-              enableProgressTimer: false,
-            ),
+            child: TimetableScreen(enableProgressTimer: false),
           ),
         ),
       ),
@@ -107,12 +101,10 @@ void main() {
     await pumpApp(tester, provider);
     expect(tester.takeException(), isNull, reason: '周视图初始渲染不应有异常');
     expect(find.byType(GlassTabBar), findsOneWidget);
-    expect(currentIndicatorIndex(), 1,
-        reason: '初始指示器应在周课表 Tab（排序：日课表/周课表）');
+    expect(currentIndicatorIndex(), 1, reason: '初始指示器应在周课表 Tab（排序：日课表/周课表）');
 
     // Tab 排序：日课表(左) / 周课表(右)；「设置」Tab 已移除，底栏不再出现。
-    expect(find.text('课表设置'), findsNothing,
-        reason: '玻璃坞底栏只有 日/周 两个 Tab');
+    expect(find.text('课表设置'), findsNothing, reason: '玻璃坞底栏只有 日/周 两个 Tab');
     final dayTabX = tester.getCenter(find.text('日课表').first).dx;
     final weekTabX = tester.getCenter(find.text('周课表').first).dx;
     expect(dayTabX, lessThan(weekTabX), reason: '日课表应位于周课表左侧');
@@ -139,11 +131,7 @@ void main() {
     expect(currentIndicatorIndex(), 0, reason: '日视图下指示器应在日课表 Tab');
 
     // 日视图自带顶部信息栏：显示星期几（不是空白栏）
-    expect(
-      find.text('周一'),
-      findsWidgets,
-      reason: '日视图顶部信息栏应显示星期',
-    );
+    expect(find.text('周一'), findsWidgets, reason: '日视图顶部信息栏应显示星期');
 
     // 切回周课表
     await tester.tap(find.text('周课表').first);
@@ -161,11 +149,7 @@ void main() {
     final anchorRect = tester.getRect(
       find.byKey(const ValueKey('timetable-day-view-panel')),
     );
-    expect(
-      anchorRect.left,
-      closeTo(0, 1),
-      reason: '日期栏路径不应有横向滑动位移',
-    );
+    expect(anchorRect.left, closeTo(0, 1), reason: '日期栏路径不应有横向滑动位移');
     expect(
       find.byWidgetPredicate(
         (w) => w is Align && w.widthFactor != null && w.widthFactor! < 0.9,

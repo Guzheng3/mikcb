@@ -5,8 +5,8 @@ String buildSharedCourseNameKey(String name) => name.trim().toLowerCase();
 
 /// 课程冲突检测与共享字段领域服务（纯 Dart，无 Flutter / IO 依赖）。
 ///
-/// 解耦阶段 1 自 `TimetableProvider` 收口；`couple_timetable_logic` 的
-/// 同源冲突判定已一并去重到 [overlapInWeek]。
+/// 解耦阶段 1 自 `TimetableProvider` 收口；同源冲突判定去重到
+/// [overlapInWeek]。
 class CourseDomain {
   CourseDomain._();
 

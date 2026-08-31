@@ -30,7 +30,7 @@ void main() {
     expect(memoryEntry!.visible(), isFalse);
     final releaseResolved = resolveHomeGridMenuEntries(
       TimetableSettings.defaults().copyWith(
-        homeGridMenuActions: ['overview', 'memoryStats', 'support'],
+        homeGridMenuActions: ['overview', 'memoryStats', 'aboutApp'],
       ),
     );
     expect(releaseResolved.map((e) => e.id), isNot(contains('memoryStats')));
@@ -41,7 +41,7 @@ void main() {
     expect(memoryEntry.visible(), isTrue);
     final debugResolved = resolveHomeGridMenuEntries(
       TimetableSettings.defaults().copyWith(
-        homeGridMenuActions: ['overview', 'memoryStats', 'support'],
+        homeGridMenuActions: ['overview', 'memoryStats', 'aboutApp'],
       ),
     );
     expect(debugResolved.map((e) => e.id), contains('memoryStats'));
@@ -49,7 +49,7 @@ void main() {
 
   test('resolver falls back to defaults on empty config and drops junk', () {
     final fallback = resolveHomeGridMenuEntries(TimetableSettings.defaults());
-    expect(fallback.length, HomeGridMenu.maxSlots);
+    expect(fallback.length, HomeGridMenu.defaultActions.length);
 
     final cleaned = resolveHomeGridMenuEntries(
       TimetableSettings.defaults().copyWith(

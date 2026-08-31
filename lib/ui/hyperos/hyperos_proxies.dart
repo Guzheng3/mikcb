@@ -18,7 +18,7 @@ class FHeaderAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Pass the caller's widget through untouched: rebuilding `Icon(iconData)`
-    // dropped the Icon's explicit color/size (e.g. the couple-mode pink heart
+    // dropped the Icon's explicit color/size (e.g. a pink heart icon
     // and the wallpaper chrome foreground on the home header).
     // MiuixIconButton has no tooltip parameter; wrap in Tooltip so desktop/web
     // hover still shows the label, matching the former IconButton.tooltip.

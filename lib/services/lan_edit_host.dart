@@ -13,13 +13,13 @@ abstract class LanEditHost {
 
   String? get activeProfileName;
 
-  /// Switchable timetable profiles (excludes partner-imported).
+  /// Switchable timetable profiles.
   ///
   /// Each map includes: `id`, `name`, `courseCount`, `currentWeek`, `isActive`.
   List<Map<String, dynamic>> listProfilesSummary();
 
   /// Switches the active profile. Throws [ArgumentError] when the id is
-  /// missing or not switchable (e.g. partner-imported).
+  /// missing.
   Future<void> switchProfile(String profileId);
 
   int get currentWeek;

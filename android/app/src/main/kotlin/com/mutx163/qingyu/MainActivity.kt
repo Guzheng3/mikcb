@@ -7,7 +7,6 @@ import android.view.HapticFeedbackConstants
 import android.Manifest
 import android.app.ActivityManager
 import android.app.AppOpsManager
-import android.app.DownloadManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -48,7 +47,6 @@ import android.text.TextPaint
 import android.text.TextUtils
 import android.util.Log
 import android.util.TypedValue
-import android.webkit.URLUtil
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -75,7 +73,6 @@ class MainActivity : FlutterActivity() {
         private const val PERMISSION_REQUEST_CODE = 1001
         private const val PREFS_NAME = "native_runtime_prefs"
         private const val KEY_HIDE_FROM_RECENTS = "hide_from_recents"
-        private const val KEY_MANAGED_UPDATE_DOWNLOAD_IDS = "managed_update_download_ids"
         private const val POST_PROMOTED_NOTIFICATIONS_PERMISSION =
             "android.permission.POST_PROMOTED_NOTIFICATIONS"
         private const val ICS_CHANNEL = "com.mutx163.qingyu/ics_import"
@@ -799,41 +796,6 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SUPPORT_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
-                    "enqueueSystemDownload" -> {
-                        val arguments = call.arguments as? Map<*, *>
-                        val url = arguments?.get("url") as? String
-                        val fileName = arguments?.get("fileName") as? String
-                        val title = arguments?.get("title") as? String
-                        val description = arguments?.get("description") as? String
-                        if (url.isNullOrBlank()) {
-                            result.error("INVALID_ARGUMENTS", "Missing download url", null)
-                            return@setMethodCallHandler
-                        }
-                        try {
-                            val downloadId = enqueueSystemDownload(
-                                url = url,
-                                fileName = fileName,
-                                title = title,
-                                description = description,
-                            )
-                            result.success(downloadId)
-                        } catch (e: Exception) {
-                            result.error("DOWNLOAD_ENQUEUE_FAILED", e.message, null)
-                        }
-                    }
-                    "getSystemDownloadProgress" -> {
-                        val arguments = call.arguments as? Map<*, *>
-                        val downloadId = (arguments?.get("downloadId") as? Number)?.toLong()
-                        if (downloadId == null) {
-                            result.error("INVALID_ARGUMENTS", "Missing download id", null)
-                            return@setMethodCallHandler
-                        }
-                        try {
-                            result.success(querySystemDownloadProgress(downloadId))
-                        } catch (e: Exception) {
-                            result.error("DOWNLOAD_QUERY_FAILED", e.message, null)
-                        }
-                    }
                     "saveImageToGallery" -> {
                         val arguments = call.arguments as? Map<*, *>
                         val bytes = arguments?.get("bytes") as? ByteArray
@@ -1274,115 +1236,6 @@ class MainActivity : FlutterActivity() {
             else -> null
         } ?: return null
         return ComponentName(this, providerClass)
-    }
-
-    private fun enqueueSystemDownload(
-        url: String,
-        fileName: String?,
-        title: String?,
-        description: String?,
-    ): Long {
-        val downloadManager =
-            getSystemService(Context.DOWNLOAD_SERVICE) as? DownloadManager
-                ?: throw IllegalStateException("DownloadManager unavailable")
-        val resolvedFileName = sanitizeDownloadFileName(
-            fileName?.takeIf { it.isNotBlank() }
-                ?: URLUtil.guessFileName(url, null, "application/vnd.android.package-archive")
-        )
-        cleanupManagedUpdateDownloads(downloadManager)
-        val request = DownloadManager.Request(Uri.parse(url)).apply {
-            setMimeType("application/vnd.android.package-archive")
-            setTitle(title?.takeIf { it.isNotBlank() } ?: resolvedFileName)
-            if (!description.isNullOrBlank()) {
-                setDescription(description)
-            }
-            setNotificationVisibility(
-                DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
-            )
-            setVisibleInDownloadsUi(true)
-            setAllowedOverMetered(true)
-            setAllowedOverRoaming(true)
-            setDestinationInExternalPublicDir(
-                Environment.DIRECTORY_DOWNLOADS,
-                resolvedFileName
-            )
-        }
-        val downloadId = downloadManager.enqueue(request)
-        rememberManagedUpdateDownload(downloadId)
-        return downloadId
-    }
-
-    private fun querySystemDownloadProgress(downloadId: Long): Map<String, Any?> {
-        val downloadManager =
-            getSystemService(Context.DOWNLOAD_SERVICE) as? DownloadManager
-                ?: throw IllegalStateException("DownloadManager unavailable")
-        val query = DownloadManager.Query().setFilterById(downloadId)
-        downloadManager.query(query).use { cursor ->
-            if (!cursor.moveToFirst()) {
-                return mapOf(
-                    "status" to "unknown",
-                    "downloadedBytes" to 0L,
-                    "totalBytes" to -1L,
-                    "reason" to null,
-                )
-            }
-
-            val status = when (
-                cursor.getInt(
-                    cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS),
-                )
-            ) {
-                DownloadManager.STATUS_PENDING -> "pending"
-                DownloadManager.STATUS_RUNNING -> "running"
-                DownloadManager.STATUS_PAUSED -> "paused"
-                DownloadManager.STATUS_SUCCESSFUL -> "successful"
-                DownloadManager.STATUS_FAILED -> "failed"
-                else -> "unknown"
-            }
-            val downloadedBytes = cursor.getLong(
-                cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR),
-            )
-            val totalBytes = cursor.getLong(
-                cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES),
-            )
-            val reasonIndex = cursor.getColumnIndex(DownloadManager.COLUMN_REASON)
-            val reason = if (reasonIndex >= 0) cursor.getInt(reasonIndex) else null
-            return mapOf(
-                "status" to status,
-                "downloadedBytes" to downloadedBytes,
-                "totalBytes" to totalBytes,
-                "reason" to reason,
-            )
-        }
-    }
-
-    private fun sanitizeDownloadFileName(fileName: String): String {
-        val trimmed = fileName.trim().ifEmpty { "mikcb_update.apk" }
-        val normalized = trimmed.replace(Regex("[\\\\/:*?\"<>|]"), "_")
-        return if (normalized.lowercase().endsWith(".apk")) {
-            normalized
-        } else {
-            "$normalized.apk"
-        }
-    }
-
-    private fun cleanupManagedUpdateDownloads(downloadManager: DownloadManager) {
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val trackedIds = prefs.getStringSet(KEY_MANAGED_UPDATE_DOWNLOAD_IDS, emptySet()).orEmpty()
-        val ids = trackedIds.mapNotNull { it.toLongOrNull() }.toLongArray()
-        if (ids.isNotEmpty()) {
-            runCatching {
-                downloadManager.remove(*ids)
-            }
-        }
-        prefs.edit().remove(KEY_MANAGED_UPDATE_DOWNLOAD_IDS).apply()
-    }
-
-    private fun rememberManagedUpdateDownload(downloadId: Long) {
-        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putStringSet(KEY_MANAGED_UPDATE_DOWNLOAD_IDS, setOf(downloadId.toString()))
-            .apply()
     }
 
     private fun hasNotificationPermission(): Boolean {

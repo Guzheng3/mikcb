@@ -1102,16 +1102,10 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       return;
     }
     try {
-      final outcome = await WidgetLaunchRouter.handle(context);
-      if (!mounted ||
-          outcome != WidgetLaunchOutcome.bindingMissing) {
+      await WidgetLaunchRouter.handle(context);
+      if (!mounted) {
         return;
       }
-      showAppToast(
-        context,
-        message: AppLocalizations.of(context)!.homeWidgetBindingMissingToast,
-        kind: AppToastKind.error,
-      );
     } catch (e) {
       // 非关键功能：分流失败按普通打开处理。
       unawaited(

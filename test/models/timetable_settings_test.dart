@@ -74,7 +74,6 @@ void main() {
     expect(settings.liveMiuiIslandExpandedIconPath, isNull);
     expect(settings.appUpdateDownloadSource, 'mirror');
     expect(settings.appUpdateMirrorPreset, 'ghfast');
-    expect(settings.appUpdateIncludePrerelease, isFalse);
     expect(settings.appUpdateMirrorUrlPrefix, defaultAppUpdateMirrorUrlPrefix);
     expect(settings.courseCardVerticalAlign, CourseCardVerticalAlign.center);
     expect(
@@ -161,7 +160,6 @@ void main() {
     expect(restored.liveMiuiIslandExpandedIconPath, isNull);
     expect(restored.appUpdateDownloadSource, 'mirror');
     expect(restored.appUpdateMirrorPreset, 'ghfast');
-    expect(restored.appUpdateIncludePrerelease, isFalse);
     expect(restored.appUpdateMirrorUrlPrefix, defaultAppUpdateMirrorUrlPrefix);
     expect(restored.courseCardVerticalAlign, CourseCardVerticalAlign.center);
     expect(
@@ -239,7 +237,6 @@ void main() {
       liveMiuiIslandExpandedIconPath: '/tmp/expanded.png',
       appUpdateDownloadSource: AppUpdateDownloadSource.original.value,
       appUpdateMirrorPreset: AppUpdateMirrorPreset.custom.value,
-      appUpdateIncludePrerelease: true,
       appUpdateMirrorUrlPrefix: 'https://mirror.example.com/',
     );
 
@@ -315,7 +312,6 @@ void main() {
       AppUpdateDownloadSource.original.value,
     );
     expect(restored.appUpdateMirrorPreset, AppUpdateMirrorPreset.custom.value);
-    expect(restored.appUpdateIncludePrerelease, isTrue);
     expect(restored.appUpdateMirrorUrlPrefix, 'https://mirror.example.com/');
     expect(
       restored.courseCardVerticalAlign,
@@ -437,12 +433,18 @@ void main() {
     });
 
     // 半透明并入实体卡片；玻璃 / 液态玻璃并入高斯模糊。
-    expect(restore('translucent').courseCardSurfaceStyle,
-        CourseCardSurfaceStyle.solid);
-    expect(restore('glass').courseCardSurfaceStyle,
-        CourseCardSurfaceStyle.gaussian);
-    expect(restore('liquidGlass').courseCardSurfaceStyle,
-        CourseCardSurfaceStyle.gaussian);
+    expect(
+      restore('translucent').courseCardSurfaceStyle,
+      CourseCardSurfaceStyle.solid,
+    );
+    expect(
+      restore('glass').courseCardSurfaceStyle,
+      CourseCardSurfaceStyle.gaussian,
+    );
+    expect(
+      restore('liquidGlass').courseCardSurfaceStyle,
+      CourseCardSurfaceStyle.gaussian,
+    );
   });
 
   test('gaussian course-card style survives json round trip', () {
@@ -920,14 +922,14 @@ void main() {
           'overview',
           'bogus_action',
           'overview',
-          'support',
+          'feedback',
         ];
 
       final restored = TimetableSettings.fromJson(json);
       expect(restored.homeGridMenuActions, [
         'overview',
         'bogus_action',
-        'support',
+        'feedback',
         HomeGridMenu.pinnedActionId,
       ]);
     });
@@ -935,7 +937,7 @@ void main() {
     test('grid order caps at max slots', () {
       final json = TimetableSettings.defaults().toJson()
         ..['homeGridMenuActions'] = [
-          'update',
+          'addExam',
           'overview',
           'statistics',
           'addCourse',
@@ -943,7 +945,7 @@ void main() {
           'importCourses',
           'tasks',
           'settings',
-          'support',
+          'feedback',
         ];
 
       final restored = TimetableSettings.fromJson(json);
@@ -953,12 +955,12 @@ void main() {
 
     test('non-string entries are dropped', () {
       final json = TimetableSettings.defaults().toJson()
-        ..['homeGridMenuActions'] = <Object?>['exams', 42, null, 'support'];
+        ..['homeGridMenuActions'] = <Object?>['exams', 42, null, 'feedback'];
 
       final restored = TimetableSettings.fromJson(json);
       expect(restored.homeGridMenuActions, [
         'exams',
-        'support',
+        'feedback',
         HomeGridMenu.pinnedActionId,
       ]);
     });
@@ -967,13 +969,13 @@ void main() {
       // 钉住「课表设置」是防呆：删光可达设置的入口后，用户就再也进不了
       // 自定义编辑器（先有鸡还是先有蛋）。解析路径强制补回。
       final json = TimetableSettings.defaults().toJson()
-        ..['homeGridMenuActions'] = ['overview', 'tasks', 'support'];
+        ..['homeGridMenuActions'] = ['overview', 'tasks', 'feedback'];
 
       final restored = TimetableSettings.fromJson(json);
       expect(restored.homeGridMenuActions, [
         'overview',
         'tasks',
-        'support',
+        'feedback',
         HomeGridMenu.pinnedActionId,
       ]);
     });
@@ -982,21 +984,21 @@ void main() {
       // 满 8 个且没有 settings：挤掉末位补回钉住项，保证不超槽。
       final json = TimetableSettings.defaults().toJson()
         ..['homeGridMenuActions'] = [
-          'update',
+          'addExam',
           'overview',
           'statistics',
           'addCourse',
           'exams',
           'importCourses',
           'tasks',
-          'support',
+          'feedback',
         ];
 
       final restored = TimetableSettings.fromJson(json);
       expect(restored.homeGridMenuActions.length, HomeGridMenu.maxSlots);
       expect(restored.homeGridMenuActions.last, HomeGridMenu.pinnedActionId);
-      // 满槽时被挤掉的是末位的 support——钉住项优先级高于普通条目。
-      expect(restored.homeGridMenuActions.contains('support'), isFalse);
+      // 满槽时被挤掉的是末位的 feedback——钉住项优先级高于普通条目。
+      expect(restored.homeGridMenuActions.contains('feedback'), isFalse);
     });
 
     test('copyWith also enforces the pinned entry on write', () {
@@ -1039,20 +1041,17 @@ void main() {
 
     test('missing json keys fall back to shipped defaults', () {
       final restored = TimetableSettings.fromJson(
-        TimetableSettings.defaults().toJson()
-          ..remove('glassDockShowWeekTab'),
+        TimetableSettings.defaults().toJson()..remove('glassDockShowWeekTab'),
       );
       expect(restored.glassDockShowWeekTab, isTrue);
 
       final restored2 = TimetableSettings.fromJson(
-        TimetableSettings.defaults().toJson()
-          ..remove('glassDockButtonEntryId'),
+        TimetableSettings.defaults().toJson()..remove('glassDockButtonEntryId'),
       );
       expect(restored2.glassDockButtonEntryId, 'addCourse');
 
       final restored3 = TimetableSettings.fromJson(
-        TimetableSettings.defaults().toJson()
-          ..remove('glassDockShowAddButton'),
+        TimetableSettings.defaults().toJson()..remove('glassDockShowAddButton'),
       );
       expect(restored3.glassDockShowAddButton, isFalse);
     });
@@ -1072,16 +1071,31 @@ void main() {
 
     test('fromJson heals divergent detail colors while linked', () {
       final settings = TimetableSettings.fromJson(dirtyJson(link: true));
-      expect(settings.courseCardDetailColorLight, settings.courseCardTitleColorLight);
-      expect(settings.courseCardDetailColorDark, settings.courseCardTitleColorDark);
+      expect(
+        settings.courseCardDetailColorLight,
+        settings.courseCardTitleColorLight,
+      );
+      expect(
+        settings.courseCardDetailColorDark,
+        settings.courseCardTitleColorDark,
+      );
     });
 
-    test('fromJson defaults to linked and heals legacy data without the key', () {
-      final settings = TimetableSettings.fromJson(dirtyJson(link: null));
-      expect(settings.linkCourseCardColors, isTrue);
-      expect(settings.courseCardDetailColorLight, settings.courseCardTitleColorLight);
-      expect(settings.courseCardDetailColorDark, settings.courseCardTitleColorDark);
-    });
+    test(
+      'fromJson defaults to linked and heals legacy data without the key',
+      () {
+        final settings = TimetableSettings.fromJson(dirtyJson(link: null));
+        expect(settings.linkCourseCardColors, isTrue);
+        expect(
+          settings.courseCardDetailColorLight,
+          settings.courseCardTitleColorLight,
+        );
+        expect(
+          settings.courseCardDetailColorDark,
+          settings.courseCardTitleColorDark,
+        );
+      },
+    );
 
     test('fromJson keeps explicit detail colors in independent mode', () {
       final settings = TimetableSettings.fromJson(dirtyJson(link: false));
@@ -1112,17 +1126,23 @@ void main() {
       );
       expect(dirty.linkCourseCardColors, isTrue);
       final healed = dirty.copyWith();
-      expect(healed.courseCardDetailColorLight, healed.courseCardTitleColorLight);
+      expect(
+        healed.courseCardDetailColorLight,
+        healed.courseCardTitleColorLight,
+      );
       expect(healed.courseCardDetailColorDark, healed.courseCardTitleColorDark);
     });
 
-    test('copyWith syncs the detail color when the title changes while linked', () {
-      final changed = TimetableSettings.defaults().copyWith(
-        courseCardTitleColorLight: '#0D47A1',
-      );
-      expect(changed.courseCardTitleColorLight, '#0D47A1');
-      expect(changed.courseCardDetailColorLight, '#0D47A1');
-    });
+    test(
+      'copyWith syncs the detail color when the title changes while linked',
+      () {
+        final changed = TimetableSettings.defaults().copyWith(
+          courseCardTitleColorLight: '#0D47A1',
+        );
+        expect(changed.courseCardTitleColorLight, '#0D47A1');
+        expect(changed.courseCardDetailColorLight, '#0D47A1');
+      },
+    );
 
     test('copyWith keeps user-picked detail colors in independent mode', () {
       final base = TimetableSettings.defaults().copyWith(

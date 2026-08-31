@@ -159,245 +159,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get dataTransferEntrySubtitle => '시간표 파일을 내보내 다른 사람이 바로 가져올 수 있습니다';
 
   @override
-  String get coupleTimetableEntryTitle => '커플 시간표';
-
-  @override
-  String get coupleTimetableEntryBound => '연결됨';
-
-  @override
-  String get coupleTimetableModeEnableTooltip => '커플 시간표 켜기';
-
-  @override
-  String get coupleTimetableModeDisableTooltip => '커플 시간표 끄기';
-
-  @override
-  String get coupleTimetableTitle => '커플 시간표';
-
-  @override
-  String get coupleTimetableIntro =>
-      '내 시간표를 내보내서 상대방에게 보내거나, 상대방이 공유한 시간표 파일을 가져올 수 있습니다. 가져오면 겹쳐 보기에서 양쪽 수업을 확인할 수 있습니다';
-
-  @override
-  String get coupleTimetableBoundTitle => '상대방 시간표 연결됨';
-
-  @override
-  String get coupleTimetableUnboundTitle => '상대방 시간표가 연결되지 않음';
-
-  @override
-  String get coupleTimetablePartnerNameLabel => '상대방 이름';
-
-  @override
-  String coupleTimetableLastImportedAt(String time) {
-    return '마지막 가져오기: $time';
-  }
-
-  @override
-  String get coupleTimetableExportForPartner => '내 시간표를 상대방에게 내보내기';
-
-  @override
-  String get coupleTimetableImportPartner => '상대방 시간표 가져오기';
-
-  @override
-  String get coupleTimetableUnlink => '연결 해제';
-
-  @override
-  String get coupleTimetableOpenOverlay => '겹쳐 보기 열기';
-
-  @override
-  String get coupleTimetableImportSuccess => '상대방 시간표를 가져왔습니다';
-
-  @override
-  String get coupleTimetableImportUpdated => '상대방 시간표를 업데이트했습니다';
-
-  @override
-  String get coupleTimetableUnlinkConfirmTitle => '커플 시간표 연결을 해제할까요?';
-
-  @override
-  String get coupleTimetableUnlinkConfirmMessage =>
-      '해제하면 기기에 저장된 상대방 시간표가 삭제되고 겹쳐 보기도 닫힙니다';
-
-  @override
-  String get coupleTimetableUnlinkSuccess => '연결이 해제되었습니다';
-
-  @override
-  String get coupleTimetablePrivacyHint => '상대방은 내보낸 파일에 포함된 시간표 내용만 볼 수 있습니다';
-
-  @override
-  String get coupleTimetableOverlayTitle => '커플 겹쳐 보기';
-
-  @override
-  String get coupleTimetableLegendMine => '내 수업';
-
-  @override
-  String get coupleTimetableLegendPartner => '상대방 수업';
-
-  @override
-  String get coupleTimetableLegendTogether => '함께 듣는 수업';
-
-  @override
-  String get coupleTimetableLegendFree => '공통 공강';
-
-  @override
-  String get coupleTimetableSharedFreeTitle => '오늘 공통 공강 시간';
-
-  @override
-  String get coupleTimetableSharedFreeTitleOtherDay => '이날 공통 공강 시간';
-
-  @override
-  String get coupleTimetableNoSharedFree => '오늘 공통 공강 시간이 없습니다';
-
-  @override
-  String get coupleTimetableNoSharedFreeOtherDay => '이날 공통 공강 시간이 없습니다';
-
-  @override
-  String coupleTimetableSharedFreeMeta(int count) {
-    return '총 $count개 구간';
-  }
-
-  @override
-  String coupleTimetableSharedFreeMoreCount(int count) {
-    return '$count개 구간 더';
-  }
-
-  @override
-  String get coupleTimetableSharedFreeUnavailable => '지금은 공통 공강 시간을 계산할 수 없습니다';
-
-  @override
-  String get coupleTimetableSharedFreeStaleHint => '상대방 시간표가 최신이 아닐 수 있습니다';
-
-  @override
-  String get coupleTimetablePartnerReadOnlyBadge => '상대방 시간표(읽기 전용)';
-
-  @override
-  String get coupleTimetableNotBoundMessage => '먼저 상대방 시간표를 가져온 후 겹쳐 보기를 확인하세요';
-
-  @override
-  String get coupleTimetableShareText =>
-      '이것은 내 시간표입니다. 경屿 시간표의 커플 시간표로 가져오면 함께 확인할 수 있습니다';
-
-  @override
-  String get coupleTimetableShareSubject => '경屿 시간표 · 커플 시간표 공유';
-
-  @override
-  String get coupleTimetableWeekOffsetTitle => '주차 오프셋';
-
-  @override
-  String get coupleTimetableWeekOffsetSubtitle =>
-      '내 N주차를 볼 때 상대방 시간표의 N+오프셋 주차를 읽습니다. 예: +1은 상대방의 학기 진도가 한 주 빠르다는 뜻입니다';
-
-  @override
-  String get coupleTimetableWeekOffsetZero => '오프셋 없음';
-
-  @override
-  String coupleTimetableWeekOffsetSigned(String offset) {
-    return '$offset주';
-  }
-
-  @override
-  String coupleTimetableWeekOffsetPreview(int myWeek, int partnerWeek) {
-    return '내 $myWeek주차를 볼 때 상대방의 $partnerWeek주차 수업을 표시합니다';
-  }
-
-  @override
-  String get coupleTimetableColorsTitle => '겹쳐 보기 색상';
-
-  @override
-  String get coupleTimetableColorsSubtitle =>
-      '\'내 수업\', \'상대방 수업\', \'함께 듣는 수업\'의 겹쳐 보기 색상을 자유롭게 설정할 수 있습니다';
-
-  @override
-  String get partnerImportRequiresSingleProfile =>
-      '단일 시간표 백업 파일을 가져오세요. 전체 백업은 지원하지 않습니다';
-
-  @override
-  String get coupleWebdavTitle => '견과클라우드 가져오기';
-
-  @override
-  String get coupleWebdavSubtitle =>
-      '상대(또는 공용) 견과클라우드에 로그인하여 업로드된 시간표를 가져옵니다. 클라우드 동기화 계정과 별개입니다';
-
-  @override
-  String get coupleWebdavNotConnected => '견과클라우드 미연결';
-
-  @override
-  String coupleWebdavConnectedAs(String username) {
-    return '연결됨: $username';
-  }
-
-  @override
-  String coupleWebdavRemotePathHint(String path) {
-    return '원격 파일 경로: $path';
-  }
-
-  @override
-  String coupleWebdavLastPulledAt(String time) {
-    return '마지막 가져오기: $time';
-  }
-
-  @override
-  String get coupleWebdavConnect => '너트스토어 연결';
-
-  @override
-  String get coupleWebdavDisconnect => '연결 끊기';
-
-  @override
-  String get coupleWebdavPullNow => '상대방 시간표 즉시 가져오기';
-
-  @override
-  String get coupleWebdavUploadForPartner => '내 시간표를 너트스토어에 업로드';
-
-  @override
-  String get coupleWebdavLoginSheetTitle => '너트스토어 연결(커플 시간표)';
-
-  @override
-  String get coupleWebdavLoginSheetSubtitle =>
-      '앱 전용 비밀번호를 사용하세요. 상대방이 미리 시간표를 약속된 경로에 업로드하거나, 상대방 기기에서 같은 계정으로 로그인해 업로드해야 합니다';
-
-  @override
-  String get coupleWebdavConfirmConnect => '연결하고 가져오기';
-
-  @override
-  String get coupleWebdavMySlotLabel => '이 기기 슬롯';
-
-  @override
-  String get coupleWebdavMySlotHint =>
-      '양쪽이 서로 다른 슬롯을 선택해야 합니다. 한쪽은 1, 다른 쪽은 2. 같으면 상대 시간표를 읽을 수 없습니다';
-
-  @override
-  String get coupleWebdavSlotOne => '슬롯 1';
-
-  @override
-  String get coupleWebdavSlotTwo => '슬롯 2';
-
-  @override
-  String get coupleWebdavTestSuccess => '너트스토어 연결 성공';
-
-  @override
-  String get coupleWebdavTestFailed => '연결에 실패했습니다. 계정, 앱 전용 비밀번호, 네트워크를 확인하세요';
-
-  @override
-  String get coupleWebdavPullImported => '너트스토어에서 상대방 시간표를 가져왔습니다';
-
-  @override
-  String get coupleWebdavPullUpdated => '너트스토어에서 상대방 시간표를 업데이트했습니다';
-
-  @override
-  String get coupleWebdavPullUnchanged => '상대방 시간표에 변화가 없습니다';
-
-  @override
-  String get coupleWebdavUploadSuccess => '시간표를 업로드했습니다. 상대방이 가져올 수 있습니다';
-
-  @override
-  String get coupleWebdavPartnerFileMissing =>
-      '상대방 시간표 파일을 찾을 수 없습니다. 상대방이 먼저 업로드하도록 하세요';
-
-  @override
-  String get coupleWebdavPullFailed => '상대방 시간표를 가져오지 못했습니다. 잠시 후 다시 시도하세요';
-
-  @override
-  String get coupleWebdavNotConnectedError => '먼저 너트스토어에 연결하세요';
-
-  @override
   String get cloudSyncEntryTitle => '클라우드 동기화';
 
   @override
@@ -1531,38 +1292,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get openOldAppFailed => '이전 버전을 열지 못했습니다. 홈 화면에서 수동으로 이전 버전을 여세요';
 
   @override
-  String get supportCreatorTitle => '개발자에게 커피 한 잔';
-
-  @override
-  String get supportHeroTitle => '경屿 시간표의 지속적 업데이트를 지원';
-
-  @override
-  String get supportHeroSubtitle =>
-      '여러분의 지원은 시간표 유지보수, 교무 가져오기 적응 및 UX 개선에 직접 사용됩니다';
-
-  @override
-  String get supportChipFixes => '문제 수정';
-
-  @override
-  String get supportChipAdapters => '교무 적응';
-
-  @override
-  String get supportChipPolish => 'UX 개선';
-
-  @override
-  String get supportMethodTitle => '지원 방법 선택';
-
-  @override
   String get wechatLabel => 'WeChat';
 
   @override
   String get alipayLabel => 'Alipay';
-
-  @override
-  String get supportWeChatHint => 'WeChat으로 QR 코드를 스캔하여 개발자 지원';
-
-  @override
-  String get supportAlipayHint => 'Alipay로 QR 코드를 스캔하여 개발자 지원';
 
   @override
   String get viewLargeImage => '큰 이미지 보기';
@@ -1571,28 +1304,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get saveToGallery => '갤러리에 저장';
 
   @override
-  String get supportCompleteThanks => '경屿 시간표의 지속적인 개선을 지원해 주셔서 감사합니다 ❤️';
-
-  @override
-  String get supportConfirmed => '지원했습니다';
-
-  @override
-  String get donorListTitle => '감사 목록';
-
-  @override
-  String get donorListLoadFailed => '온라인 감사 목록을 불러올 수 없습니다.';
-
-  @override
   String get reloadAction => '다시 불러오기';
 
   @override
   String updatedAtLabel(String time) {
     return '$time에 업데이트';
   }
-
-  @override
-  String get donorListEmpty =>
-      '목록이 아직 작성되지 않았습니다. docs/donors.json을 직접 편집한 뒤 재발행할 수 있습니다.';
 
   @override
   String get savedToGallery => '갤러리에 저장되었습니다';
@@ -1604,51 +1321,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String saveFailedWithError(String error) {
     return '저장 실패: $error';
   }
-
-  @override
-  String get supportRunningBadge => '운영 중';
-
-  @override
-  String get supportTapQrHint => '탭하여 확대';
-
-  @override
-  String get supportSaveShort => '저장';
-
-  @override
-  String get supportConfirmedShort => '후원함';
-
-  @override
-  String get donorSearchHint => '닉네임/메시지 검색...';
-
-  @override
-  String get donorSortLargeFirst => '금액 높은 순';
-
-  @override
-  String get donorSortSmallFirst => '금액 낮은 순';
-
-  @override
-  String get supportMonthlyGoalLabel => '이번 달 서버·인증서 갱신 진행률';
-
-  @override
-  String supportGoalRaised(String raised, String goal) {
-    return '모금: $raised / 목표 $goal';
-  }
-
-  @override
-  String supportBackerCount(int count) {
-    return '이미 $count명이 후원';
-  }
-
-  @override
-  String get supportDonorListFooter => '명단은 영구 보존됩니다 💖';
-
-  @override
-  String supportMarqueeThanks(String name, String amount) {
-    return '🎉 $name님 $amount 감사합니다';
-  }
-
-  @override
-  String get supportMarqueeTail => '경屿 시간표가 안정적으로 운영 중 — 여러분의 후원을 기다립니다!';
 
   @override
   String get scanQrWechatTitle => 'WeChat으로 QR 코드 스캔';
@@ -5165,9 +4837,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get homeMenuUpdateTitle => '소프트웨어 업데이트';
-
-  @override
   String get homeMenuProfilesTitle => '시간표 관리';
 
   @override
@@ -5181,9 +4850,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeMenuSettingsTitle => '시간표 설정';
-
-  @override
-  String get homeMenuCoffeeTitle => '커피 한 잔';
 
   @override
   String get homeMenuFeedbackTitle => '문제 제보';
@@ -6160,18 +5826,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get courseActionConflictSwitchAction => '전환';
-
-  @override
-  String courseActionCoupleRelatedCount(int count) {
-    return '커플 시간표 수업 $count개 더';
-  }
-
-  @override
-  String get courseActionCoupleExpandHint =>
-      '펼쳐서 상대방 수업이나 함께 듣는 수업을 확인하세요. 탭하면 미리보기를 전환할 수 있습니다';
-
-  @override
-  String get courseActionCoupleCollapseHint => '탭하면 커플 시간표 수업 목록이 접힙니다';
 
   @override
   String courseActionMixedRelatedCount(int count) {
@@ -8001,11 +7655,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String serviceMsgMacroReplayPaused(String reason) {
     return 'Waiting for manual action: $reason';
-  }
-
-  @override
-  String serviceMsgSupportDonorsLoadFailed(String detail) {
-    return 'Failed to load supporters list: $detail';
   }
 
   @override
@@ -10105,9 +9754,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsDataShareSectionTitle => '데이터 및 공유';
-
-  @override
-  String get coupleTimetableEntryUnboundLabel => '연결 안 됨';
 
   @override
   String get settingsAboutSectionTitle => '정보';

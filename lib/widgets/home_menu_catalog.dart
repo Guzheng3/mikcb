@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
@@ -12,7 +11,6 @@ import 'package:university_timetable/screens/add_task_screen.dart';
 import 'package:university_timetable/screens/advanced_material_settings_screen.dart';
 import 'package:university_timetable/screens/changelog_screen.dart';
 import 'package:university_timetable/screens/cloud_sync_screen.dart';
-import 'package:university_timetable/screens/couple_timetable_settings_screen.dart';
 import 'package:university_timetable/screens/course_conflict_screen.dart';
 import 'package:university_timetable/screens/course_import_screen.dart';
 import 'package:university_timetable/screens/course_overview_screen.dart';
@@ -27,7 +25,6 @@ import 'package:university_timetable/screens/memory_stats_screen.dart';
 import 'package:university_timetable/screens/open_source_licenses_screen.dart';
 import 'package:university_timetable/screens/schedule_date_rule_screen.dart';
 import 'package:university_timetable/screens/statistics_settings_screen.dart';
-import 'package:university_timetable/screens/support_creator_screen.dart';
 import 'package:university_timetable/screens/task_list_screen.dart';
 import 'package:university_timetable/screens/time_scheme_management_screen.dart';
 import 'package:university_timetable/screens/timetable_profiles_screen.dart';
@@ -52,21 +49,6 @@ export 'home_top_menu.dart'
 /// - 新增入口只要在 [kHomeMenuCatalog] 追加一条即可进入编辑器候选。
 final List<HomeMenuEntry> kHomeMenuCatalog = [
   // ── 功能入口 ──────────────────────────────────────────────
-  HomeMenuEntry(
-    id: 'update',
-    title: (l10n) => l10n.homeMenuUpdateTitle,
-    icon: Icons.system_update_alt_rounded,
-    category: HomeMenuEntryCategory.features,
-    // 宿主拦截后才会走这里；兜底直开更新详情页。
-    open: (context) async {
-      final packageInfo = await PackageInfo.fromPlatform();
-      if (!context.mounted) return;
-      await pushHomeMenuPage(
-        context,
-        AboutUpdateScreen(packageInfo: packageInfo),
-      );
-    },
-  ),
   HomeMenuEntry(
     id: 'overview',
     title: (l10n) => l10n.homeMenuOverviewTitle,
@@ -139,8 +121,7 @@ final List<HomeMenuEntry> kHomeMenuCatalog = [
     title: (l10n) => l10n.addScheduleTitle,
     icon: Icons.event_available_outlined,
     category: HomeMenuEntryCategory.features,
-    open: (context) =>
-        pushHomeMenuPage(context, const AddScheduleItemScreen()),
+    open: (context) => pushHomeMenuPage(context, const AddScheduleItemScreen()),
   ),
   HomeMenuEntry(
     id: 'courseConflict',
@@ -194,14 +175,11 @@ final List<HomeMenuEntry> kHomeMenuCatalog = [
     icon: Icons.swap_horiz_rounded,
     category: HomeMenuEntryCategory.features,
     // 直接弹「切换课表」弹层（非页面）：与点首页标题同一条弹层路径。
-    // TA 课表靠情侣覆盖层叠加显示，不是切换对象，不出现在列表里。
     open: (context) async {
       final provider = context.read<TimetableProvider>();
       final selected = await showProfileQuickSwitchSheet(
         context,
-        profiles: provider.profiles
-            .where((profile) => !profile.isPartnerImported)
-            .toList(growable: false),
+        profiles: provider.profiles,
         activeProfileId: provider.activeProfileId,
         onManageTimetables: (buttonContext) async {
           Navigator.of(buttonContext).pop();
@@ -240,15 +218,6 @@ final List<HomeMenuEntry> kHomeMenuCatalog = [
     category: HomeMenuEntryCategory.data,
     open: (context) => pushHomeMenuPage(context, const LanEditScreen()),
   ),
-  HomeMenuEntry(
-    id: 'coupleTimetable',
-    title: (l10n) => l10n.coupleTimetableTitle,
-    icon: Icons.favorite_outline_rounded,
-    category: HomeMenuEntryCategory.data,
-    open: (context) =>
-        pushHomeMenuPage(context, const CoupleTimetableSettingsScreen()),
-  ),
-
   // ── 偏好设置 ──────────────────────────────────────────────
   HomeMenuEntry(
     id: 'settings',
@@ -316,14 +285,6 @@ final List<HomeMenuEntry> kHomeMenuCatalog = [
   ),
 
   // ── 关于与支持 ────────────────────────────────────────────
-  HomeMenuEntry(
-    id: 'support',
-    title: (l10n) => l10n.homeMenuCoffeeTitle,
-    icon: Icons.favorite_border_rounded,
-    category: HomeMenuEntryCategory.about,
-    open: (context) =>
-        pushHomeMenuPage(context, const SupportCreatorScreen()),
-  ),
   HomeMenuEntry(
     id: 'aboutApp',
     title: (l10n) => l10n.aboutTitle,
@@ -407,7 +368,6 @@ final Map<String, WidgetBuilder> kInlineDockPages = {
   'dataTransfer': (context) => const DataTransferScreen(),
   'cloudSync': (context) => const CloudSyncScreen(),
   'lanEdit': (context) => const LanEditScreen(),
-  'coupleTimetable': (context) => const CoupleTimetableSettingsScreen(),
   'timeSchemes': (context) => const TimeSchemeManagementScreen(),
   'icsExport': (context) => const IcsExportScreen(),
   'profiles': (context) => const TimetableProfilesScreen(),
@@ -415,21 +375,10 @@ final Map<String, WidgetBuilder> kInlineDockPages = {
   'changelog': (context) => const ChangelogScreen(),
   'openSourceLicenses': (context) => const OpenSourceLicensesScreen(),
   'userGuide': (context) => const UserGuideScreen(),
-  'support': (context) => const SupportCreatorScreen(),
   'statisticsSettings': (context) => const StatisticsSettingsScreen(),
   'locationTimeMatch': (context) => const LocationTimeMatchScreen(),
   'scheduleDateRule': (context) => const ScheduleDateRuleScreen(),
   'memoryStats': (context) => const MemoryStatsScreen(),
-  // 软件更新页构造需要 PackageInfo：用 FutureBuilder 在内嵌壳内自取。
-  'update': (context) => FutureBuilder(
-        future: PackageInfo.fromPlatform(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return AboutUpdateScreen(packageInfo: snapshot.data!);
-        },
-      ),
 };
 
 /// id 对应的内嵌页构建器；未登记返回 null（调用方回退为推入路由）。
@@ -462,12 +411,10 @@ List<HomeMenuEntry> resolveHomeGridMenuEntries(TimetableSettings settings) {
   // 自愈：历史版本对「空排列」执行 normalize 时会钉入 'settings'，把
   // 从未配置过的档位固化成单入口；叠加八宫格编辑器入口一度缺失，用户
   // 无法自行恢复。这种「只剩钉住项」的档位视作未配置，回退默认八项。
-  final degenerate = resolved.length == 1 &&
-      resolved.single.id == HomeGridMenu.pinnedActionId;
+  final degenerate =
+      resolved.length == 1 && resolved.single.id == HomeGridMenu.pinnedActionId;
   if (resolved.isEmpty || degenerate) {
-    return [
-      for (final id in HomeGridMenu.defaultActions) homeMenuEntryById(id),
-    ]
+    return [for (final id in HomeGridMenu.defaultActions) homeMenuEntryById(id)]
         .whereType<HomeMenuEntry>()
         .where((entry) => entry.visible())
         .toList(growable: false);
@@ -513,7 +460,7 @@ String glassDockActionLabel(AppLocalizations l10n, String id) {
 }
 
 /// 底栏按钮的展示图标（特殊动作用视图图标，其余取目录图标）。
- IconData glassDockActionIcon(String id) {
+IconData glassDockActionIcon(String id) {
   switch (id) {
     case kGlassDockActionDay:
       return Icons.today_rounded;
@@ -522,4 +469,3 @@ String glassDockActionLabel(AppLocalizations l10n, String id) {
   }
   return homeMenuEntryById(id)?.icon ?? Icons.circle_outlined;
 }
-

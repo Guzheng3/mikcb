@@ -649,23 +649,10 @@
   "backupDoneGoImport": "我已完成備份，去匯入",
   "startFreshWithoutMigration": "以全新應用開始，不遷移",
   "openOldAppFailed": "未能打開舊版應用，請手動返回桌面打開舊版",
-  "supportCreatorTitle": "請作者喝杯咖啡",
-  "supportHeroTitle": "支持輕嶼課表繼續更新",
-  "supportHeroSubtitle": "你的支持會直接用於維護課表、教務匯入適配與體驗優化",
-  "supportChipFixes": "修複問題",
-  "supportChipAdapters": "教務適配",
-  "supportChipPolish": "體驗優化",
-  "supportMethodTitle": "選擇支持方式",
   "wechatLabel": "微信",
   "alipayLabel": "支付寶",
-  "supportWeChatHint": "使用微信掃一掃支持作者",
-  "supportAlipayHint": "使用支付寶掃一掃支持作者",
   "viewLargeImage": "查看大圖",
   "saveToGallery": "保存到相冊",
-  "supportCompleteThanks": "感谢你支持輕嶼課表繼續打磨 ❤️",
-  "supportConfirmed": "我已經支持了",
-  "donorListTitle": "鳴谢名單",
-  "donorListLoadFailed": "暫時無法加載在線鳴谢名單",
   "reloadAction": "重新加載",
   "updatedAtLabel": "更新於 {time}",
   "@updatedAtLabel": {
@@ -675,7 +662,6 @@
       }
     }
   },
-  "donorListEmpty": "名單還沒有有填寫，你可以直接編輯 docs/donors.json 後重新發布",
   "savedToGallery": "已保存到相冊",
   "saveToGalleryFailed": "保存到相冊失敗",
   "saveFailedWithError": "保存失敗：{error}",
@@ -686,46 +672,6 @@
       }
     }
   },
-  "supportRunningBadge": "運行中",
-  "supportTapQrHint": "點擊放大掃碼",
-  "supportSaveShort": "保存",
-  "supportConfirmedShort": "已支持",
-  "donorSearchHint": "搜暱稱/寄語...",
-  "donorSortLargeFirst": "大額優先",
-  "donorSortSmallFirst": "小額優先",
-  "supportMonthlyGoalLabel": "本月伺服器和證書續期進度",
-  "supportGoalRaised": "已籌: {raised} / 目標 {goal}",
-  "@supportGoalRaised": {
-    "placeholders": {
-      "raised": {
-        "type": "String"
-      },
-      "goal": {
-        "type": "String"
-      }
-    }
-  },
-  "supportBackerCount": "已有 {count} 人獻出愛心",
-  "@supportBackerCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "supportDonorListFooter": "名單永久保留 💖",
-  "supportMarqueeThanks": "🎉 感謝 {name} 贊助 {amount}",
-  "@supportMarqueeThanks": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "supportMarqueeTail": "輕嶼課表正在穩定運行中，期待你的每一次陪伴與愛心！",
   "scanQrWechatTitle": "使用微信掃描二維碼",
   "scanQrAlipayTitle": "使用支付寶掃描二維碼",
   "scanQrSubtitle": "截圖並導入掃一掃，感謝支持！",
@@ -2240,8 +2186,8 @@
   },
   "aboutMirrorUnknownSizeHint": "鏡像源未返回文件总大小，先顯示已下載體积",
   "aboutCancelDownloadAction": "取消下載",
-"aboutContinueDownloadAction": "繼續下載",
-"aboutDismissDialogAction": "關閉彈窗",
+  "aboutContinueDownloadAction": "繼續下載",
+  "aboutDismissDialogAction": "關閉彈窗",
   "aboutContributorsScreenTitle": "代码贡献者",
   "aboutDevelopersTitle": "開發人员",
   "aboutDeveloperMaintainerSubtitle": "輕嶼課表開發與維護",
@@ -2610,13 +2556,11 @@
       }
     }
   },
-  "homeMenuUpdateTitle": "軟體更新",
   "homeMenuProfilesTitle": "課表管理",
   "homeMenuOverviewTitle": "課程總覽",
   "homeMenuAddCourseTitle": "新增課程",
   "homeMenuImportTitle": "匯入課程",
   "homeMenuSettingsTitle": "課表設定",
-  "homeMenuCoffeeTitle": "請喝咖啡",
   "homeMenuFeedbackTitle": "問題回饋",
   "switchTimetableTitle": "切换課表",
   "todayTimetableTitle": "今日課表",
@@ -3671,19 +3615,33 @@
   "weeklyReportBody": "第{week}週 · 共{sections}節 · {courses}門課\n較上週 {delta} 節\n最忙的一天是 {busiestDay}",
   "@weeklyReportBody": {
     "placeholders": {
-      "week": { "type": "int" },
-      "sections": { "type": "int" },
-      "courses": { "type": "int" },
-      "delta": { "type": "String" },
-      "busiestDay": { "type": "String" }
+      "week": {
+        "type": "int"
+      },
+      "sections": {
+        "type": "int"
+      },
+      "courses": {
+        "type": "int"
+      },
+      "delta": {
+        "type": "String"
+      },
+      "busiestDay": {
+        "type": "String"
+      }
     }
   },
   "weeklyReportBodyEmpty": "本週暫無課程，好好休息吧",
   "weeklyReportNextFire": "下次推送 {date} {time}",
   "@weeklyReportNextFire": {
     "placeholders": {
-      "date": { "type": "String" },
-      "time": { "type": "String" }
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
     }
   },
   "weeklyReportEnabledHint": "已開啟每週週報推送",
@@ -3694,7 +3652,9 @@
   "statisticsCompareDelta": "較當前 {delta} 節",
   "@statisticsCompareDelta": {
     "placeholders": {
-      "delta": { "type": "String" }
+      "delta": {
+        "type": "String"
+      }
     }
   },
   "statisticsCompareDetailTitle": "課表對比詳情",
@@ -3725,22 +3685,34 @@
   "statisticsSemesterProgressRange": "學期 {start} - {end}",
   "@statisticsSemesterProgressRange": {
     "placeholders": {
-      "start": { "type": "String" },
-      "end": { "type": "String" }
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
     }
   },
   "statisticsSemesterProgressAsOf": "今天 {date}",
   "@statisticsSemesterProgressAsOf": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "statisticsSemesterProgressDetail": "截至第 {week} 週，已上 {done} 節 / 共 {total} 節",
   "@statisticsSemesterProgressDetail": {
     "placeholders": {
-      "week": { "type": "int" },
-      "done": { "type": "int" },
-      "total": { "type": "int" }
+      "week": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "statisticsSemesterProgressNotStarted": "還未開學，尚未上課",
@@ -3748,15 +3720,21 @@
   "statisticsSemesterProgressRemaining": "剩餘 {count} 節",
   "@statisticsSemesterProgressRemaining": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "statisticsTrendTitle": "每週課時趨勢",
   "statisticsTrendTooltip": "第 {week} 週 · {sections} 節",
   "@statisticsTrendTooltip": {
     "placeholders": {
-      "week": { "type": "int" },
-      "sections": { "type": "int" }
+      "week": {
+        "type": "int"
+      },
+      "sections": {
+        "type": "int"
+      }
     }
   },
   "statisticsComparisonTitle": "本週小結",
@@ -3765,13 +3743,17 @@
   "statisticsComparisonVsLastWeek": "較上週 {delta} 節",
   "@statisticsComparisonVsLastWeek": {
     "placeholders": {
-      "delta": { "type": "String" }
+      "delta": {
+        "type": "String"
+      }
     }
   },
   "statisticsComparisonVsAverage": "較週均 {delta} 節",
   "@statisticsComparisonVsAverage": {
     "placeholders": {
-      "delta": { "type": "String" }
+      "delta": {
+        "type": "String"
+      }
     }
   },
   "statisticsComparisonNew": "新學期第一週",
@@ -3788,7 +3770,9 @@
   "statisticsTimeGapValue": "{sections} 節",
   "@statisticsTimeGapValue": {
     "placeholders": {
-      "sections": { "type": "int" }
+      "sections": {
+        "type": "int"
+      }
     }
   },
   "statisticsVenueTitle": "教室與教學樓",
@@ -3797,14 +3781,18 @@
   "statisticsVenueVisits": "{count} 次",
   "@statisticsVenueVisits": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "statisticsTeacherTitle": "教師課時排行",
   "statisticsTeacherCourseCount": "{count} 門課",
   "@statisticsTeacherCourseCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "statisticsAchievementFullDayKingName": "滿課日之王",
@@ -3814,8 +3802,12 @@
   "statisticsAchievementProgress": "{current}/{target}",
   "@statisticsAchievementProgress": {
     "placeholders": {
-      "current": { "type": "int" },
-      "target": { "type": "int" }
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
     }
   },
   "statisticsAchievementDone": "已達成",
@@ -3823,7 +3815,9 @@
   "statisticsWeekDailyHint": "點擊查看第 {week} 週詳情",
   "@statisticsWeekDailyHint": {
     "placeholders": {
-      "week": { "type": "int" }
+      "week": {
+        "type": "int"
+      }
     }
   },
   "weekListSeparator": "、",
@@ -4538,14 +4532,6 @@
   "@serviceMsgMacroReplayPaused": {
     "placeholders": {
       "reason": {
-        "type": "String"
-      }
-    }
-  },
-  "serviceMsgSupportDonorsLoadFailed": "Failed to load supporters list: {detail}",
-  "@serviceMsgSupportDonorsLoadFailed": {
-    "placeholders": {
-      "detail": {
         "type": "String"
       }
     }
@@ -5563,10 +5549,6 @@
       }
     }
   },
-  "coupleWebdavMySlotLabel": "本機槽位",
-  "coupleWebdavMySlotHint": "雙方必須選不同槽位：一方選 1，另一方選 2，否則會互相讀不到課表",
-  "coupleWebdavSlotOne": "槽位 1",
-  "coupleWebdavSlotTwo": "槽位 2",
   "scheduleDateRuleSavedAndApplied": "日期規則已儲存，今天已更新所有課表的預設作息",
   "scheduleDateRuleSavedForFuture": "日期規則已儲存，將在開始日期更新所有課表的預設作息",
   "scheduleDateRuleSavedButApplyFailed": "日期規則已儲存，但今天自動套用失敗（請檢查模板節次是否足夠）",
@@ -5712,7 +5694,6 @@
   "settingsReminderDesktopSectionTitle": "提醒與桌面",
   "settingsAppSectionTitle": "應用程式",
   "settingsDataShareSectionTitle": "資料與共享",
-  "coupleTimetableEntryUnboundLabel": "未綁定",
   "settingsAboutSectionTitle": "關於",
   "diagnosticsEntrySubtitle": "日誌 · 自檢 · 記憶體",
   "settingsSemesterScreenTitle": "學期設定",
@@ -5818,132 +5799,6 @@
   },
   "icsExportShareText": "這是來自輕屿課表的日曆檔案",
   "icsExportShareSubject": "輕屿課表日曆",
-  "coupleTimetableEntryTitle": "情侶課表",
-  "coupleTimetableEntryBound": "已綁定",
-  "coupleTimetableModeEnableTooltip": "開啟情侶課表",
-  "coupleTimetableModeDisableTooltip": "關閉情侶課表",
-  "coupleTimetableTitle": "情侶課表",
-  "coupleTimetableIntro": "匯出你的課表發給對方，或匯入對方分享的課表檔案，匯入後可在疊加檢視中查看雙方的課程",
-  "coupleTimetableBoundTitle": "已綁定對方課表",
-  "coupleTimetableUnboundTitle": "尚未綁定對方課表",
-  "coupleTimetablePartnerNameLabel": "對方名稱",
-  "@coupleTimetableLastImportedAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "coupleTimetableLastImportedAt": "上次匯入：{time}",
-  "coupleTimetableExportForPartner": "匯出我的課表給對方",
-  "coupleTimetableImportPartner": "匯入對方課表",
-  "coupleTimetableUnlink": "解除綁定",
-  "coupleTimetableOpenOverlay": "進入疊加檢視",
-  "coupleTimetableImportSuccess": "已匯入對方課表",
-  "coupleTimetableImportUpdated": "已更新對方課表",
-  "coupleTimetableUnlinkConfirmTitle": "解除情侶課表綁定？",
-  "coupleTimetableUnlinkConfirmMessage": "解除後將刪除本機儲存的對方課表，疊加檢視也會關閉",
-  "coupleTimetableUnlinkSuccess": "已解除綁定",
-  "coupleTimetablePrivacyHint": "對方只能看到你匯出檔案中所包含的課表內容",
-  "coupleTimetableOverlayTitle": "情侶疊加",
-  "coupleTimetableLegendMine": "我的課",
-  "coupleTimetableLegendPartner": "對方課程",
-  "coupleTimetableLegendTogether": "一起上課",
-  "coupleTimetableLegendFree": "共同空閒",
-  "coupleTimetableSharedFreeTitle": "今日共同空閒",
-  "coupleTimetableSharedFreeTitleOtherDay": "當日共同空閒",
-  "coupleTimetableNoSharedFree": "今天沒有共同空閒時段",
-  "coupleTimetableNoSharedFreeOtherDay": "當日沒有共同空閒時段",
-  "@coupleTimetableSharedFreeMeta": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "coupleTimetableSharedFreeMeta": "共 {count} 段",
-  "@coupleTimetableSharedFreeMoreCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "coupleTimetableSharedFreeMoreCount": "還有 {count} 段",
-  "coupleTimetableSharedFreeUnavailable": "暫時算不出共同空閒",
-  "coupleTimetableSharedFreeStaleHint": "對方課表可能不是最新",
-  "coupleTimetablePartnerReadOnlyBadge": "對方課表（唯讀）",
-  "coupleTimetableNotBoundMessage": "請先匯入對方課表後再查看疊加檢視",
-  "coupleTimetableShareText": "這是我的課表，匯入到輕嶼課表的情侶課表即可一起查看",
-  "coupleTimetableShareSubject": "輕嶼課表・情侶課表分享",
-  "coupleTimetableWeekOffsetTitle": "週次偏移",
-  "coupleTimetableWeekOffsetSubtitle": "查看你的第 N 週時，讀取對方課表的第 N+偏移 週，例如 +1 表示對方學期進度比你快一週",
-  "coupleTimetableWeekOffsetZero": "無偏移",
-  "@coupleTimetableWeekOffsetSigned": {
-    "placeholders": {
-      "offset": {
-        "type": "String"
-      }
-    }
-  },
-  "coupleTimetableWeekOffsetSigned": "{offset} 週",
-  "@coupleTimetableWeekOffsetPreview": {
-    "placeholders": {
-      "myWeek": {
-        "type": "int"
-      },
-      "partnerWeek": {
-        "type": "int"
-      }
-    }
-  },
-  "coupleTimetableWeekOffsetPreview": "查看你的第 {myWeek} 週時，顯示對方第 {partnerWeek} 週的課",
-  "coupleTimetableColorsTitle": "疊加顏色",
-  "coupleTimetableColorsSubtitle": "自訂「我的課」「對方課程」「一起上課」在疊加檢視中的顯示顏色，可按喜好自由搭配",
-  "partnerImportRequiresSingleProfile": "請匯入單一課表備份檔案，不支援全量備份",
-  "coupleWebdavTitle": "堅果雲拉取",
-  "coupleWebdavSubtitle": "登入對方（或你們共用的）堅果雲帳號，自動下載對方上傳的課表檔案，與「雲端同步」帳號獨立，互不影響",
-  "coupleWebdavNotConnected": "尚未連接堅果雲",
-  "@coupleWebdavConnectedAs": {
-    "placeholders": {
-      "username": {
-        "type": "String"
-      }
-    }
-  },
-  "coupleWebdavConnectedAs": "已連接：{username}",
-  "@coupleWebdavRemotePathHint": {
-    "placeholders": {
-      "path": {
-        "type": "String"
-      }
-    }
-  },
-  "coupleWebdavRemotePathHint": "遠端檔案路徑：{path}",
-  "@coupleWebdavLastPulledAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "coupleWebdavLastPulledAt": "上次拉取：{time}",
-  "coupleWebdavConnect": "連接堅果雲",
-  "coupleWebdavDisconnect": "中斷連接",
-  "coupleWebdavPullNow": "立即拉取對方課表",
-  "coupleWebdavUploadForPartner": "上傳我的課表到堅果雲",
-  "coupleWebdavLoginSheetTitle": "連接堅果雲（情侶課表）",
-  "coupleWebdavLoginSheetSubtitle": "請使用應用程式專用密碼，對方需先將課表上傳到約定路徑，或由你在對方裝置上登入同一帳號並上傳",
-  "coupleWebdavConfirmConnect": "連接並拉取",
-  "coupleWebdavTestSuccess": "堅果雲連接成功",
-  "coupleWebdavTestFailed": "連接失敗，請檢查帳號、應用程式專用密碼與網路",
-  "coupleWebdavPullImported": "已從堅果雲匯入對方課表",
-  "coupleWebdavPullUpdated": "已從堅果雲更新對方課表",
-  "coupleWebdavPullUnchanged": "對方課表無變化",
-  "coupleWebdavUploadSuccess": "已上傳課表，對方可拉取",
-  "coupleWebdavPartnerFileMissing": "找不到對方課表檔案，請讓對方先上傳",
-  "coupleWebdavPullFailed": "拉取對方課表失敗，請稍後重試",
-  "coupleWebdavNotConnectedError": "請先連接堅果雲",
   "appLogsSourceApp": "應用程式",
   "appLogsSourceNative": "超級島",
   "appLogsRecordingPausedHint": "記錄已關閉，下方為歷史紀錄，關閉後不再新增",
@@ -6023,16 +5878,6 @@
   "courseNoteTileSubtitleBoth": "課程簡介與本節課均有備註",
   "courseNoteReadOnlyNotice": "對方課程僅可查看備註，無法編輯。",
   "courseNoteDoneEditingAction": "完成",
-  "@courseActionCoupleRelatedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "courseActionCoupleRelatedCount": "還有 {count} 節情侶課表課程",
-  "courseActionCoupleExpandHint": "展開查看對方的課或一起上課，點擊可切換預覽",
-  "courseActionCoupleCollapseHint": "點擊收起情侶課表課程列表",
   "@courseActionMixedRelatedCount": {
     "placeholders": {
       "count": {
@@ -6071,7 +5916,7 @@
   "glassDockShowAddButtonTitle": "顯示圓鈕",
   "glassDockShowAddButtonSubtitle": "在藥丸右側顯示獨立圓鈕，功能與圖示可在下方自訂",
   "glassDockButtonBackToWeekLabel": "回本週 / 今天",
-    "glassDockExtraButtonSemanticLabel": "新增課程",
+  "glassDockExtraButtonSemanticLabel": "新增課程",
   "homeMenuStyleLabel": "右上角選單樣式",
   "homeMenuStyleList": "列表選單",
   "homeMenuStyleGrid": "八宮格選單",
@@ -6081,14 +5926,20 @@
   "homeGridCustomizeDetails": "已啟用 {count}/{max} 個",
   "@homeGridCustomizeDetails": {
     "placeholders": {
-      "count": { "type": "int" },
-      "max": { "type": "int" }
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
     }
   },
   "homeGridEditorHintBody": "最多放置 {max} 個按鈕；按住項目拖動即可排序。",
   "@homeGridEditorHintBody": {
     "placeholders": {
-      "max": { "type": "int" }
+      "max": {
+        "type": "int"
+      }
     }
   },
   "homeGridEditorEnabledTitle": "已啟用",
@@ -6096,7 +5947,7 @@
   "homeGridEditorRemoveTooltip": "移除",
   "homeGridEditorAddTooltip": "新增",
   "homeGridEditorResetAction": "恢復預設排列",
-    "homeGridEditorAllAdded": "所有入口都已啟用",
+  "homeGridEditorAllAdded": "所有入口都已啟用",
   "homeGridEditorMaxReached": "已達上限",
   "homeGridEditorPinnedTooltip": "此入口用於重新開啟本頁，無法移除",
   "homeMenuCategoryFeatures": "功能入口",
@@ -6106,7 +5957,9 @@
   "classAlarmLeadMinutesLabel": "提前 {minutes} 分鐘",
   "@classAlarmLeadMinutesLabel": {
     "placeholders": {
-      "minutes": { "type": "int" }
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "classAlarmInvalidTimeToast": "這門課的節次超出時間模板，無法設定鬧鐘",
@@ -6120,9 +5973,21 @@
   "classAlarmNoSemesterToast": "請先在設定中填寫學期開始日期",
   "classAlarmActionLabel": "設這節課的鬧鐘",
   "classAlarmConfirmMessage": "將在系統時鐘創建：{detail}。系統鬧鐘無法識別假期與調休，停課期間照常響鈴；刪除請在系統時鐘中完成。",
-  "@classAlarmConfirmMessage": {"placeholders":{"detail":{"type":"String"}}},
+  "@classAlarmConfirmMessage": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
   "classAlarmVariableSuffix": "另外，{days}的第一節課時間在不同周不一致，這些天未創建鬧鐘。",
-  "@classAlarmVariableSuffix": {"placeholders":{"days":{"type":"String"}}},
+  "@classAlarmVariableSuffix": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "classAlarmEntryTitle": "上課鬧鐘",
   "classAlarmGroupSetup": "添加鬧鐘",
   "classAlarmGroupBehavior": "響鈴行為",
@@ -6143,7 +6008,22 @@
   "classAlarmLaunchFailedToast": "未找到可處理的時鐘應用",
   "classAlarmCourseConfirmTitle": "添加這節課的重複鬧鐘？",
   "classAlarmCourseConfirmMessage": "將在系統時鐘創建每週{weekday} {time} 的重複鬧鐘（比上課提前{lead}分鐘響鈴；上課週次：{weeks}）。假期與非上課週仍會響鈴，刪除需在系統時鐘中完成。",
-  "@classAlarmCourseConfirmMessage": {"placeholders":{"weekday":{"type":"String"},"time":{"type":"String"},"lead":{"type":"int"},"weeks":{"type":"String"}}},
+  "@classAlarmCourseConfirmMessage": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "lead": {
+        "type": "int"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
   "classAlarmDaySeparator": "、",
   "classAlarmDetailSeparator": "；"
 }

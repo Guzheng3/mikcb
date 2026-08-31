@@ -1064,7 +1064,7 @@ object TodayWidgetSupport {
 
     /**
      * 卡片点击的启动 Intent：必须携带 appWidgetId，Flutter 收到后按该卡片的
-     * 绑定档案分流（切普通课表 / 开情侣覆盖层 / 未绑定=普通打开）。
+     * 绑定档案分流（切课表 / 未绑定=普通打开）。
      * requestCode 恒等于 appWidgetId：它跨全部卡型全局唯一，可避免不同卡型
      * 间 requestCode 撞车导致 PendingIntent 被 extras 互相覆盖。
      */
@@ -1170,7 +1170,7 @@ object TodayWidgetSupport {
         }
     }
 
-    /** 按 id 找任意课表（含 TA 课表）；找不到 = 课表已被删除/解绑。 */
+    /** 按 id 找任意课表；找不到 = 课表已被删除。 */
     fun readProfileJsonById(context: Context, profileId: String): JSONObject? {
         if (profileId.isBlank()) return null
         val flutterPrefs = context.getSharedPreferences(FLUTTER_PREFS_NAME, Context.MODE_PRIVATE)

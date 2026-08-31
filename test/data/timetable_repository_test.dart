@@ -62,7 +62,7 @@ void main() {
       expect(await storage.getProfilesSchemaVersion(), 1);
       expect((await repository.loadProfiles()).single.id, 'legacy');
 
-      // RMW 路径（partner 服务使用的入口）同样盖章
+      // RMW 路径同样盖章
       await storage.updateProfiles((profiles) => profiles);
       expect(await storage.getProfilesSchemaVersion(), 1);
     });

@@ -231,15 +231,6 @@
       "notes": "学期/周双视图；进度卡/趋势图/本周小结/热力图/时间利用/教室与教学楼/教师排行；成就进度+解锁动效；排行可跳转编辑课程；周报推送开关；课表对比模块"
     },
     {
-      "id": "support-creator",
-      "file": "lib/screens/support_creator_screen.dart",
-      "label": "支持创作者",
-      "category": "feature",
-      "expectedShell": "HyperosSubpage",
-      "manualStatus": "pass",
-      "notes": ""
-    },
-    {
       "id": "startup-flow",
       "file": "lib/screens/startup_flow_screens.dart",
       "label": "启动引导",
@@ -257,15 +248,6 @@
       "manualStatus": "pass",
       "allowLegacy": true,
       "notes": "验收页；含 Material 演示属预期"
-    },
-    {
-      "id": "couple-timetable-settings",
-      "file": "lib/screens/couple_timetable_settings_screen.dart",
-      "label": "情侣课表设置",
-      "category": "settings",
-      "expectedShell": "HyperosSubpage",
-      "manualStatus": "pass",
-      "notes": "叠加颜色选择器 fallback 使用 HyperosTokens.blue（自定义色解析兜底）"
     },
     {
       "id": "qr-transfer-scan",

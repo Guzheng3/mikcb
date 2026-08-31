@@ -15,7 +15,6 @@ import '../models/location_time_group.dart';
 import '../models/schedule_date_rule.dart';
 import '../models/schedule_item.dart';
 import '../models/time_scheme.dart';
-import '../models/partner_timetable_binding.dart';
 import '../models/timetable_profile.dart';
 import '../models/timetable_settings.dart';
 import '../data/timetable_repository.dart';
@@ -23,7 +22,6 @@ import '../domain/week_calculator.dart';
 import '../domain/holiday_resolver.dart';
 import '../domain/course_domain.dart';
 import '../domain/schedule_item_expander.dart';
-import '../domain/couple_timetable_logic.dart';
 import '../ui/hyperos_motion_bridge.dart';
 import '../ui/hyperos/hyperos_overscroll.dart';
 import '../services/app_analytics.dart';
@@ -37,7 +35,6 @@ import '../services/home_widget_binding_service.dart';
 import '../services/home_widget_snapshot_service.dart';
 import '../services/class_reminder_service.dart';
 import '../services/exam_reminder_service.dart';
-import '../services/partner_timetable_service.dart';
 import '../services/stats_widget_service.dart';
 import '../services/storage_service.dart';
 import '../services/sync_operation_gate.dart';
@@ -195,12 +192,11 @@ class ScheduleDateRuleSaveResult {
 /// | 17 | 单次课程调整 | `deleteCourseOccurrence` / `rescheduleCourseOccurrence` |
 /// | 18 | 导入导出 | `importParsedCourses` / `importAppDataBackup` |
 /// | 19 | 超级岛/小部件 | `buildHomeWidgetSnapshot` / `getLiveActivityCourseSelection` |
-/// | 20 | 情侣课表 | `importPartnerTimetable` / `unlinkPartner` |
 ///
 /// 维护纪律：
 /// - 修改必须落在对应关注点的区段内，禁止顺手改动其它区段；
 /// - 新增能力一律独立成文件/类，禁止继续向本类堆积；
-/// - 拆分按阶段 3 的顺序进行（Theme → Holiday → Partner → LiveSurface → …），
+/// - 拆分按阶段 3 的顺序进行（Theme → Holiday → LiveSurface → …），
 ///   完成一个从表中划掉一个；本类最终降级为纯 Facade。
 class TimetableProvider with ChangeNotifier {
   static const Duration _liveEndReminderWindow = Duration(minutes: 10);
@@ -215,7 +211,6 @@ class TimetableProvider with ChangeNotifier {
   final IcsImportService _icsImportService;
   final MiuiLiveActivitiesService _liveActivitiesService;
   final DataTransferService _dataTransferService;
-  final PartnerTimetableService _partnerTimetableService;
   final HomeWidgetService _homeWidgetService;
   final HomeWidgetSnapshotService _homeWidgetSnapshotService;
   final HomeWidgetBindingService _homeWidgetBindingService;
@@ -267,7 +262,6 @@ class TimetableProvider with ChangeNotifier {
   HolidayData? _holidayData;
   List<String> _teacherRecords = [];
   List<String> _locationRecords = [];
-  PartnerTimetableBinding? _partnerBinding;
 
   List<Course> get courses => List.unmodifiable(_courses);
   List<CourseTask> get tasks => List.unmodifiable(_tasks);
@@ -462,37 +456,8 @@ class TimetableProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   DateTime? get semesterStartDate => _settings.semesterStartDate;
   DataTransferService get dataTransferService => _dataTransferService;
-  PartnerTimetableBinding? get partnerBinding => _partnerBinding;
-  bool get hasPartnerBinding => _partnerBinding != null;
-  int get partnerWeekOffset => _partnerBinding?.weekOffset ?? 0;
-  int partnerWeekFor(int myWeek) =>
-      CoupleTimetableLogic.partnerWeekForMyWeek(myWeek, partnerWeekOffset);
-
-  String coupleColorForKind(CoupleCourseKind kind) {
-    final binding = _partnerBinding;
-    return CoupleTimetableLogic.colorHexForKind(
-      kind,
-      mineColorHex: binding?.mineColorHex,
-      partnerColorHex: binding?.partnerColorHex,
-      togetherColorHex: binding?.togetherColorHex,
-    );
-  }
-
-  TimetableProfile? get partnerProfile =>
-      _getProfileById(PartnerTimetableService.partnerProfileId);
-  List<Course> get partnerCourses =>
-      partnerProfile?.courses ?? const <Course>[];
   TimetableProfile? get activeProfile {
-    final profile = _getProfileById(_activeProfileId);
-    if (profile != null && !profile.isPartnerImported) {
-      return profile;
-    }
-    for (final candidate in _profiles) {
-      if (!candidate.isPartnerImported) {
-        return candidate;
-      }
-    }
-    return null;
+    return _getProfileById(_activeProfileId);
   }
 
   TimeScheme? get activeTimeScheme =>
@@ -508,7 +473,6 @@ class TimetableProvider with ChangeNotifier {
     IcsImportService? icsImportService,
     MiuiLiveActivitiesService? liveActivitiesService,
     DataTransferService? dataTransferService,
-    PartnerTimetableService? partnerTimetableService,
     HomeWidgetService? homeWidgetService,
     HomeWidgetSnapshotService? homeWidgetSnapshotService,
     HomeWidgetBindingService? homeWidgetBindingService,
@@ -522,8 +486,6 @@ class TimetableProvider with ChangeNotifier {
        _liveActivitiesService =
            liveActivitiesService ?? MiuiLiveActivitiesService(),
        _dataTransferService = dataTransferService ?? DataTransferService(),
-       _partnerTimetableService =
-           partnerTimetableService ?? PartnerTimetableService(),
        _homeWidgetService = homeWidgetService ?? HomeWidgetService(),
        _homeWidgetSnapshotService =
            homeWidgetSnapshotService ?? const HomeWidgetSnapshotService(),
@@ -661,7 +623,6 @@ class TimetableProvider with ChangeNotifier {
     final locationTimeGroups = await _profileRepository.getLocationTimeGroups();
     final scheduleDateRules = await _profileRepository.getScheduleDateRules();
     final activeProfileId = await _profileRepository.getActiveProfileId();
-    final partnerBinding = await _profileRepository.getPartnerTimetableBinding();
     final lastAppliedSignature = await _storageService
         .getScheduleDateRuleLastAppliedSignature();
 
@@ -670,18 +631,7 @@ class TimetableProvider with ChangeNotifier {
     _locationTimeGroups = locationTimeGroups;
     _scheduleDateRules = scheduleDateRules;
     _activeProfileId = activeProfileId;
-    _partnerBinding = partnerBinding;
     _scheduleDateRuleLastAppliedSignature = lastAppliedSignature;
-
-    if (_activeProfileId != null) {
-      final storedActive = _getProfileById(_activeProfileId);
-      if (storedActive?.isPartnerImported == true) {
-        final fallback = _profiles
-            .where((profile) => !profile.isPartnerImported)
-            .firstOrNull;
-        _activeProfileId = fallback?.id;
-      }
-    }
 
     // --- 非关键数据：后台加载，不阻塞首帧 ---
     unawaited(_loadDeferredData());
@@ -2130,7 +2080,7 @@ class TimetableProvider with ChangeNotifier {
         return;
       }
       final targetProfile = _getProfileById(profileId);
-      if (targetProfile == null || targetProfile.isPartnerImported) {
+      if (targetProfile == null) {
         return;
       }
 
@@ -2196,30 +2146,15 @@ class TimetableProvider with ChangeNotifier {
       }
 
       final index = _profiles.indexWhere((profile) => profile.id == profileId);
-      if (index == -1 || _profiles[index].isPartnerImported) {
+      if (index == -1) {
         return false;
       }
 
       final isActive = _profiles[index].id == _activeProfileId;
-      if (isActive) {
-        final hasNormalFallback = _profiles
-            .where(
-              (profile) =>
-                  profile.id != profileId && !profile.isPartnerImported,
-            )
-            .isNotEmpty;
-        if (!hasNormalFallback) {
-          // Keep at least one non-partner profile as the working set.
-          return false;
-        }
-      } else {
-        _mergeActiveProfileIntoProfilesList();
-      }
+      _mergeActiveProfileIntoProfilesList();
       _profiles.removeAt(index);
       if (isActive) {
-        final fallbackProfile = _profiles
-            .where((profile) => !profile.isPartnerImported)
-            .first;
+        final fallbackProfile = _profiles.first;
         _activeProfileId = fallbackProfile.id;
         _applyProfileState(fallbackProfile);
         _currentLiveCourseId = null;
@@ -4341,86 +4276,4 @@ class TimetableProvider with ChangeNotifier {
     unawaited(syncTemporalContext());
   }
 
-  Future<PartnerImportResult> importPartnerTimetable(
-    String content, {
-    String? partnerName,
-  }) {
-    return _runMutation(() async {
-      await initialize();
-      final result = await _partnerTimetableService.importFromContent(
-        content,
-        partnerName: partnerName,
-      );
-      _profiles = await _profileRepository.loadProfiles();
-      _partnerBinding = result.binding;
-      notifyUserDataChangedForSync();
-      notifyListeners();
-      return result;
-    });
-  }
-
-  Future<void> updatePartnerWeekOffset(int offset) {
-    // 与其他用户写入一致走 mutation 门：避免与云恢复/LAN 应用等
-    // 门内写者交错读写 _partnerBinding（check-then-act 竞态）。
-    return _runMutation(() async {
-      await initialize();
-      final binding = _partnerBinding;
-      if (binding == null) {
-        return;
-      }
-      final clamped = CoupleTimetableLogic.clampWeekOffset(offset);
-      if (clamped == binding.weekOffset) {
-        return;
-      }
-      _partnerBinding = binding.copyWith(weekOffset: clamped);
-      await _profileRepository.savePartnerTimetableBinding(_partnerBinding);
-      notifyUserDataChangedForSync();
-      notifyListeners();
-    });
-  }
-
-  Future<void> updatePartnerCoupleColors({
-    String? mineColorHex,
-    String? partnerColorHex,
-    String? togetherColorHex,
-  }) {
-    // 同 updatePartnerWeekOffset：纳入 mutation 门串行化。
-    return _runMutation(() async {
-      await initialize();
-      final binding = _partnerBinding;
-      if (binding == null) {
-        return;
-      }
-      _partnerBinding = binding.copyWith(
-        mineColorHex: mineColorHex,
-        partnerColorHex: partnerColorHex,
-        togetherColorHex: togetherColorHex,
-      );
-      await _profileRepository.savePartnerTimetableBinding(_partnerBinding);
-      notifyUserDataChangedForSync();
-      notifyListeners();
-    });
-  }
-
-  Future<void> unlinkPartner() {
-    return _runMutation(() async {
-      await initialize();
-      await _partnerTimetableService.unlink();
-      _profiles = await _profileRepository.loadProfiles();
-      _partnerBinding = null;
-      if (_activeProfileId == PartnerTimetableService.partnerProfileId) {
-        final fallback = _profiles
-            .where((profile) => !profile.isPartnerImported)
-            .firstOrNull;
-        if (fallback != null) {
-          _activeProfileId = fallback.id;
-          _applyProfileState(fallback);
-          await _profileRepository.setActiveProfileId(fallback.id);
-          unawaited(_syncExamReminders());
-        }
-      }
-      notifyUserDataChangedForSync();
-      notifyListeners();
-    });
-  }
 }

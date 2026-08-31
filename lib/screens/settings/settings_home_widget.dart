@@ -379,10 +379,7 @@ class _HomeWidgetSettingsScreenState extends State<_HomeWidgetSettingsScreen>
       );
     }
 
-    final normalProfiles = _timetableProvider.profiles
-        .where((profile) => !profile.isPartnerImported)
-        .toList(growable: false);
-    final partnerProfile = _timetableProvider.partnerProfile;
+    final profiles = _timetableProvider.profiles;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -399,9 +396,7 @@ class _HomeWidgetSettingsScreenState extends State<_HomeWidgetSettingsScreen>
                 ),
                 items: {
                   l10n.homeWidgetBindingFollowActive: _followActiveValue,
-                  for (final profile in normalProfiles) profile.name: profile.id,
-                  if (partnerProfile != null)
-                    partnerProfile.name: partnerProfile.id,
+                  for (final profile in profiles) profile.name: profile.id,
                 },
                 value: instance.boundProfileId ?? _followActiveValue,
                 onChanged: (profileId) => _setWidgetBinding(

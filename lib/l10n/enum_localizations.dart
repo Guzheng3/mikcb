@@ -213,24 +213,6 @@ String appUpdateDownloadSourceLabel(
   AppUpdateDownloadSource.mirror => l10n.appUpdateDownloadSourceMirror,
 };
 
-String appUpdateDownloadChannelLabel(
-  AppLocalizations l10n,
-  AppUpdateDownloadChannel channel,
-) => switch (channel) {
-  AppUpdateDownloadChannel.pgyer => l10n.appUpdateDownloadChannelPgyer,
-  AppUpdateDownloadChannel.github => l10n.appUpdateDownloadChannelGithub,
-};
-
-String appUpdateDownloadChannelDescription(
-  AppLocalizations l10n,
-  AppUpdateDownloadChannel channel,
-) => switch (channel) {
-  AppUpdateDownloadChannel.pgyer =>
-    l10n.appUpdateDownloadChannelPgyerDescription,
-  AppUpdateDownloadChannel.github =>
-    l10n.appUpdateDownloadChannelGithubDescription,
-};
-
 String appUpdateMirrorPresetLabel(
   AppLocalizations l10n,
   AppUpdateMirrorPreset preset,

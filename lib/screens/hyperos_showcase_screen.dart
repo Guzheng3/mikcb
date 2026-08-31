@@ -1,17 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:provider/provider.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 
-import '../models/timetable_settings.dart';
-import '../providers/timetable_provider.dart';
-import '../services/app_update_service.dart';
 import '../ui/hyperos/hyperos.dart';
 import '../utils/hex_color.dart';
-import '../widgets/home_update_prompt.dart';
 
 /// Gallery of all HyperOS / 澎湃 UI components for visual QA.
 class HyperosShowcaseScreen extends StatefulWidget {
@@ -41,7 +33,6 @@ class _HyperosShowcaseScreenState extends State<HyperosShowcaseScreen> {
   final _selectPopupAnchorKey = GlobalKey();
   final _textController = TextEditingController();
   final _searchController = TextEditingController();
-  Timer? _demoUpdateProgressTimer;
 
   Map<String, String> _selectItemMap(AppLocalizations l10n) => {
     l10n.hyperosShowcaseSizeSmall: 'small',
@@ -78,7 +69,6 @@ class _HyperosShowcaseScreenState extends State<HyperosShowcaseScreen> {
 
   @override
   void dispose() {
-    _demoUpdateProgressTimer?.cancel();
     _textController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -881,14 +871,6 @@ class _HyperosShowcaseScreenState extends State<HyperosShowcaseScreen> {
                 details: 'edge · 贴边仅上圆角',
                 onTap: _demoEdgeSheet,
               ),
-              if (!kReleaseMode)
-                HyperosListTile(
-                  icon: Icons.system_update,
-                  iconAccent: HyperosIconColors.red,
-                  title: '模拟收到新版本更新',
-                  details: 'showHomeUpdatePrompt · 假数据',
-                  onTap: _demoAppUpdatePrompt,
-                ),
               HyperosListTile(
                 key: _selectPopupAnchorKey,
                 icon: Icons.arrow_drop_down_circle_outlined,
@@ -1049,121 +1031,6 @@ class _HyperosShowcaseScreenState extends State<HyperosShowcaseScreen> {
         ),
       ),
     );
-  }
-
-  /// 模拟「发现新版本」推送：用假 Release 数据拉起首页同款更新弹窗。
-  ///
-  /// 仅调试/性能版可达本页。主按钮文案与点击行为按当前设置
-  /// （下载渠道 / 来源 / 镜像）自适应，与线上分支一致；假下载只推进
-  /// 内存进度条，不访问网络、不写磁盘，便于验收各状态。
-  Future<void> _demoAppUpdatePrompt() async {
-    final settings = context.read<TimetableProvider>().settings;
-    String currentVersion;
-    try {
-      final packageInfo = await PackageInfo.fromPlatform();
-      currentVersion = packageInfo.version;
-    } on Exception catch (_) {
-      // 无插件环境（如纯 Widget 测试）下的兜底，保证弹窗始终能弹出。
-      currentVersion = '0.0.0';
-    }
-    if (!mounted) return;
-    const release = AppReleaseInfo(
-      version: '9.9.9',
-      title: '模拟更新 · 弹窗演示数据',
-      body: '这是一条用于验收更新弹窗的模拟更新日志。\n'
-          '- 假下载只播放进度动画，不访问网络\n'
-          '- 下拉或点击遮罩即可关闭',
-      releaseUrl: 'https://github.com/Mutx163/mikcb/releases',
-      downloadUrl:
-          'https://github.com/Mutx163/mikcb/releases/download/demo/demo.apk',
-      pgyerDownloadUrl: 'https://www.pgyer.com/qingyu',
-      updatedAt: null,
-      isPrerelease: false,
-    );
-    final channel = AppUpdateDownloadChannelX.fromValue(
-      settings.appUpdateDownloadChannel,
-    );
-    final source = AppUpdateDownloadSourceX.fromValue(
-      settings.appUpdateDownloadSource,
-    );
-    final mirrorPrefix = resolveAppUpdateMirrorUrlPrefix(
-      preset: AppUpdateMirrorPresetX.fromValue(settings.appUpdateMirrorPreset),
-      customUrlPrefix: settings.appUpdateMirrorUrlPrefix,
-    );
-    // 与线上首页同一条 URL 解析链路：渠道决定蒲公英/GitHub，
-    // 来源与镜像前缀只影响 GitHub 直链。
-    final effectiveDownloadUrl = AppUpdateService().getEffectiveDownloadUrl(
-      release: release,
-      channel: channel,
-      source: source,
-      mirrorUrlPrefix: mirrorPrefix,
-    );
-    final hasDirectDownload =
-        effectiveDownloadUrl != null && effectiveDownloadUrl.trim().isNotEmpty;
-    final controller = HomeUpdatePromptController();
-    _demoUpdateProgressTimer?.cancel();
-    try {
-      await showHomeUpdatePrompt(
-        context,
-        release: release,
-        currentVersion: currentVersion,
-        downloadChannel: channel,
-        hasDirectDownload: hasDirectDownload,
-        controller: controller,
-        onDownload: () async {
-          // 与线上分支一致：蒲公英渠道或无直链时跳浏览器并关弹窗；
-          // 演示里仅以 toast 提示，不真正打开。
-          if (channel == AppUpdateDownloadChannel.pgyer || !hasDirectDownload) {
-            if (mounted) {
-              _demoSnackBar('演示数据：当前配置下会跳转浏览器打开下载页');
-            }
-            return false;
-          }
-          return _playFakeDownload(controller);
-        },
-        onViewRelease: () async {
-          if (!mounted) return;
-          _demoSnackBar('演示数据：跳过打开 Release 页面');
-        },
-        onCancelDownload: () {
-          _demoUpdateProgressTimer?.cancel();
-          _demoUpdateProgressTimer = null;
-          controller.finishInAppDownload(success: false, cancelled: true);
-        },
-        onResumeDownload: () => _playFakeDownload(controller),
-      );
-    } finally {
-      _demoUpdateProgressTimer?.cancel();
-      _demoUpdateProgressTimer = null;
-      controller.dispose();
-    }
-  }
-
-  /// 假下载动画：约 6 秒推进到 100%，期间可取消；返回 true 保持弹窗打开。
-  Future<bool> _playFakeDownload(HomeUpdatePromptController controller) {
-    const totalBytes = 96 * 1024 * 1024;
-    const ticks = 60; // 约 6 秒播完（100ms 一帧）。
-    final step = totalBytes ~/ ticks;
-    var downloaded = 0;
-    controller.beginInAppDownload();
-    _demoUpdateProgressTimer = Timer.periodic(
-      const Duration(milliseconds: 100),
-      (timer) {
-        if (!mounted) {
-          timer.cancel();
-          return;
-        }
-        downloaded += step;
-        if (downloaded >= totalBytes) {
-          timer.cancel();
-          _demoUpdateProgressTimer = null;
-          controller.finishInAppDownload(success: true);
-          return;
-        }
-        controller.updateInAppProgress(downloaded, totalBytes);
-      },
-    );
-    return Future<bool>.value(true);
   }
 
   Future<void> _demoSelectPopup() async {
