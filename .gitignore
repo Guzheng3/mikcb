@@ -130,6 +130,9 @@ tool/__pycache__/
 # Firecrawl scrape/cache artifacts
 .firecrawl/
 
+# CodeGraph local index
+.codegraph/
+
 # MCP 工具指南
 tool/chrome-devtools-mcp-guide.md
 *.heapsnapshot
