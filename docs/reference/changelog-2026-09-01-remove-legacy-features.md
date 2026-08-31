@@ -30,7 +30,7 @@
 
 - 新增本地分支 `codex/remove-legacy-features-20260901`，变更按移除、测试稳定化、仓库整理分组提交。
 - 将 `.codegraph/` 加入 `.gitignore`，避免本地图谱索引入库。
-- 保留未跟踪的 `._cache_adb.exe` 不做提交，该文件来源待用户确认。
+- 将本地生成的 `._cache_adb.exe` 加入 `.gitignore`，保持工作区状态干净；文件本体保留在本地，等待后续确认来源后再处理。
 
 ## 验证结果
 
