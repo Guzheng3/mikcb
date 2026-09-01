@@ -156,6 +156,11 @@ AGENTS.md
 .tmp_*.png
 .tmp_*.jpg
 .tmp_*.txt
-._cache_adb.exe
-.review_*.diff
-*.stackdump
+._cache_*.exe
+
+# Widget 真机验证截图与布局快照
+/widget_*.png
+/widget_*.xml
+/dump_*.xml
+/window_dump.xml
+/page_check.xml
