@@ -193,6 +193,7 @@ object TodayWidgetSupport {
         TodayStripWidgetProvider.updateAll(context)
         ExamCountdownWidgetProvider.updateAll(context)
         TodayWideWidgetProvider.updateAll(context)
+        CoupleTimetableWidgetProvider.updateAll(context)
     }
 
     fun buildSnapshotFromFlutterState(
