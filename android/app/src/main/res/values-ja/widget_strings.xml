@@ -17,6 +17,8 @@
 
     <string name="widget_today_courses">今日の授業</string>
     <string name="widget_tomorrow_courses">明日の授業</string>
+    <string name="widget_couple_tomorrow_count">明日 %1$d コマ</string>
+    <string name="widget_couple_no_course_tomorrow">明日は授業なし</string>
     <string name="widget_no_course_today">今日は授業なし</string>
     <string name="widget_sync_later">アプリを開いて同期</string>
     <string name="widget_app_name">軽屿時間割</string>

@@ -17,6 +17,8 @@
 
     <string name="widget_today_courses">Today</string>
     <string name="widget_tomorrow_courses">Tomorrow</string>
+    <string name="widget_couple_tomorrow_count">%1$d classes tomorrow</string>
+    <string name="widget_couple_no_course_tomorrow">No classes tomorrow</string>
     <string name="widget_no_course_today">No classes today</string>
     <string name="widget_sync_later">Open app to sync</string>
     <string name="widget_app_name">Qingyu Timetable</string>

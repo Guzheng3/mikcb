@@ -18,6 +18,8 @@
 
     <string name="widget_today_courses">今日课程</string>
     <string name="widget_tomorrow_courses">明日课程</string>
+    <string name="widget_couple_tomorrow_count">明日共 %1$d 节</string>
+    <string name="widget_couple_no_course_tomorrow">明日无课</string>
     <string name="widget_no_course_today">今日无课</string>
     <string name="widget_sync_later">稍后打开应用同步</string>
     <string name="widget_app_name">轻屿课表</string>

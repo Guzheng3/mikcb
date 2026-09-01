@@ -17,6 +17,8 @@
 
     <string name="widget_today_courses">오늘 수업</string>
     <string name="widget_tomorrow_courses">내일 수업</string>
+    <string name="widget_couple_tomorrow_count">내일 %1$d교시</string>
+    <string name="widget_couple_no_course_tomorrow">내일 수업 없음</string>
     <string name="widget_no_course_today">오늘 수업 없음</string>
     <string name="widget_sync_later">앱을 열어 동기화</string>
     <string name="widget_app_name">경우 시간표</string>

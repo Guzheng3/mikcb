@@ -95,6 +95,7 @@ object HomeWidgetStorage {
         // 闹钟也必须响，不能只按当前课表的时间调度。
         val nextTriggerAtMillis = buildList {
             add(TodayWidgetSupport.findNextRefreshAtMillis(context, nowMillis))
+            add(CoupleTimetableWidgetProvider.findNextRefreshAtMillis(nowMillis))
             for ((_, profileId) in WidgetBindingStore.allBindings(context)) {
                 val profileJson =
                     TodayWidgetSupport.readProfileJsonById(context, profileId) ?: continue
@@ -210,4 +211,3 @@ object HomeWidgetStorage {
         }
     }
 }
-
