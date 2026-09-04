@@ -139,70 +139,29 @@
   "coupleTimetableColorsTitle": "叠加颜色",
   "coupleTimetableColorsSubtitle": "自定义「我的课」「TA的课」「一起上课」在叠加视图中的显示颜色，可按喜好自由搭配",
   "partnerImportRequiresSingleProfile": "请导入单课表备份文件，不支持全量备份",
-  "coupleWebdavTitle": "坚果云拉取",
-  "coupleWebdavSubtitle": "登录对方（或你们共用的）坚果云账号，自动下载对方上传的课表文件，与「云同步」账号独立，互不影响",
-  "coupleWebdavNotConnected": "尚未连接坚果云",
-  "coupleWebdavConnectedAs": "已连接：{username}",
-  "@coupleWebdavConnectedAs": {
+  "withuCoupleTitle": "withU 同步",
+  "withuCoupleNotConnected": "尚未连接 withU",
+  "@withuCoupleConnectedAs": {
     "placeholders": {
       "username": {
         "type": "String"
       }
     }
   },
-  "coupleWebdavRemotePathHint": "远程文件路径：{path}",
-  "@coupleWebdavRemotePathHint": {
-    "placeholders": {
-      "path": {
-        "type": "String"
-      }
-    }
-  },
-  "coupleWebdavLastPulledAt": "上次拉取：{time}",
-  "@coupleWebdavLastPulledAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "coupleWebdavConnect": "连接坚果云",
-  "coupleWebdavDisconnect": "断开连接",
-  "coupleWebdavPullNow": "立即拉取对方课表",
-  "coupleWebdavUploadForPartner": "上传我的课表到坚果云",
-  "coupleWebdavLoginSheetTitle": "连接坚果云（情侣课表）",
-  "coupleWebdavLoginSheetSubtitle": "请使用应用专用密码，对方需先将课表上传到约定路径，或由你在对方设备上登录同一账号并上传",
-  "coupleWebdavConfirmConnect": "连接并拉取",
-  "coupleWebdavMySlotLabel": "本机槽位",
-  "coupleWebdavMySlotHint": "双方必须选不同槽位：一方选 1，另一方选 2，否则会互相读不到课表",
-  "coupleWebdavSlotOne": "槽位 1",
-  "coupleWebdavSlotTwo": "槽位 2",
-  "coupleWebdavTestSuccess": "坚果云连接成功",
-  "coupleWebdavTestFailed": "连接失败，请检查账号、应用专用密码与网络",
-  "coupleWebdavPullImported": "已从坚果云导入对方课表",
-  "coupleWebdavPullUpdated": "已从坚果云更新对方课表",
-  "coupleWebdavPullUnchanged": "对方课表无变化",
-  "coupleWebdavUploadSuccess": "已上传课表，对方可拉取",
-  "coupleWebdavPartnerFileMissing": "未找到对方课表文件，请让对方先上传",
-  "coupleWebdavPullFailed": "拉取对方课表失败，请稍后重试",
-  "coupleWebdavNotConnectedError": "请先连接坚果云",
-  "withuCoupleTitle": "withU 同步",
-  "withuCoupleNotConnected": "尚未连接 withU",
-  "@withuCoupleConnectedAs": {
-    "placeholders": {
-      "username": {"type": "String"}
-    }
-  },
   "withuCoupleConnectedAs": "已连接：{username}",
   "@withuCoupleServerHint": {
     "placeholders": {
-      "url": {"type": "String"}
+      "url": {
+        "type": "String"
+      }
     }
   },
   "withuCoupleServerHint": "服务器：{url}",
   "@withuCoupleLastPulledAt": {
     "placeholders": {
-      "time": {"type": "String"}
+      "time": {
+        "type": "String"
+      }
     }
   },
   "withuCoupleLastPulledAt": "上次拉取：{time}",
@@ -472,8 +431,12 @@
   "courseRecolorSchemePosition": "第 {index}/{total} 套",
   "@courseRecolorSchemePosition": {
     "placeholders": {
-      "index": { "type": "int" },
-      "total": { "type": "int" }
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "courseRecolorNoCoursesToast": "暂无课程，先导入或添加课程再换颜色",
@@ -1420,7 +1383,7 @@
   "showStageTextTitle": "显示阶段状态文案",
   "showStageTextSubtitle": "关闭倒计时后，可继续显示“即将上课 / 上课中 / 下课提醒”",
   "hidePrefixTextTitle": "隐藏前缀文案",
-      "hidePrefixTextSubtitle": "例如隐藏“即将上课”这类前缀",
+  "hidePrefixTextSubtitle": "例如隐藏“即将上课”这类前缀",
   "liveIslandPreviewTitle": "超级岛预览",
   "liveIslandPreviewFollowBadge": "正在跟随“课前提醒显示”设置，调整课前提醒即可生效",
   "liveIslandPreviewStageBeforeClass": "即将上课",
@@ -2504,8 +2467,8 @@
   },
   "aboutMirrorUnknownSizeHint": "镜像源未返回文件总大小，先显示已下载体积",
   "aboutCancelDownloadAction": "取消下载",
-"aboutContinueDownloadAction": "继续下载",
-"aboutDismissDialogAction": "关闭弹窗",
+  "aboutContinueDownloadAction": "继续下载",
+  "aboutDismissDialogAction": "关闭弹窗",
   "aboutContributorsScreenTitle": "代码贡献者",
   "aboutDevelopersTitle": "开发人员",
   "aboutDeveloperMaintainerSubtitle": "轻屿课表开发与维护",
@@ -4006,19 +3969,33 @@
   "weeklyReportBody": "第{week}周 · 共{sections}节 · {courses}门课\n较上周 {delta} 节\n最忙的一天是 {busiestDay}",
   "@weeklyReportBody": {
     "placeholders": {
-      "week": { "type": "int" },
-      "sections": { "type": "int" },
-      "courses": { "type": "int" },
-      "delta": { "type": "String" },
-      "busiestDay": { "type": "String" }
+      "week": {
+        "type": "int"
+      },
+      "sections": {
+        "type": "int"
+      },
+      "courses": {
+        "type": "int"
+      },
+      "delta": {
+        "type": "String"
+      },
+      "busiestDay": {
+        "type": "String"
+      }
     }
   },
   "weeklyReportBodyEmpty": "本周暂无课程，好好休息吧",
   "weeklyReportNextFire": "下次推送 {date} {time}",
   "@weeklyReportNextFire": {
     "placeholders": {
-      "date": { "type": "String" },
-      "time": { "type": "String" }
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
     }
   },
   "weeklyReportEnabledHint": "已开启每周周报推送",
@@ -4029,7 +4006,9 @@
   "statisticsCompareDelta": "较当前 {delta} 节",
   "@statisticsCompareDelta": {
     "placeholders": {
-      "delta": { "type": "String" }
+      "delta": {
+        "type": "String"
+      }
     }
   },
   "statisticsCompareDetailTitle": "课表对比详情",
@@ -4076,28 +4055,42 @@
   "statisticsSemesterProgressRange": "学期 {start} - {end}",
   "@statisticsSemesterProgressRange": {
     "placeholders": {
-      "start": { "type": "String" },
-      "end": { "type": "String" }
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
     }
   },
   "statisticsSemesterProgressAsOf": "今天 {date}",
   "@statisticsSemesterProgressAsOf": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "statisticsSemesterProgressDetail": "截至第 {week} 周，已上 {done} 节 / 共 {total} 节",
   "@statisticsSemesterProgressDetail": {
     "placeholders": {
-      "week": { "type": "int" },
-      "done": { "type": "int" },
-      "total": { "type": "int" }
+      "week": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "statisticsSemesterProgressRemaining": "剩余 {count} 节",
   "@statisticsSemesterProgressRemaining": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "statisticsSemesterProgressNotStarted": "还未开学，尚未上课",
@@ -4108,8 +4101,12 @@
   "statisticsTrendTooltip": "第 {week} 周 · {sections} 节",
   "@statisticsTrendTooltip": {
     "placeholders": {
-      "week": { "type": "int" },
-      "sections": { "type": "int" }
+      "week": {
+        "type": "int"
+      },
+      "sections": {
+        "type": "int"
+      }
     }
   },
   "statisticsComparisonTitle": "本周小结",
@@ -4118,13 +4115,17 @@
   "statisticsComparisonVsLastWeek": "较上周 {delta} 节",
   "@statisticsComparisonVsLastWeek": {
     "placeholders": {
-      "delta": { "type": "String" }
+      "delta": {
+        "type": "String"
+      }
     }
   },
   "statisticsComparisonVsAverage": "较周均 {delta} 节",
   "@statisticsComparisonVsAverage": {
     "placeholders": {
-      "delta": { "type": "String" }
+      "delta": {
+        "type": "String"
+      }
     }
   },
   "statisticsComparisonNew": "新学期第一周",
@@ -4141,7 +4142,9 @@
   "statisticsTimeGapValue": "{sections} 节",
   "@statisticsTimeGapValue": {
     "placeholders": {
-      "sections": { "type": "int" }
+      "sections": {
+        "type": "int"
+      }
     }
   },
   "statisticsVenueTitle": "教室与教学楼",
@@ -4150,14 +4153,18 @@
   "statisticsVenueVisits": "{count} 次",
   "@statisticsVenueVisits": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "statisticsTeacherTitle": "教师课时排行",
   "statisticsTeacherCourseCount": "{count} 门课",
   "@statisticsTeacherCourseCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "statisticsAchievementFullDayKingName": "满课日之王",
@@ -4167,15 +4174,21 @@
   "statisticsAchievementProgress": "{current}/{target}",
   "@statisticsAchievementProgress": {
     "placeholders": {
-      "current": { "type": "int" },
-      "target": { "type": "int" }
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
     }
   },
   "statisticsAchievementDone": "已达成",
   "statisticsWeekDailyHint": "点击查看第 {week} 周详情",
   "@statisticsWeekDailyHint": {
     "placeholders": {
-      "week": { "type": "int" }
+      "week": {
+        "type": "int"
+      }
     }
   },
   "weekListSeparator": "、",
@@ -6195,7 +6208,7 @@
   "glassDockShowAddButtonTitle": "显示圆钮",
   "glassDockShowAddButtonSubtitle": "在药丸右侧显示独立圆钮，功能与图标可在下方自定义",
   "glassDockButtonBackToWeekLabel": "回本周 / 今天",
-    "glassDockExtraButtonSemanticLabel": "添加课程",
+  "glassDockExtraButtonSemanticLabel": "添加课程",
   "homeMenuStyleLabel": "右上角菜单样式",
   "homeMenuStyleList": "列表菜单",
   "homeMenuStyleGrid": "八宫格菜单",
@@ -6205,14 +6218,20 @@
   "homeGridCustomizeDetails": "已启用 {count}/{max} 个",
   "@homeGridCustomizeDetails": {
     "placeholders": {
-      "count": { "type": "int" },
-      "max": { "type": "int" }
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
     }
   },
   "homeGridEditorHintBody": "最多放置 {max} 个按钮；按住条目拖动即可排序。",
   "@homeGridEditorHintBody": {
     "placeholders": {
-      "max": { "type": "int" }
+      "max": {
+        "type": "int"
+      }
     }
   },
   "homeGridEditorEnabledTitle": "已启用",
@@ -6220,7 +6239,7 @@
   "homeGridEditorRemoveTooltip": "移除",
   "homeGridEditorAddTooltip": "添加",
   "homeGridEditorResetAction": "恢复默认排列",
-    "homeGridEditorAllAdded": "所有入口都已启用",
+  "homeGridEditorAllAdded": "所有入口都已启用",
   "homeGridEditorMaxReached": "已达上限",
   "homeGridEditorPinnedTooltip": "此入口用于重新打开本页，不能移除",
   "homeMenuCategoryFeatures": "功能入口",
@@ -6230,7 +6249,9 @@
   "classAlarmLeadMinutesLabel": "提前 {minutes} 分钟",
   "@classAlarmLeadMinutesLabel": {
     "placeholders": {
-      "minutes": { "type": "int" }
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "classAlarmInvalidTimeToast": "这门课的节次超出时间模板，无法设置闹钟",
@@ -6254,9 +6275,21 @@
   "classAlarmNoSemesterToast": "请先在设置中填写学期开始日期",
   "classAlarmActionLabel": "设这节课的闹钟",
   "classAlarmConfirmMessage": "将在系统时钟创建：{detail}。系统闹钟无法识别假期与调休，停课期间照常响铃；删除请在系统时钟中完成。",
-  "@classAlarmConfirmMessage": {"placeholders":{"detail":{"type":"String"}}},
+  "@classAlarmConfirmMessage": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
   "classAlarmVariableSuffix": "另外，{days}的第一节课时间在不同周不一致，这些天未创建闹钟。",
-  "@classAlarmVariableSuffix": {"placeholders":{"days":{"type":"String"}}},
+  "@classAlarmVariableSuffix": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "classAlarmEntryTitle": "上课闹钟",
   "classAlarmGroupSetup": "添加闹钟",
   "classAlarmGroupBehavior": "响铃行为",
@@ -6277,7 +6310,22 @@
   "classAlarmLaunchFailedToast": "未找到可处理的时钟应用",
   "classAlarmCourseConfirmTitle": "添加这节课的重复闹钟？",
   "classAlarmCourseConfirmMessage": "将在系统时钟创建每周{weekday} {time} 的重复闹钟（比上课提前{lead}分钟响铃；上课周次：{weeks}）。假期与非上课周仍会响铃，删除需在系统时钟中完成。",
-  "@classAlarmCourseConfirmMessage": {"placeholders":{"weekday":{"type":"String"},"time":{"type":"String"},"lead":{"type":"int"},"weeks":{"type":"String"}}},
+  "@classAlarmCourseConfirmMessage": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "lead": {
+        "type": "int"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
   "classAlarmDaySeparator": "、",
   "classAlarmDetailSeparator": "；"
 }

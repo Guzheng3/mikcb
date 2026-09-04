@@ -9,8 +9,6 @@ import 'package:provider/provider.dart';
 import '../models/partner_timetable_binding.dart';
 import '../domain/couple_timetable_logic.dart';
 import '../providers/timetable_provider.dart';
-import '../services/couple_webdav_config.dart';
-import '../services/couple_webdav_service.dart';
 import '../services/partner_timetable_service.dart';
 import '../services/withu_couple_auth_service.dart';
 import '../services/withu_couple_config.dart';
@@ -20,7 +18,6 @@ import '../ui/hyperos/hyperos.dart';
 import '../utils/app_toast.dart';
 import '../utils/course_color_palette.dart';
 import '../utils/hex_color.dart';
-import '../widgets/couple_webdav_connect_sheet.dart';
 import 'withu_couple_login_screen.dart';
 
 class CoupleTimetableSettingsScreen extends StatefulWidget {
@@ -40,14 +37,9 @@ class _CoupleTimetableSettingsScreenState
   bool _isExporting = false;
   bool _isImporting = false;
   bool _isUnlinking = false;
-  bool _isPullingWebdav = false;
-  bool _isUploadingWebdav = false;
   bool _isPullingWithu = false;
   bool _isUploadingWithu = false;
 
-  final CoupleWebdavService _coupleWebdavService = CoupleWebdavService();
-  CoupleWebdavConfig _coupleWebdavConfig = const CoupleWebdavConfig();
-  bool _hasCoupleWebdavPassword = false;
   final WithuCoupleAuthService _withuAuthService = WithuCoupleAuthService();
   late final WithuCoupleTimetableService _withuTimetableService;
   WithuCoupleConfig _withuCoupleConfig = const WithuCoupleConfig();
@@ -59,7 +51,6 @@ class _CoupleTimetableSettingsScreenState
     _withuTimetableService = WithuCoupleTimetableService(
       authService: _withuAuthService,
     );
-    _loadCoupleWebdavState();
     _loadWithuCoupleState();
   }
 
@@ -68,22 +59,6 @@ class _CoupleTimetableSettingsScreenState
     _withuAuthService.dispose();
     super.dispose();
   }
-
-  Future<void> _loadCoupleWebdavState() async {
-    final config = await _coupleWebdavService.loadConfig();
-    final hasPassword = await _coupleWebdavService.hasStoredPassword();
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _coupleWebdavConfig = config;
-      _hasCoupleWebdavPassword = hasPassword;
-    });
-  }
-
-  bool get _isCoupleWebdavConnected =>
-      _coupleWebdavConfig.username.trim().isNotEmpty &&
-      _hasCoupleWebdavPassword;
 
   bool get _isWithuCoupleConnected =>
       _withuCoupleConfig.baseUrl.trim().isNotEmpty &&
@@ -155,13 +130,6 @@ class _CoupleTimetableSettingsScreenState
                 ),
               ),
             ),
-          const HyperosSectionGap(),
-          HyperosSectionLabel(text: l10n.coupleWebdavTitle),
-          HyperosControlCard(
-            child: HyperosControlCardInset(
-              child: _buildCoupleWebdavControl(context, l10n),
-            ),
-          ),
           const HyperosSectionGap(),
           HyperosSectionLabel(text: l10n.withuCoupleTitle),
           HyperosControlCard(
@@ -416,206 +384,6 @@ class _CoupleTimetableSettingsScreenState
     } finally {
       if (mounted) {
         setState(() => _isUploadingWithu = false);
-      }
-    }
-  }
-
-  Widget _buildCoupleWebdavControl(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
-    final connected = _isCoupleWebdavConnected;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          connected
-              ? l10n.coupleWebdavConnectedAs(_coupleWebdavConfig.username)
-              : l10n.coupleWebdavNotConnected,
-          style: HyperosTypography.listTitle(context),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          l10n.coupleWebdavRemotePathHint(
-            _coupleWebdavConfig.partnerTimetableRemotePath,
-          ),
-          style: HyperosTypography.listDetail(context),
-        ),
-        if (_coupleWebdavConfig.lastPulledAt != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            l10n.coupleWebdavLastPulledAt(
-              _formatDateTime(_coupleWebdavConfig.lastPulledAt!),
-            ),
-            style: HyperosTypography.listDetail(context),
-          ),
-        ],
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            if (!connected)
-              HyperosButton(
-                label: l10n.coupleWebdavConnect,
-                onPressed: _connectCoupleWebdav,
-              )
-            else ...[
-              HyperosButton(
-                label: _isPullingWebdav
-                    ? '${l10n.coupleWebdavPullNow}...'
-                    : l10n.coupleWebdavPullNow,
-                loading: _isPullingWebdav,
-                onPressed: _isPullingWebdav ? null : _pullPartnerWebdav,
-              ),
-              HyperosButton(
-                label: _isUploadingWebdav
-                    ? '${l10n.coupleWebdavUploadForPartner}...'
-                    : l10n.coupleWebdavUploadForPartner,
-                variant: HyperosButtonVariant.secondary,
-                loading: _isUploadingWebdav,
-                onPressed: _isUploadingWebdav
-                    ? null
-                    : _uploadMyTimetableForPartner,
-              ),
-              HyperosButton(
-                label: l10n.coupleWebdavDisconnect,
-                variant: HyperosButtonVariant.secondary,
-                onPressed: _disconnectCoupleWebdav,
-              ),
-            ],
-          ],
-        ),
-      ],
-    );
-  }
-
-  Future<void> _connectCoupleWebdav() async {
-    final result = await showHyperosSheet<CoupleWebdavConnectResult>(
-      context: context,
-      builder: (ctx) => CoupleWebdavConnectSheet(
-        service: _coupleWebdavService,
-        config: _coupleWebdavConfig,
-      ),
-    );
-    if (result == null || !mounted) {
-      return;
-    }
-
-    setState(() => _isPullingWebdav = true);
-    try {
-      await _coupleWebdavService.connect(
-        username: result.username,
-        password: result.password,
-        mySlot: result.mySlot,
-      );
-      await _loadCoupleWebdavState();
-      await _pullPartnerWebdav(force: true, showProgress: false);
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      showAppToast(
-        context,
-        message: AppLocalizations.of(context)!.coupleWebdavTestFailed,
-        kind: AppToastKind.error,
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isPullingWebdav = false);
-      }
-    }
-  }
-
-  Future<void> _disconnectCoupleWebdav() async {
-    await _coupleWebdavService.disconnect();
-    await _loadCoupleWebdavState();
-  }
-
-  Future<void> _pullPartnerWebdav({
-    bool force = false,
-    bool showProgress = true,
-  }) async {
-    final l10n = AppLocalizations.of(context)!;
-    if (showProgress) {
-      setState(() => _isPullingWebdav = true);
-    }
-    try {
-      final result = await _coupleWebdavService.pullPartnerTimetable(
-        provider: context.read<TimetableProvider>(),
-        force: force,
-      );
-      await _loadCoupleWebdavState();
-      if (!mounted) {
-        return;
-      }
-      switch (result.status) {
-        case CoupleWebdavPullStatus.imported:
-          showAppToast(
-            context,
-            message: l10n.coupleWebdavPullImported,
-            kind: AppToastKind.success,
-          );
-        case CoupleWebdavPullStatus.updated:
-          showAppToast(
-            context,
-            message: l10n.coupleWebdavPullUpdated,
-            kind: AppToastKind.success,
-          );
-        case CoupleWebdavPullStatus.unchanged:
-          showAppToast(context, message: l10n.coupleWebdavPullUnchanged);
-        case CoupleWebdavPullStatus.failed:
-          showAppToast(
-            context,
-            message: localizeServiceMessage(
-              l10n,
-              result.errorCode ?? 'couple_webdav_pull_failed',
-            ),
-            kind: AppToastKind.error,
-          );
-      }
-    } finally {
-      if (mounted && showProgress) {
-        setState(() => _isPullingWebdav = false);
-      }
-    }
-  }
-
-  Future<void> _uploadMyTimetableForPartner() async {
-    final l10n = AppLocalizations.of(context)!;
-    setState(() => _isUploadingWebdav = true);
-    try {
-      final errorCode = await _coupleWebdavService.uploadMyTimetableForPartner(
-        provider: context.read<TimetableProvider>(),
-      );
-      if (!mounted) {
-        return;
-      }
-      if (errorCode != null) {
-        showAppToast(
-          context,
-          message: localizeServiceMessage(l10n, errorCode),
-          kind: AppToastKind.error,
-        );
-        return;
-      }
-      showAppToast(
-        context,
-        message: l10n.coupleWebdavUploadSuccess,
-        kind: AppToastKind.success,
-      );
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      showAppToast(
-        context,
-        message: l10n.coupleWebdavPullFailed,
-        kind: AppToastKind.error,
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isUploadingWebdav = false);
       }
     }
   }

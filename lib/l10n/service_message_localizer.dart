@@ -79,12 +79,6 @@ String localizeServiceMessage(
       return l10n.serviceMsgUnrecognizedMikcbDataFile;
     case 'partner_import_requires_single_profile':
       return l10n.partnerImportRequiresSingleProfile;
-    case 'couple_webdav_not_connected':
-      return l10n.coupleWebdavNotConnectedError;
-    case 'couple_webdav_partner_file_missing':
-      return l10n.coupleWebdavPartnerFileMissing;
-    case 'couple_webdav_pull_failed':
-      return l10n.coupleWebdavPullFailed;
     case 'withu_missing_credentials':
       return l10n.withuCoupleMissingCredentials;
     case 'withu_invalid_url':

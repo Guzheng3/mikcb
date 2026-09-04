@@ -139,70 +139,29 @@
   "coupleTimetableColorsTitle": "Overlay colors",
   "coupleTimetableColorsSubtitle": "Choose colors for your courses, partner courses, and shared classes in overlay view",
   "partnerImportRequiresSingleProfile": "Please import a single-profile backup, not a full backup",
-  "coupleWebdavTitle": "Nutstore pull",
-  "coupleWebdavSubtitle": "Sign in to your partner's (or shared) Nutstore account to download their uploaded timetable. Separate from Cloud Sync credentials",
-  "coupleWebdavNotConnected": "Not connected to Nutstore",
-  "coupleWebdavConnectedAs": "Connected as {username}",
-  "@coupleWebdavConnectedAs": {
+  "withuCoupleTitle": "withU sync",
+  "withuCoupleNotConnected": "Not connected to withU",
+  "@withuCoupleConnectedAs": {
     "placeholders": {
       "username": {
         "type": "String"
       }
     }
   },
-  "coupleWebdavRemotePathHint": "Remote file: {path}",
-  "@coupleWebdavRemotePathHint": {
-    "placeholders": {
-      "path": {
-        "type": "String"
-      }
-    }
-  },
-  "coupleWebdavLastPulledAt": "Last pulled: {time}",
-  "@coupleWebdavLastPulledAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "coupleWebdavConnect": "Connect Nutstore",
-  "coupleWebdavDisconnect": "Disconnect",
-  "coupleWebdavPullNow": "Pull partner timetable",
-  "coupleWebdavUploadForPartner": "Upload my timetable to Nutstore",
-  "coupleWebdavLoginSheetTitle": "Connect Nutstore (couple timetable)",
-  "coupleWebdavLoginSheetSubtitle": "Use an app-specific password. Your partner must upload their timetable to the agreed path first, or upload from their device on the same account",
-  "coupleWebdavConfirmConnect": "Connect and pull",
-  "coupleWebdavMySlotLabel": "This device slot",
-  "coupleWebdavMySlotHint": "Both devices must pick different slots: one chooses 1, the other 2, or neither can read the partner timetable",
-  "coupleWebdavSlotOne": "Slot 1",
-  "coupleWebdavSlotTwo": "Slot 2",
-  "coupleWebdavTestSuccess": "Nutstore connection successful",
-  "coupleWebdavTestFailed": "Connection failed. Check account, app password, and network.",
-  "coupleWebdavPullImported": "Partner timetable imported from Nutstore",
-  "coupleWebdavPullUpdated": "Partner timetable updated from Nutstore",
-  "coupleWebdavPullUnchanged": "Partner timetable is up to date",
-  "coupleWebdavUploadSuccess": "Timetable uploaded for your partner to pull",
-  "coupleWebdavPartnerFileMissing": "Partner timetable file not found. Ask them to upload first.",
-  "coupleWebdavPullFailed": "Failed to pull partner timetable. Try again later.",
-  "coupleWebdavNotConnectedError": "Connect Nutstore first",
-  "withuCoupleTitle": "withU sync",
-  "withuCoupleNotConnected": "Not connected to withU",
-  "@withuCoupleConnectedAs": {
-    "placeholders": {
-      "username": {"type": "String"}
-    }
-  },
   "withuCoupleConnectedAs": "Connected as {username}",
   "@withuCoupleServerHint": {
     "placeholders": {
-      "url": {"type": "String"}
+      "url": {
+        "type": "String"
+      }
     }
   },
   "withuCoupleServerHint": "Server: {url}",
   "@withuCoupleLastPulledAt": {
     "placeholders": {
-      "time": {"type": "String"}
+      "time": {
+        "type": "String"
+      }
     }
   },
   "withuCoupleLastPulledAt": "Last pulled: {time}",
@@ -2490,8 +2449,8 @@
   },
   "aboutMirrorUnknownSizeHint": "The mirror did not return a total file size yet, so only the downloaded size is shown for now",
   "aboutCancelDownloadAction": "Cancel download",
-"aboutContinueDownloadAction": "Resume download",
-"aboutDismissDialogAction": "Close dialog",
+  "aboutContinueDownloadAction": "Resume download",
+  "aboutDismissDialogAction": "Close dialog",
   "aboutContributorsScreenTitle": "Contributors",
   "aboutDevelopersTitle": "Developers",
   "aboutDeveloperMaintainerSubtitle": "Qingyu Timetable development and maintenance",
@@ -3975,19 +3934,33 @@
   "weeklyReportBody": "Week {week} · {sections} sections · {courses} courses\n{delta} vs last week\nBusiest day: {busiestDay}",
   "@weeklyReportBody": {
     "placeholders": {
-      "week": { "type": "int" },
-      "sections": { "type": "int" },
-      "courses": { "type": "int" },
-      "delta": { "type": "String" },
-      "busiestDay": { "type": "String" }
+      "week": {
+        "type": "int"
+      },
+      "sections": {
+        "type": "int"
+      },
+      "courses": {
+        "type": "int"
+      },
+      "delta": {
+        "type": "String"
+      },
+      "busiestDay": {
+        "type": "String"
+      }
     }
   },
   "weeklyReportBodyEmpty": "No classes this week — enjoy the break",
   "weeklyReportNextFire": "Next: {date} {time}",
   "@weeklyReportNextFire": {
     "placeholders": {
-      "date": { "type": "String" },
-      "time": { "type": "String" }
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
     }
   },
   "weeklyReportEnabledHint": "Weekly report enabled",
@@ -3998,7 +3971,9 @@
   "statisticsCompareDelta": "{delta} vs active",
   "@statisticsCompareDelta": {
     "placeholders": {
-      "delta": { "type": "String" }
+      "delta": {
+        "type": "String"
+      }
     }
   },
   "statisticsCompareDetailTitle": "Comparison Details",
@@ -4045,22 +4020,34 @@
   "statisticsSemesterProgressRange": "Semester {start} - {end}",
   "@statisticsSemesterProgressRange": {
     "placeholders": {
-      "start": { "type": "String" },
-      "end": { "type": "String" }
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
     }
   },
   "statisticsSemesterProgressAsOf": "Today {date}",
   "@statisticsSemesterProgressAsOf": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "statisticsSemesterProgressDetail": "As of week {week}, {done} of {total} sections taken",
   "@statisticsSemesterProgressDetail": {
     "placeholders": {
-      "week": { "type": "int" },
-      "done": { "type": "int" },
-      "total": { "type": "int" }
+      "week": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "statisticsSemesterProgressNotStarted": "Semester hasn't started yet",
@@ -4068,15 +4055,21 @@
   "statisticsSemesterProgressRemaining": "{count} sections left",
   "@statisticsSemesterProgressRemaining": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "statisticsTrendTitle": "Weekly Sections Trend",
   "statisticsTrendTooltip": "Week {week} · {sections} sections",
   "@statisticsTrendTooltip": {
     "placeholders": {
-      "week": { "type": "int" },
-      "sections": { "type": "int" }
+      "week": {
+        "type": "int"
+      },
+      "sections": {
+        "type": "int"
+      }
     }
   },
   "statisticsComparisonTitle": "This Week at a Glance",
@@ -4085,13 +4078,17 @@
   "statisticsComparisonVsLastWeek": "{delta} vs last week",
   "@statisticsComparisonVsLastWeek": {
     "placeholders": {
-      "delta": { "type": "String" }
+      "delta": {
+        "type": "String"
+      }
     }
   },
   "statisticsComparisonVsAverage": "{delta} vs weekly avg",
   "@statisticsComparisonVsAverage": {
     "placeholders": {
-      "delta": { "type": "String" }
+      "delta": {
+        "type": "String"
+      }
     }
   },
   "statisticsComparisonNew": "First week of the semester",
@@ -4108,7 +4105,9 @@
   "statisticsTimeGapValue": "{sections} sections",
   "@statisticsTimeGapValue": {
     "placeholders": {
-      "sections": { "type": "int" }
+      "sections": {
+        "type": "int"
+      }
     }
   },
   "statisticsVenueTitle": "Rooms & Buildings",
@@ -4117,14 +4116,18 @@
   "statisticsVenueVisits": "{count} visits",
   "@statisticsVenueVisits": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "statisticsTeacherTitle": "Teacher Ranking",
   "statisticsTeacherCourseCount": "{count} courses",
   "@statisticsTeacherCourseCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "statisticsAchievementFullDayKingName": "Full-Day King",
@@ -4134,15 +4137,21 @@
   "statisticsAchievementProgress": "{current}/{target}",
   "@statisticsAchievementProgress": {
     "placeholders": {
-      "current": { "type": "int" },
-      "target": { "type": "int" }
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
     }
   },
   "statisticsAchievementDone": "Unlocked",
   "statisticsWeekDailyHint": "Tap to view week {week} details",
   "@statisticsWeekDailyHint": {
     "placeholders": {
-      "week": { "type": "int" }
+      "week": {
+        "type": "int"
+      }
     }
   },
   "weekListSeparator": ", ",
@@ -6162,7 +6171,7 @@
   "glassDockShowAddButtonTitle": "Show round button",
   "glassDockShowAddButtonSubtitle": "Show a separate round button to the right of the pill — function and icon customizable below",
   "glassDockButtonBackToWeekLabel": "Back to this week / today",
-    "glassDockExtraButtonSemanticLabel": "Add course",
+  "glassDockExtraButtonSemanticLabel": "Add course",
   "homeMenuStyleLabel": "Top-right menu style",
   "homeMenuStyleList": "List menu",
   "homeMenuStyleGrid": "Eight-tile grid menu",
@@ -6172,14 +6181,20 @@
   "homeGridCustomizeDetails": "{count}/{max} enabled",
   "@homeGridCustomizeDetails": {
     "placeholders": {
-      "count": { "type": "int" },
-      "max": { "type": "int" }
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
     }
   },
   "homeGridEditorHintBody": "Up to {max} buttons can be added; drag an item to reorder.",
   "@homeGridEditorHintBody": {
     "placeholders": {
-      "max": { "type": "int" }
+      "max": {
+        "type": "int"
+      }
     }
   },
   "homeGridEditorEnabledTitle": "Enabled",
@@ -6187,7 +6202,7 @@
   "homeGridEditorRemoveTooltip": "Remove",
   "homeGridEditorAddTooltip": "Add",
   "homeGridEditorResetAction": "Reset to default order",
-    "homeGridEditorAllAdded": "All entries are enabled",
+  "homeGridEditorAllAdded": "All entries are enabled",
   "homeGridEditorMaxReached": "Limit reached",
   "homeGridEditorPinnedTooltip": "This entry reopens this page and cannot be removed",
   "homeMenuCategoryFeatures": "Features",
@@ -6197,7 +6212,9 @@
   "classAlarmLeadMinutesLabel": "{minutes} min ahead",
   "@classAlarmLeadMinutesLabel": {
     "placeholders": {
-      "minutes": { "type": "int" }
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "classAlarmInvalidTimeToast": "This class's period is outside the time scheme; cannot set an alarm",
@@ -6211,9 +6228,21 @@
   "classAlarmNoSemesterToast": "Set the semester start date in Settings first",
   "classAlarmActionLabel": "Set alarm for this class",
   "classAlarmConfirmMessage": "The system clock will create: {detail}. System alarms cannot recognize holidays or suspensions and ring anyway; delete them in the system clock.",
-  "@classAlarmConfirmMessage": {"placeholders":{"detail":{"type":"String"}}},
+  "@classAlarmConfirmMessage": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
   "classAlarmVariableSuffix": "Also, first-class times on {days} differ between weeks; no alarm covers these days.",
-  "@classAlarmVariableSuffix": {"placeholders":{"days":{"type":"String"}}},
+  "@classAlarmVariableSuffix": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "classAlarmEntryTitle": "Class alarms",
   "classAlarmGroupSetup": "Add alarms",
   "classAlarmGroupBehavior": "Ring behavior",
@@ -6234,7 +6263,22 @@
   "classAlarmLaunchFailedToast": "No clock app found to handle this",
   "classAlarmCourseConfirmTitle": "Add a repeating alarm for this class?",
   "classAlarmCourseConfirmMessage": "A weekly repeating alarm will be created in the system clock: every {weekday} at {time}, ringing {lead} minutes before this class starts (active weeks: {weeks}). It keeps ringing during holidays and off-weeks; delete it in the system clock.",
-  "@classAlarmCourseConfirmMessage": {"placeholders":{"weekday":{"type":"String"},"time":{"type":"String"},"lead":{"type":"int"},"weeks":{"type":"String"}}},
+  "@classAlarmCourseConfirmMessage": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "lead": {
+        "type": "int"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
   "classAlarmDaySeparator": ", ",
   "classAlarmDetailSeparator": "; "
 }
