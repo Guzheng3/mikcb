@@ -94,8 +94,9 @@ class _DayPagerFlickProbe {
 /// Only effective with `pageSnapping: false`: PageView otherwise wraps its
 /// own PageScrollPhysics *outside* whatever physics it is given and this
 /// override would never be reached. The snap behaviour itself still comes
-/// from the PageScrollPhysics superclass, so nothing else changes.
-class _DayPagerFlickRescuePhysics extends PageScrollPhysics {
+/// from [_SpringPageScrollPhysics], so page targeting and rescue behavior are
+/// unchanged.
+class _DayPagerFlickRescuePhysics extends _SpringPageScrollPhysics {
   const _DayPagerFlickRescuePhysics({
     required this.takeRescueVelocity,
     super.parent,
@@ -131,6 +132,63 @@ class _DayPagerFlickRescuePhysics extends PageScrollPhysics {
       }
     }
     return super.createBallisticSimulation(position, effectiveVelocity);
+  }
+}
+
+/// Page snap physics shared by the timetable pagers.
+///
+/// Target-page selection matches `PageScrollPhysics`; only release motion uses
+/// the app's critically damped MIUI spring, which carries pointer velocity
+/// into the settle instead of restarting on a fixed-duration curve.
+class _SpringPageScrollPhysics extends PageScrollPhysics {
+  const _SpringPageScrollPhysics({super.parent});
+
+  static SpringDescription get _spring => SpringDescription.withDampingRatio(
+    mass: 1,
+    stiffness: math
+        .pow(2 * math.pi / HyperosMiuixAnim.standardSpringPeriod, 2)
+        .toDouble(),
+  );
+
+  @override
+  _SpringPageScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return _SpringPageScrollPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  Simulation? createBallisticSimulation(
+    ScrollMetrics position,
+    double velocity,
+  ) {
+    // Defer boundary catch-up to the parent so Android keeps its clamped
+    // overscroll behavior.
+    if ((velocity <= 0.0 && position.pixels <= position.minScrollExtent) ||
+        (velocity >= 0.0 && position.pixels >= position.maxScrollExtent)) {
+      return super.createBallisticSimulation(position, velocity);
+    }
+
+    final tolerance = toleranceFor(position);
+    final pageUnit = position is PageMetrics
+        ? math.max(1, position.viewportDimension * position.viewportFraction)
+        : math.max(1, position.viewportDimension);
+    var page = position.pixels / pageUnit;
+    if (velocity < -tolerance.velocity) {
+      page -= 0.5;
+    } else if (velocity > tolerance.velocity) {
+      page += 0.5;
+    }
+
+    final target = page.roundToDouble() * pageUnit;
+    if (target == position.pixels) {
+      return null;
+    }
+    return ScrollSpringSimulation(
+      _spring,
+      position.pixels,
+      target,
+      velocity,
+      tolerance: tolerance,
+    );
   }
 }
 
@@ -1293,7 +1351,7 @@ class _TimetableScreenState extends State<TimetableScreen>
         await controller.animateToPage(
           targetPage,
           duration: _weekSlideDuration,
-          curve: Curves.easeOutCubic,
+          curve: Curves.easeInOutCubicEmphasized,
         );
       } else {
         controller.jumpToPage(targetPage);
@@ -2996,7 +3054,13 @@ class _TimetableScreenState extends State<TimetableScreen>
             allowImplicitScrolling: true,
             physics: _isDayView
                 ? const NeverScrollableScrollPhysics()
-                : const PageScrollPhysics(parent: ClampingScrollPhysics()),
+                : const _SpringPageScrollPhysics(
+                    parent: ClampingScrollPhysics(),
+                  ),
+            // The custom physics owns page snapping. Leaving this enabled
+            // would wrap default PageScrollPhysics outside it and hide the
+            // spring settle.
+            pageSnapping: false,
             onPageChanged: (page) =>
                 _handleWeekPageChanged(page, settings.semesterWeekCount),
             itemBuilder: (context, index) {
@@ -7158,7 +7222,7 @@ class _TimetableScreenState extends State<TimetableScreen>
           duration: (targetWeek - _visibleWeek).abs() == 1
               ? _weekSlideDuration
               : const Duration(milliseconds: 360),
-          curve: Curves.easeOutCubic,
+          curve: Curves.easeInOutCubicEmphasized,
         );
       } else {
         // Day-view boundary swipes already provide the horizontal motion.
