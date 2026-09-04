@@ -393,6 +393,108 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coupleWebdavNotConnectedError => '请先连接坚果云';
 
   @override
+  String get withuCoupleTitle => 'withU 同步';
+
+  @override
+  String get withuCoupleNotConnected => '尚未连接 withU';
+
+  @override
+  String withuCoupleConnectedAs(String username) {
+    return '已连接：$username';
+  }
+
+  @override
+  String withuCoupleServerHint(String url) {
+    return '服务器：$url';
+  }
+
+  @override
+  String withuCoupleLastPulledAt(String time) {
+    return '上次拉取：$time';
+  }
+
+  @override
+  String get withuCoupleConnect => '连接 withU';
+
+  @override
+  String get withuCoupleDisconnect => '断开连接';
+
+  @override
+  String get withuCouplePullNow => '立即拉取对方课表';
+
+  @override
+  String get withuCoupleUploadForPartner => '上传我的课表';
+
+  @override
+  String get withuCoupleLoginSheetTitle => '连接 withU（情侣课表）';
+
+  @override
+  String get withuCoupleLoginSheetSubtitle => '使用 withU 情侣账号登录，从对方账号拉取课表';
+
+  @override
+  String get withuCoupleConfirmConnect => '连接并拉取';
+
+  @override
+  String get withuCoupleServerLabel => 'withU 服务器';
+
+  @override
+  String get coupleTimetableSwitchSubtitle => '开启后在课表中叠加双方课程，并在右上角菜单优先显示登录';
+
+  @override
+  String get coupleTimetableDesktopCardTitle => '桌面卡片配置';
+
+  @override
+  String get coupleTimetableDesktopCardPlaceholder => '桌面卡片功能开发中，当前仅供预留';
+
+  @override
+  String get withuCoupleLoginPageTitle => '登录 withU';
+
+  @override
+  String get withuCoupleLoginPageSubtitle => '使用 withU 情侣账号登录，登录后自动拉取对方课表';
+
+  @override
+  String get withuCoupleLoginAction => '登录并拉取';
+
+  @override
+  String get withuCoupleLoginMenuTitle => '登录 withU';
+
+  @override
+  String get withuCouplePullImported => '已从 withU 导入对方课表';
+
+  @override
+  String get withuCouplePullUpdated => '已从 withU 更新对方课表';
+
+  @override
+  String get withuCouplePullUnchanged => '对方课表无变化';
+
+  @override
+  String get withuCoupleUploadSuccess => '已上传课表，对方可拉取';
+
+  @override
+  String get withuCoupleMissingCredentials => '请填写 withU 服务器、用户名和密码';
+
+  @override
+  String get withuCoupleNotConnectedError => '请先连接 withU';
+
+  @override
+  String get withuCoupleAuthFailed => 'withU 用户名或密码不正确';
+
+  @override
+  String get withuCoupleSessionExpired => 'withU 会话已过期，请重新登录';
+
+  @override
+  String get withuCoupleAccountRequired => '需要 withU 情侣账号';
+
+  @override
+  String get withuCouplePartnerTimetableMissing => '未找到对方课表，请让对方先上传';
+
+  @override
+  String get withuCoupleRequestFailed => 'withU 请求失败，请稍后重试';
+
+  @override
+  String get withuCoupleSessionCookieMissing => 'withU 未返回登录会话';
+
+  @override
   String get cloudSyncEntryTitle => '云同步';
 
   @override
@@ -10822,6 +10924,108 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get coupleWebdavNotConnectedError => '請先連接堅果雲';
+
+  @override
+  String get withuCoupleTitle => 'withU 同步';
+
+  @override
+  String get withuCoupleNotConnected => '尚未連接 withU';
+
+  @override
+  String withuCoupleConnectedAs(String username) {
+    return '已連接：$username';
+  }
+
+  @override
+  String withuCoupleServerHint(String url) {
+    return '伺服器：$url';
+  }
+
+  @override
+  String withuCoupleLastPulledAt(String time) {
+    return '上次拉取：$time';
+  }
+
+  @override
+  String get withuCoupleConnect => '連接 withU';
+
+  @override
+  String get withuCoupleDisconnect => '中斷連接';
+
+  @override
+  String get withuCouplePullNow => '立即拉取對方課表';
+
+  @override
+  String get withuCoupleUploadForPartner => '上傳我的課表';
+
+  @override
+  String get withuCoupleLoginSheetTitle => '連接 withU（情侶課表）';
+
+  @override
+  String get withuCoupleLoginSheetSubtitle => '使用 withU 情侶帳號登入，從對方帳號拉取課表';
+
+  @override
+  String get withuCoupleConfirmConnect => '連接並拉取';
+
+  @override
+  String get withuCoupleServerLabel => 'withU 伺服器';
+
+  @override
+  String get coupleTimetableSwitchSubtitle => '開啟後會在課表中疊加雙方課程，並在右上角菜單優先顯示登入';
+
+  @override
+  String get coupleTimetableDesktopCardTitle => '桌面卡片配置';
+
+  @override
+  String get coupleTimetableDesktopCardPlaceholder => '桌面卡片功能開發中，目前僅作預留';
+
+  @override
+  String get withuCoupleLoginPageTitle => '登入 withU';
+
+  @override
+  String get withuCoupleLoginPageSubtitle => '使用 withU 情侶帳號登入，登入後自動拉取對方課表';
+
+  @override
+  String get withuCoupleLoginAction => '登入並拉取';
+
+  @override
+  String get withuCoupleLoginMenuTitle => '登入 withU';
+
+  @override
+  String get withuCouplePullImported => '已從 withU 匯入對方課表';
+
+  @override
+  String get withuCouplePullUpdated => '已從 withU 更新對方課表';
+
+  @override
+  String get withuCouplePullUnchanged => '對方課表無變化';
+
+  @override
+  String get withuCoupleUploadSuccess => '已上傳課表，對方可拉取';
+
+  @override
+  String get withuCoupleMissingCredentials => '請填寫 withU 伺服器、用戶名和密碼';
+
+  @override
+  String get withuCoupleNotConnectedError => '請先連接 withU';
+
+  @override
+  String get withuCoupleAuthFailed => 'withU 用戶名或密碼不正確';
+
+  @override
+  String get withuCoupleSessionExpired => 'withU 會話已過期，請重新登入';
+
+  @override
+  String get withuCoupleAccountRequired => '需要 withU 情侶帳號';
+
+  @override
+  String get withuCouplePartnerTimetableMissing => '未找到對方課表，請讓對方先上傳';
+
+  @override
+  String get withuCoupleRequestFailed => 'withU 請求失敗，請稍後重試';
+
+  @override
+  String get withuCoupleSessionCookieMissing => 'withU 未返回登入會話';
 
   @override
   String get cloudSyncEntryTitle => '雲端同步';
@@ -21297,6 +21501,108 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get coupleWebdavNotConnectedError => '請先連接堅果雲';
+
+  @override
+  String get withuCoupleTitle => 'withU 同步';
+
+  @override
+  String get withuCoupleNotConnected => '尚未連接 withU';
+
+  @override
+  String withuCoupleConnectedAs(String username) {
+    return '已連接：$username';
+  }
+
+  @override
+  String withuCoupleServerHint(String url) {
+    return '伺服器：$url';
+  }
+
+  @override
+  String withuCoupleLastPulledAt(String time) {
+    return '上次拉取：$time';
+  }
+
+  @override
+  String get withuCoupleConnect => '連接 withU';
+
+  @override
+  String get withuCoupleDisconnect => '中斷連接';
+
+  @override
+  String get withuCouplePullNow => '立即拉取對方課表';
+
+  @override
+  String get withuCoupleUploadForPartner => '上傳我的課表';
+
+  @override
+  String get withuCoupleLoginSheetTitle => '連接 withU（情侶課表）';
+
+  @override
+  String get withuCoupleLoginSheetSubtitle => '使用 withU 情侶帳號登入，從對方帳號拉取課表';
+
+  @override
+  String get withuCoupleConfirmConnect => '連接並拉取';
+
+  @override
+  String get withuCoupleServerLabel => 'withU 伺服器';
+
+  @override
+  String get coupleTimetableSwitchSubtitle => '開啟後會在課表中疊加雙方課程，並在右上角選單優先顯示登入';
+
+  @override
+  String get coupleTimetableDesktopCardTitle => '桌面卡片設定';
+
+  @override
+  String get coupleTimetableDesktopCardPlaceholder => '桌面卡片功能開發中，目前僅供預留';
+
+  @override
+  String get withuCoupleLoginPageTitle => '登入 withU';
+
+  @override
+  String get withuCoupleLoginPageSubtitle => '使用 withU 情侶帳號登入，登入後自動拉取對方課表';
+
+  @override
+  String get withuCoupleLoginAction => '登入並拉取';
+
+  @override
+  String get withuCoupleLoginMenuTitle => '登入 withU';
+
+  @override
+  String get withuCouplePullImported => '已從 withU 匯入對方課表';
+
+  @override
+  String get withuCouplePullUpdated => '已從 withU 更新對方課表';
+
+  @override
+  String get withuCouplePullUnchanged => '對方課表無變化';
+
+  @override
+  String get withuCoupleUploadSuccess => '已上傳課表，對方可拉取';
+
+  @override
+  String get withuCoupleMissingCredentials => '請填寫 withU 伺服器、用戶名和密碼';
+
+  @override
+  String get withuCoupleNotConnectedError => '請先連接 withU';
+
+  @override
+  String get withuCoupleAuthFailed => 'withU 用戶名或密碼不正確';
+
+  @override
+  String get withuCoupleSessionExpired => 'withU 會話已過期，請重新登入';
+
+  @override
+  String get withuCoupleAccountRequired => '需要 withU 情侶帳號';
+
+  @override
+  String get withuCouplePartnerTimetableMissing => '未找到對方課表，請讓對方先上傳';
+
+  @override
+  String get withuCoupleRequestFailed => 'withU 請求失敗，請稍後重試';
+
+  @override
+  String get withuCoupleSessionCookieMissing => 'withU 未返回登入會話';
 
   @override
   String get cloudSyncEntryTitle => '雲端同步';

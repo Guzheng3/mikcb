@@ -65,7 +65,9 @@ void main() {
     // scheduleItems 与 deleteScheduleItem，属正当的同形依赖；分组排序逻辑
     // 已下沉纯 Dart domain（schedule_list_grouping），Provider 零改动，
     // 按测试约定同步真实值。
-    const baselineFanIn = 52;
+    // 52->53: withU couple sync mirrors CoupleWebdavService by importing the
+    // provider for partner import and current-timetable upload.
+    const baselineFanIn = 53;
     final importers = libDartFiles()
         .where(
           (file) =>

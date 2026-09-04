@@ -420,6 +420,118 @@ class AppLocalizationsEn extends AppLocalizations {
   String get coupleWebdavNotConnectedError => 'Connect Nutstore first';
 
   @override
+  String get withuCoupleTitle => 'withU sync';
+
+  @override
+  String get withuCoupleNotConnected => 'Not connected to withU';
+
+  @override
+  String withuCoupleConnectedAs(String username) {
+    return 'Connected as $username';
+  }
+
+  @override
+  String withuCoupleServerHint(String url) {
+    return 'Server: $url';
+  }
+
+  @override
+  String withuCoupleLastPulledAt(String time) {
+    return 'Last pulled: $time';
+  }
+
+  @override
+  String get withuCoupleConnect => 'Connect withU';
+
+  @override
+  String get withuCoupleDisconnect => 'Disconnect';
+
+  @override
+  String get withuCouplePullNow => 'Pull partner timetable';
+
+  @override
+  String get withuCoupleUploadForPartner => 'Upload my timetable';
+
+  @override
+  String get withuCoupleLoginSheetTitle => 'Connect withU (couple timetable)';
+
+  @override
+  String get withuCoupleLoginSheetSubtitle =>
+      'Sign in with your withU couple account to pull your partner\'s timetable';
+
+  @override
+  String get withuCoupleConfirmConnect => 'Connect and pull';
+
+  @override
+  String get withuCoupleServerLabel => 'withU server';
+
+  @override
+  String get coupleTimetableSwitchSubtitle =>
+      'Overlay both timetables and put sign-in first in the top-right menu';
+
+  @override
+  String get coupleTimetableDesktopCardTitle => 'Desktop card settings';
+
+  @override
+  String get coupleTimetableDesktopCardPlaceholder =>
+      'Desktop cards are coming later; this section is reserved';
+
+  @override
+  String get withuCoupleLoginPageTitle => 'Sign in to withU';
+
+  @override
+  String get withuCoupleLoginPageSubtitle =>
+      'Use your withU couple account, then pull your partner\'s timetable automatically';
+
+  @override
+  String get withuCoupleLoginAction => 'Sign in and pull';
+
+  @override
+  String get withuCoupleLoginMenuTitle => 'Sign in to withU';
+
+  @override
+  String get withuCouplePullImported => 'Partner timetable imported from withU';
+
+  @override
+  String get withuCouplePullUpdated => 'Partner timetable updated from withU';
+
+  @override
+  String get withuCouplePullUnchanged => 'Partner timetable is up to date';
+
+  @override
+  String get withuCoupleUploadSuccess =>
+      'Timetable uploaded for your partner to pull';
+
+  @override
+  String get withuCoupleMissingCredentials =>
+      'Enter the withU server, username, and password';
+
+  @override
+  String get withuCoupleNotConnectedError => 'Connect withU first';
+
+  @override
+  String get withuCoupleAuthFailed => 'Incorrect withU username or password';
+
+  @override
+  String get withuCoupleSessionExpired =>
+      'withU session expired. Sign in again.';
+
+  @override
+  String get withuCoupleAccountRequired => 'A withU couple account is required';
+
+  @override
+  String get withuCouplePartnerTimetableMissing =>
+      'Partner timetable not found. Ask them to upload first.';
+
+  @override
+  String get withuCoupleRequestFailed =>
+      'withU request failed. Try again later.';
+
+  @override
+  String get withuCoupleSessionCookieMissing =>
+      'withU did not return a login session';
+
+  @override
   String get cloudSyncEntryTitle => 'Cloud Sync';
 
   @override

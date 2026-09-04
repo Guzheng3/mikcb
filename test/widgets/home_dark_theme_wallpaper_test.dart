@@ -159,10 +159,7 @@ Future<void> _pumpDarkHome(
         themeMode: ThemeMode.dark,
         home: const RepaintBoundary(
           key: ValueKey('dark-home-shot'),
-          child: TimetableScreen(
-            enableUpdateCheck: false,
-            enableProgressTimer: false,
-          ),
+          child: TimetableScreen(enableProgressTimer: false),
         ),
       ),
     ),
@@ -184,12 +181,8 @@ Future<void> _expectNoBrightSeamRow(WidgetTester tester) async {
   final boundary = tester.renderObject<RenderRepaintBoundary>(
     find.byKey(const ValueKey('dark-home-shot')),
   );
-  final image = await tester.runAsync(
-    boundary.toImage,
-  );
-  final byteData = await tester.runAsync(
-    () => image!.toByteData(),
-  );
+  final image = await tester.runAsync(boundary.toImage);
+  final byteData = await tester.runAsync(() => image!.toByteData());
   image!.dispose();
   final width = image.width;
   final height = image.height;
@@ -242,7 +235,8 @@ Future<void> _expectNoBrightSeamRow(WidgetTester tester) async {
     expect(
       isSeam,
       isFalse,
-      reason: 'unexpected bright seam row at y=$y (lum=$lum, '
+      reason:
+          'unexpected bright seam row at y=$y (lum=$lum, '
           'prev=$prev, next=$next) in dark home render',
     );
   }
@@ -269,9 +263,7 @@ void main() {
           // ignored
         }
       });
-      final wallpaper = await tester.runAsync(
-        () => _writeWallpaper(dir),
-      );
+      final wallpaper = await tester.runAsync(() => _writeWallpaper(dir));
       final provider = await createInitializedTestProvider(tester);
       await _pumpDarkHome(tester, provider, wallpaper!.path);
 
@@ -332,10 +324,7 @@ void main() {
         ChangeNotifierProvider.value(
           value: provider,
           child: const TestApp(
-            home: TimetableScreen(
-              enableUpdateCheck: false,
-              enableProgressTimer: false,
-            ),
+            home: TimetableScreen(enableProgressTimer: false),
           ),
         ),
       );
@@ -377,10 +366,7 @@ void main() {
       // dark-mode bug painted the weekday bar's bottom border as a bright
       // full-width row over the dark surface).
       final wallpaper = await tester.runAsync(
-        () => _writeWallpaper(
-          dir,
-          fillColor: const Color(0xFF808080),
-        ),
+        () => _writeWallpaper(dir, fillColor: const Color(0xFF808080)),
       );
       final provider = await createInitializedTestProvider(tester);
       await _pumpDarkHome(tester, provider, wallpaper!.path);

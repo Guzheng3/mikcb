@@ -401,6 +401,113 @@ class AppLocalizationsJa extends AppLocalizations {
   String get coupleWebdavNotConnectedError => '先にナットストアに接続してください';
 
   @override
+  String get withuCoupleTitle => 'withU 同期';
+
+  @override
+  String get withuCoupleNotConnected => 'withU 未接続';
+
+  @override
+  String withuCoupleConnectedAs(String username) {
+    return '接続済み：$username';
+  }
+
+  @override
+  String withuCoupleServerHint(String url) {
+    return 'サーバー：$url';
+  }
+
+  @override
+  String withuCoupleLastPulledAt(String time) {
+    return '前回取得：$time';
+  }
+
+  @override
+  String get withuCoupleConnect => 'withU に接続';
+
+  @override
+  String get withuCoupleDisconnect => '接続を切断';
+
+  @override
+  String get withuCouplePullNow => '相手の時間割を今すぐ取得';
+
+  @override
+  String get withuCoupleUploadForPartner => '自分の時間割をアップロード';
+
+  @override
+  String get withuCoupleLoginSheetTitle => 'withU に接続（ペア時間割）';
+
+  @override
+  String get withuCoupleLoginSheetSubtitle =>
+      'withU のペアアカウントでログインすると、相手のアカウントから時間割を取得します';
+
+  @override
+  String get withuCoupleConfirmConnect => '接続して取得';
+
+  @override
+  String get withuCoupleServerLabel => 'withU サーバー';
+
+  @override
+  String get coupleTimetableSwitchSubtitle => '時間割を重ねて表示し、右上メニューの先頭にログインを表示します';
+
+  @override
+  String get coupleTimetableDesktopCardTitle => 'デスクトップカード設定';
+
+  @override
+  String get coupleTimetableDesktopCardPlaceholder =>
+      'デスクトップカードは今後提供予定です。この領域は予約されています';
+
+  @override
+  String get withuCoupleLoginPageTitle => 'withU にログイン';
+
+  @override
+  String get withuCoupleLoginPageSubtitle =>
+      'withU のペアアカウントでログインすると、相手の時間割を自動的に取得します';
+
+  @override
+  String get withuCoupleLoginAction => 'ログインして取得';
+
+  @override
+  String get withuCoupleLoginMenuTitle => 'withU にログイン';
+
+  @override
+  String get withuCouplePullImported => 'withU から相手の時間割をインポートしました';
+
+  @override
+  String get withuCouplePullUpdated => 'withU から相手の時間割を更新しました';
+
+  @override
+  String get withuCouplePullUnchanged => '相手の時間割に変更はありません';
+
+  @override
+  String get withuCoupleUploadSuccess => '時間割をアップロードしました。相手は取得できます';
+
+  @override
+  String get withuCoupleMissingCredentials =>
+      'withU のサーバー、ユーザー名、パスワードを入力してください';
+
+  @override
+  String get withuCoupleNotConnectedError => '先に withU に接続してください';
+
+  @override
+  String get withuCoupleAuthFailed => 'withU のユーザー名またはパスワードが正しくありません';
+
+  @override
+  String get withuCoupleSessionExpired => 'withU のセッションが期限切れです。再度ログインしてください';
+
+  @override
+  String get withuCoupleAccountRequired => 'withU のペアアカウントが必要です';
+
+  @override
+  String get withuCouplePartnerTimetableMissing =>
+      '相手の時間割が見つかりません。先にアップロードしてもらってください';
+
+  @override
+  String get withuCoupleRequestFailed => 'withU のリクエストに失敗しました。後でもう一度お試しください';
+
+  @override
+  String get withuCoupleSessionCookieMissing => 'withU からログインセッションが返されませんでした';
+
+  @override
   String get cloudSyncEntryTitle => 'クラウド同期';
 
   @override

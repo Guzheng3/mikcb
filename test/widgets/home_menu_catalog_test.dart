@@ -20,6 +20,25 @@ void main() {
     expect(homeMenuEntryById(HomeGridMenu.pinnedActionId), isNotNull);
   });
 
+  test('couple login leads the top menu only when overlay is enabled', () {
+    final settings = TimetableSettings.defaults();
+
+    final disabled = resolveHomeTopMenuEntries(settings);
+    expect(
+      disabled.map((entry) => entry.id),
+      isNot(contains('withuCoupleLogin')),
+    );
+
+    final enabled = resolveHomeTopMenuEntries(
+      settings.copyWith(coupleTimetableOverlayEnabled: true),
+    );
+    expect(enabled.first.id, 'withuCoupleLogin');
+    expect(
+      kHomeMenuCatalog.map((entry) => entry.id),
+      isNot(contains('withuCoupleLogin')),
+    );
+  });
+
   test('memory stats entry is hidden for release users', () {
     final memoryEntry = homeMenuEntryById('memoryStats');
     expect(memoryEntry, isNotNull);
@@ -49,7 +68,7 @@ void main() {
 
   test('resolver falls back to defaults on empty config and drops junk', () {
     final fallback = resolveHomeGridMenuEntries(TimetableSettings.defaults());
-    expect(fallback.length, HomeGridMenu.maxSlots);
+    expect(fallback.length, HomeGridMenu.defaultActions.length);
 
     final cleaned = resolveHomeGridMenuEntries(
       TimetableSettings.defaults().copyWith(

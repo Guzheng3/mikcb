@@ -98,7 +98,9 @@ void main() {
         .setMockMethodCallHandler(liveChannel, null);
   });
 
-  testWidgets('day view agenda card repaints after editor colour change', (tester) async {
+  testWidgets('day view agenda card repaints after editor colour change', (
+    tester,
+  ) async {
     final provider = await createInitializedTestProvider(tester);
     final today = DateTime.now();
 
@@ -136,17 +138,16 @@ void main() {
         () => Future<void>.delayed(const Duration(milliseconds: 50)),
       );
     }
-    expect(bridged, true, reason: 'bridge op must land before post-build mutations');
+    expect(
+      bridged,
+      true,
+      reason: 'bridge op must land before post-build mutations',
+    );
 
     await tester.pumpWidget(
       ChangeNotifierProvider.value(
         value: provider,
-        child: const TestApp(
-          home: TimetableScreen(
-            enableUpdateCheck: false,
-            enableProgressTimer: false,
-          ),
-        ),
+        child: const TestApp(home: TimetableScreen(enableProgressTimer: false)),
       ),
     );
     await tester.pump();
@@ -160,7 +161,9 @@ void main() {
     final beforeColor = _agendaCardSurface(tester).color;
 
     // Tap the agenda card -> editor opens via container transform.
-    await tester.tap(find.byKey(const ValueKey('day-view-edit-card-today-course')));
+    await tester.tap(
+      find.byKey(const ValueKey('day-view-edit-card-today-course')),
+    );
     await tester.pump();
     await _pumpUntilSettled(tester);
     expect(find.byType(AddCourseScreen), findsOneWidget);
@@ -234,8 +237,12 @@ void main() {
       final db = afterColor.b - c.b;
       return dr * dr + dg * dg + db * db;
     }
-    expect(distTo(const Color(0xFF4CAF50)), lessThan(distTo(const Color(0xFF2196F3))),
-        reason: 'day view agenda card should repaint with the new course colour');
+
+    expect(
+      distTo(const Color(0xFF4CAF50)),
+      lessThan(distTo(const Color(0xFF2196F3))),
+      reason: 'day view agenda card should repaint with the new course colour',
+    );
     // Sanity: the surface actually participates in this regression only if it
     // rendered the old colour before the edit.
     expect(beforeColor, isNot(const Color(0xFF4CAF50)));

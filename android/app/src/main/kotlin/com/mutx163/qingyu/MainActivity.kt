@@ -669,6 +669,12 @@ class MainActivity : FlutterActivity() {
                             result.error("INVALID_ARGUMENTS", "Missing appWidgetId", null)
                         } else {
                             WidgetBindingStore.setBoundProfileId(applicationContext, appWidgetId, profileId)
+                            if (profileId.isNullOrBlank()) {
+                                HomeWidgetStorage.clearWidgetSnapshot(
+                                    applicationContext,
+                                    appWidgetId
+                                )
+                            }
                             TodayWidgetSupport.updateAll(applicationContext)
                             HomeWidgetStorage.rescheduleRefresh(applicationContext)
                             result.success(true)

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
+import '../data/timetable_repository.dart';
 import '../models/holiday_entry.dart';
 import '../models/location_time_group.dart';
 import '../models/partner_timetable_binding.dart';
@@ -195,6 +196,9 @@ class AppSyncSnapshotService {
        _dataTransferService = dataTransferService ?? DataTransferService();
 
   final StorageService _storageService;
+  late final TimetableRepository _timetableRepository = TimetableRepository(
+    _storageService,
+  );
   final WarehouseImportPreferencesService _warehousePreferencesService;
   final WarehouseMacroService _warehouseMacroService;
   final HolidayService _holidayService;
@@ -267,9 +271,9 @@ class AppSyncSnapshotService {
         'custom holiday storage corrupted; refusing to build sync snapshot',
       );
     }
-    final teacherRecords = await _storageService.getTeacherRecords();
-    final locationRecords = await _storageService.getLocationRecords();
-    final partnerTimetableBinding = await _storageService
+    final teacherRecords = await _timetableRepository.getTeacherRecords();
+    final locationRecords = await _timetableRepository.getLocationRecords();
+    final partnerTimetableBinding = await _timetableRepository
         .getPartnerTimetableBinding();
     final timestamp = exportedAt ?? DateTime.now();
 
@@ -375,7 +379,9 @@ class AppSyncSnapshotService {
       throw const FormatException('unrecognized_sync_snapshot');
     }
     final app = rawApp;
-    final version = rawVersion is int ? rawVersion : (rawVersion as num).toInt();
+    final version = rawVersion is int
+        ? rawVersion
+        : (rawVersion as num).toInt();
     final type = rawType;
 
     if (app != 'mikcb' || version != schemaVersion || type != backupType) {
@@ -929,11 +935,13 @@ class AppSyncSnapshotService {
       return timetableError;
     }
 
-    await _storageService.saveTeacherRecords(snapshot.teacherRecords);
-    await _storageService.saveLocationRecords(snapshot.locationRecords);
-    await _storageService.saveLocationTimeGroups(snapshot.locationTimeGroups);
-    await _storageService.saveScheduleDateRules(snapshot.scheduleDateRules);
-    await _storageService.saveScheduleDateRuleLastAppliedSignature(
+    await _timetableRepository.saveTeacherRecords(snapshot.teacherRecords);
+    await _timetableRepository.saveLocationRecords(snapshot.locationRecords);
+    await _timetableRepository.saveLocationTimeGroups(
+      snapshot.locationTimeGroups,
+    );
+    await _timetableRepository.saveScheduleDateRulesWithLastAppliedSignature(
+      snapshot.scheduleDateRules,
       snapshot.scheduleDateRuleLastAppliedSignature,
     );
     await _warehousePreferencesService.importSyncBundle(snapshot.warehouse);
@@ -956,7 +964,7 @@ class AppSyncSnapshotService {
     }
 
     if (snapshot.includesPartnerTimetableBinding) {
-      await _storageService.savePartnerTimetableBinding(
+      await _timetableRepository.savePartnerTimetableBinding(
         snapshot.partnerTimetableBinding,
       );
     }

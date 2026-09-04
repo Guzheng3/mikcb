@@ -12,11 +12,16 @@ import '../providers/timetable_provider.dart';
 import '../services/couple_webdav_config.dart';
 import '../services/couple_webdav_service.dart';
 import '../services/partner_timetable_service.dart';
+import '../services/withu_couple_auth_service.dart';
+import '../services/withu_couple_config.dart';
+import '../services/withu_couple_session_store.dart';
+import '../services/withu_couple_timetable_service.dart';
 import '../ui/hyperos/hyperos.dart';
 import '../utils/app_toast.dart';
 import '../utils/course_color_palette.dart';
 import '../utils/hex_color.dart';
 import '../widgets/couple_webdav_connect_sheet.dart';
+import 'withu_couple_login_screen.dart';
 
 class CoupleTimetableSettingsScreen extends StatefulWidget {
   const CoupleTimetableSettingsScreen({super.key});
@@ -37,15 +42,31 @@ class _CoupleTimetableSettingsScreenState
   bool _isUnlinking = false;
   bool _isPullingWebdav = false;
   bool _isUploadingWebdav = false;
+  bool _isPullingWithu = false;
+  bool _isUploadingWithu = false;
 
   final CoupleWebdavService _coupleWebdavService = CoupleWebdavService();
   CoupleWebdavConfig _coupleWebdavConfig = const CoupleWebdavConfig();
   bool _hasCoupleWebdavPassword = false;
+  final WithuCoupleAuthService _withuAuthService = WithuCoupleAuthService();
+  late final WithuCoupleTimetableService _withuTimetableService;
+  WithuCoupleConfig _withuCoupleConfig = const WithuCoupleConfig();
+  WithuCoupleSession? _withuCoupleSession;
 
   @override
   void initState() {
     super.initState();
+    _withuTimetableService = WithuCoupleTimetableService(
+      authService: _withuAuthService,
+    );
     _loadCoupleWebdavState();
+    _loadWithuCoupleState();
+  }
+
+  @override
+  void dispose() {
+    _withuAuthService.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCoupleWebdavState() async {
@@ -64,6 +85,11 @@ class _CoupleTimetableSettingsScreenState
       _coupleWebdavConfig.username.trim().isNotEmpty &&
       _hasCoupleWebdavPassword;
 
+  bool get _isWithuCoupleConnected =>
+      _withuCoupleConfig.baseUrl.trim().isNotEmpty &&
+      _withuCoupleSession != null &&
+      _withuCoupleSession!.isUsable;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -76,6 +102,30 @@ class _CoupleTimetableSettingsScreenState
       title: Text(l10n.coupleTimetableTitle),
       child: HyperosListView(
         children: [
+          HyperosControlCard(
+            edgeToEdge: true,
+            child: HyperosControlCardRowScope(
+              isFirst: true,
+              isLast: true,
+              child: HyperosSwitchTile(
+                icon: Icons.favorite_outline_rounded,
+                iconAccent: provider.settings.coupleTimetableOverlayEnabled
+                    ? HyperosIconColors.red
+                    : HyperosIconColors.blue,
+                title: l10n.coupleTimetableTitle,
+                subtitle: l10n.coupleTimetableSwitchSubtitle,
+                value: provider.settings.coupleTimetableOverlayEnabled,
+                onChanged: (value) {
+                  provider.updateSettings(
+                    provider.settings.copyWith(
+                      coupleTimetableOverlayEnabled: value,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          const HyperosSectionGap(),
           HyperosSectionLabel(
             text: binding == null
                 ? l10n.coupleTimetableUnboundTitle
@@ -110,6 +160,24 @@ class _CoupleTimetableSettingsScreenState
           HyperosControlCard(
             child: HyperosControlCardInset(
               child: _buildCoupleWebdavControl(context, l10n),
+            ),
+          ),
+          const HyperosSectionGap(),
+          HyperosSectionLabel(text: l10n.withuCoupleTitle),
+          HyperosControlCard(
+            child: HyperosControlCardInset(
+              child: _buildWithuCoupleControl(context, l10n),
+            ),
+          ),
+          const HyperosSectionGap(),
+          HyperosSectionLabel(text: l10n.coupleTimetableDesktopCardTitle),
+          HyperosControlCard(
+            title: l10n.coupleTimetableDesktopCardTitle,
+            child: HyperosControlCardInset(
+              child: Text(
+                l10n.coupleTimetableDesktopCardPlaceholder,
+                style: HyperosTypography.listDetail(context),
+              ),
             ),
           ),
           const HyperosSectionGap(),
@@ -171,6 +239,185 @@ class _CoupleTimetableSettingsScreenState
         ],
       ),
     );
+  }
+
+  Future<void> _loadWithuCoupleState() async {
+    final config = await _withuAuthService.loadConfig();
+    final session = await _withuAuthService.loadSession();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _withuCoupleConfig = config;
+      _withuCoupleSession = session;
+    });
+  }
+
+  Widget _buildWithuCoupleControl(BuildContext context, AppLocalizations l10n) {
+    final connected = _isWithuCoupleConnected;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          connected
+              ? l10n.withuCoupleConnectedAs(_withuCoupleSession!.username)
+              : l10n.withuCoupleNotConnected,
+          style: HyperosTypography.listTitle(context),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          l10n.withuCoupleServerHint(_withuCoupleConfig.baseUrl),
+          style: HyperosTypography.listDetail(context),
+        ),
+        if (_withuCoupleConfig.lastPulledAt != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            l10n.withuCoupleLastPulledAt(
+              _formatDateTime(_withuCoupleConfig.lastPulledAt!),
+            ),
+            style: HyperosTypography.listDetail(context),
+          ),
+        ],
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            if (!connected)
+              HyperosButton(
+                label: l10n.withuCoupleConnect,
+                onPressed: _connectWithuCouple,
+              )
+            else ...[
+              HyperosButton(
+                label: _isPullingWithu
+                    ? '${l10n.withuCouplePullNow}...'
+                    : l10n.withuCouplePullNow,
+                loading: _isPullingWithu,
+                onPressed: _isPullingWithu ? null : _pullPartnerWithu,
+              ),
+              HyperosButton(
+                label: _isUploadingWithu
+                    ? '${l10n.withuCoupleUploadForPartner}...'
+                    : l10n.withuCoupleUploadForPartner,
+                variant: HyperosButtonVariant.secondary,
+                loading: _isUploadingWithu,
+                onPressed: _isUploadingWithu
+                    ? null
+                    : _uploadMyTimetableForWithu,
+              ),
+              HyperosButton(
+                label: l10n.withuCoupleDisconnect,
+                variant: HyperosButtonVariant.secondary,
+                onPressed: _disconnectWithuCouple,
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _connectWithuCouple() async {
+    final provider = context.read<TimetableProvider>();
+    final connected = await Navigator.of(context).push<bool>(
+      HyperosPageRoute<bool>(
+        builder: (_) => WithuCoupleLoginScreen(
+          initialConfig: _withuCoupleConfig,
+          onPullPartner: (service) =>
+              service.pullPartnerTimetable(provider: provider, force: true),
+        ),
+      ),
+    );
+    if (connected != true || !mounted) {
+      return;
+    }
+    await _loadWithuCoupleState();
+  }
+
+  Future<void> _disconnectWithuCouple() async {
+    await _withuTimetableService.disconnect();
+    await _loadWithuCoupleState();
+  }
+
+  Future<void> _pullPartnerWithu({
+    bool force = false,
+    bool showProgress = true,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    if (showProgress) {
+      setState(() => _isPullingWithu = true);
+    }
+    try {
+      final result = await _withuTimetableService.pullPartnerTimetable(
+        provider: context.read<TimetableProvider>(),
+        force: force,
+      );
+      await _loadWithuCoupleState();
+      if (!mounted) {
+        return;
+      }
+      switch (result.status) {
+        case WithuCouplePullStatus.imported:
+          showAppToast(
+            context,
+            message: l10n.withuCouplePullImported,
+            kind: AppToastKind.success,
+          );
+        case WithuCouplePullStatus.updated:
+          showAppToast(
+            context,
+            message: l10n.withuCouplePullUpdated,
+            kind: AppToastKind.success,
+          );
+        case WithuCouplePullStatus.unchanged:
+          showAppToast(context, message: l10n.withuCouplePullUnchanged);
+        case WithuCouplePullStatus.failed:
+          showAppToast(
+            context,
+            message: localizeServiceMessage(
+              l10n,
+              result.errorCode ?? 'withu_request_failed',
+            ),
+            kind: AppToastKind.error,
+          );
+      }
+    } finally {
+      if (mounted && showProgress) {
+        setState(() => _isPullingWithu = false);
+      }
+    }
+  }
+
+  Future<void> _uploadMyTimetableForWithu() async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _isUploadingWithu = true);
+    try {
+      final errorCode = await _withuTimetableService
+          .uploadMyTimetableForPartner(
+            provider: context.read<TimetableProvider>(),
+          );
+      if (!mounted) {
+        return;
+      }
+      if (errorCode != null) {
+        showAppToast(
+          context,
+          message: localizeServiceMessage(l10n, errorCode),
+          kind: AppToastKind.error,
+        );
+        return;
+      }
+      showAppToast(
+        context,
+        message: l10n.withuCoupleUploadSuccess,
+        kind: AppToastKind.success,
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingWithu = false);
+      }
+    }
   }
 
   Widget _buildCoupleWebdavControl(
@@ -316,10 +563,7 @@ class _CoupleTimetableSettingsScreenState
             kind: AppToastKind.success,
           );
         case CoupleWebdavPullStatus.unchanged:
-          showAppToast(
-            context,
-            message: l10n.coupleWebdavPullUnchanged,
-          );
+          showAppToast(context, message: l10n.coupleWebdavPullUnchanged);
         case CoupleWebdavPullStatus.failed:
           showAppToast(
             context,

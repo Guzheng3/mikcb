@@ -186,6 +186,53 @@
   "coupleWebdavPartnerFileMissing": "未找到对方课表文件，请让对方先上传",
   "coupleWebdavPullFailed": "拉取对方课表失败，请稍后重试",
   "coupleWebdavNotConnectedError": "请先连接坚果云",
+  "withuCoupleTitle": "withU 同步",
+  "withuCoupleNotConnected": "尚未连接 withU",
+  "@withuCoupleConnectedAs": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "withuCoupleConnectedAs": "已连接：{username}",
+  "@withuCoupleServerHint": {
+    "placeholders": {
+      "url": {"type": "String"}
+    }
+  },
+  "withuCoupleServerHint": "服务器：{url}",
+  "@withuCoupleLastPulledAt": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "withuCoupleLastPulledAt": "上次拉取：{time}",
+  "withuCoupleConnect": "连接 withU",
+  "withuCoupleDisconnect": "断开连接",
+  "withuCouplePullNow": "立即拉取对方课表",
+  "withuCoupleUploadForPartner": "上传我的课表",
+  "withuCoupleLoginSheetTitle": "连接 withU（情侣课表）",
+  "withuCoupleLoginSheetSubtitle": "使用 withU 情侣账号登录，从对方账号拉取课表",
+  "withuCoupleConfirmConnect": "连接并拉取",
+  "withuCoupleServerLabel": "withU 服务器",
+  "coupleTimetableSwitchSubtitle": "开启后在课表中叠加双方课程，并在右上角菜单优先显示登录",
+  "coupleTimetableDesktopCardTitle": "桌面卡片配置",
+  "coupleTimetableDesktopCardPlaceholder": "桌面卡片功能开发中，当前仅供预留",
+  "withuCoupleLoginPageTitle": "登录 withU",
+  "withuCoupleLoginPageSubtitle": "使用 withU 情侣账号登录，登录后自动拉取对方课表",
+  "withuCoupleLoginAction": "登录并拉取",
+  "withuCoupleLoginMenuTitle": "登录 withU",
+  "withuCouplePullImported": "已从 withU 导入对方课表",
+  "withuCouplePullUpdated": "已从 withU 更新对方课表",
+  "withuCouplePullUnchanged": "对方课表无变化",
+  "withuCoupleUploadSuccess": "已上传课表，对方可拉取",
+  "withuCoupleMissingCredentials": "请填写 withU 服务器、用户名和密码",
+  "withuCoupleNotConnectedError": "请先连接 withU",
+  "withuCoupleAuthFailed": "withU 用户名或密码不正确",
+  "withuCoupleSessionExpired": "withU 会话已过期，请重新登录",
+  "withuCoupleAccountRequired": "需要 withU 情侣账号",
+  "withuCouplePartnerTimetableMissing": "未找到对方课表，请让对方先上传",
+  "withuCoupleRequestFailed": "withU 请求失败，请稍后重试",
+  "withuCoupleSessionCookieMissing": "withU 未返回登录会话",
   "cloudSyncEntryTitle": "云同步",
   "cloudSyncEntrySubtitle": "通过坚果云等多设备同步课表与导入数据",
   "cloudSyncEntryDisabled": "已关闭",

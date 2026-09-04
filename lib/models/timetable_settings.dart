@@ -147,14 +147,12 @@ abstract final class HomeGridMenu {
 
   /// v2.0.5.5 已发布版本的默认排列（不含后来新增的任务入口）。
   static const List<String> defaultActions = [
-    'update',
     'overview',
     'statistics',
     'addCourse',
     'exams',
     'importCourses',
     pinnedActionId,
-    'support',
   ];
 
   /// 去重、剔除非字符串项并截断到 [maxSlots]，最后保证钉住项在场。

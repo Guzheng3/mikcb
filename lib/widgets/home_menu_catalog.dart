@@ -4,6 +4,7 @@ import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/widgets/home_menu_route_catalog.dart';
 import 'package:university_timetable/providers/timetable_provider.dart';
+import 'package:university_timetable/screens/withu_couple_login_screen.dart';
 import 'package:university_timetable/services/memory_stats_service.dart';
 import 'package:university_timetable/widgets/course_recolor_sheet.dart';
 import 'package:university_timetable/widgets/home_top_menu.dart';
@@ -18,11 +19,29 @@ export 'home_menu_route_catalog.dart'
     show
         kInlineDockPages,
         inlineDockPageFor,
-        pushHomeMenuUpdateEntry,
         kHomeCatalogPages,
         homePage,
         registerSettingsPages,
         resolveSettingsSubpage;
+
+/// Conditional top-menu action: shown only while the couple overlay is on.
+/// It intentionally stays out of the persistent grid menu catalog.
+final HomeMenuEntry coupleLoginHomeMenuEntry = HomeMenuEntry(
+  id: 'withuCoupleLogin',
+  title: (l10n) => l10n.withuCoupleLoginMenuTitle,
+  icon: Icons.login_rounded,
+  category: HomeMenuEntryCategory.features,
+  open: (context) {
+    final provider = context.read<TimetableProvider>();
+    return pushHomeMenuPage(
+      context,
+      WithuCoupleLoginScreen(
+        onPullPartner: (service) =>
+            service.pullPartnerTimetable(provider: provider, force: true),
+      ),
+    );
+  },
+);
 
 /// 八宫格候选目录：应用内所有适合作为独立入口的二级页面与功能。
 ///
@@ -35,14 +54,6 @@ export 'home_menu_route_catalog.dart'
 /// - 新增入口只要在 [kHomeMenuCatalog] 追加一条即可进入编辑器候选。
 final List<HomeMenuEntry> kHomeMenuCatalog = [
   // ── 功能入口 ──────────────────────────────────────────────
-  HomeMenuEntry(
-    id: 'update',
-    title: (l10n) => l10n.homeMenuUpdateTitle,
-    icon: Icons.system_update_alt_rounded,
-    category: HomeMenuEntryCategory.features,
-    // 宿主拦截后才会走这里；兜底直开更新详情页。
-    open: pushHomeMenuUpdateEntry,
-  ),
   HomeMenuEntry(
     id: 'overview',
     title: (l10n) => l10n.homeMenuOverviewTitle,
@@ -122,8 +133,7 @@ final List<HomeMenuEntry> kHomeMenuCatalog = [
     title: (l10n) => l10n.scheduleListTitle,
     icon: Icons.view_agenda_outlined,
     category: HomeMenuEntryCategory.features,
-    open: (context) =>
-        pushHomeMenuPage(context, homePage('scheduleListPage')),
+    open: (context) => pushHomeMenuPage(context, homePage('scheduleListPage')),
   ),
   HomeMenuEntry(
     id: 'courseConflict',
@@ -299,14 +309,6 @@ final List<HomeMenuEntry> kHomeMenuCatalog = [
 
   // ── 关于与支持 ────────────────────────────────────────────
   HomeMenuEntry(
-    id: 'support',
-    title: (l10n) => l10n.homeMenuCoffeeTitle,
-    icon: Icons.favorite_border_rounded,
-    category: HomeMenuEntryCategory.about,
-    open: (context) =>
-        pushHomeMenuPage(context, homePage('supportCreatorPage')),
-  ),
-  HomeMenuEntry(
     id: 'aboutApp',
     title: (l10n) => l10n.aboutTitle,
     icon: Icons.info_outline_rounded,
@@ -413,6 +415,16 @@ List<HomeMenuEntry> resolveHomeGridMenuEntries(TimetableSettings settings) {
         .toList(growable: false);
   }
   return List.unmodifiable(resolved);
+}
+
+/// Entries shown by the timetable top-right menu. The couple login action is
+/// transient: it leads the menu only while the overlay switch is on.
+List<HomeMenuEntry> resolveHomeTopMenuEntries(TimetableSettings settings) {
+  final entries = resolveHomeGridMenuEntries(settings);
+  if (!settings.coupleTimetableOverlayEnabled) {
+    return entries;
+  }
+  return List.unmodifiable([coupleLoginHomeMenuEntry, ...entries]);
 }
 
 /// 玻璃坞底栏的特殊视图动作 id（非目录页，走首页宿主切换）。

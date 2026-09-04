@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:university_timetable/data/timetable_repository.dart';
+import 'package:university_timetable/models/schedule_date_rule.dart';
 import 'package:university_timetable/models/timetable_profile.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/services/storage_service.dart';
@@ -55,8 +56,7 @@ void main() {
       expect(await storage.getProfilesSchemaVersion(), 0);
     });
 
-    test('直连 storage 的写路径也会盖章（saveProfiles / updateProfiles 同源）',
-        () async {
+    test('直连 storage 的写路径也会盖章（saveProfiles / updateProfiles 同源）', () async {
       // 模拟旧数据场景：绕过仓储直写 storage（迁移路径同理）
       await storage.saveProfiles([_profile('legacy')]);
       expect(await storage.getProfilesSchemaVersion(), 1);
@@ -78,6 +78,40 @@ void main() {
       await repository.setActiveProfileId('p1');
       expect(await repository.getActiveProfileId(), 'p1');
       expect(await storage.getActiveProfileId(), 'p1');
+    });
+  });
+
+  group('TimetableRepository scheduleDateRules', () {
+    test('规则与上次应用签名在同一写单元落盘并一起清空', () async {
+      const rule = ScheduleDateRule(
+        id: 'rule-1',
+        name: '夏令时',
+        timeSchemeId: 'scheme-1',
+        startDate: '2026-05-01',
+        endDate: '2026-09-30',
+      );
+
+      await repository.saveScheduleDateRulesWithLastAppliedSignature([
+        rule,
+      ], 'rule-1|scheme-1|2026-05-01|2026-09-30');
+
+      expect(await repository.getScheduleDateRules(), hasLength(1));
+      expect((await repository.getScheduleDateRules()).single.id, 'rule-1');
+      expect(
+        await repository.getScheduleDateRuleLastAppliedSignature(),
+        'rule-1|scheme-1|2026-05-01|2026-09-30',
+      );
+
+      await repository.saveScheduleDateRulesWithLastAppliedSignature(
+        const [],
+        null,
+      );
+
+      expect(await repository.getScheduleDateRules(), isEmpty);
+      expect(
+        await repository.getScheduleDateRuleLastAppliedSignature(),
+        isNull,
+      );
     });
   });
 }

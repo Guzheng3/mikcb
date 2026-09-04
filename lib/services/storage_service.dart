@@ -497,12 +497,11 @@ class StorageService {
     // （copyWith(activeTimeSchemeId: null) 自 1079212e 起就是死代码）。
     TimetableSettings normalize(TimetableSettings s) =>
         TimetableSettings.fromJson(s.toJson());
-    final normalizedSettings =
-        normalize(settings).toJson()..remove('activeTimeSchemeId');
-    final normalizedDefaults =
-        normalize(defaults).toJson()..remove('activeTimeSchemeId');
-    return jsonEncode(normalizedSettings) ==
-        jsonEncode(normalizedDefaults);
+    final normalizedSettings = normalize(settings).toJson()
+      ..remove('activeTimeSchemeId');
+    final normalizedDefaults = normalize(defaults).toJson()
+      ..remove('activeTimeSchemeId');
+    return jsonEncode(normalizedSettings) == jsonEncode(normalizedDefaults);
   }
 
   // 获取指定周次的课程
@@ -743,9 +742,7 @@ class StorageService {
       for (final item in decoded) {
         try {
           if (item is! Map) continue;
-          schemes.add(
-            TimeScheme.fromJson(Map<String, dynamic>.from(item)),
-          );
+          schemes.add(TimeScheme.fromJson(Map<String, dynamic>.from(item)));
         } catch (_) {
           continue;
         }
@@ -893,6 +890,38 @@ class StorageService {
           snapshot.map((rule) => rule.toJson()).toList(),
         );
         await _prefs?.setString(_scheduleDateRulesKey, payload);
+        _scheduleDateRulesListCache = snapshot
+            .map((rule) => rule.copyWith())
+            .toList();
+      },
+    );
+  }
+
+  /// 在同一串行写单元内落盘日期规则与上次批量应用签名，避免中途中断留下
+  /// 「规则已换、签名未换」导致规则反复重放。
+  Future<void> saveScheduleDateRulesWithLastAppliedSignature(
+    List<ScheduleDateRule> rules,
+    String? signature,
+  ) {
+    final snapshot = rules.map((rule) => rule.copyWith()).toList();
+    final trimmed = signature?.trim();
+    return _runSerializedWrite<void>(
+      current: _scheduleDateRulesWriteChain,
+      update: (future) => _scheduleDateRulesWriteChain = future,
+      operation: () async {
+        if (_prefs == null) await init();
+        final payload = jsonEncode(
+          snapshot.map((rule) => rule.toJson()).toList(),
+        );
+        await _prefs?.setString(_scheduleDateRulesKey, payload);
+        if (trimmed == null || trimmed.isEmpty) {
+          await _prefs?.remove(_scheduleDateRuleLastAppliedSignatureKey);
+        } else {
+          await _prefs?.setString(
+            _scheduleDateRuleLastAppliedSignatureKey,
+            trimmed,
+          );
+        }
         _scheduleDateRulesListCache = snapshot
             .map((rule) => rule.copyWith())
             .toList();
@@ -1161,9 +1190,7 @@ class StorageService {
     for (final item in rawSchemes) {
       try {
         if (item is! Map) continue;
-        schemes.add(
-          TimeScheme.fromJson(Map<String, dynamic>.from(item)),
-        );
+        schemes.add(TimeScheme.fromJson(Map<String, dynamic>.from(item)));
       } catch (_) {
         continue;
       }

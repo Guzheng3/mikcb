@@ -6,15 +6,10 @@ import '../utils/course_recolor.dart';
 
 /// 配色历史 + 当前指向的快照。
 class CourseRecolorHistoryState {
-  const CourseRecolorHistoryState({
-    required this.schemes,
-    required this.index,
-  });
+  const CourseRecolorHistoryState({required this.schemes, required this.index});
 
   /// 空历史（该课表从未重刷过）。
-  const CourseRecolorHistoryState.empty()
-    : schemes = const [],
-      index = -1;
+  const CourseRecolorHistoryState.empty() : schemes = const [], index = -1;
 
   final List<CourseRecolorScheme> schemes;
 
@@ -47,7 +42,7 @@ class CourseRecolorHistoryService {
 
   static String indexPreferenceKey(String scope) => '$_indexKeyPrefix$scope';
 
-  /// 历史上限：超过时丢最旧的记录（包括最旧的导入原色快照）。
+  /// 历史上限：超过时只丢最旧的种子方案，第一条导入原色快照永远保留。
   static const int maxSchemes = 20;
 
   static Future<CourseRecolorHistoryState> load(String scope) async {
@@ -76,8 +71,15 @@ class CourseRecolorHistoryService {
     var boundedIndex = index;
     if (schemes.length > maxSchemes) {
       final dropCount = schemes.length - maxSchemes;
-      bounded = schemes.sublist(dropCount);
-      boundedIndex = (index - dropCount).clamp(0, bounded.length - 1);
+      if (schemes.first.isSnapshot && dropCount < schemes.length - 1) {
+        bounded = [schemes.first, ...schemes.sublist(dropCount + 1)];
+        boundedIndex = index == 0
+            ? 0
+            : (index - dropCount).clamp(1, bounded.length - 1);
+      } else {
+        bounded = schemes.sublist(dropCount);
+        boundedIndex = (index - dropCount).clamp(0, bounded.length - 1);
+      }
     }
     await preferences.setString(
       schemesPreferenceKey(scope),

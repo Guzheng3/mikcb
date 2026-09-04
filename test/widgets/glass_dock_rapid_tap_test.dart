@@ -11,9 +11,9 @@ import 'package:university_timetable/ui/hyperos/frosted/frosted_appearance.dart'
 /// 快速连点回归：玻璃坞 日/周 两 Tab 快速交替连点不允许丢拍
 /// （原 1→3→1→3 三 Tab 场景随「设置」Tab 移除而改为两态交替）。
 void main() {
-  testWidgets(
-      'glass dock: rapid day/week alternating taps never drop a beat',
-      (tester) async {
+  testWidgets('glass dock: rapid day/week alternating taps never drop a beat', (
+    tester,
+  ) async {
     final provider = TimetableProvider(autoInitialize: false);
     await provider.updateTimetableSettings(
       provider.settings.copyWith(
@@ -37,10 +37,7 @@ void main() {
           locale: Locale('zh'),
           home: FrostedAppearanceScope(
             appearance: FrostedAppearance.defaults,
-            child: TimetableScreen(
-              enableUpdateCheck: false,
-              enableProgressTimer: false,
-            ),
+            child: TimetableScreen(enableProgressTimer: false),
           ),
         ),
       ),

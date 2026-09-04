@@ -34,6 +34,7 @@ abstract class BaseQingyuWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray,
     ) {
+        pruneStaleBindings(context)
         appWidgetIds.forEach { appWidgetId ->
             renderWidget(context, appWidgetManager, appWidgetId)
         }
@@ -52,6 +53,23 @@ abstract class BaseQingyuWidgetProvider : AppWidgetProvider() {
         appWidgetIds.forEach { appWidgetId ->
             WidgetBindingStore.remove(context, appWidgetId)
             HomeWidgetStorage.clearWidgetSnapshot(context, appWidgetId)
+        }
+    }
+
+    /**
+     * Force-stop 后系统不再投递 APPWIDGET_DELETED，onDeleted 可能永远不触发。
+     * 每次刷新时按系统当前 widget id 对账，清掉已不存在的绑定与专属快照。
+     */
+    private fun pruneStaleBindings(context: Context) {
+        val manager = AppWidgetManager.getInstance(context)
+        val liveIds = manager
+            .getAppWidgetIds(ComponentName(context, providerClass()))
+            .toSet()
+        for (appWidgetId in WidgetBindingStore.allBindings(context).keys) {
+            if (appWidgetId !in liveIds) {
+                WidgetBindingStore.remove(context, appWidgetId)
+                HomeWidgetStorage.clearWidgetSnapshot(context, appWidgetId)
+            }
         }
     }
 

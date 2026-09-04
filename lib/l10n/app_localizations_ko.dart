@@ -398,6 +398,113 @@ class AppLocalizationsKo extends AppLocalizations {
   String get coupleWebdavNotConnectedError => '먼저 너트스토어에 연결하세요';
 
   @override
+  String get withuCoupleTitle => 'withU 동기화';
+
+  @override
+  String get withuCoupleNotConnected => 'withU 미연결';
+
+  @override
+  String withuCoupleConnectedAs(String username) {
+    return '연결됨: $username';
+  }
+
+  @override
+  String withuCoupleServerHint(String url) {
+    return '서버: $url';
+  }
+
+  @override
+  String withuCoupleLastPulledAt(String time) {
+    return '마지막 가져오기: $time';
+  }
+
+  @override
+  String get withuCoupleConnect => 'withU 연결';
+
+  @override
+  String get withuCoupleDisconnect => '연결 끊기';
+
+  @override
+  String get withuCouplePullNow => '상대방 시간표 즉시 가져오기';
+
+  @override
+  String get withuCoupleUploadForPartner => '내 시간표 업로드';
+
+  @override
+  String get withuCoupleLoginSheetTitle => 'withU 연결(커플 시간표)';
+
+  @override
+  String get withuCoupleLoginSheetSubtitle =>
+      'withU 커플 계정으로 로그인하면 상대 계정에서 시간표를 가져옵니다';
+
+  @override
+  String get withuCoupleConfirmConnect => '연결하고 가져오기';
+
+  @override
+  String get withuCoupleServerLabel => 'withU 서버';
+
+  @override
+  String get coupleTimetableSwitchSubtitle =>
+      '두 시간표를 겹쳐 표시하고 오른쪽 위 메뉴에 로그인을 먼저 표시합니다';
+
+  @override
+  String get coupleTimetableDesktopCardTitle => '데스크톱 카드 설정';
+
+  @override
+  String get coupleTimetableDesktopCardPlaceholder =>
+      '데스크톱 카드는 준비 중이며 이 영역은 예약되어 있습니다';
+
+  @override
+  String get withuCoupleLoginPageTitle => 'withU 로그인';
+
+  @override
+  String get withuCoupleLoginPageSubtitle =>
+      'withU 커플 계정으로 로그인하면 상대 시간표를 자동으로 가져옵니다';
+
+  @override
+  String get withuCoupleLoginAction => '로그인하고 가져오기';
+
+  @override
+  String get withuCoupleLoginMenuTitle => 'withU 로그인';
+
+  @override
+  String get withuCouplePullImported => 'withU에서 상대방 시간표를 가져왔습니다';
+
+  @override
+  String get withuCouplePullUpdated => 'withU에서 상대방 시간표를 업데이트했습니다';
+
+  @override
+  String get withuCouplePullUnchanged => '상대방 시간표에 변화가 없습니다';
+
+  @override
+  String get withuCoupleUploadSuccess => '시간표를 업로드했습니다. 상대방이 가져올 수 있습니다';
+
+  @override
+  String get withuCoupleMissingCredentials => 'withU 서버, 사용자 이름, 비밀번호를 입력하세요';
+
+  @override
+  String get withuCoupleNotConnectedError => '먼저 withU에 연결하세요';
+
+  @override
+  String get withuCoupleAuthFailed => 'withU 사용자 이름 또는 비밀번호가 올바르지 않습니다';
+
+  @override
+  String get withuCoupleSessionExpired => 'withU 세션이 만료되었습니다. 다시 로그인하세요';
+
+  @override
+  String get withuCoupleAccountRequired => 'withU 커플 계정이 필요합니다';
+
+  @override
+  String get withuCouplePartnerTimetableMissing =>
+      '상대방 시간표를 찾을 수 없습니다. 먼저 업로드하도록 하세요';
+
+  @override
+  String get withuCoupleRequestFailed => 'withU 요청에 실패했습니다. 잠시 후 다시 시도하세요';
+
+  @override
+  String get withuCoupleSessionCookieMissing => 'withU에서 로그인 세션을 반환하지 않았습니다';
+
+  @override
   String get cloudSyncEntryTitle => '클라우드 동기화';
 
   @override

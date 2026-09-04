@@ -42,10 +42,9 @@ void main() {
   });
 
   test('保存/加载往返：种子记录+快照记录+导航指向', () async {
-    final snapshot = captureCourseRecolorSnapshot(
-      [_course(id: '1', name: 'A', color: '#E91E63')],
-      now: DateTime(2026, 8, 30, 9),
-    );
+    final snapshot = captureCourseRecolorSnapshot([
+      _course(id: '1', name: 'A', color: '#E91E63'),
+    ], now: DateTime(2026, 8, 30, 9));
     final seed = CourseRecolorScheme.seed(
       seed: 4242,
       colorGroupId: 'pastel',
@@ -91,9 +90,13 @@ void main() {
     expect(same.schemes.length, 1);
   });
 
-  test('超过上限丢最旧记录，指向同步前移', () async {
+  test('超过上限保留导入原色快照，只丢最旧种子方案', () async {
+    final snapshot = captureCourseRecolorSnapshot([
+      _course(id: '1', name: 'A', color: '#E91E63'),
+    ], now: DateTime(2026, 8, 30, 9));
     final schemes = [
-      for (var i = 0; i < CourseRecolorHistoryService.maxSchemes + 5; i++)
+      snapshot,
+      for (var i = 1; i < CourseRecolorHistoryService.maxSchemes + 5; i++)
         CourseRecolorScheme.seed(
           seed: i,
           colorGroupId: kCourseColorGroupAllId,
@@ -109,14 +112,36 @@ void main() {
     );
     final state = await CourseRecolorHistoryService.load('profile-1');
 
-    expect(
-      state.schemes.length,
-      CourseRecolorHistoryService.maxSchemes,
-    );
-    // 丢掉了最旧 5 条（含第 0 条种子 0），指向同步前移后仍指最后一套。
-    expect(state.schemes.first.seed, 5);
+    expect(state.schemes.length, CourseRecolorHistoryService.maxSchemes);
+    // 丢掉了最旧 5 条种子（1..5），导入原色快照仍留在首位。
+    expect(state.schemes.first.isSnapshot, isTrue);
+    expect(state.schemes.first.snapshotEntries, isNotNull);
+    expect(state.schemes[1].seed, 6);
     expect(state.schemes.last.seed, schemes.length - 1);
     expect(state.index, state.schemes.length - 1);
+  });
+
+  test('超限裁剪后指向导入原色快照时仍保持 0', () async {
+    final snapshot = captureCourseRecolorSnapshot([
+      _course(id: '1', name: 'A', color: '#E91E63'),
+    ], now: DateTime(2026, 8, 30, 9));
+    final schemes = [
+      snapshot,
+      for (var i = 1; i < CourseRecolorHistoryService.maxSchemes + 5; i++)
+        CourseRecolorScheme.seed(
+          seed: i,
+          colorGroupId: kCourseColorGroupAllId,
+          assignMatchingTextColor: false,
+          createdAt: DateTime(2026, 8, 30).add(Duration(minutes: i)),
+        ),
+    ];
+
+    await CourseRecolorHistoryService.save('profile-1', schemes, 0);
+    final state = await CourseRecolorHistoryService.load('profile-1');
+
+    expect(state.index, 0);
+    expect(state.schemes.first.isSnapshot, isTrue);
+    expect(state.canGoBack, isFalse);
   });
 
   test('坏 JSON / 非 List 数据兜底为空历史', () async {
@@ -153,10 +178,9 @@ void main() {
   test('快照内坏 color 条目丢弃该条，不再连带清空整份历史', () async {
     // 回归锚点：color 类型垃圾曾抛 TypeError，被 _loadSchemes 整体 catch
     // 后 return const []——一条坏数据静默清空全部配色历史。
-    final snapshot = captureCourseRecolorSnapshot(
-      [_course(id: '1', name: 'A', color: '#E91E63')],
-      now: DateTime(2026, 8, 30, 9),
-    );
+    final snapshot = captureCourseRecolorSnapshot([
+      _course(id: '1', name: 'A', color: '#E91E63'),
+    ], now: DateTime(2026, 8, 30, 9));
     final seed = CourseRecolorScheme.seed(
       seed: 9,
       colorGroupId: kCourseColorGroupAllId,
@@ -171,9 +195,10 @@ void main() {
       },
     };
     SharedPreferences.setMockInitialValues({
-      CourseRecolorHistoryService.schemesPreferenceKey(
-        'p1',
-      ): jsonEncode([corruptedSnapshot, seed.toJson()]),
+      CourseRecolorHistoryService.schemesPreferenceKey('p1'): jsonEncode([
+        corruptedSnapshot,
+        seed.toJson(),
+      ]),
     });
 
     final state = await CourseRecolorHistoryService.load('p1');
@@ -182,8 +207,10 @@ void main() {
     expect(state.schemes.length, 2);
     expect(state.schemes[0].isSnapshot, isTrue);
     expect(state.schemes[0].snapshotEntries!.keys, ['name\u0000good']);
-    expect(state.schemes[0].snapshotEntries!['name\u0000good']!.color,
-        '#4CAF50');
+    expect(
+      state.schemes[0].snapshotEntries!['name\u0000good']!.color,
+      '#4CAF50',
+    );
     expect(state.schemes[1].seed, 9);
   });
 

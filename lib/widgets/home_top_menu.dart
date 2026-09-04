@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_miuix/miuix.dart' show MiuixBadge;
 import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/ui/hyperos/hyperos.dart';
@@ -71,7 +70,6 @@ Future<void> pushHomeMenuPage(BuildContext context, Widget page) {
 /// positioned just below it via [hyperosPopupPositionBelow].
 Future<String?> showHomeTopMenuSheet(
   BuildContext context, {
-  required bool hasAvailableUpdate,
   required List<HomeMenuEntry> entries,
   required GlobalKey anchorKey,
   Color? foregroundColor,
@@ -88,12 +86,6 @@ Future<String?> showHomeTopMenuSheet(
         HyperosPopupMenuItem<String>(
           label: entries[index].title(l10n),
           value: entries[index].id,
-          // The trailing dot badge marks the pending update; rows stay text
-          // only so the wallpaper-aware ink keeps the menu uniform.
-          trailing:
-              entries[index].id == 'update' && hasAvailableUpdate
-                  ? const MiuixBadge()
-                  : null,
           gapBefore:
               index > 0 &&
               entries[index].category != entries[index - 1].category,
@@ -147,29 +139,23 @@ Color resolveHomeGridMenuAccent(BuildContext context, String? themeSeedHex) {
 /// 点遮罩关闭返回 null。
 Future<String?> showHomeTopGridMenuSheet(
   BuildContext context, {
-  required bool hasAvailableUpdate,
   required List<HomeMenuEntry> entries,
   String? themeSeedHex,
 }) {
   return showHomeHyperosSheet<String>(
     context: context,
-    builder: (sheetContext) => _HomeTopGridMenuSheet(
-      entries: entries,
-      hasAvailableUpdate: hasAvailableUpdate,
-      themeSeedHex: themeSeedHex,
-    ),
+    builder: (sheetContext) =>
+        _HomeTopGridMenuSheet(entries: entries, themeSeedHex: themeSeedHex),
   );
 }
 
 class _HomeTopGridMenuSheet extends StatelessWidget {
   const _HomeTopGridMenuSheet({
     required this.entries,
-    required this.hasAvailableUpdate,
     required this.themeSeedHex,
   });
 
   final List<HomeMenuEntry> entries;
-  final bool hasAvailableUpdate;
   final String? themeSeedHex;
 
   @override
@@ -184,9 +170,7 @@ class _HomeTopGridMenuSheet extends StatelessWidget {
     const minTileWidth = 64.0;
     const columnsPerRow = 4;
 
-    final menuTitles = [
-      for (final entry in entries) entry.title(l10n),
-    ];
+    final menuTitles = [for (final entry in entries) entry.title(l10n)];
     final titleStyle = typo.body.xs2.copyWith(
       fontWeight: FontWeight.w400,
       height: 1.15,
@@ -223,8 +207,6 @@ class _HomeTopGridMenuSheet extends StatelessWidget {
                 );
 
           Widget tile(HomeMenuEntry entry) {
-            final isUpdateSlot =
-                entry.id == 'update' && hasAvailableUpdate;
             return SizedBox(
               width: itemWidth,
               child: _HomeMenuActionTile(
@@ -233,7 +215,6 @@ class _HomeTopGridMenuSheet extends StatelessWidget {
                 titleStyle: titleStyle,
                 titleAreaHeight: titleAreaHeight,
                 accentColor: resolveHomeGridMenuAccent(context, themeSeedHex),
-                badgeText: isUpdateSlot ? l10n.updateLabel : null,
                 onTap: () => Navigator.of(context).pop(entry.id),
               ),
             );
@@ -291,7 +272,6 @@ class _HomeMenuActionTile extends StatelessWidget {
     required this.titleAreaHeight,
     required this.onTap,
     this.accentColor,
-    this.badgeText,
   });
 
   final IconData icon;
@@ -300,7 +280,6 @@ class _HomeMenuActionTile extends StatelessWidget {
   final double titleAreaHeight;
   final VoidCallback onTap;
   final Color? accentColor;
-  final String? badgeText;
 
   @override
   Widget build(BuildContext context) {
@@ -320,21 +299,17 @@ class _HomeMenuActionTile extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                HyperosBadge(
-                  label: badgeText,
-                  show: (badgeText ?? '').isNotEmpty,
-                  child: HyperosFrostedSurface(
-                    borderRadius: iconWellRadius,
-                    blurEnabled: false,
-                    tint: HyperosBlurredHeader.accentSurfaceTintColor(
-                      highlightColor,
-                    ),
-                    child: SizedBox(
-                      width: 46,
-                      height: 46,
-                      child: Center(
-                        child: Icon(icon, color: highlightColor, size: 24),
-                      ),
+                HyperosFrostedSurface(
+                  borderRadius: iconWellRadius,
+                  blurEnabled: false,
+                  tint: HyperosBlurredHeader.accentSurfaceTintColor(
+                    highlightColor,
+                  ),
+                  child: SizedBox(
+                    width: 46,
+                    height: 46,
+                    child: Center(
+                      child: Icon(icon, color: highlightColor, size: 24),
                     ),
                   ),
                 ),

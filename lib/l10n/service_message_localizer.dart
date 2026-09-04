@@ -4,7 +4,10 @@ import 'app_localizations.dart';
 const String serviceMessagePayloadSeparator = '|';
 
 /// Encodes a service message [code] with optional [args] for throws/returns.
-String encodeServiceMessage(String code, [Map<String, Object?> args = const {}]) {
+String encodeServiceMessage(
+  String code, [
+  Map<String, Object?> args = const {},
+]) {
   if (args.isEmpty) {
     return code;
   }
@@ -25,7 +28,9 @@ String encodeServiceMessage(String code, [Map<String, Object?> args = const {}])
     if (separatorIndex <= 0) {
       continue;
     }
-    args[part.substring(0, separatorIndex)] = part.substring(separatorIndex + 1);
+    args[part.substring(0, separatorIndex)] = part.substring(
+      separatorIndex + 1,
+    );
   }
   return (code: code, args: args);
 }
@@ -36,10 +41,10 @@ String encodeServiceRowWarning(
   String code, {
   Map<String, Object?> args = const {},
 }) {
-  return encodeServiceMessage(
-    'spreadsheet_row_warning',
-    {'rowNumber': rowNumber, 'inner': encodeServiceMessage(code, args)},
-  );
+  return encodeServiceMessage('spreadsheet_row_warning', {
+    'rowNumber': rowNumber,
+    'inner': encodeServiceMessage(code, args),
+  });
 }
 
 /// Localizes a service-layer message [code] with optional [args].
@@ -80,6 +85,29 @@ String localizeServiceMessage(
       return l10n.coupleWebdavPartnerFileMissing;
     case 'couple_webdav_pull_failed':
       return l10n.coupleWebdavPullFailed;
+    case 'withu_missing_credentials':
+      return l10n.withuCoupleMissingCredentials;
+    case 'withu_invalid_url':
+      return l10n.serviceMsgInvalidUrl;
+    case 'withu_couple_not_connected':
+      return l10n.withuCoupleNotConnectedError;
+    case 'withu_auth_failed':
+      return l10n.withuCoupleAuthFailed;
+    case 'withu_session_expired':
+      return l10n.withuCoupleSessionExpired;
+    case 'withu_couple_account_required':
+      return l10n.withuCoupleAccountRequired;
+    case 'withu_partner_timetable_missing':
+      return l10n.withuCouplePartnerTimetableMissing;
+    case 'withu_network_failed':
+    case 'withu_http_failed':
+      return l10n.serviceMsgConnectionFailed;
+    case 'withu_invalid_response':
+      return l10n.serviceMsgInvalidResponse;
+    case 'withu_session_cookie_missing':
+      return l10n.withuCoupleSessionCookieMissing;
+    case 'withu_request_failed':
+      return l10n.withuCoupleRequestFailed;
     case 'missing_settings_data':
       return l10n.serviceMsgMissingSettingsData;
     case 'unrecognized_mikcb_full_backup':

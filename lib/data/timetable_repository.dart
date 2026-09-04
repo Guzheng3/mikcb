@@ -72,6 +72,12 @@ class TimetableRepository {
   Future<void> saveScheduleDateRules(List<ScheduleDateRule> rules) =>
       _storage.saveScheduleDateRules(rules);
 
+  /// 日期规则与上次批量应用签名在同一串行写单元内落盘。
+  Future<void> saveScheduleDateRulesWithLastAppliedSignature(
+    List<ScheduleDateRule> rules,
+    String? signature,
+  ) => _storage.saveScheduleDateRulesWithLastAppliedSignature(rules, signature);
+
   Future<String?> getScheduleDateRuleLastAppliedSignature() =>
       _storage.getScheduleDateRuleLastAppliedSignature();
 

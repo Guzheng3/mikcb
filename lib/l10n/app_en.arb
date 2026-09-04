@@ -186,6 +186,53 @@
   "coupleWebdavPartnerFileMissing": "Partner timetable file not found. Ask them to upload first.",
   "coupleWebdavPullFailed": "Failed to pull partner timetable. Try again later.",
   "coupleWebdavNotConnectedError": "Connect Nutstore first",
+  "withuCoupleTitle": "withU sync",
+  "withuCoupleNotConnected": "Not connected to withU",
+  "@withuCoupleConnectedAs": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "withuCoupleConnectedAs": "Connected as {username}",
+  "@withuCoupleServerHint": {
+    "placeholders": {
+      "url": {"type": "String"}
+    }
+  },
+  "withuCoupleServerHint": "Server: {url}",
+  "@withuCoupleLastPulledAt": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "withuCoupleLastPulledAt": "Last pulled: {time}",
+  "withuCoupleConnect": "Connect withU",
+  "withuCoupleDisconnect": "Disconnect",
+  "withuCouplePullNow": "Pull partner timetable",
+  "withuCoupleUploadForPartner": "Upload my timetable",
+  "withuCoupleLoginSheetTitle": "Connect withU (couple timetable)",
+  "withuCoupleLoginSheetSubtitle": "Sign in with your withU couple account to pull your partner's timetable",
+  "withuCoupleConfirmConnect": "Connect and pull",
+  "withuCoupleServerLabel": "withU server",
+  "coupleTimetableSwitchSubtitle": "Overlay both timetables and put sign-in first in the top-right menu",
+  "coupleTimetableDesktopCardTitle": "Desktop card settings",
+  "coupleTimetableDesktopCardPlaceholder": "Desktop cards are coming later; this section is reserved",
+  "withuCoupleLoginPageTitle": "Sign in to withU",
+  "withuCoupleLoginPageSubtitle": "Use your withU couple account, then pull your partner's timetable automatically",
+  "withuCoupleLoginAction": "Sign in and pull",
+  "withuCoupleLoginMenuTitle": "Sign in to withU",
+  "withuCouplePullImported": "Partner timetable imported from withU",
+  "withuCouplePullUpdated": "Partner timetable updated from withU",
+  "withuCouplePullUnchanged": "Partner timetable is up to date",
+  "withuCoupleUploadSuccess": "Timetable uploaded for your partner to pull",
+  "withuCoupleMissingCredentials": "Enter the withU server, username, and password",
+  "withuCoupleNotConnectedError": "Connect withU first",
+  "withuCoupleAuthFailed": "Incorrect withU username or password",
+  "withuCoupleSessionExpired": "withU session expired. Sign in again.",
+  "withuCoupleAccountRequired": "A withU couple account is required",
+  "withuCouplePartnerTimetableMissing": "Partner timetable not found. Ask them to upload first.",
+  "withuCoupleRequestFailed": "withU request failed. Try again later.",
+  "withuCoupleSessionCookieMissing": "withU did not return a login session",
   "cloudSyncEntryTitle": "Cloud Sync",
   "cloudSyncEntrySubtitle": "Sync timetables and import data across devices via Jianguoyun",
   "cloudSyncEntryDisabled": "Off",

@@ -824,6 +824,198 @@ abstract class AppLocalizations {
   /// **'请先连接坚果云'**
   String get coupleWebdavNotConnectedError;
 
+  /// No description provided for @withuCoupleTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'withU 同步'**
+  String get withuCoupleTitle;
+
+  /// No description provided for @withuCoupleNotConnected.
+  ///
+  /// In zh, this message translates to:
+  /// **'尚未连接 withU'**
+  String get withuCoupleNotConnected;
+
+  /// No description provided for @withuCoupleConnectedAs.
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接：{username}'**
+  String withuCoupleConnectedAs(String username);
+
+  /// No description provided for @withuCoupleServerHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器：{url}'**
+  String withuCoupleServerHint(String url);
+
+  /// No description provided for @withuCoupleLastPulledAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'上次拉取：{time}'**
+  String withuCoupleLastPulledAt(String time);
+
+  /// No description provided for @withuCoupleConnect.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接 withU'**
+  String get withuCoupleConnect;
+
+  /// No description provided for @withuCoupleDisconnect.
+  ///
+  /// In zh, this message translates to:
+  /// **'断开连接'**
+  String get withuCoupleDisconnect;
+
+  /// No description provided for @withuCouplePullNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'立即拉取对方课表'**
+  String get withuCouplePullNow;
+
+  /// No description provided for @withuCoupleUploadForPartner.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传我的课表'**
+  String get withuCoupleUploadForPartner;
+
+  /// No description provided for @withuCoupleLoginSheetTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接 withU（情侣课表）'**
+  String get withuCoupleLoginSheetTitle;
+
+  /// No description provided for @withuCoupleLoginSheetSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用 withU 情侣账号登录，从对方账号拉取课表'**
+  String get withuCoupleLoginSheetSubtitle;
+
+  /// No description provided for @withuCoupleConfirmConnect.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接并拉取'**
+  String get withuCoupleConfirmConnect;
+
+  /// No description provided for @withuCoupleServerLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'withU 服务器'**
+  String get withuCoupleServerLabel;
+
+  /// No description provided for @coupleTimetableSwitchSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后在课表中叠加双方课程，并在右上角菜单优先显示登录'**
+  String get coupleTimetableSwitchSubtitle;
+
+  /// No description provided for @coupleTimetableDesktopCardTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'桌面卡片配置'**
+  String get coupleTimetableDesktopCardTitle;
+
+  /// No description provided for @coupleTimetableDesktopCardPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'桌面卡片功能开发中，当前仅供预留'**
+  String get coupleTimetableDesktopCardPlaceholder;
+
+  /// No description provided for @withuCoupleLoginPageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录 withU'**
+  String get withuCoupleLoginPageTitle;
+
+  /// No description provided for @withuCoupleLoginPageSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用 withU 情侣账号登录，登录后自动拉取对方课表'**
+  String get withuCoupleLoginPageSubtitle;
+
+  /// No description provided for @withuCoupleLoginAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录并拉取'**
+  String get withuCoupleLoginAction;
+
+  /// No description provided for @withuCoupleLoginMenuTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录 withU'**
+  String get withuCoupleLoginMenuTitle;
+
+  /// No description provided for @withuCouplePullImported.
+  ///
+  /// In zh, this message translates to:
+  /// **'已从 withU 导入对方课表'**
+  String get withuCouplePullImported;
+
+  /// No description provided for @withuCouplePullUpdated.
+  ///
+  /// In zh, this message translates to:
+  /// **'已从 withU 更新对方课表'**
+  String get withuCouplePullUpdated;
+
+  /// No description provided for @withuCouplePullUnchanged.
+  ///
+  /// In zh, this message translates to:
+  /// **'对方课表无变化'**
+  String get withuCouplePullUnchanged;
+
+  /// No description provided for @withuCoupleUploadSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'已上传课表，对方可拉取'**
+  String get withuCoupleUploadSuccess;
+
+  /// No description provided for @withuCoupleMissingCredentials.
+  ///
+  /// In zh, this message translates to:
+  /// **'请填写 withU 服务器、用户名和密码'**
+  String get withuCoupleMissingCredentials;
+
+  /// No description provided for @withuCoupleNotConnectedError.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先连接 withU'**
+  String get withuCoupleNotConnectedError;
+
+  /// No description provided for @withuCoupleAuthFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'withU 用户名或密码不正确'**
+  String get withuCoupleAuthFailed;
+
+  /// No description provided for @withuCoupleSessionExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'withU 会话已过期，请重新登录'**
+  String get withuCoupleSessionExpired;
+
+  /// No description provided for @withuCoupleAccountRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要 withU 情侣账号'**
+  String get withuCoupleAccountRequired;
+
+  /// No description provided for @withuCouplePartnerTimetableMissing.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到对方课表，请让对方先上传'**
+  String get withuCouplePartnerTimetableMissing;
+
+  /// No description provided for @withuCoupleRequestFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'withU 请求失败，请稍后重试'**
+  String get withuCoupleRequestFailed;
+
+  /// No description provided for @withuCoupleSessionCookieMissing.
+  ///
+  /// In zh, this message translates to:
+  /// **'withU 未返回登录会话'**
+  String get withuCoupleSessionCookieMissing;
+
   /// No description provided for @cloudSyncEntryTitle.
   ///
   /// In zh, this message translates to:

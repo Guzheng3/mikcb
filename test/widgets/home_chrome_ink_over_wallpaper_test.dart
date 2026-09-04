@@ -131,12 +131,7 @@ Future<void> _pumpHome(
   await tester.pumpWidget(
     ChangeNotifierProvider.value(
       value: provider,
-      child: const TestApp(
-        home: TimetableScreen(
-          enableUpdateCheck: false,
-          enableProgressTimer: false,
-        ),
-      ),
+      child: const TestApp(home: TimetableScreen(enableProgressTimer: false)),
     ),
   );
   await tester.pump();
@@ -197,9 +192,7 @@ void main() {
       // text over the dark ground. The weekday band (7–20%) reads dark, so
       // the weekday chrome must flip white while the logo keeps dark ink on
       // the light strip.
-      final wallpaper = await tester.runAsync(
-        () => _writeWallpaper(dir),
-      );
+      final wallpaper = await tester.runAsync(() => _writeWallpaper(dir));
       final provider = await createInitializedTestProvider(tester);
       await _pumpHome(tester, provider, wallpaper!.path, _scopeAll);
 

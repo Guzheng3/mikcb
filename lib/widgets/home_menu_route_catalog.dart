@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:university_timetable/screens/about_screen.dart';
-import 'package:university_timetable/widgets/home_top_menu.dart'
-    show pushHomeMenuPage;
 import 'package:university_timetable/screens/add_course_screen.dart';
 import 'package:university_timetable/screens/add_exam_screen.dart';
 import 'package:university_timetable/screens/add_schedule_item_screen.dart';
@@ -26,7 +23,6 @@ import 'package:university_timetable/screens/open_source_licenses_screen.dart';
 import 'package:university_timetable/screens/schedule_date_rule_screen.dart';
 import 'package:university_timetable/screens/schedule_list_screen.dart';
 import 'package:university_timetable/screens/statistics_settings_screen.dart';
-import 'package:university_timetable/screens/support_creator_screen.dart';
 import 'package:university_timetable/screens/task_list_screen.dart';
 import 'package:university_timetable/screens/time_scheme_management_screen.dart';
 import 'package:university_timetable/screens/timetable_profiles_screen.dart';
@@ -66,22 +62,11 @@ final Map<String, WidgetBuilder> kInlineDockPages = {
   'changelog': (context) => const ChangelogScreen(),
   'openSourceLicenses': (context) => const OpenSourceLicensesScreen(),
   'userGuide': (context) => const UserGuideScreen(),
-  'support': (context) => const SupportCreatorScreen(),
   'statisticsSettings': (context) => const StatisticsSettingsScreen(),
   'locationTimeMatch': (context) => const LocationTimeMatchScreen(),
   'scheduleDateRule': (context) => const ScheduleDateRuleScreen(),
   'scheduleList': (context) => const ScheduleListScreen(),
   'memoryStats': (context) => const MemoryStatsScreen(),
-  // 软件更新页构造需要 PackageInfo：用 FutureBuilder 在内嵌壳内自取。
-  'update': (context) => FutureBuilder(
-    future: PackageInfo.fromPlatform(),
-    builder: (context, snapshot) {
-      if (!snapshot.hasData) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      return AboutUpdateScreen(packageInfo: snapshot.data);
-    },
-  ),
 };
 
 /// id 对应的内嵌页构建器；未登记返回 null（调用方回退为推入路由）。
@@ -113,7 +98,6 @@ final Map<String, Widget Function()> kHomeCatalogPages = {
   'settingsPage': _buildSettingsScreen,
   'statisticsSettingsPage': () => const StatisticsSettingsScreen(),
   'advancedMaterialSettingsPage': () => const AdvancedMaterialSettingsScreen(),
-  'supportCreatorPage': () => const SupportCreatorScreen(),
   'aboutPage': () => const AboutScreen(),
   'changelogPage': () => const ChangelogScreen(),
   'userGuidePage': () => const UserGuideScreen(),
@@ -130,14 +114,6 @@ Widget homePage(String key) {
     throw StateError('home_menu_route_catalog: unknown page key "$key"');
   }
   return builder();
-}
-
-/// 「软件更新」八宫格条目的 open 逻辑（原样迁自目录 update 条目）：
-/// 先取包信息再进更新详情页，context 失活时静默放弃。
-Future<void> pushHomeMenuUpdateEntry(BuildContext context) async {
-  final packageInfo = await PackageInfo.fromPlatform();
-  if (!context.mounted) return;
-  await pushHomeMenuPage(context, AboutUpdateScreen(packageInfo: packageInfo));
 }
 
 /// 设置页注册表（依赖倒置）：timetable_settings_screen.dart 在库加载即
