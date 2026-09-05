@@ -1617,93 +1617,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Failed to open the old app. Please return to the home screen and open it manually.';
 
   @override
-  String get supportCreatorTitle => 'Buy the Creator a Coffee';
-
-  @override
-  String get supportHeroTitle => 'Support Qingyu Timetable';
-
-  @override
-  String get supportHeroSubtitle =>
-      'Your support goes directly into timetable maintenance, academic adapter updates, and overall experience improvements';
-
-  @override
-  String get supportChipFixes => 'Bug Fixes';
-
-  @override
-  String get supportChipAdapters => 'Adapters';
-
-  @override
-  String get supportChipPolish => 'Polish';
-
-  @override
-  String get supportMethodTitle => 'Choose a Support Method';
-
-  @override
-  String get wechatLabel => 'WeChat';
-
-  @override
-  String get alipayLabel => 'Alipay';
-
-  @override
-  String get supportWeChatHint => 'Use WeChat to scan and support the creator';
-
-  @override
-  String get supportAlipayHint => 'Use Alipay to scan and support the creator';
-
-  @override
   String get viewLargeImage => 'View Large Image';
-
-  @override
-  String get saveToGallery => 'Save to Gallery';
-
-  @override
-  String get supportCompleteThanks =>
-      'Thanks for supporting Qingyu Timetable ❤️';
 
   @override
   String get supportConfirmed => 'I’ve Supported';
 
   @override
-  String get donorListTitle => 'Acknowledgements';
-
-  @override
-  String get donorListLoadFailed =>
-      'The online donor list is temporarily unavailable.';
-
-  @override
   String get reloadAction => 'Reload';
-
-  @override
-  String updatedAtLabel(String time) {
-    return 'Updated at $time';
-  }
-
-  @override
-  String get donorListEmpty =>
-      'The donor list is still empty. You can edit docs/donors.json and publish again.';
-
-  @override
-  String get savedToGallery => 'Saved to gallery';
-
-  @override
-  String get saveToGalleryFailed => 'Failed to save to gallery';
-
-  @override
-  String saveFailedWithError(String error) {
-    return 'Save failed: $error';
-  }
-
-  @override
-  String get supportRunningBadge => 'Active';
-
-  @override
-  String get supportTapQrHint => 'Tap to enlarge';
-
-  @override
-  String get supportSaveShort => 'Save';
-
-  @override
-  String get supportConfirmedShort => 'Supported';
 
   @override
   String get donorSearchHint => 'Search name or message...';
@@ -1738,16 +1658,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get supportMarqueeTail =>
       'Qingyu Timetable keeps running — thank you for your support!';
-
-  @override
-  String get scanQrWechatTitle => 'Scan with WeChat';
-
-  @override
-  String get scanQrAlipayTitle => 'Scan with Alipay';
-
-  @override
-  String get scanQrSubtitle =>
-      'Screenshot and scan, thank you for your support!';
 
   @override
   String get courseOverviewTitle => 'Course Overview & Edit';
@@ -5443,9 +5353,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeMenuSettingsTitle => 'Timetable settings';
-
-  @override
-  String get homeMenuCoffeeTitle => 'Buy me a coffee';
 
   @override
   String get homeMenuFeedbackTitle => 'Feedback';

@@ -19,8 +19,6 @@ import android.content.Context
 import android.content.Intent
 import android.provider.OpenableColumns
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactoryFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -28,7 +26,6 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
-import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.webkit.URLUtil

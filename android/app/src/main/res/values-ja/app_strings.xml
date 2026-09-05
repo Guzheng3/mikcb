@@ -4,8 +4,6 @@
     <string name="accessibility_keep_alive_description">スーパーアイランドとリマインダーの安定性を高める補助サービスです。画面内容の読み取りや自動操作は行いません。</string>
 
     <string name="app_display_name">軽屿時間割</string>
-    <string name="pictures_folder_name">軽屿時間割</string>
-    <string name="payment_qr_description">軽屿時間割決済QR</string>
 
     <string name="notification_channel_live_update_name">時間割リアルタイム更新</string>
     <string name="notification_channel_live_update_desc">現在の授業進捗を表示</string>

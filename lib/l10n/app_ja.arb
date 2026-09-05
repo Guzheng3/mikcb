@@ -650,47 +650,9 @@
   "backupDoneGoImport": "バックアップ完了、インポートへ",
   "startFreshWithoutMigration": "新規アプリとして開始、移行しない",
   "openOldAppFailed": "旧バージョンを開けませんでした。手動でホーム画面から旧バージョンを開いてください",
-  "supportCreatorTitle": "作者にコーヒーをおごる",
-  "supportHeroTitle": "軽屿時間割の継続的更新を支援",
-  "supportHeroSubtitle": "あなたの支援は時間割のメンテナンス、教務インポート適応とUX改善に直接活用されます",
-  "supportChipFixes": "問題修正",
-  "supportChipAdapters": "教務適応",
-  "supportChipPolish": "UX改善",
-  "supportMethodTitle": "支援方法を選択",
-  "wechatLabel": "WeChat",
-  "alipayLabel": "Alipay",
-  "supportWeChatHint": "WeChatでQRコードをスキャンして作者を支援",
-  "supportAlipayHint": "AlipayでQRコードをスキャンして作者を支援",
   "viewLargeImage": "大きな画像を見る",
-  "saveToGallery": "ギャラリーに保存",
-  "supportCompleteThanks": "軽屿時間割の継続的な改善を支援していただきありがとうございます ❤️",
   "supportConfirmed": "支援しました",
-  "donorListTitle": "謝辞リスト",
-  "donorListLoadFailed": "オンライン謝辞リストを読み込めません。",
   "reloadAction": "再読み込み",
-  "updatedAtLabel": "{time}に更新",
-  "@updatedAtLabel": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "donorListEmpty": "リストがまだ記入されていません。docs/donors.jsonを直接編集して再公開できます。",
-  "savedToGallery": "ギャラリーに保存しました",
-  "saveToGalleryFailed": "ギャラリーへの保存に失敗しました",
-  "saveFailedWithError": "保存失敗：{error}",
-  "@saveFailedWithError": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "supportRunningBadge": "稼働中",
-  "supportTapQrHint": "タップで拡大",
-  "supportSaveShort": "保存",
-  "supportConfirmedShort": "支援済み",
   "donorSearchHint": "名前/メッセージ検索...",
   "donorSortLargeFirst": "高額順",
   "donorSortSmallFirst": "低額順",
@@ -727,9 +689,6 @@
     }
   },
   "supportMarqueeTail": "軽屿時間割は安定稼働中 — あなたの支援を待っています！",
-  "scanQrWechatTitle": "WeChatでQRコードをスキャン",
-  "scanQrAlipayTitle": "AlipayでQRコードをスキャン",
-  "scanQrSubtitle": "スクリーンショットしてスキャン、支援ありがとう！",
   "courseOverviewTitle": "授業一覧と編集",
   "addNewCourseTooltip": "新規授業追加",
   "emptyCourseOverviewHint": "時間割を長押しするか、右上のボタンから授業を追加",
@@ -2630,7 +2589,6 @@
   "homeMenuAddCourseTitle": "授業追加",
   "homeMenuImportTitle": "授業インポート",
   "homeMenuSettingsTitle": "時間割設定",
-  "homeMenuCoffeeTitle": "コーヒーをおごる",
   "homeMenuFeedbackTitle": "問題報告",
   "switchTimetableTitle": "時間割切替",
   "todayTimetableTitle": "今日の時間割",

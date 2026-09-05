@@ -800,47 +800,9 @@
   "backupDoneGoImport": "我已完成备份，去导入",
   "startFreshWithoutMigration": "以全新应用开始，不迁移",
   "openOldAppFailed": "未能打开旧版应用，请手动返回桌面打开旧版",
-  "supportCreatorTitle": "请作者喝杯咖啡",
-  "supportHeroTitle": "支持轻屿课表继续更新",
-  "supportHeroSubtitle": "你的支持会直接用于维护课表、教务导入适配与体验优化",
-  "supportChipFixes": "修复问题",
-  "supportChipAdapters": "教务适配",
-  "supportChipPolish": "体验优化",
-  "supportMethodTitle": "选择支持方式",
-  "wechatLabel": "微信",
-  "alipayLabel": "支付宝",
-  "supportWeChatHint": "使用微信扫一扫支持作者",
-  "supportAlipayHint": "使用支付宝扫一扫支持作者",
   "viewLargeImage": "查看大图",
-  "saveToGallery": "保存到相册",
-  "supportCompleteThanks": "感谢你支持轻屿课表继续打磨 ❤️",
   "supportConfirmed": "我已经支持了",
-  "donorListTitle": "鸣谢名单",
-  "donorListLoadFailed": "暂时无法加载在线鸣谢名单",
   "reloadAction": "重新加载",
-  "updatedAtLabel": "更新于 {time}",
-  "@updatedAtLabel": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "donorListEmpty": "名单还没有填写，你可以直接编辑 docs/donors.json 后重新发布",
-  "savedToGallery": "已保存到相册",
-  "saveToGalleryFailed": "保存到相册失败",
-  "saveFailedWithError": "保存失败：{error}",
-  "@saveFailedWithError": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "supportRunningBadge": "运行中",
-  "supportTapQrHint": "点击放大扫码",
-  "supportSaveShort": "保存",
-  "supportConfirmedShort": "已支持",
   "donorSearchHint": "搜昵称/寄语...",
   "donorSortLargeFirst": "大额优先",
   "donorSortSmallFirst": "小额优先",
@@ -877,9 +839,6 @@
     }
   },
   "supportMarqueeTail": "轻屿课表正在稳定运行中，期待你的每一次陪伴与爱心！",
-  "scanQrWechatTitle": "使用微信扫描二维码",
-  "scanQrAlipayTitle": "使用支付宝扫描二维码",
-  "scanQrSubtitle": "截图并导入扫一扫，感谢支持！",
   "courseOverviewTitle": "课程总览与编辑",
   "addNewCourseTooltip": "添加新课程",
   "emptyCourseOverviewHint": "长按课表或点击右上角添加课程",
@@ -2845,7 +2804,6 @@
   "homeMenuAddCourseTitle": "添加课程",
   "homeMenuImportTitle": "导入课程",
   "homeMenuSettingsTitle": "课表设置",
-  "homeMenuCoffeeTitle": "请喝咖啡",
   "homeMenuFeedbackTitle": "问题反馈",
   "switchTimetableTitle": "切换课表",
   "todayTimetableTitle": "今日课表",

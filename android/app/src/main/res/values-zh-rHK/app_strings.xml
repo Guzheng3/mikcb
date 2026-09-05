@@ -4,8 +4,6 @@
     <string name="accessibility_keep_alive_description">輕嶼課表用於提升超級島與提醒在後台場景下穩定性的輔助服務，不會讀取頁面內容或執行自動操作。</string>
 
     <string name="app_display_name">輕嶼課表</string>
-    <string name="pictures_folder_name">輕嶼課表</string>
-    <string name="payment_qr_description">輕嶼課表收款碼</string>
 
     <string name="notification_channel_live_update_name">課程表即時更新</string>
     <string name="notification_channel_live_update_desc">顯示當前課程進度</string>

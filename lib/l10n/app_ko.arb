@@ -650,47 +650,9 @@
   "backupDoneGoImport": "백업 완료, 가져오기로 이동",
   "startFreshWithoutMigration": "새 앱으로 시작, 마이그레이션 안 함",
   "openOldAppFailed": "이전 버전을 열지 못했습니다. 홈 화면에서 수동으로 이전 버전을 여세요",
-  "supportCreatorTitle": "개발자에게 커피 한 잔",
-  "supportHeroTitle": "경屿 시간표의 지속적 업데이트를 지원",
-  "supportHeroSubtitle": "여러분의 지원은 시간표 유지보수, 교무 가져오기 적응 및 UX 개선에 직접 사용됩니다",
-  "supportChipFixes": "문제 수정",
-  "supportChipAdapters": "교무 적응",
-  "supportChipPolish": "UX 개선",
-  "supportMethodTitle": "지원 방법 선택",
-  "wechatLabel": "WeChat",
-  "alipayLabel": "Alipay",
-  "supportWeChatHint": "WeChat으로 QR 코드를 스캔하여 개발자 지원",
-  "supportAlipayHint": "Alipay로 QR 코드를 스캔하여 개발자 지원",
   "viewLargeImage": "큰 이미지 보기",
-  "saveToGallery": "갤러리에 저장",
-  "supportCompleteThanks": "경屿 시간표의 지속적인 개선을 지원해 주셔서 감사합니다 ❤️",
   "supportConfirmed": "지원했습니다",
-  "donorListTitle": "감사 목록",
-  "donorListLoadFailed": "온라인 감사 목록을 불러올 수 없습니다.",
   "reloadAction": "다시 불러오기",
-  "updatedAtLabel": "{time}에 업데이트",
-  "@updatedAtLabel": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "donorListEmpty": "목록이 아직 작성되지 않았습니다. docs/donors.json을 직접 편집한 뒤 재발행할 수 있습니다.",
-  "savedToGallery": "갤러리에 저장되었습니다",
-  "saveToGalleryFailed": "갤러리 저장에 실패했습니다",
-  "saveFailedWithError": "저장 실패: {error}",
-  "@saveFailedWithError": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "supportRunningBadge": "운영 중",
-  "supportTapQrHint": "탭하여 확대",
-  "supportSaveShort": "저장",
-  "supportConfirmedShort": "후원함",
   "donorSearchHint": "닉네임/메시지 검색...",
   "donorSortLargeFirst": "금액 높은 순",
   "donorSortSmallFirst": "금액 낮은 순",
@@ -727,9 +689,6 @@
     }
   },
   "supportMarqueeTail": "경屿 시간표가 안정적으로 운영 중 — 여러분의 후원을 기다립니다!",
-  "scanQrWechatTitle": "WeChat으로 QR 코드 스캔",
-  "scanQrAlipayTitle": "Alipay로 QR 코드 스캔",
-  "scanQrSubtitle": "스크린샷 후 스캔, 후원 감사합니다!",
   "courseOverviewTitle": "수업 전체보기 및 편집",
   "addNewCourseTooltip": "새 수업 추가",
   "emptyCourseOverviewHint": "시간표를 길게 누르거나 오른쪽 위에서 수업을 추가하세요",
@@ -2630,7 +2589,6 @@
   "homeMenuAddCourseTitle": "수업 추가",
   "homeMenuImportTitle": "수업 가져오기",
   "homeMenuSettingsTitle": "시간표 설정",
-  "homeMenuCoffeeTitle": "커피 한 잔",
   "homeMenuFeedbackTitle": "문제 제보",
   "switchTimetableTitle": "시간표 전환",
   "todayTimetableTitle": "오늘 시간표",

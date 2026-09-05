@@ -1553,91 +1553,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get openOldAppFailed => '이전 버전을 열지 못했습니다. 홈 화면에서 수동으로 이전 버전을 여세요';
 
   @override
-  String get supportCreatorTitle => '개발자에게 커피 한 잔';
-
-  @override
-  String get supportHeroTitle => '경屿 시간표의 지속적 업데이트를 지원';
-
-  @override
-  String get supportHeroSubtitle =>
-      '여러분의 지원은 시간표 유지보수, 교무 가져오기 적응 및 UX 개선에 직접 사용됩니다';
-
-  @override
-  String get supportChipFixes => '문제 수정';
-
-  @override
-  String get supportChipAdapters => '교무 적응';
-
-  @override
-  String get supportChipPolish => 'UX 개선';
-
-  @override
-  String get supportMethodTitle => '지원 방법 선택';
-
-  @override
-  String get wechatLabel => 'WeChat';
-
-  @override
-  String get alipayLabel => 'Alipay';
-
-  @override
-  String get supportWeChatHint => 'WeChat으로 QR 코드를 스캔하여 개발자 지원';
-
-  @override
-  String get supportAlipayHint => 'Alipay로 QR 코드를 스캔하여 개발자 지원';
-
-  @override
   String get viewLargeImage => '큰 이미지 보기';
-
-  @override
-  String get saveToGallery => '갤러리에 저장';
-
-  @override
-  String get supportCompleteThanks => '경屿 시간표의 지속적인 개선을 지원해 주셔서 감사합니다 ❤️';
 
   @override
   String get supportConfirmed => '지원했습니다';
 
   @override
-  String get donorListTitle => '감사 목록';
-
-  @override
-  String get donorListLoadFailed => '온라인 감사 목록을 불러올 수 없습니다.';
-
-  @override
   String get reloadAction => '다시 불러오기';
-
-  @override
-  String updatedAtLabel(String time) {
-    return '$time에 업데이트';
-  }
-
-  @override
-  String get donorListEmpty =>
-      '목록이 아직 작성되지 않았습니다. docs/donors.json을 직접 편집한 뒤 재발행할 수 있습니다.';
-
-  @override
-  String get savedToGallery => '갤러리에 저장되었습니다';
-
-  @override
-  String get saveToGalleryFailed => '갤러리 저장에 실패했습니다';
-
-  @override
-  String saveFailedWithError(String error) {
-    return '저장 실패: $error';
-  }
-
-  @override
-  String get supportRunningBadge => '운영 중';
-
-  @override
-  String get supportTapQrHint => '탭하여 확대';
-
-  @override
-  String get supportSaveShort => '저장';
-
-  @override
-  String get supportConfirmedShort => '후원함';
 
   @override
   String get donorSearchHint => '닉네임/메시지 검색...';
@@ -1671,15 +1593,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get supportMarqueeTail => '경屿 시간표가 안정적으로 운영 중 — 여러분의 후원을 기다립니다!';
-
-  @override
-  String get scanQrWechatTitle => 'WeChat으로 QR 코드 스캔';
-
-  @override
-  String get scanQrAlipayTitle => 'Alipay로 QR 코드 스캔';
-
-  @override
-  String get scanQrSubtitle => '스크린샷 후 스캔, 후원 감사합니다!';
 
   @override
   String get courseOverviewTitle => '수업 전체보기 및 편집';
@@ -5242,9 +5155,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeMenuSettingsTitle => '시간표 설정';
-
-  @override
-  String get homeMenuCoffeeTitle => '커피 한 잔';
 
   @override
   String get homeMenuFeedbackTitle => '문제 제보';

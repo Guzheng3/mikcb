@@ -1517,89 +1517,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get openOldAppFailed => '未能打开旧版应用，请手动返回桌面打开旧版';
 
   @override
-  String get supportCreatorTitle => '请作者喝杯咖啡';
-
-  @override
-  String get supportHeroTitle => '支持轻屿课表继续更新';
-
-  @override
-  String get supportHeroSubtitle => '你的支持会直接用于维护课表、教务导入适配与体验优化';
-
-  @override
-  String get supportChipFixes => '修复问题';
-
-  @override
-  String get supportChipAdapters => '教务适配';
-
-  @override
-  String get supportChipPolish => '体验优化';
-
-  @override
-  String get supportMethodTitle => '选择支持方式';
-
-  @override
-  String get wechatLabel => '微信';
-
-  @override
-  String get alipayLabel => '支付宝';
-
-  @override
-  String get supportWeChatHint => '使用微信扫一扫支持作者';
-
-  @override
-  String get supportAlipayHint => '使用支付宝扫一扫支持作者';
-
-  @override
   String get viewLargeImage => '查看大图';
-
-  @override
-  String get saveToGallery => '保存到相册';
-
-  @override
-  String get supportCompleteThanks => '感谢你支持轻屿课表继续打磨 ❤️';
 
   @override
   String get supportConfirmed => '我已经支持了';
 
   @override
-  String get donorListTitle => '鸣谢名单';
-
-  @override
-  String get donorListLoadFailed => '暂时无法加载在线鸣谢名单';
-
-  @override
   String get reloadAction => '重新加载';
-
-  @override
-  String updatedAtLabel(String time) {
-    return '更新于 $time';
-  }
-
-  @override
-  String get donorListEmpty => '名单还没有填写，你可以直接编辑 docs/donors.json 后重新发布';
-
-  @override
-  String get savedToGallery => '已保存到相册';
-
-  @override
-  String get saveToGalleryFailed => '保存到相册失败';
-
-  @override
-  String saveFailedWithError(String error) {
-    return '保存失败：$error';
-  }
-
-  @override
-  String get supportRunningBadge => '运行中';
-
-  @override
-  String get supportTapQrHint => '点击放大扫码';
-
-  @override
-  String get supportSaveShort => '保存';
-
-  @override
-  String get supportConfirmedShort => '已支持';
 
   @override
   String get donorSearchHint => '搜昵称/寄语...';
@@ -1633,15 +1557,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get supportMarqueeTail => '轻屿课表正在稳定运行中，期待你的每一次陪伴与爱心！';
-
-  @override
-  String get scanQrWechatTitle => '使用微信扫描二维码';
-
-  @override
-  String get scanQrAlipayTitle => '使用支付宝扫描二维码';
-
-  @override
-  String get scanQrSubtitle => '截图并导入扫一扫，感谢支持！';
 
   @override
   String get courseOverviewTitle => '课程总览与编辑';
@@ -5111,9 +5026,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeMenuSettingsTitle => '课表设置';
-
-  @override
-  String get homeMenuCoffeeTitle => '请喝咖啡';
 
   @override
   String get homeMenuFeedbackTitle => '问题反馈';
@@ -11971,89 +11883,13 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get openOldAppFailed => '未能打開舊版應用，請手動返回桌面打開舊版';
 
   @override
-  String get supportCreatorTitle => '請作者喝杯咖啡';
-
-  @override
-  String get supportHeroTitle => '支持輕嶼課表繼續更新';
-
-  @override
-  String get supportHeroSubtitle => '你的支持會直接用於維護課表、教務匯入適配與體驗優化';
-
-  @override
-  String get supportChipFixes => '修複問題';
-
-  @override
-  String get supportChipAdapters => '教務適配';
-
-  @override
-  String get supportChipPolish => '體驗優化';
-
-  @override
-  String get supportMethodTitle => '選擇支持方式';
-
-  @override
-  String get wechatLabel => '微信';
-
-  @override
-  String get alipayLabel => '支付寶';
-
-  @override
-  String get supportWeChatHint => '使用微信掃一掃支持作者';
-
-  @override
-  String get supportAlipayHint => '使用支付寶掃一掃支持作者';
-
-  @override
   String get viewLargeImage => '查看大圖';
-
-  @override
-  String get saveToGallery => '保存到相冊';
-
-  @override
-  String get supportCompleteThanks => '感谢你支持輕嶼課表繼續打磨 ❤️';
 
   @override
   String get supportConfirmed => '我已經支持了';
 
   @override
-  String get donorListTitle => '鳴谢名單';
-
-  @override
-  String get donorListLoadFailed => '暫時無法加載在線鳴谢名單';
-
-  @override
   String get reloadAction => '重新加載';
-
-  @override
-  String updatedAtLabel(String time) {
-    return '更新於 $time';
-  }
-
-  @override
-  String get donorListEmpty => '名單還沒有有填寫，你可以直接編輯 docs/donors.json 後重新發布';
-
-  @override
-  String get savedToGallery => '已保存到相冊';
-
-  @override
-  String get saveToGalleryFailed => '保存到相冊失敗';
-
-  @override
-  String saveFailedWithError(String error) {
-    return '保存失敗：$error';
-  }
-
-  @override
-  String get supportRunningBadge => '運行中';
-
-  @override
-  String get supportTapQrHint => '點擊放大掃碼';
-
-  @override
-  String get supportSaveShort => '保存';
-
-  @override
-  String get supportConfirmedShort => '已支持';
 
   @override
   String get donorSearchHint => '搜暱稱/寄語...';
@@ -12087,15 +11923,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get supportMarqueeTail => '輕嶼課表正在穩定運行中，期待你的每一次陪伴與愛心！';
-
-  @override
-  String get scanQrWechatTitle => '使用微信掃描二維碼';
-
-  @override
-  String get scanQrAlipayTitle => '使用支付寶掃描二維碼';
-
-  @override
-  String get scanQrSubtitle => '截圖並導入掃一掃，感謝支持！';
 
   @override
   String get courseOverviewTitle => '課程總覽與編輯';
@@ -15564,9 +15391,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get homeMenuSettingsTitle => '課表設定';
-
-  @override
-  String get homeMenuCoffeeTitle => '請喝咖啡';
 
   @override
   String get homeMenuFeedbackTitle => '問題回饋';
@@ -22468,89 +22292,13 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get openOldAppFailed => '未能打開舊版應用，請手動返回桌面打開舊版';
 
   @override
-  String get supportCreatorTitle => '請作者喝杯咖啡';
-
-  @override
-  String get supportHeroTitle => '支持輕嶼課表繼續更新';
-
-  @override
-  String get supportHeroSubtitle => '你的支持會直接用於維護課表、教務匯入適配與體驗優化';
-
-  @override
-  String get supportChipFixes => '修複問題';
-
-  @override
-  String get supportChipAdapters => '教務適配';
-
-  @override
-  String get supportChipPolish => '體驗優化';
-
-  @override
-  String get supportMethodTitle => '選擇支持方式';
-
-  @override
-  String get wechatLabel => '微信';
-
-  @override
-  String get alipayLabel => '支付寶';
-
-  @override
-  String get supportWeChatHint => '使用微信掃一掃支持作者';
-
-  @override
-  String get supportAlipayHint => '使用支付寶掃一掃支持作者';
-
-  @override
   String get viewLargeImage => '查看大圖';
-
-  @override
-  String get saveToGallery => '保存到相冊';
-
-  @override
-  String get supportCompleteThanks => '感谢你支持輕嶼課表繼續打磨 ❤️';
 
   @override
   String get supportConfirmed => '我已經支持了';
 
   @override
-  String get donorListTitle => '鳴谢名單';
-
-  @override
-  String get donorListLoadFailed => '暫時無法加載在線鳴谢名單';
-
-  @override
   String get reloadAction => '重新加載';
-
-  @override
-  String updatedAtLabel(String time) {
-    return '更新於 $time';
-  }
-
-  @override
-  String get donorListEmpty => '名單還沒有有填寫，你可以直接編輯 docs/donors.json 後重新發布';
-
-  @override
-  String get savedToGallery => '已保存到相冊';
-
-  @override
-  String get saveToGalleryFailed => '保存到相冊失敗';
-
-  @override
-  String saveFailedWithError(String error) {
-    return '保存失敗：$error';
-  }
-
-  @override
-  String get supportRunningBadge => '運行中';
-
-  @override
-  String get supportTapQrHint => '點擊放大掃碼';
-
-  @override
-  String get supportSaveShort => '保存';
-
-  @override
-  String get supportConfirmedShort => '已支持';
 
   @override
   String get donorSearchHint => '搜暱稱/寄語...';
@@ -22584,15 +22332,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get supportMarqueeTail => '輕嶼課表正在穩定運行中，期待你的每一次陪伴與愛心！';
-
-  @override
-  String get scanQrWechatTitle => '使用微信掃描二維碼';
-
-  @override
-  String get scanQrAlipayTitle => '使用支付寶掃描二維碼';
-
-  @override
-  String get scanQrSubtitle => '截圖並導入掃一掃，感謝支持！';
 
   @override
   String get courseOverviewTitle => '課程總覽與編輯';
@@ -26061,9 +25800,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get homeMenuSettingsTitle => '課表設定';
-
-  @override
-  String get homeMenuCoffeeTitle => '請喝咖啡';
 
   @override
   String get homeMenuFeedbackTitle => '問題回饋';

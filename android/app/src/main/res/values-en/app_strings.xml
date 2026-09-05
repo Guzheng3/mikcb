@@ -4,8 +4,6 @@
     <string name="accessibility_keep_alive_description">Auxiliary service to improve Super Island and reminder stability in the background. Does not read screen content or perform automated actions.</string>
 
     <string name="app_display_name">Qingyu Timetable</string>
-    <string name="pictures_folder_name">Qingyu Timetable</string>
-    <string name="payment_qr_description">Qingyu Timetable payment QR</string>
 
     <string name="notification_channel_live_update_name">Timetable live updates</string>
     <string name="notification_channel_live_update_desc">Shows current class progress</string>

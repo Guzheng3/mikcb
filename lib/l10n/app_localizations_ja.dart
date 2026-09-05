@@ -1548,90 +1548,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get openOldAppFailed => '旧バージョンを開けませんでした。手動でホーム画面から旧バージョンを開いてください';
 
   @override
-  String get supportCreatorTitle => '作者にコーヒーをおごる';
-
-  @override
-  String get supportHeroTitle => '軽屿時間割の継続的更新を支援';
-
-  @override
-  String get supportHeroSubtitle => 'あなたの支援は時間割のメンテナンス、教務インポート適応とUX改善に直接活用されます';
-
-  @override
-  String get supportChipFixes => '問題修正';
-
-  @override
-  String get supportChipAdapters => '教務適応';
-
-  @override
-  String get supportChipPolish => 'UX改善';
-
-  @override
-  String get supportMethodTitle => '支援方法を選択';
-
-  @override
-  String get wechatLabel => 'WeChat';
-
-  @override
-  String get alipayLabel => 'Alipay';
-
-  @override
-  String get supportWeChatHint => 'WeChatでQRコードをスキャンして作者を支援';
-
-  @override
-  String get supportAlipayHint => 'AlipayでQRコードをスキャンして作者を支援';
-
-  @override
   String get viewLargeImage => '大きな画像を見る';
-
-  @override
-  String get saveToGallery => 'ギャラリーに保存';
-
-  @override
-  String get supportCompleteThanks => '軽屿時間割の継続的な改善を支援していただきありがとうございます ❤️';
 
   @override
   String get supportConfirmed => '支援しました';
 
   @override
-  String get donorListTitle => '謝辞リスト';
-
-  @override
-  String get donorListLoadFailed => 'オンライン謝辞リストを読み込めません。';
-
-  @override
   String get reloadAction => '再読み込み';
-
-  @override
-  String updatedAtLabel(String time) {
-    return '$timeに更新';
-  }
-
-  @override
-  String get donorListEmpty =>
-      'リストがまだ記入されていません。docs/donors.jsonを直接編集して再公開できます。';
-
-  @override
-  String get savedToGallery => 'ギャラリーに保存しました';
-
-  @override
-  String get saveToGalleryFailed => 'ギャラリーへの保存に失敗しました';
-
-  @override
-  String saveFailedWithError(String error) {
-    return '保存失敗：$error';
-  }
-
-  @override
-  String get supportRunningBadge => '稼働中';
-
-  @override
-  String get supportTapQrHint => 'タップで拡大';
-
-  @override
-  String get supportSaveShort => '保存';
-
-  @override
-  String get supportConfirmedShort => '支援済み';
 
   @override
   String get donorSearchHint => '名前/メッセージ検索...';
@@ -1665,15 +1588,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get supportMarqueeTail => '軽屿時間割は安定稼働中 — あなたの支援を待っています！';
-
-  @override
-  String get scanQrWechatTitle => 'WeChatでQRコードをスキャン';
-
-  @override
-  String get scanQrAlipayTitle => 'AlipayでQRコードをスキャン';
-
-  @override
-  String get scanQrSubtitle => 'スクリーンショットしてスキャン、支援ありがとう！';
 
   @override
   String get courseOverviewTitle => '授業一覧と編集';
@@ -5212,9 +5126,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeMenuSettingsTitle => '時間割設定';
-
-  @override
-  String get homeMenuCoffeeTitle => 'コーヒーをおごる';
 
   @override
   String get homeMenuFeedbackTitle => '問題報告';

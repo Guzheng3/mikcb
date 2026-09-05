@@ -790,47 +790,9 @@
   "backupDoneGoImport": "I finished backup, continue to import",
   "startFreshWithoutMigration": "Start fresh without migration",
   "openOldAppFailed": "Failed to open the old app. Please return to the home screen and open it manually.",
-  "supportCreatorTitle": "Buy the Creator a Coffee",
-  "supportHeroTitle": "Support Qingyu Timetable",
-  "supportHeroSubtitle": "Your support goes directly into timetable maintenance, academic adapter updates, and overall experience improvements",
-  "supportChipFixes": "Bug Fixes",
-  "supportChipAdapters": "Adapters",
-  "supportChipPolish": "Polish",
-  "supportMethodTitle": "Choose a Support Method",
-  "wechatLabel": "WeChat",
-  "alipayLabel": "Alipay",
-  "supportWeChatHint": "Use WeChat to scan and support the creator",
-  "supportAlipayHint": "Use Alipay to scan and support the creator",
   "viewLargeImage": "View Large Image",
-  "saveToGallery": "Save to Gallery",
-  "supportCompleteThanks": "Thanks for supporting Qingyu Timetable ❤️",
   "supportConfirmed": "I’ve Supported",
-  "donorListTitle": "Acknowledgements",
-  "donorListLoadFailed": "The online donor list is temporarily unavailable.",
   "reloadAction": "Reload",
-  "updatedAtLabel": "Updated at {time}",
-  "@updatedAtLabel": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "donorListEmpty": "The donor list is still empty. You can edit docs/donors.json and publish again.",
-  "savedToGallery": "Saved to gallery",
-  "saveToGalleryFailed": "Failed to save to gallery",
-  "saveFailedWithError": "Save failed: {error}",
-  "@saveFailedWithError": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "supportRunningBadge": "Active",
-  "supportTapQrHint": "Tap to enlarge",
-  "supportSaveShort": "Save",
-  "supportConfirmedShort": "Supported",
   "donorSearchHint": "Search name or message...",
   "donorSortLargeFirst": "Largest first",
   "donorSortSmallFirst": "Smallest first",
@@ -867,9 +829,6 @@
     }
   },
   "supportMarqueeTail": "Qingyu Timetable keeps running — thank you for your support!",
-  "scanQrWechatTitle": "Scan with WeChat",
-  "scanQrAlipayTitle": "Scan with Alipay",
-  "scanQrSubtitle": "Screenshot and scan, thank you for your support!",
   "courseOverviewTitle": "Course Overview & Edit",
   "addNewCourseTooltip": "Add New Course",
   "emptyCourseOverviewHint": "Long press the timetable or tap the top-right button to add a course",
@@ -2827,7 +2786,6 @@
   "homeMenuAddCourseTitle": "Add course",
   "homeMenuImportTitle": "Import courses",
   "homeMenuSettingsTitle": "Timetable settings",
-  "homeMenuCoffeeTitle": "Buy me a coffee",
   "homeMenuFeedbackTitle": "Feedback",
   "switchTimetableTitle": "Switch timetable",
   "todayTimetableTitle": "Today's Timetable",

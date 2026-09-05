@@ -4,8 +4,6 @@
     <string name="accessibility_keep_alive_description">轻屿课表用于提升超级岛与提醒在后台场景下稳定性的辅助服务，不会读取页面内容或执行自动操作。</string>
 
     <string name="app_display_name">轻屿课表</string>
-    <string name="pictures_folder_name">轻屿课表</string>
-    <string name="payment_qr_description">轻屿课表收款码</string>
 
     <!-- Notification channels -->
     <string name="notification_channel_live_update_name">课程表实时更新</string>

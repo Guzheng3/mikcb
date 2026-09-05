@@ -2894,89 +2894,11 @@ abstract class AppLocalizations {
   /// **'未能打开旧版应用，请手动返回桌面打开旧版'**
   String get openOldAppFailed;
 
-  /// No description provided for @supportCreatorTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'请作者喝杯咖啡'**
-  String get supportCreatorTitle;
-
-  /// No description provided for @supportHeroTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'支持轻屿课表继续更新'**
-  String get supportHeroTitle;
-
-  /// No description provided for @supportHeroSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'你的支持会直接用于维护课表、教务导入适配与体验优化'**
-  String get supportHeroSubtitle;
-
-  /// No description provided for @supportChipFixes.
-  ///
-  /// In zh, this message translates to:
-  /// **'修复问题'**
-  String get supportChipFixes;
-
-  /// No description provided for @supportChipAdapters.
-  ///
-  /// In zh, this message translates to:
-  /// **'教务适配'**
-  String get supportChipAdapters;
-
-  /// No description provided for @supportChipPolish.
-  ///
-  /// In zh, this message translates to:
-  /// **'体验优化'**
-  String get supportChipPolish;
-
-  /// No description provided for @supportMethodTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'选择支持方式'**
-  String get supportMethodTitle;
-
-  /// No description provided for @wechatLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'微信'**
-  String get wechatLabel;
-
-  /// No description provided for @alipayLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'支付宝'**
-  String get alipayLabel;
-
-  /// No description provided for @supportWeChatHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'使用微信扫一扫支持作者'**
-  String get supportWeChatHint;
-
-  /// No description provided for @supportAlipayHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'使用支付宝扫一扫支持作者'**
-  String get supportAlipayHint;
-
   /// No description provided for @viewLargeImage.
   ///
   /// In zh, this message translates to:
   /// **'查看大图'**
   String get viewLargeImage;
-
-  /// No description provided for @saveToGallery.
-  ///
-  /// In zh, this message translates to:
-  /// **'保存到相册'**
-  String get saveToGallery;
-
-  /// No description provided for @supportCompleteThanks.
-  ///
-  /// In zh, this message translates to:
-  /// **'感谢你支持轻屿课表继续打磨 ❤️'**
-  String get supportCompleteThanks;
 
   /// No description provided for @supportConfirmed.
   ///
@@ -2984,77 +2906,11 @@ abstract class AppLocalizations {
   /// **'我已经支持了'**
   String get supportConfirmed;
 
-  /// No description provided for @donorListTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'鸣谢名单'**
-  String get donorListTitle;
-
-  /// No description provided for @donorListLoadFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'暂时无法加载在线鸣谢名单'**
-  String get donorListLoadFailed;
-
   /// No description provided for @reloadAction.
   ///
   /// In zh, this message translates to:
   /// **'重新加载'**
   String get reloadAction;
-
-  /// No description provided for @updatedAtLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'更新于 {time}'**
-  String updatedAtLabel(String time);
-
-  /// No description provided for @donorListEmpty.
-  ///
-  /// In zh, this message translates to:
-  /// **'名单还没有填写，你可以直接编辑 docs/donors.json 后重新发布'**
-  String get donorListEmpty;
-
-  /// No description provided for @savedToGallery.
-  ///
-  /// In zh, this message translates to:
-  /// **'已保存到相册'**
-  String get savedToGallery;
-
-  /// No description provided for @saveToGalleryFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'保存到相册失败'**
-  String get saveToGalleryFailed;
-
-  /// No description provided for @saveFailedWithError.
-  ///
-  /// In zh, this message translates to:
-  /// **'保存失败：{error}'**
-  String saveFailedWithError(String error);
-
-  /// No description provided for @supportRunningBadge.
-  ///
-  /// In zh, this message translates to:
-  /// **'运行中'**
-  String get supportRunningBadge;
-
-  /// No description provided for @supportTapQrHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'点击放大扫码'**
-  String get supportTapQrHint;
-
-  /// No description provided for @supportSaveShort.
-  ///
-  /// In zh, this message translates to:
-  /// **'保存'**
-  String get supportSaveShort;
-
-  /// No description provided for @supportConfirmedShort.
-  ///
-  /// In zh, this message translates to:
-  /// **'已支持'**
-  String get supportConfirmedShort;
 
   /// No description provided for @donorSearchHint.
   ///
@@ -3109,24 +2965,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'轻屿课表正在稳定运行中，期待你的每一次陪伴与爱心！'**
   String get supportMarqueeTail;
-
-  /// No description provided for @scanQrWechatTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'使用微信扫描二维码'**
-  String get scanQrWechatTitle;
-
-  /// No description provided for @scanQrAlipayTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'使用支付宝扫描二维码'**
-  String get scanQrAlipayTitle;
-
-  /// No description provided for @scanQrSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'截图并导入扫一扫，感谢支持！'**
-  String get scanQrSubtitle;
 
   /// No description provided for @courseOverviewTitle.
   ///
@@ -9396,12 +9234,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'课表设置'**
   String get homeMenuSettingsTitle;
-
-  /// No description provided for @homeMenuCoffeeTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'请喝咖啡'**
-  String get homeMenuCoffeeTitle;
 
   /// No description provided for @homeMenuFeedbackTitle.
   ///
