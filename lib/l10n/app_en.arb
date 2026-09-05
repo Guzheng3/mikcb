@@ -791,44 +791,7 @@
   "startFreshWithoutMigration": "Start fresh without migration",
   "openOldAppFailed": "Failed to open the old app. Please return to the home screen and open it manually.",
   "viewLargeImage": "View Large Image",
-  "supportConfirmed": "I’ve Supported",
   "reloadAction": "Reload",
-  "donorSearchHint": "Search name or message...",
-  "donorSortLargeFirst": "Largest first",
-  "donorSortSmallFirst": "Smallest first",
-  "supportMonthlyGoalLabel": "Monthly server & certificate renewal",
-  "supportGoalRaised": "Raised: {raised} / Goal {goal}",
-  "@supportGoalRaised": {
-    "placeholders": {
-      "raised": {
-        "type": "String"
-      },
-      "goal": {
-        "type": "String"
-      }
-    }
-  },
-  "supportBackerCount": "{count} supporters so far",
-  "@supportBackerCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "supportDonorListFooter": "Names are kept permanently 💖",
-  "supportMarqueeThanks": "🎉 Thanks to {name} for {amount}",
-  "@supportMarqueeThanks": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "supportMarqueeTail": "Qingyu Timetable keeps running — thank you for your support!",
   "courseOverviewTitle": "Course Overview & Edit",
   "addNewCourseTooltip": "Add New Course",
   "emptyCourseOverviewHint": "Long press the timetable or tap the top-right button to add a course",
@@ -4830,14 +4793,6 @@
   "@serviceMsgMacroReplayPaused": {
     "placeholders": {
       "reason": {
-        "type": "String"
-      }
-    }
-  },
-  "serviceMsgSupportDonorsLoadFailed": "Failed to load supporters list: {detail}",
-  "@serviceMsgSupportDonorsLoadFailed": {
-    "placeholders": {
-      "detail": {
         "type": "String"
       }
     }

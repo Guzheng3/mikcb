@@ -491,12 +491,6 @@ String localizeServiceMessage(
       return l10n.serviceMsgMacroReplayPaused(
         resolvedArgs['reason']?.toString() ?? '',
       );
-
-    // Support / statistics
-    case 'support_donors_load_failed':
-      return l10n.serviceMsgSupportDonorsLoadFailed(
-        resolvedArgs['detail']?.toString() ?? '',
-      );
     case 'statistics_share_failed':
       return l10n.serviceMsgStatisticsShareFailed(
         resolvedArgs['detail']?.toString() ?? '',

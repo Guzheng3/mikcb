@@ -1620,44 +1620,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewLargeImage => 'View Large Image';
 
   @override
-  String get supportConfirmed => 'I’ve Supported';
-
-  @override
   String get reloadAction => 'Reload';
-
-  @override
-  String get donorSearchHint => 'Search name or message...';
-
-  @override
-  String get donorSortLargeFirst => 'Largest first';
-
-  @override
-  String get donorSortSmallFirst => 'Smallest first';
-
-  @override
-  String get supportMonthlyGoalLabel => 'Monthly server & certificate renewal';
-
-  @override
-  String supportGoalRaised(String raised, String goal) {
-    return 'Raised: $raised / Goal $goal';
-  }
-
-  @override
-  String supportBackerCount(int count) {
-    return '$count supporters so far';
-  }
-
-  @override
-  String get supportDonorListFooter => 'Names are kept permanently 💖';
-
-  @override
-  String supportMarqueeThanks(String name, String amount) {
-    return '🎉 Thanks to $name for $amount';
-  }
-
-  @override
-  String get supportMarqueeTail =>
-      'Qingyu Timetable keeps running — thank you for your support!';
 
   @override
   String get courseOverviewTitle => 'Course Overview & Edit';
@@ -8270,11 +8233,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String serviceMsgMacroReplayPaused(String reason) {
     return 'Waiting for manual action: $reason';
-  }
-
-  @override
-  String serviceMsgSupportDonorsLoadFailed(String detail) {
-    return 'Failed to load supporters list: $detail';
   }
 
   @override

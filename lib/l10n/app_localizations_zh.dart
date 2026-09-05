@@ -1520,43 +1520,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewLargeImage => '查看大图';
 
   @override
-  String get supportConfirmed => '我已经支持了';
-
-  @override
   String get reloadAction => '重新加载';
-
-  @override
-  String get donorSearchHint => '搜昵称/寄语...';
-
-  @override
-  String get donorSortLargeFirst => '大额优先';
-
-  @override
-  String get donorSortSmallFirst => '小额优先';
-
-  @override
-  String get supportMonthlyGoalLabel => '本月服务器和证书续期进度';
-
-  @override
-  String supportGoalRaised(String raised, String goal) {
-    return '已筹: $raised / 目标 $goal';
-  }
-
-  @override
-  String supportBackerCount(int count) {
-    return '已有 $count 人献出爱心';
-  }
-
-  @override
-  String get supportDonorListFooter => '名单永久保留 💖';
-
-  @override
-  String supportMarqueeThanks(String name, String amount) {
-    return '🎉 感谢 $name 赞助 $amount';
-  }
-
-  @override
-  String get supportMarqueeTail => '轻屿课表正在稳定运行中，期待你的每一次陪伴与爱心！';
 
   @override
   String get courseOverviewTitle => '课程总览与编辑';
@@ -7829,11 +7793,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String serviceMsgSupportDonorsLoadFailed(String detail) {
-    return '加载鸣谢名单失败：$detail';
-  }
-
-  @override
   String serviceMsgStatisticsShareFailed(String detail) {
     return '分享失败: $detail';
   }
@@ -11886,43 +11845,7 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get viewLargeImage => '查看大圖';
 
   @override
-  String get supportConfirmed => '我已經支持了';
-
-  @override
   String get reloadAction => '重新加載';
-
-  @override
-  String get donorSearchHint => '搜暱稱/寄語...';
-
-  @override
-  String get donorSortLargeFirst => '大額優先';
-
-  @override
-  String get donorSortSmallFirst => '小額優先';
-
-  @override
-  String get supportMonthlyGoalLabel => '本月伺服器和證書續期進度';
-
-  @override
-  String supportGoalRaised(String raised, String goal) {
-    return '已籌: $raised / 目標 $goal';
-  }
-
-  @override
-  String supportBackerCount(int count) {
-    return '已有 $count 人獻出愛心';
-  }
-
-  @override
-  String get supportDonorListFooter => '名單永久保留 💖';
-
-  @override
-  String supportMarqueeThanks(String name, String amount) {
-    return '🎉 感謝 $name 贊助 $amount';
-  }
-
-  @override
-  String get supportMarqueeTail => '輕嶼課表正在穩定運行中，期待你的每一次陪伴與愛心！';
 
   @override
   String get courseOverviewTitle => '課程總覽與編輯';
@@ -18238,11 +18161,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   }
 
   @override
-  String serviceMsgSupportDonorsLoadFailed(String detail) {
-    return 'Failed to load supporters list: $detail';
-  }
-
-  @override
   String serviceMsgStatisticsShareFailed(String detail) {
     return 'Share failed: $detail';
   }
@@ -22295,43 +22213,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get viewLargeImage => '查看大圖';
 
   @override
-  String get supportConfirmed => '我已經支持了';
-
-  @override
   String get reloadAction => '重新加載';
-
-  @override
-  String get donorSearchHint => '搜暱稱/寄語...';
-
-  @override
-  String get donorSortLargeFirst => '大額優先';
-
-  @override
-  String get donorSortSmallFirst => '小額優先';
-
-  @override
-  String get supportMonthlyGoalLabel => '本月伺服器和證書續期進度';
-
-  @override
-  String supportGoalRaised(String raised, String goal) {
-    return '已籌: $raised / 目標 $goal';
-  }
-
-  @override
-  String supportBackerCount(int count) {
-    return '已有 $count 人獻出愛心';
-  }
-
-  @override
-  String get supportDonorListFooter => '名單永久保留 💖';
-
-  @override
-  String supportMarqueeThanks(String name, String amount) {
-    return '🎉 感謝 $name 贊助 $amount';
-  }
-
-  @override
-  String get supportMarqueeTail => '輕嶼課表正在穩定運行中，期待你的每一次陪伴與愛心！';
 
   @override
   String get courseOverviewTitle => '課程總覽與編輯';
@@ -28644,11 +28526,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String serviceMsgMacroReplayPaused(String reason) {
     return 'Waiting for manual action: $reason';
-  }
-
-  @override
-  String serviceMsgSupportDonorsLoadFailed(String detail) {
-    return 'Failed to load supporters list: $detail';
   }
 
   @override

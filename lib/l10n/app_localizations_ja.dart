@@ -1551,43 +1551,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get viewLargeImage => '大きな画像を見る';
 
   @override
-  String get supportConfirmed => '支援しました';
-
-  @override
   String get reloadAction => '再読み込み';
-
-  @override
-  String get donorSearchHint => '名前/メッセージ検索...';
-
-  @override
-  String get donorSortLargeFirst => '高額順';
-
-  @override
-  String get donorSortSmallFirst => '低額順';
-
-  @override
-  String get supportMonthlyGoalLabel => '今月のサーバー・証明書更新進捗';
-
-  @override
-  String supportGoalRaised(String raised, String goal) {
-    return '集まった: $raised / 目標 $goal';
-  }
-
-  @override
-  String supportBackerCount(int count) {
-    return 'すでに $count 人が支援';
-  }
-
-  @override
-  String get supportDonorListFooter => '名前は永久に残ります 💖';
-
-  @override
-  String supportMarqueeThanks(String name, String amount) {
-    return '🎉 $name さん $amount ありがとう';
-  }
-
-  @override
-  String get supportMarqueeTail => '軽屿時間割は安定稼働中 — あなたの支援を待っています！';
 
   @override
   String get courseOverviewTitle => '授業一覧と編集';
@@ -7987,11 +7951,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String serviceMsgMacroReplayPaused(String reason) {
     return 'Waiting for manual action: $reason';
-  }
-
-  @override
-  String serviceMsgSupportDonorsLoadFailed(String detail) {
-    return 'Failed to load supporters list: $detail';
   }
 
   @override

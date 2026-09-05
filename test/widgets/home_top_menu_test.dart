@@ -139,7 +139,6 @@ void main() {
       expect(find.text('任务清单'), findsOneWidget);
       expect(find.text('课表重新配色'), findsOneWidget);
       expect(find.text('课表设置'), findsOneWidget);
-      expect(find.text('请喝咖啡'), findsNothing);
 
       await tester.tap(find.text('任务清单'));
       await tester.pumpAndSettle();
@@ -293,7 +292,6 @@ void main() {
     // 自定义排列只渲染用户选择的入口，顺序与持久化一致。
     expect(find.text('任务清单'), findsOneWidget);
     expect(find.text('课表重新配色'), findsOneWidget);
-    expect(find.text('请喝咖啡'), findsNothing);
 
     await tester.tap(find.text('任务清单'));
     await tester.pumpAndSettle();

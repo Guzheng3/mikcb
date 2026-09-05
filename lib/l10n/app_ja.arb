@@ -651,44 +651,7 @@
   "startFreshWithoutMigration": "新規アプリとして開始、移行しない",
   "openOldAppFailed": "旧バージョンを開けませんでした。手動でホーム画面から旧バージョンを開いてください",
   "viewLargeImage": "大きな画像を見る",
-  "supportConfirmed": "支援しました",
   "reloadAction": "再読み込み",
-  "donorSearchHint": "名前/メッセージ検索...",
-  "donorSortLargeFirst": "高額順",
-  "donorSortSmallFirst": "低額順",
-  "supportMonthlyGoalLabel": "今月のサーバー・証明書更新進捗",
-  "supportGoalRaised": "集まった: {raised} / 目標 {goal}",
-  "@supportGoalRaised": {
-    "placeholders": {
-      "raised": {
-        "type": "String"
-      },
-      "goal": {
-        "type": "String"
-      }
-    }
-  },
-  "supportBackerCount": "すでに {count} 人が支援",
-  "@supportBackerCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "supportDonorListFooter": "名前は永久に残ります 💖",
-  "supportMarqueeThanks": "🎉 {name} さん {amount} ありがとう",
-  "@supportMarqueeThanks": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "supportMarqueeTail": "軽屿時間割は安定稼働中 — あなたの支援を待っています！",
   "courseOverviewTitle": "授業一覧と編集",
   "addNewCourseTooltip": "新規授業追加",
   "emptyCourseOverviewHint": "時間割を長押しするか、右上のボタンから授業を追加",
@@ -4586,14 +4549,6 @@
   "@serviceMsgMacroReplayPaused": {
     "placeholders": {
       "reason": {
-        "type": "String"
-      }
-    }
-  },
-  "serviceMsgSupportDonorsLoadFailed": "Failed to load supporters list: {detail}",
-  "@serviceMsgSupportDonorsLoadFailed": {
-    "placeholders": {
-      "detail": {
         "type": "String"
       }
     }

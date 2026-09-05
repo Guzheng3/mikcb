@@ -31,7 +31,6 @@ import 'widgets/app_startup_splash.dart';
 import 'widgets/home_menu_route_catalog.dart';
 import 'widgets/miuix_font_weight_scope.dart';
 import 'services/app_log_service.dart';
-import 'services/bundled_assets.dart';
 import 'services/fair_memory_service.dart';
 import 'services/memory_stats_service.dart';
 import 'services/debug_deep_link_navigator.dart';

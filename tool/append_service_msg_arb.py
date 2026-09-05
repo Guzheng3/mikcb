@@ -191,8 +191,6 @@ EN_BLOCK = r'''
   "@serviceMsgMacroReplayFailed": {"placeholders": {"detail": {"type": "String"}}},
   "serviceMsgMacroReplayPaused": "Waiting for manual action: {reason}",
   "@serviceMsgMacroReplayPaused": {"placeholders": {"reason": {"type": "String"}}},
-  "serviceMsgSupportDonorsLoadFailed": "Failed to load supporters list: {detail}",
-  "@serviceMsgSupportDonorsLoadFailed": {"placeholders": {"detail": {"type": "String"}}},
   "serviceMsgStatisticsShareFailed": "Share failed: {detail}",
   "@serviceMsgStatisticsShareFailed": {"placeholders": {"detail": {"type": "String"}}},
   "serviceMsgAuthFailed": "Invalid username or password.",

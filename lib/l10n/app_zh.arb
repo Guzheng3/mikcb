@@ -801,44 +801,7 @@
   "startFreshWithoutMigration": "以全新应用开始，不迁移",
   "openOldAppFailed": "未能打开旧版应用，请手动返回桌面打开旧版",
   "viewLargeImage": "查看大图",
-  "supportConfirmed": "我已经支持了",
   "reloadAction": "重新加载",
-  "donorSearchHint": "搜昵称/寄语...",
-  "donorSortLargeFirst": "大额优先",
-  "donorSortSmallFirst": "小额优先",
-  "supportMonthlyGoalLabel": "本月服务器和证书续期进度",
-  "supportGoalRaised": "已筹: {raised} / 目标 {goal}",
-  "@supportGoalRaised": {
-    "placeholders": {
-      "raised": {
-        "type": "String"
-      },
-      "goal": {
-        "type": "String"
-      }
-    }
-  },
-  "supportBackerCount": "已有 {count} 人献出爱心",
-  "@supportBackerCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "supportDonorListFooter": "名单永久保留 💖",
-  "supportMarqueeThanks": "🎉 感谢 {name} 赞助 {amount}",
-  "@supportMarqueeThanks": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "supportMarqueeTail": "轻屿课表正在稳定运行中，期待你的每一次陪伴与爱心！",
   "courseOverviewTitle": "课程总览与编辑",
   "addNewCourseTooltip": "添加新课程",
   "emptyCourseOverviewHint": "长按课表或点击右上角添加课程",
@@ -4867,14 +4830,6 @@
   "@serviceMsgMacroReplayPaused": {
     "placeholders": {
       "reason": {
-        "type": "String"
-      }
-    }
-  },
-  "serviceMsgSupportDonorsLoadFailed": "加载鸣谢名单失败：{detail}",
-  "@serviceMsgSupportDonorsLoadFailed": {
-    "placeholders": {
-      "detail": {
         "type": "String"
       }
     }
