@@ -10,6 +10,7 @@ import '../models/partner_timetable_binding.dart';
 import '../domain/couple_timetable_logic.dart';
 import '../providers/timetable_provider.dart';
 import '../services/partner_timetable_service.dart';
+import '../services/home_widget_service.dart';
 import '../services/withu_couple_auth_service.dart';
 import '../services/withu_couple_config.dart';
 import '../services/withu_couple_session_store.dart';
@@ -39,8 +40,10 @@ class _CoupleTimetableSettingsScreenState
   bool _isUnlinking = false;
   bool _isPullingWithu = false;
   bool _isUploadingWithu = false;
+  bool _isPinningCoupleWidget = false;
 
   final WithuCoupleAuthService _withuAuthService = WithuCoupleAuthService();
+  final HomeWidgetService _homeWidgetService = HomeWidgetService();
   late final WithuCoupleTimetableService _withuTimetableService;
   WithuCoupleConfig _withuCoupleConfig = const WithuCoupleConfig();
   WithuCoupleSession? _withuCoupleSession;
@@ -137,17 +140,25 @@ class _CoupleTimetableSettingsScreenState
               child: _buildWithuCoupleControl(context, l10n),
             ),
           ),
-          const HyperosSectionGap(),
-          HyperosSectionLabel(text: l10n.coupleTimetableDesktopCardTitle),
-          HyperosControlCard(
-            title: l10n.coupleTimetableDesktopCardTitle,
-            child: HyperosControlCardInset(
-              child: Text(
-                l10n.coupleTimetableDesktopCardPlaceholder,
-                style: HyperosTypography.listDetail(context),
+          if (provider.settings.coupleTimetableOverlayEnabled) ...[
+            const HyperosSectionGap(),
+            HyperosSectionLabel(text: l10n.coupleTimetableDesktopCardTitle),
+            HyperosControlCard(
+              title: l10n.coupleTimetableDesktopCardTitle,
+              child: HyperosControlCardInset(
+                child: HyperosButton(
+                  label: _isPinningCoupleWidget
+                      ? '${l10n.homeWidgetTargetCoupleTimetable42}...'
+                      : l10n.homeWidgetTargetCoupleTimetable42,
+                  variant: HyperosButtonVariant.secondary,
+                  loading: _isPinningCoupleWidget,
+                  onPressed: _isPinningCoupleWidget
+                      ? null
+                      : _pinCoupleTimetableWidget,
+                ),
               ),
             ),
-          ),
+          ],
           const HyperosSectionGap(),
           HyperosSectionLabel(text: l10n.coupleTimetableTitle),
           HyperosControlCard(
@@ -288,24 +299,51 @@ class _CoupleTimetableSettingsScreenState
 
   Future<void> _connectWithuCouple() async {
     final provider = context.read<TimetableProvider>();
-    final connected = await Navigator.of(context).push<bool>(
-      HyperosPageRoute<bool>(
-        builder: (_) => WithuCoupleLoginScreen(
-          initialConfig: _withuCoupleConfig,
-          onPullPartner: (service) =>
-              service.pullPartnerTimetable(provider: provider, force: true),
-        ),
-      ),
+    final connected = await showWithuCoupleLoginSheet(
+      context: context,
+      initialConfig: _withuCoupleConfig,
+      onPullPartner: (service) =>
+          service.syncAfterLogin(provider: provider),
     );
     if (connected != true || !mounted) {
       return;
     }
+    await provider.syncCoupleTimetableWidgetSnapshot();
     await _loadWithuCoupleState();
   }
 
   Future<void> _disconnectWithuCouple() async {
+    final provider = context.read<TimetableProvider>();
     await _withuTimetableService.disconnect();
+    await provider.syncCoupleTimetableWidgetSnapshot();
     await _loadWithuCoupleState();
+  }
+
+  Future<void> _pinCoupleTimetableWidget() async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _isPinningCoupleWidget = true);
+    final result = await _homeWidgetService.requestPinWidget(
+      HomeWidgetPinTarget.coupleTimetable42,
+    );
+    if (!mounted) {
+      return;
+    }
+    setState(() => _isPinningCoupleWidget = false);
+    final message = switch (result) {
+      HomeWidgetPinRequestResult.requested => l10n.homeWidgetPinRequested(
+        l10n.homeWidgetTargetCoupleTimetable42,
+      ),
+      HomeWidgetPinRequestResult.unsupported =>
+        l10n.homeWidgetPinUnsupportedManual(
+          l10n.homeWidgetTargetCoupleTimetable42,
+        ),
+      HomeWidgetPinRequestResult.invalidWidgetType =>
+        l10n.homeWidgetInvalidType,
+      HomeWidgetPinRequestResult.failed => l10n.homeWidgetPinFailedManual(
+        l10n.homeWidgetTargetCoupleTimetable42,
+      ),
+    };
+    showAppToast(context, message: message);
   }
 
   Future<void> _pullPartnerWithu({

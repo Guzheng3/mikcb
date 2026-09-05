@@ -155,3 +155,9 @@ AGENTS.md
 .tmp_*.txt
 .review_*.diff
 *.stackdump
+
+# ���� ADB �������
+._cache_adb.exe
+
+# CodeGraph ��������
+.codegraph/

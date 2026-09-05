@@ -116,9 +116,13 @@ void _liveStartActivityTick(TimetableProvider host) {
 Future<void> _liveHandleAppResumed(TimetableProvider host) async {
   host._liveActivityTimer?.cancel();
   await host.syncTemporalContext();
+  final requestVersion = ++host._liveSurfaceRequestVersion;
   // Clear + push under one exclusive section so a concurrent WebDAV apply
   // cannot interleave a half-updated native snapshot.
   await host._runLiveSurfaceExclusive(() async {
+    if (requestVersion != host._liveSurfaceRequestVersion) {
+      return;
+    }
     host._lastLiveSnapshotSignature = null;
     host._currentLiveCourseId = null;
     await _liveUpdateActivityBody(host);
@@ -480,19 +484,28 @@ HomeWidgetSnapshot? _liveBuildHomeWidgetSnapshotForProfile(
     semesterStart: settings.semesterStartDate,
     fallback: profile.currentWeek,
   );
-  List<Course> coursesForDay(int dayOfWeek, int week, {required bool activeOnly}) {
+  List<Course> coursesForDay(
+    int dayOfWeek,
+    int week, {
+    required bool activeOnly,
+  }) {
     return profile.courses
         .where(
           (course) =>
               course.dayOfWeek == dayOfWeek &&
-              (activeOnly ? course.isActiveInWeek(week) : course.isInWeek(week)),
+              (activeOnly
+                  ? course.isActiveInWeek(week)
+                  : course.isInWeek(week)),
         )
         .toList()
       ..sort((a, b) => a.startSection.compareTo(b.startSection));
   }
 
-  final originalTodayCount =
-      coursesForDay(currentTime.weekday, targetWeek, activeOnly: false).length;
+  final originalTodayCount = coursesForDay(
+    currentTime.weekday,
+    targetWeek,
+    activeOnly: false,
+  ).length;
   final todayIsHoliday = HolidayResolver.isHoliday(
     currentTime,
     data: host._holidayData,
@@ -551,7 +564,8 @@ Future<Set<int>> _liveSyncBoundWidgetSnapshots(
   TimetableProvider host,
   DateTime now,
 ) async {
-  final instances = await host._homeWidgetBindingService.listTodayWidgetInstances();
+  final instances = await host._homeWidgetBindingService
+      .listTodayWidgetInstances();
   final boundInstances = instances
       .where((instance) => instance.boundProfileId != null)
       .toList(growable: false);
@@ -611,12 +625,26 @@ Future<void> _liveUpdateActivity(
   TimetableProvider host, {
   bool syncScheduleSnapshot = true,
 }) {
-  return host._runLiveSurfaceExclusive(
-    () => _liveUpdateActivityBody(
+  return _liveRunLatestActivityBody(
+    host,
+    syncScheduleSnapshot: syncScheduleSnapshot,
+  );
+}
+
+Future<void> _liveRunLatestActivityBody(
+  TimetableProvider host, {
+  bool syncScheduleSnapshot = true,
+}) {
+  final requestVersion = ++host._liveSurfaceRequestVersion;
+  return host._runLiveSurfaceExclusive(() async {
+    if (requestVersion != host._liveSurfaceRequestVersion) {
+      return;
+    }
+    await _liveUpdateActivityBody(
       host,
       syncScheduleSnapshot: syncScheduleSnapshot,
-    ),
-  );
+    );
+  });
 }
 
 Future<void> _liveUpdateActivityBody(
@@ -668,7 +696,6 @@ Future<void> _liveUpdateActivityBody(
     if (host._currentLiveCourseId == liveActivityKey) {
       return;
     }
-    host._currentLiveCourseId = liveActivityKey;
 
     final displayCourse = liveCourse.copyWith(
       startTime: _liveResolveRealTime(host, liveCourse, true),
@@ -761,6 +788,7 @@ Future<void> _liveUpdateActivityBody(
           .map((milestone) => milestone['timeText'] as String)
           .toList(),
     );
+    host._currentLiveCourseId = liveActivityKey;
   } else {
     host._currentLiveCourseId = null;
     host._lastLiveActivityStageKey = null;
@@ -837,6 +865,7 @@ Future<void> _liveSyncHomeWidgetSnapshot(TimetableProvider host) async {
   // 统计小组件与今日小组件共用这一入口：冷启动、回前台、课表变更都会走到，
   // 否则用户不进统计页时桌面统计组件永远读不到快照。
   await _liveSyncStatsWidgetSnapshot(host);
+  await _liveSyncCoupleWidgetSnapshot(host);
   final now = DateTime.now();
   final snapshot = host.buildHomeWidgetSnapshot();
   if (snapshot == null) {
@@ -875,6 +904,164 @@ Future<void> _liveSyncHomeWidgetSnapshot(TimetableProvider host) async {
     ...triggerAtMillis,
     ...boundTriggers,
   ]);
+}
+
+Future<CoupleTimetableWidgetSnapshot?> _liveBuildCoupleWidgetSnapshot(
+  TimetableProvider host,
+) async {
+  WithuCoupleSession? session;
+  try {
+    session = await host._withuSessionStore.load();
+  } catch (_) {
+    return null;
+  }
+  final binding = host.partnerBinding;
+  final partnerProfile = host.partnerProfile;
+  if (session == null ||
+      !session.isUsable ||
+      binding == null ||
+      partnerProfile == null) {
+    return null;
+  }
+
+  final myName = session.username.trim().isNotEmpty
+      ? session.username.trim()
+      : host.activeProfile?.name.trim() ?? '';
+  final partnerName = binding.partnerName.trim().isNotEmpty
+      ? binding.partnerName.trim()
+      : partnerProfile.name.trim();
+  if (myName.isEmpty || partnerName.isEmpty) {
+    return null;
+  }
+
+  final now = DateTime.now();
+  final tomorrow = now.add(const Duration(days: 1));
+  return CoupleTimetableWidgetSnapshot(
+    myName: myName,
+    partnerName: partnerName,
+    leftColorHex: binding.mineColorHex,
+    rightColorHex: binding.partnerColorHex,
+    generatedAtMillis: now.millisecondsSinceEpoch,
+    mine: CoupleTimetableWidgetDayCourses(
+      today: _liveBuildCoupleCoursesForDate(
+        host,
+        host.getActiveCoursesForDay(
+          now.weekday,
+          week: host._calculateCalendarWeekForDate(now),
+        ),
+        now,
+        settings: host.settings,
+      ),
+      tomorrow: _liveBuildCoupleCoursesForDate(
+        host,
+        host.getActiveCoursesForDay(
+          tomorrow.weekday,
+          week: host._calculateCalendarWeekForDate(tomorrow),
+        ),
+        tomorrow,
+        settings: host.settings,
+      ),
+    ),
+    partner: CoupleTimetableWidgetDayCourses(
+      today: _liveBuildCouplePartnerCoursesForDate(host, partnerProfile, now),
+      tomorrow: _liveBuildCouplePartnerCoursesForDate(
+        host,
+        partnerProfile,
+        tomorrow,
+      ),
+    ),
+  );
+}
+
+List<CoupleTimetableWidgetCourse> _liveBuildCouplePartnerCoursesForDate(
+  TimetableProvider host,
+  TimetableProfile partnerProfile,
+  DateTime date,
+) {
+  final calendarWeek = host._calculateCalendarWeekForDate(date);
+  final partnerWeek = host.partnerWeekFor(calendarWeek);
+  final courses =
+      partnerProfile.courses
+          .where(
+            (course) =>
+                course.dayOfWeek == date.weekday &&
+                course.isActiveInWeek(partnerWeek),
+          )
+          .toList()
+        ..sort((a, b) => a.startSection.compareTo(b.startSection));
+  return _liveBuildCoupleCoursesForDate(
+    host,
+    courses,
+    date,
+    settings: partnerProfile.settings,
+  );
+}
+
+List<CoupleTimetableWidgetCourse> _liveBuildCoupleCoursesForDate(
+  TimetableProvider host,
+  List<Course> courses,
+  DateTime date, {
+  required TimetableSettings settings,
+}) {
+  final result = <CoupleTimetableWidgetCourse>[];
+  for (final source in courses) {
+    final course = host.resolveCourseDisplayName(source);
+    final sections = host._resolveSectionsForCourse(
+      source,
+      settings: settings,
+      onDate: date,
+    );
+    final startTime = LiveActivityLogic.resolveRealTime(source, true, sections);
+    final endTime = LiveActivityLogic.resolveRealTime(source, false, sections);
+    if (startTime.isEmpty || endTime.isEmpty) {
+      continue;
+    }
+
+    final breaks = <CoupleTimetableWidgetBreak>[];
+    final firstSectionIndex = source.startSection - 1;
+    final lastSectionIndex = source.endSection - 1;
+    if (sections != null &&
+        firstSectionIndex >= 0 &&
+        lastSectionIndex > firstSectionIndex &&
+        lastSectionIndex < sections.length) {
+      for (var index = firstSectionIndex; index < lastSectionIndex; index++) {
+        final breakStart = sections[index].endTime;
+        final breakEnd = sections[index + 1].startTime;
+        if (breakStart.isNotEmpty && breakEnd.isNotEmpty) {
+          breaks.add(
+            CoupleTimetableWidgetBreak(
+              startTime: breakStart,
+              endTime: breakEnd,
+            ),
+          );
+        }
+      }
+    }
+
+    result.add(
+      CoupleTimetableWidgetCourse(
+        id: course.id,
+        name: course.name,
+        shortName: course.shortName,
+        location: course.location,
+        startSection: course.startSection,
+        endSection: course.endSection,
+        startTime: startTime,
+        endTime: endTime,
+        breaks: breaks,
+      ),
+    );
+  }
+  return result;
+}
+
+Future<void> _liveSyncCoupleWidgetSnapshot(TimetableProvider host) async {
+  final snapshot = await _liveBuildCoupleWidgetSnapshot(host);
+  if (snapshot == null) {
+    await CoupleTimetableWidgetService.clearSnapshot();
+    return;
+  }
+  await CoupleTimetableWidgetService.syncSnapshot(snapshot);
 }
 
 Future<void> _liveSyncStatsWidgetSnapshot(TimetableProvider host) async {

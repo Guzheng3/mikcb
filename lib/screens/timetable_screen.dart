@@ -55,6 +55,7 @@ import 'add_schedule_item_screen.dart';
 import 'add_task_screen.dart';
 import 'course_import_screen.dart';
 import 'timetable_profiles_screen.dart';
+import 'withu_couple_login_screen.dart';
 
 class TimetableScreen extends StatefulWidget {
   final bool enableProgressTimer;
@@ -647,13 +648,21 @@ class _TimetableScreenState extends State<TimetableScreen>
                 systemOverlayStyle: HyperosColors.systemOverlayForBackground(
                   systemOverlayBackground,
                 ),
-                title: _buildProfileSwitcherTrigger(
-                  provider,
-                  foreground: chromeForeground,
-                  mutedForeground: chromeMutedForeground,
-                ),
+                title: provider.settings.coupleTimetableOverlayEnabled
+                    ? const SizedBox.shrink()
+                    : _buildProfileSwitcherTrigger(
+                        provider,
+                        foreground: chromeForeground,
+                        mutedForeground: chromeMutedForeground,
+                      ),
+                fullWidthCenterChild:
+                    provider.settings.coupleTimetableOverlayEnabled &&
+                        !provider.hasPartnerBinding
+                    ? _buildCoupleModeHeaderLoginPrompt(provider)
+                    : null,
                 suffixes: [
-                  if (provider.hasPartnerBinding)
+                  if (provider.settings.coupleTimetableOverlayEnabled &&
+                      provider.hasPartnerBinding)
                     FHeaderAction(
                       icon: Icon(
                         _isCoupleOverlayActive(provider)
@@ -1988,6 +1997,36 @@ class _TimetableScreenState extends State<TimetableScreen>
           mutedForeground: mutedForeground,
         ),
       },
+    );
+  }
+
+  Widget _buildCoupleModeHeaderLoginPrompt(TimetableProvider provider) {
+    final l10n = AppLocalizations.of(context)!;
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          key: const ValueKey('withu_couple_not_logged_in_prompt'),
+          onTap: _openWithuCoupleLogin,
+          borderRadius: BorderRadius.circular(8),
+          child: Semantics(
+            button: true,
+            label: l10n.withuCoupleNotLoggedInPrompt,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                l10n.withuCoupleNotLoggedInPrompt,
+                maxLines: 1,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: HyperosIconColors.blue,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -8006,6 +8045,18 @@ class _TimetableScreenState extends State<TimetableScreen>
       return;
     }
     _maybeSelectionClick(provider.settings);
+  }
+
+  Future<void> _openWithuCoupleLogin() async {
+    final provider = context.read<TimetableProvider>();
+    final connected = await showWithuCoupleLoginSheet(
+      context: context,
+      onPullPartner: (service) => service.syncAfterLogin(provider: provider),
+    );
+    if (connected != true || !mounted) {
+      return;
+    }
+    await provider.syncCoupleTimetableWidgetSnapshot();
   }
 
   Future<void> _showTopActionsSheet() async {

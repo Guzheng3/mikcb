@@ -4,7 +4,6 @@ import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/ui/hyperos/hyperos.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/services/app_update_service.dart';
-import 'package:university_timetable/services/support_creator_service.dart';
 
 /// Mutable state shared by the home update prompt and the download task.
 ///

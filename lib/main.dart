@@ -43,6 +43,9 @@ import 'services/user_data_sync_hooks.dart';
 import 'services/webdav_sync_coordinator.dart';
 import 'services/android_animation_scale_service.dart';
 import 'services/umeng_analytics_service.dart';
+import 'services/withu_couple_auth_service.dart';
+import 'services/withu_couple_auto_sync_service.dart';
+import 'services/withu_couple_timetable_service.dart';
 import 'services/frosted_blur_service.dart';
 import 'services/widget_launch_router.dart';
 import 'ui/app_fonts.dart';
@@ -340,7 +343,6 @@ Future<void> main() async {
 Future<void> _warmUpAfterFirstFrame(PackageInfo packageInfo) async {
   try {
     await Future.wait([
-      BundledAssets.warmUp(),
       AndroidAnimationScaleService.ensureInitialized(),
       FrostedBlurService.probeNativeSupport(),
     ]);
@@ -494,6 +496,11 @@ class _AppEntryScreenState extends State<AppEntryScreen>
   final AppMigrationService _migrationService = AppMigrationService();
   final WebdavSyncCoordinator _cloudSyncCoordinator =
       WebdavSyncCoordinator.instance();
+  final WithuCoupleAuthService _withuAuthService = WithuCoupleAuthService();
+  late final WithuCoupleTimetableService _withuTimetableService =
+      WithuCoupleTimetableService(authService: _withuAuthService);
+  late final WithuCoupleAutoSyncService _withuAutoSyncService =
+      WithuCoupleAutoSyncService(timetableService: _withuTimetableService);
   bool _startupHandled = false;
   bool _fairMemoryRecoveryHandled = false;
   bool _allowFirstFrameCalled = false;
@@ -607,6 +614,8 @@ class _AppEntryScreenState extends State<AppEntryScreen>
 
   @override
   void dispose() {
+    _withuAutoSyncService.dispose();
+    _withuAuthService.dispose();
     if (!kReleaseMode) {
       DebugDeepLinkNavigator.detach();
     }
@@ -664,6 +673,7 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       if (hasAcceptedPrivacy && hasSeenGuide) {
         _cloudSyncCoordinator.bindProvider(provider);
         await provider.initialize();
+        _withuAutoSyncService.bind(provider);
         // 启动画面保持到首页视觉资产（壁纸位图 / 预模糊磨砂 / 墨色亮度采样）
         // 就绪：放行后的第一帧必须是完整界面，不允许露出主题兜底的半成品
         // 底色。prime 内部有预算与异常兜底，不会拖死启动管线。
@@ -707,6 +717,7 @@ class _AppEntryScreenState extends State<AppEntryScreen>
 
       await Future.wait([providerInitFuture, legacyPackageFuture]);
       _cloudSyncCoordinator.bindProvider(provider);
+      _withuAutoSyncService.bind(provider);
       // 与老用户快速路径同一保证：首页换入前视觉资产已就绪（无壁纸时
       // prime 立即返回）。
       await HomeStartupVisualPrimer.prime(provider.settings);

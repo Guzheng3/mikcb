@@ -33,12 +33,10 @@ final HomeMenuEntry coupleLoginHomeMenuEntry = HomeMenuEntry(
   category: HomeMenuEntryCategory.features,
   open: (context) {
     final provider = context.read<TimetableProvider>();
-    return pushHomeMenuPage(
-      context,
-      WithuCoupleLoginScreen(
-        onPullPartner: (service) =>
-            service.pullPartnerTimetable(provider: provider, force: true),
-      ),
+    return showWithuCoupleLoginSheet(
+      context: context,
+      onPullPartner: (service) =>
+          service.syncAfterLogin(provider: provider),
     );
   },
 );

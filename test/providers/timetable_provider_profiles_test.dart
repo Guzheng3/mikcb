@@ -75,6 +75,24 @@ void main() {
     TestMiuiLiveActivitiesService liveService,
   ) async {
     await pumpEventQueue();
+    var previousStopCount = -1;
+    var previousStartCount = -1;
+    var previousSnapshotCount = -1;
+    for (var attempt = 0; attempt < 20; attempt++) {
+      await Future<void>.delayed(Duration.zero);
+      await pumpEventQueue();
+      final stopCount = liveService.stopLiveUpdateCallCount;
+      final startCount = liveService.startLiveUpdateCallCount;
+      final snapshotCount = liveService.syncScheduleSnapshotCallCount;
+      if (stopCount == previousStopCount &&
+          startCount == previousStartCount &&
+          snapshotCount == previousSnapshotCount) {
+        break;
+      }
+      previousStopCount = stopCount;
+      previousStartCount = startCount;
+      previousSnapshotCount = snapshotCount;
+    }
     liveService.stopLiveUpdateCallCount = 0;
     liveService.startLiveUpdateCallCount = 0;
     liveService.syncScheduleSnapshotCallCount = 0;
@@ -1466,9 +1484,7 @@ void main() {
         ),
       );
 
-      final byId = {
-        for (final course in provider.courses) course.id: course,
-      };
+      final byId = {for (final course in provider.courses) course.id: course};
       expect(provider.courses, hasLength(2));
       expect(byId['slot-1']!.teacher, '张老师');
       expect(byId['slot-2']!.teacher, '李老师');
@@ -1521,9 +1537,7 @@ void main() {
       ),
     ]);
 
-    final byId = {
-      for (final course in provider.courses) course.id: course,
-    };
+    final byId = {for (final course in provider.courses) course.id: course};
     expect(provider.courses, hasLength(2));
     expect(byId['slot-a']!.teacher, '张老师');
     expect(byId['slot-b']!.teacher, '李老师');
@@ -1561,9 +1575,7 @@ void main() {
       ),
     ]);
 
-    final byId = {
-      for (final course in provider.courses) course.id: course,
-    };
+    final byId = {for (final course in provider.courses) course.id: course};
     expect(provider.courses, hasLength(2));
     expect(byId['slot-a']!.teacher, '张老师');
     expect(byId['slot-b']!.teacher, '李老师');
@@ -2155,6 +2167,7 @@ void main() {
         ),
       );
       await pumpEventQueue();
+      await settleLiveActivityStartup(liveService);
 
       provider.seedLiveActivityTrackingForTesting(
         lastStageKey: '16week-course:beforeClass:高等数学:1:2:A101:张老师',

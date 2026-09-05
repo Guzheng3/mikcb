@@ -5,6 +5,7 @@ import 'package:university_timetable/models/course.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/providers/timetable_provider.dart';
 import 'package:university_timetable/services/miui_live_activities_service.dart';
+import 'package:university_timetable/services/home_widget_binding_service.dart';
 import 'package:university_timetable/services/partner_timetable_service.dart';
 import 'package:university_timetable/services/storage_service.dart';
 import 'package:university_timetable/services/widget_launch_router.dart';
@@ -15,14 +16,19 @@ void main() {
   const channel = MethodChannel('com.mutx163.qingyu/home_widget');
   const liveChannel = MethodChannel('com.mutx163.qingyu/miui_live');
   const examChannel = MethodChannel('com.mutx163.qingyu/exam_reminder');
-  int? pendingWidgetId;
+  PendingHomeWidgetLaunch? pendingLaunch;
   final bindings = <int, String?>{};
   int popToRootCalls = 0;
 
   Future<Object?>? fakeHandler(MethodCall call) async {
     switch (call.method) {
       case 'getPendingWidgetLaunch':
-        return pendingWidgetId;
+        return pendingLaunch == null
+            ? null
+            : {
+                'appWidgetId': pendingLaunch!.appWidgetId,
+                'side': pendingLaunch!.side,
+              };
       case 'getWidgetBinding':
         return bindings[(call.arguments as Map)['appWidgetId'] as int];
     }
@@ -32,7 +38,7 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     StorageService().resetForTesting();
-    pendingWidgetId = null;
+    pendingLaunch = null;
     bindings.clear();
     popToRootCalls = 0;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -75,7 +81,7 @@ void main() {
     final provider = await createProvider();
     final other = await provider.createProfile(name: '秋季课表');
 
-    pendingWidgetId = 33;
+    pendingLaunch = const PendingHomeWidgetLaunch(appWidgetId: 33, side: null);
     bindings[33] = other.id;
     final outcome = await WidgetLaunchRouter.handleWith(provider: provider);
 
@@ -87,7 +93,7 @@ void main() {
     final provider = await createProvider();
     final before = provider.activeProfileId;
 
-    pendingWidgetId = 34;
+    pendingLaunch = const PendingHomeWidgetLaunch(appWidgetId: 34, side: null);
     bindings[34] = PartnerTimetableService.partnerProfileId;
     final outcome = await WidgetLaunchRouter.handleWith(provider: provider);
 
@@ -100,7 +106,7 @@ void main() {
     final provider = await createProvider();
     final before = provider.activeProfileId;
 
-    pendingWidgetId = 35;
+    pendingLaunch = const PendingHomeWidgetLaunch(appWidgetId: 35, side: null);
     bindings[35] = null;
     final outcome = await WidgetLaunchRouter.handleWith(provider: provider);
 
@@ -114,7 +120,7 @@ void main() {
     final before = provider.activeProfileId;
     final other = await provider.createProfile(name: '被删课表');
 
-    pendingWidgetId = 36;
+    pendingLaunch = const PendingHomeWidgetLaunch(appWidgetId: 36, side: null);
     bindings[36] = other.id;
     await provider.deleteProfile(other.id);
     final outcome = await WidgetLaunchRouter.handleWith(provider: provider);
@@ -126,7 +132,6 @@ void main() {
   test('绑定 TA 课表 → partnerOverlay：不切课表、持久化开启覆盖层、回根回调', () async {
     final provider = await createProvider();
     final before = provider.activeProfileId;
-    expect(provider.settings.coupleTimetableOverlayEnabled, isFalse);
 
     final backup = provider.dataTransferService.buildBackupJson(
       profileName: 'TA的课表',
@@ -147,8 +152,12 @@ void main() {
       currentWeek: 1,
     );
     await provider.importPartnerTimetable(backup);
+    await provider.updateTimetableSettings(
+      provider.settings.copyWith(coupleTimetableOverlayEnabled: false),
+    );
+    expect(provider.settings.coupleTimetableOverlayEnabled, isFalse);
 
-    pendingWidgetId = 37;
+    pendingLaunch = const PendingHomeWidgetLaunch(appWidgetId: 37, side: null);
     bindings[37] = PartnerTimetableService.partnerProfileId;
     final outcome = await WidgetLaunchRouter.handleWith(
       provider: provider,
@@ -161,5 +170,58 @@ void main() {
     expect(provider.settings.coupleTimetableOverlayEnabled, isTrue);
     expect(popToRootCalls, 1);
     expect(WidgetLaunchRouter.coupleOverlayRequestTick.value, greaterThan(0));
+  });
+
+  test('情侣卡片右列点击 → partnerOverlay，且不读取普通绑定', () async {
+    final provider = await createProvider();
+    final before = provider.activeProfileId;
+    final backup = provider.dataTransferService.buildBackupJson(
+      profileName: 'TA的课表',
+      courses: [
+        Course(
+          id: 'right-c1',
+          name: '高数',
+          teacher: '张老师',
+          location: 'A101',
+          dayOfWeek: 1,
+          startSection: 1,
+          endSection: 2,
+          startTime: '08:00',
+          endTime: '09:40',
+        ),
+      ],
+      settings: TimetableSettings.defaults(),
+      currentWeek: 1,
+    );
+    await provider.importPartnerTimetable(backup);
+
+    pendingLaunch = const PendingHomeWidgetLaunch(
+      appWidgetId: 38,
+      side: 'right',
+    );
+    bindings[38] = 'must-not-be-read';
+    final outcome = await WidgetLaunchRouter.handleWith(
+      provider: provider,
+      onRequestPopToRoot: () => popToRootCalls++,
+    );
+
+    expect(outcome, WidgetLaunchOutcome.partnerOverlay);
+    expect(provider.activeProfileId, before);
+    expect(provider.settings.coupleTimetableOverlayEnabled, isTrue);
+    expect(popToRootCalls, 1);
+  });
+
+  test('情侣卡片左列点击 → none，保持当前课表', () async {
+    final provider = await createProvider();
+    final before = provider.activeProfileId;
+
+    pendingLaunch = const PendingHomeWidgetLaunch(
+      appWidgetId: 39,
+      side: 'left',
+    );
+    final outcome = await WidgetLaunchRouter.handleWith(provider: provider);
+
+    expect(outcome, WidgetLaunchOutcome.none);
+    expect(provider.activeProfileId, before);
   });
 }

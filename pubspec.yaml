@@ -64,8 +64,11 @@ flutter:
   generate: true
   assets:
     - assets/branding/
-    - assets/donate/
     - assets/holidays/
     - docs/releases/
     - assets/lan_edit/
     - assets/templates/
+  fonts:
+    - family: DancingScript
+      fonts:
+        - asset: assets/fonts/DancingScript-Variable.ttf

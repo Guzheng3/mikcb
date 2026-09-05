@@ -2764,6 +2764,7 @@
   "homeWidgetTargetStatsStrip41": "統計橫條 4×1",
   "homeWidgetTargetExamCard22": "考試倒數 2×2",
   "homeWidgetTargetTodayWide42": "今日橫寬 4×2",
+  "homeWidgetTargetCoupleTimetable42": "情侶課表 4×2",
   "dayAgendaInProgressStatus": "進行中 · 剩餘 {minutes} 分鐘",
   "@dayAgendaInProgressStatus": {
     "placeholders": {
@@ -6007,7 +6008,8 @@
   "withuCoupleLoginPageTitle": "登入 withU",
   "withuCoupleLoginPageSubtitle": "使用 withU 情侶帳號登入，登入後自動拉取對方課表",
   "withuCoupleLoginAction": "登入並拉取",
-  "withuCoupleLoginMenuTitle": "登入 withU",
+  "withuCoupleLoginMenuTitle": "帳號登入",
+  "withuCoupleNotLoggedInPrompt": "未登入 · 點擊登入",
   "withuCouplePullImported": "已從 withU 匯入對方課表",
   "withuCouplePullUpdated": "已從 withU 更新對方課表",
   "withuCouplePullUnchanged": "對方課表無變化",

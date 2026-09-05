@@ -124,6 +124,7 @@ Future<void> _pumpHome(
         homePageHeaderBlurEnabled: headerBlur,
         homePageWeekdayBarBlurEnabled: weekdayBlur,
         weekdayBarFontColorLight: weekdayHex,
+        coupleTimetableOverlayEnabled: false,
         semesterStartDate: _nextWeekMonday(),
       ),
     );

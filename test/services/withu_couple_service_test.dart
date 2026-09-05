@@ -13,6 +13,7 @@ import 'package:university_timetable/services/withu_couple_auth_service.dart';
 import 'package:university_timetable/services/withu_couple_config.dart';
 import 'package:university_timetable/services/withu_couple_session_store.dart';
 import 'package:university_timetable/services/withu_couple_timetable_service.dart';
+import 'package:university_timetable/services/withu_couple_auto_sync_service.dart';
 
 class _FakeClient extends http.BaseClient {
   final Map<String, http.Response> responses;
@@ -63,6 +64,8 @@ const _loginUrl = 'https://withu.example.com/api/timetable.php?action=login';
 const _partnerUrl =
     'https://withu.example.com/api/timetable.php?action=partner';
 const _saveUrl = 'https://withu.example.com/api/timetable.php?action=save';
+const _saveSettingsUrl =
+    'https://withu.example.com/api/timetable.php?action=save_settings';
 
 http.Response _jsonResponse(
   Map<String, dynamic> payload, {
@@ -161,6 +164,11 @@ TimetableProvider _provider() {
   );
 }
 
+Future<void> _flushAutoSync() async {
+  await Future<void>.delayed(Duration.zero);
+  await pumpEventQueue();
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -248,6 +256,36 @@ void main() {
     expect(config.lastPulledAt, isNotNull);
   });
 
+  test('pull imports legacy withU partner timetable content', () async {
+    final content = jsonEncode({
+      'week': 1,
+      'courses': [
+        {'day': 1, 'start': '08:00', 'end': '09:40', 'title': 'Legacy Math'},
+      ],
+    });
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _partnerUrl: _partnerResponse(
+        content,
+        sha256.convert(utf8.encode(content)).toString(),
+      ),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+    final provider = _provider();
+
+    final result = await service.pullPartnerTimetable(provider: provider);
+
+    expect(
+      result.status,
+      isIn([WithuCouplePullStatus.imported, WithuCouplePullStatus.updated]),
+    );
+    expect(provider.partnerProfile?.courses, hasLength(1));
+    expect(provider.partnerProfile?.courses.single.name, 'Legacy Math');
+    expect(provider.partnerProfile?.courses.single.startSection, 1);
+    expect(provider.partnerProfile?.courses.single.endSection, 2);
+  });
   test('pull reports missing partner timetable content', () async {
     final storage = _MemorySecureStorage();
     final client = _FakeClient({
@@ -261,6 +299,28 @@ void main() {
 
     expect(result.status, WithuCouplePullStatus.failed);
     expect(result.errorCode, 'withu_partner_timetable_missing');
+  });
+
+  test('preserves the partner package validation error code', () async {
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _partnerUrl: _partnerResponse(
+        jsonEncode({
+          'app': 'mikcb',
+          'schemaVersion': DataTransferService.schemaVersion,
+          'courses': const [],
+        }),
+        'invalid-package-hash',
+      ),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+
+    final result = await service.pullPartnerTimetable(provider: _provider());
+
+    expect(result.status, WithuCouplePullStatus.failed);
+    expect(result.errorCode, 'missing_settings_data');
   });
 
   test('upload sends a JSON object with the CSRF token', () async {
@@ -288,6 +348,260 @@ void main() {
       'PHPSESSID=session-id; withu_device=device-token',
     );
     expect(saveRequest.headers['X-CSRF-Token'], 'csrf-token');
+  });
+
+  test(
+    'auto sync uploads timetable changes without uploading settings',
+    () async {
+      final storage = _MemorySecureStorage();
+      final client = _FakeClient({
+        _loginUrl: _loginResponse(),
+        _saveUrl: _jsonResponse({'success': true}),
+        _saveSettingsUrl: _jsonResponse({'success': true}),
+      });
+      final auth = await _connectedAuthService(client, storage);
+      final service = WithuCoupleTimetableService(authService: auth);
+      final autoSync = WithuCoupleAutoSyncService(
+        timetableService: service,
+        debounceDelay: Duration.zero,
+        pullOnBind: false,
+      );
+      final provider = _provider();
+      await provider.initialize();
+      autoSync.bind(provider);
+      addTearDown(autoSync.dispose);
+
+      await provider.addCourse(
+        Course(
+          id: 'course-1',
+          name: 'Math',
+          teacher: 'Teacher',
+          location: 'A101',
+          dayOfWeek: 1,
+          startSection: 1,
+          endSection: 2,
+          startTime: '08:00',
+          endTime: '09:40',
+        ),
+      );
+      await _flushAutoSync();
+
+      expect(
+        client.requests.where(
+          (request) => request.url.queryParameters['action'] == 'save',
+        ),
+        hasLength(1),
+      );
+      expect(
+        client.requests.where(
+          (request) => request.url.queryParameters['action'] == 'save_settings',
+        ),
+        isEmpty,
+      );
+    },
+  );
+
+  test('auto sync uploads timetable metadata changes', () async {
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _saveUrl: _jsonResponse({'success': true}),
+      _saveSettingsUrl: _jsonResponse({'success': true}),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+    final autoSync = WithuCoupleAutoSyncService(
+      timetableService: service,
+      debounceDelay: Duration.zero,
+      pullOnBind: false,
+    );
+    final provider = _provider();
+    await provider.initialize();
+    autoSync.bind(provider);
+    addTearDown(autoSync.dispose);
+
+    await provider.createTimeScheme(name: 'Evening');
+    await _flushAutoSync();
+
+    expect(
+      client.requests.where(
+        (request) => request.url.queryParameters['action'] == 'save',
+      ),
+      hasLength(1),
+    );
+    expect(
+      client.requests.where(
+        (request) => request.url.queryParameters['action'] == 'save_settings',
+      ),
+      isEmpty,
+    );
+  });
+
+  test(
+    'upload strips personal settings from the partner timetable package',
+    () async {
+      final storage = _MemorySecureStorage();
+      final client = _FakeClient({
+        _loginUrl: _loginResponse(),
+        _saveUrl: _jsonResponse({'success': true}),
+      });
+      final auth = await _connectedAuthService(client, storage);
+      final service = WithuCoupleTimetableService(authService: auth);
+      final provider = _provider();
+      await provider.initialize();
+      await provider.updateSettings(
+        provider.settings.copyWith(
+          homePageWallpaperPath: '/private/wallpaper.jpg',
+          savedThemes: const [],
+        ),
+      );
+
+      final error = await service.uploadMyTimetableForPartner(
+        provider: provider,
+      );
+
+      expect(error, isNull);
+      final saveRequest = client.requests.singleWhere(
+        (request) => request.url.queryParameters['action'] == 'save',
+      );
+      final body = jsonDecode(saveRequest.body) as Map<String, dynamic>;
+      final content = body['content'] as Map<String, dynamic>;
+      final settings = content['settings'] as Map<String, dynamic>;
+      expect(settings['homePageWallpaperPath'], isNull);
+      expect(settings['sections'], isNotEmpty);
+      expect(
+        settings['semesterWeekCount'],
+        provider.settings.semesterWeekCount,
+      );
+    },
+  );
+
+  test(
+    'sync after login uploads my timetable before pulling partner',
+    () async {
+      final content = _backupJson('course-1');
+      final contentHash = sha256.convert(utf8.encode(content)).toString();
+      final storage = _MemorySecureStorage();
+      final client = _FakeClient({
+        _loginUrl: _loginResponse(),
+        _saveUrl: _jsonResponse({'success': true}),
+        _partnerUrl: _partnerResponse(content, contentHash),
+      });
+      final auth = await _connectedAuthService(client, storage);
+      final service = WithuCoupleTimetableService(authService: auth);
+      final provider = _provider();
+
+      final result = await service.syncAfterLogin(provider: provider);
+
+      expect(result.status, WithuCouplePullStatus.updated);
+      final saveRequest = client.requests.singleWhere(
+        (request) => request.url.queryParameters['action'] == 'save',
+      );
+      final partnerRequest = client.requests.singleWhere(
+        (request) => request.url.queryParameters['action'] == 'partner',
+      );
+      expect(
+        client.requests.indexOf(saveRequest),
+        lessThan(client.requests.indexOf(partnerRequest)),
+      );
+      expect(provider.hasPartnerBinding, isTrue);
+      expect(provider.partnerProfile?.name, 'Bob');
+    },
+  );
+
+  test(
+    'auto sync uploads personal settings without uploading timetable',
+    () async {
+      final storage = _MemorySecureStorage();
+      final client = _FakeClient({
+        _loginUrl: _loginResponse(),
+        _saveUrl: _jsonResponse({'success': true}),
+        _saveSettingsUrl: _jsonResponse({'success': true}),
+      });
+      final auth = await _connectedAuthService(client, storage);
+      final service = WithuCoupleTimetableService(authService: auth);
+      final autoSync = WithuCoupleAutoSyncService(
+        timetableService: service,
+        debounceDelay: Duration.zero,
+        pullOnBind: false,
+      );
+      final provider = _provider();
+      await provider.initialize();
+      autoSync.bind(provider);
+      addTearDown(autoSync.dispose);
+
+      await provider.updateSettings(
+        provider.settings.copyWith(homePageWallpaperPath: '/personal/bg.jpg'),
+      );
+      await _flushAutoSync();
+
+      final settingsRequest = client.requests.singleWhere(
+        (request) => request.url.queryParameters['action'] == 'save_settings',
+      );
+      final body = jsonDecode(settingsRequest.body) as Map<String, dynamic>;
+      expect(body['content'], isA<Map<String, dynamic>>());
+      expect(
+        client.requests.where(
+          (request) => request.url.queryParameters['action'] == 'save',
+        ),
+        isEmpty,
+      );
+    },
+  );
+
+  test('bind pulls the partner timetable once for a saved session', () async {
+    final content = _backupJson('course-1');
+    final contentHash = sha256.convert(utf8.encode(content)).toString();
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _partnerUrl: _partnerResponse(content, contentHash),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final autoSync = WithuCoupleAutoSyncService(
+      timetableService: WithuCoupleTimetableService(authService: auth),
+      debounceDelay: Duration.zero,
+    );
+    final provider = _provider();
+    await provider.initialize();
+    autoSync.bind(provider);
+    addTearDown(autoSync.dispose);
+    await _flushAutoSync();
+
+    expect(
+      client.requests.where(
+        (request) => request.url.queryParameters['action'] == 'partner',
+      ),
+      hasLength(1),
+    );
+    expect(provider.hasPartnerBinding, isTrue);
+    expect(
+      client.requests.where(
+        (request) => request.url.queryParameters['action'] == 'save',
+      ),
+      isEmpty,
+    );
+  });
+
+  test('auto sync makes no requests when withU is not connected', () async {
+    final client = _FakeClient({});
+    final auth = WithuCoupleAuthService(client: client);
+    final autoSync = WithuCoupleAutoSyncService(
+      timetableService: WithuCoupleTimetableService(authService: auth),
+      debounceDelay: Duration.zero,
+      pullOnBind: true,
+    );
+    final provider = _provider();
+    await provider.initialize();
+    autoSync.bind(provider);
+    addTearDown(autoSync.dispose);
+
+    await provider.updateSettings(
+      provider.settings.copyWith(homePageWallpaperPath: '/personal/bg.jpg'),
+    );
+    await _flushAutoSync();
+
+    expect(client.requests, isEmpty);
   });
 
   test('maps login 401 and authenticated 403 responses', () async {

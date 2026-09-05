@@ -168,6 +168,15 @@ class DataTransferService {
   String buildTransferPackageJson({required TransferPackage package}) =>
       package.encode();
 
+  TimetableSettings sanitizeSettingsForPartnerSync(TimetableSettings settings) {
+    return TimetableSettings.defaults().copyWith(
+      sections: List<SectionTime>.from(settings.sections),
+      activeTimeSchemeId: settings.activeTimeSchemeId,
+      semesterWeekCount: settings.semesterWeekCount,
+      semesterStartDate: settings.semesterStartDate,
+    );
+  }
+
   TransferPackage parseTransferPackageJson(String content) {
     return TransferPackage.decode(content);
   }
@@ -181,14 +190,8 @@ class DataTransferService {
       throw const FormatException('unrecognized_mikcb_data_file');
     }
 
-    final rawCourses = _parseOptionalList(
-      json['courses'],
-      Course.fromJson,
-    );
-    final rawTasks = _parseOptionalList(
-      json['tasks'],
-      CourseTask.fromJson,
-    );
+    final rawCourses = _parseOptionalList(json['courses'], Course.fromJson);
+    final rawTasks = _parseOptionalList(json['tasks'], CourseTask.fromJson);
     final rawScheduleItems = _parseOptionalList(
       json['scheduleItems'],
       ScheduleItem.fromJson,
@@ -209,10 +212,7 @@ class DataTransferService {
       tasks: rawTasks,
       scheduleItems: rawScheduleItems,
       exams: _parseOptionalList(json['exams'], Exam.fromJson),
-      timeSchemes: _parseOptionalList(
-        json['timeSchemes'],
-        TimeScheme.fromJson,
-      ),
+      timeSchemes: _parseOptionalList(json['timeSchemes'], TimeScheme.fromJson),
       scheduleDateRules: _parseOptionalList(
         json['scheduleDateRules'],
         ScheduleDateRule.fromJson,
@@ -235,6 +235,139 @@ class DataTransferService {
           : null,
       channel: TransferChannelX.fromValue(json['channel']),
     );
+  }
+
+  /// Parses a partner timetable from the current package format or the
+  /// compact payload emitted by older withU deployments.
+  AppDataBackup parsePartnerTimetableJson(String content) {
+    final json = jsonDecode(content) as Map<String, dynamic>;
+    if (json['app'] == 'mikcb') {
+      return parseBackupJson(content);
+    }
+
+    final rawCourses = json['courses'];
+    if (rawCourses is! List) {
+      return parseBackupJson(content);
+    }
+
+    final settings = TimetableSettings.defaults();
+    final courses = <Course>[];
+    for (var index = 0; index < rawCourses.length; index++) {
+      final rawCourse = rawCourses[index];
+      if (rawCourse is! Map) {
+        continue;
+      }
+      final course = _parseLegacyPartnerCourse(
+        Map<String, dynamic>.from(rawCourse),
+        index: index,
+        settings: settings,
+      );
+      if (course != null) {
+        courses.add(course);
+      }
+    }
+
+    return AppDataBackup(
+      profileName: (json['profileName'] as String?)?.trim().isEmpty == true
+          ? null
+          : json['profileName'] as String?,
+      courses: courses,
+      settings: settings,
+      currentWeek: clampCurrentWeekToSettings(
+        _readLegacyInt(json['week']) ??
+            _readLegacyInt(json['currentWeek']) ??
+            1,
+        settings,
+      ),
+      exportedAt: DateTime.now(),
+      scope: TransferScope.currentTimetable,
+      channel: TransferChannel.cloud,
+    );
+  }
+
+  Course? _parseLegacyPartnerCourse(
+    Map<String, dynamic> json, {
+    required int index,
+    required TimetableSettings settings,
+  }) {
+    final name = (json['title'] ?? json['name'])?.toString().trim() ?? '';
+    final startTime =
+        _readLegacyTime(json['start']) ??
+        _readLegacyTime(json['startTime']) ??
+        settings.sections.first.startTime;
+    final endTime =
+        _readLegacyTime(json['end']) ??
+        _readLegacyTime(json['endTime']) ??
+        settings.sections.first.endTime;
+    final day =
+        _readLegacyInt(json['day']) ?? _readLegacyInt(json['dayOfWeek']) ?? 1;
+    final startSection =
+        _readLegacyInt(json['startSection']) ??
+        _sectionForLegacyTime(startTime, settings, useEndTime: false);
+    final endSection =
+        _readLegacyInt(json['endSection']) ??
+        _sectionForLegacyTime(endTime, settings, useEndTime: true);
+    final sections = Course.normalizeSections(
+      startSection: startSection,
+      endSection: endSection,
+      maxSection: settings.sections.length,
+    );
+    if (name.isEmpty) {
+      return null;
+    }
+
+    return Course(
+      id: (json['id'] ?? 'legacy-course-${index + 1}').toString(),
+      name: name,
+      teacher: (json['teacher'] ?? '').toString(),
+      location: (json['location'] ?? '').toString(),
+      dayOfWeek: Course.normalizeDayOfWeek(day),
+      startSection: sections.startSection,
+      endSection: sections.endSection,
+      startTime: startTime,
+      endTime: endTime,
+      color: (json['color'] as String?) ?? '#2196F3',
+      startWeek: _readLegacyInt(json['startWeek']) ?? 1,
+      endWeek: _readLegacyInt(json['endWeek']) ?? 16,
+    );
+  }
+
+  static int? _readLegacyInt(Object? raw) {
+    if (raw is num) {
+      return raw.toInt();
+    }
+    if (raw is String) {
+      return int.tryParse(raw.trim());
+    }
+    return null;
+  }
+
+  static String? _readLegacyTime(Object? raw) {
+    if (raw is! String) {
+      return null;
+    }
+    final value = raw.trim();
+    final match = RegExp(r'^(\d{1,2}):(\d{1,2})$').firstMatch(value);
+    if (match == null) {
+      return null;
+    }
+    final hour = int.tryParse(match.group(1)!) ?? -1;
+    final minute = int.tryParse(match.group(2)!) ?? -1;
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      return null;
+    }
+    return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+  }
+
+  static int _sectionForLegacyTime(
+    String time,
+    TimetableSettings settings, {
+    required bool useEndTime,
+  }) {
+    final index = settings.sections.indexWhere(
+      (section) => (useEndTime ? section.endTime : section.startTime) == time,
+    );
+    return index < 0 ? 1 : index + 1;
   }
 
   bool isFullBackupJson(String content) {
@@ -282,14 +415,8 @@ class DataTransferService {
     if (rawProfiles is! List || rawTimeSchemes is! List) {
       throw const FormatException('missing_full_backup_data');
     }
-    final profiles = _parseOptionalList(
-      rawProfiles,
-      TimetableProfile.fromJson,
-    );
-    final timeSchemes = _parseOptionalList(
-      rawTimeSchemes,
-      TimeScheme.fromJson,
-    );
+    final profiles = _parseOptionalList(rawProfiles, TimetableProfile.fromJson);
+    final timeSchemes = _parseOptionalList(rawTimeSchemes, TimeScheme.fromJson);
     if ((rawProfiles.isNotEmpty && profiles.isEmpty) ||
         (rawTimeSchemes.isNotEmpty && timeSchemes.isEmpty)) {
       throw const FormatException('missing_full_backup_data');

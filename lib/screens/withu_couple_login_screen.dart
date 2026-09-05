@@ -8,8 +8,27 @@ import '../services/withu_couple_timetable_service.dart';
 import '../ui/hyperos/hyperos.dart';
 import '../utils/app_toast.dart';
 
-class WithuCoupleLoginScreen extends StatefulWidget {
-  const WithuCoupleLoginScreen({
+Future<bool?> showWithuCoupleLoginSheet({
+  required BuildContext context,
+  WithuCoupleConfig? initialConfig,
+  required Future<WithuCouplePullResult> Function(
+    WithuCoupleTimetableService service,
+  )
+  onPullPartner,
+  bool useRootNavigator = false,
+}) {
+  return showHyperosSheet<bool>(
+    context: context,
+    useRootNavigator: useRootNavigator,
+    builder: (_) => WithuCoupleLoginSheet(
+      initialConfig: initialConfig,
+      onPullPartner: onPullPartner,
+    ),
+  );
+}
+
+class WithuCoupleLoginSheet extends StatefulWidget {
+  const WithuCoupleLoginSheet({
     super.key,
     this.initialConfig,
     required this.onPullPartner,
@@ -22,10 +41,10 @@ class WithuCoupleLoginScreen extends StatefulWidget {
   onPullPartner;
 
   @override
-  State<WithuCoupleLoginScreen> createState() => _WithuCoupleLoginScreenState();
+  State<WithuCoupleLoginSheet> createState() => _WithuCoupleLoginSheetState();
 }
 
-class _WithuCoupleLoginScreenState extends State<WithuCoupleLoginScreen> {
+class _WithuCoupleLoginSheetState extends State<WithuCoupleLoginSheet> {
   late final TextEditingController _baseUrlController;
   late final TextEditingController _usernameController;
   late final TextEditingController _passwordController;
@@ -138,54 +157,53 @@ class _WithuCoupleLoginScreenState extends State<WithuCoupleLoginScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return HyperosSubpage(
-      onBack: () => Navigator.pop(context),
-      title: Text(l10n.withuCoupleLoginPageTitle),
-      resizeToAvoidBottomInset: true,
-      child: HyperosListView(
-        children: [
-          HyperosControlCard(
-            title: l10n.withuCoupleLoginPageSubtitle,
-            child: HyperosControlCardInset(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  HyperosTextField(
-                    controller: _baseUrlController,
-                    label: l10n.withuCoupleServerLabel,
-                    hint: 'https://withu.example.com',
-                    keyboardType: TextInputType.url,
-                    textInputAction: TextInputAction.next,
-                  ),
-                  const SizedBox(height: 12),
-                  HyperosTextField(
-                    controller: _usernameController,
-                    label: l10n.cloudSyncUsernameLabel,
-                    hint: l10n.cloudSyncUsernameHint,
-                    textInputAction: TextInputAction.next,
-                  ),
-                  const SizedBox(height: 12),
-                  HyperosTextField(
-                    controller: _passwordController,
-                    label: l10n.cloudSyncPasswordLabel,
-                    hint: l10n.cloudSyncPasswordHint,
-                    obscureText: true,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _submit(),
-                  ),
-                  const SizedBox(height: 16),
-                  HyperosButton(
-                    label: _isSubmitting
-                        ? '${l10n.withuCoupleLoginAction}...'
-                        : l10n.withuCoupleLoginAction,
-                    loading: _isSubmitting,
-                    onPressed: _isSubmitting ? null : _submit,
-                  ),
-                ],
-              ),
+    return HyperosSheetFrame(
+      maxHeight: MediaQuery.sizeOf(context).height * 0.68,
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.withuCoupleLoginMenuTitle,
+              style: HyperosTypography.sheetTitle(context),
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            HyperosSectionDescription(text: l10n.withuCoupleLoginPageSubtitle),
+            const SizedBox(height: 18),
+            HyperosTextField(
+              controller: _baseUrlController,
+              label: l10n.withuCoupleServerLabel,
+              hint: 'https://withu.example.com',
+              keyboardType: TextInputType.url,
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 12),
+            HyperosTextField(
+              controller: _usernameController,
+              label: l10n.cloudSyncUsernameLabel,
+              hint: l10n.cloudSyncUsernameHint,
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 12),
+            HyperosTextField(
+              controller: _passwordController,
+              label: l10n.cloudSyncPasswordLabel,
+              hint: l10n.cloudSyncPasswordHint,
+              obscureText: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _submit(),
+            ),
+            const SizedBox(height: 18),
+            HyperosButton(
+              label: _isSubmitting
+                  ? '${l10n.withuCoupleLoginAction}...'
+                  : l10n.withuCoupleLoginAction,
+              loading: _isSubmitting,
+              onPressed: _isSubmitting ? null : _submit,
+            ),
+          ],
+        ),
       ),
     );
   }

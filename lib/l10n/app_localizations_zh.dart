@@ -370,7 +370,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get withuCoupleLoginAction => '登录并拉取';
 
   @override
-  String get withuCoupleLoginMenuTitle => '登录 withU';
+  String get withuCoupleLoginMenuTitle => '账号登录';
+
+  @override
+  String get withuCoupleNotLoggedInPrompt => '未登录 · 点击登录';
 
   @override
   String get withuCouplePullImported => '已从 withU 导入对方课表';
@@ -5286,6 +5289,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeWidgetTargetTodayWide42 => '今日横宽 4×2';
+
+  @override
+  String get homeWidgetTargetCoupleTimetable42 => '情侣课表 4×2';
 
   @override
   String get addCourseSheetTitle => '添加内容';
@@ -10817,7 +10823,10 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get withuCoupleLoginAction => '登入並拉取';
 
   @override
-  String get withuCoupleLoginMenuTitle => '登入 withU';
+  String get withuCoupleLoginMenuTitle => '帳號登入';
+
+  @override
+  String get withuCoupleNotLoggedInPrompt => '未登入 · 點擊登入';
 
   @override
   String get withuCouplePullImported => '已從 withU 匯入對方課表';
@@ -15733,6 +15742,9 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get homeWidgetTargetTodayWide42 => '今日橫寬 4×2';
+
+  @override
+  String get homeWidgetTargetCoupleTimetable42 => '情侶課表 4×2';
 
   @override
   String get addCourseSheetTitle => '新增內容';
@@ -21308,7 +21320,10 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get withuCoupleLoginAction => '登入並拉取';
 
   @override
-  String get withuCoupleLoginMenuTitle => '登入 withU';
+  String get withuCoupleLoginMenuTitle => '帳號登入';
+
+  @override
+  String get withuCoupleNotLoggedInPrompt => '未登入 · 點擊登入';
 
   @override
   String get withuCouplePullImported => '已從 withU 匯入對方課表';
@@ -26224,6 +26239,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get homeWidgetTargetTodayWide42 => '今日橫寬 4×2';
+
+  @override
+  String get homeWidgetTargetCoupleTimetable42 => '情侶課表 4×2';
 
   @override
   String get addCourseSheetTitle => '新增內容';

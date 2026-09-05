@@ -36,12 +36,19 @@ class HyperosRootHeader extends StatelessWidget {
     super.key,
     required this.title,
     this.suffixes = const [],
+    this.fullWidthCenterChild,
     this.padding = const EdgeInsets.fromLTRB(8, 0, 8, 2),
     this.minHeight = 44,
   });
 
   final Widget title;
   final List<Widget> suffixes;
+
+  /// Optional interactive child centered across the full header width.
+  ///
+  /// When set, [title] is hidden and suffixes remain right-aligned on top of
+  /// the centered child.
+  final Widget? fullWidthCenterChild;
 
   /// Content padding inside the bar (below the status-bar SafeArea).
   final EdgeInsetsGeometry padding;
@@ -51,41 +58,65 @@ class HyperosRootHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = MiuixTheme.of(context).colors;
     final font = DefaultTextStyle.of(context).style;
+    final headerTextStyle = TextStyle(
+      fontSize: 24,
+      fontWeight: FontWeight.w400,
+      height: 1.1,
+      color: colors.onBackground,
+      fontFamily: font.fontFamily,
+      fontFamilyFallback: font.fontFamilyFallback,
+    );
+    final Widget content;
+    if (fullWidthCenterChild == null) {
+      content = Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: DefaultTextStyle.merge(
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              softWrap: false,
+              style: headerTextStyle,
+              textHeightBehavior: const TextHeightBehavior(
+                applyHeightToFirstAscent: false,
+                applyHeightToLastDescent: false,
+              ),
+              child: title,
+            ),
+          ),
+          Row(mainAxisSize: MainAxisSize.min, children: suffixes),
+        ],
+      );
+    } else {
+      content = Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned.fill(
+            child: Align(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 56),
+                child: DefaultTextStyle.merge(
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: headerTextStyle,
+                  child: fullWidthCenterChild!,
+                ),
+              ),
+            ),
+          ),
+          Row(mainAxisAlignment: MainAxisAlignment.end, children: suffixes),
+        ],
+      );
+    }
+
     return SafeArea(
       bottom: false,
       child: Semantics(
         header: true,
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: minHeight),
-          child: Padding(
-            padding: padding,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: DefaultTextStyle.merge(
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    softWrap: false,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w400,
-                      height: 1.1,
-                      color: colors.onBackground,
-                      fontFamily: font.fontFamily,
-                      fontFamilyFallback: font.fontFamilyFallback,
-                    ),
-                    textHeightBehavior: const TextHeightBehavior(
-                      applyHeightToFirstAscent: false,
-                      applyHeightToLastDescent: false,
-                    ),
-                    child: title,
-                  ),
-                ),
-                Row(mainAxisSize: MainAxisSize.min, children: suffixes),
-              ],
-            ),
-          ),
+          child: Padding(padding: padding, child: content),
         ),
       ),
     );

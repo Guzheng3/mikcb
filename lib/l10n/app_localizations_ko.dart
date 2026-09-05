@@ -377,7 +377,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get withuCoupleLoginAction => '로그인하고 가져오기';
 
   @override
-  String get withuCoupleLoginMenuTitle => 'withU 로그인';
+  String get withuCoupleLoginMenuTitle => '계정 로그인';
+
+  @override
+  String get withuCoupleNotLoggedInPrompt => '로그인 안 됨 · 탭해서 로그인';
 
   @override
   String get withuCouplePullImported => 'withU에서 상대방 시간표를 가져왔습니다';
@@ -5420,6 +5423,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeWidgetTargetTodayWide42 => '오늘 와이드 4×2';
+
+  @override
+  String get homeWidgetTargetCoupleTimetable42 => '커플 시간표 4×2';
 
   @override
   String get addCourseSheetTitle => '콘텐츠 추가';

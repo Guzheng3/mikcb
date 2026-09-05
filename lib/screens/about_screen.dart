@@ -21,7 +21,6 @@ import '../services/app_analytics.dart';
 import 'changelog_screen.dart';
 import 'open_source_licenses_screen.dart';
 import '../services/app_update_service.dart';
-import '../services/support_creator_service.dart';
 import '../services/bundled_assets.dart';
 import '../widgets/about_info_sheet.dart';
 import '../widgets/third_party_disclaimer_card.dart';
@@ -592,7 +591,6 @@ class AboutUpdateScreen extends StatefulWidget {
 class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
   final AppUpdateService _updateService = AppUpdateService();
   final AppAnalytics _analytics = AppAnalytics.instance;
-  final SupportCreatorService _supportService = SupportCreatorService();
   Future<AppUpdateCheckResult>? _updateFuture;
   bool _isDownloading = false;
   bool _isCancellingDownload = false;
@@ -1342,7 +1340,7 @@ class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
       final fileName = normalizedVersion.isEmpty
           ? 'mikcb_update.apk'
           : 'mikcb_v$normalizedVersion.apk';
-      final downloadId = await _supportService.enqueueSystemDownload(
+      final downloadId = await _updateService.enqueueSystemDownload(
         url: url,
         fileName: fileName,
         title: l10n.aboutUpdatePackageTitle,

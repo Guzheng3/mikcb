@@ -55,6 +55,31 @@ class HomeWidgetInstance {
   }
 }
 
+/// One consumed native widget click.
+class PendingHomeWidgetLaunch {
+  final int appWidgetId;
+
+  /// `left` / `right` for side-aware widgets; null keeps the legacy flow.
+  final String? side;
+
+  const PendingHomeWidgetLaunch({
+    required this.appWidgetId,
+    required this.side,
+  });
+
+  factory PendingHomeWidgetLaunch.fromChannel(Object? raw) {
+    if (raw is num) {
+      return PendingHomeWidgetLaunch(appWidgetId: raw.toInt(), side: null);
+    }
+    final map = raw as Map<Object?, Object?>?;
+    final side = map?['side'] as String?;
+    return PendingHomeWidgetLaunch(
+      appWidgetId: (map?['appWidgetId'] as num?)?.toInt() ?? -1,
+      side: side == 'left' || side == 'right' ? side : null,
+    );
+  }
+}
+
 /// 卡片绑定档案的 Flutter 侧入口。
 ///
 /// 绑定表本体存放在原生 `home_widget_prefs`，由 Kotlin 的 WidgetBindingStore
@@ -132,7 +157,10 @@ class HomeWidgetBindingService {
     return false;
   }
 
-  Future<bool> syncWidgetSnapshot(int appWidgetId, HomeWidgetSnapshot snapshot) async {
+  Future<bool> syncWidgetSnapshot(
+    int appWidgetId,
+    HomeWidgetSnapshot snapshot,
+  ) async {
     try {
       await _channel.invokeMethod('syncWidgetSnapshot', {
         'appWidgetId': appWidgetId,
@@ -178,10 +206,13 @@ class HomeWidgetBindingService {
   }
 
   /// 消费一次卡片点击（原生 pending）。null = 本次启动没有卡片点击。
-  Future<int?> consumePendingWidgetLaunch() async {
+  Future<PendingHomeWidgetLaunch?> consumePendingWidgetLaunch() async {
     try {
-      final raw = await _channel.invokeMethod<Object?>('getPendingWidgetLaunch');
-      return (raw as num?)?.toInt();
+      final raw = await _channel.invokeMethod<Object?>(
+        'getPendingWidgetLaunch',
+      );
+      final launch = PendingHomeWidgetLaunch.fromChannel(raw);
+      return launch.appWidgetId >= 0 ? launch : null;
     } on MissingPluginException {
       return null;
     } catch (e) {

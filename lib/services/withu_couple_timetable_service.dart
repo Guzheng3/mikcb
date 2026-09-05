@@ -33,6 +33,8 @@ class WithuCoupleTimetableService {
   final WithuCoupleConfigStore _configStore;
   final DataTransferService _dataTransferService;
 
+  WithuCoupleAuthService get authService => _authService;
+
   Future<WithuCoupleConfig> loadConfig() => _configStore.load();
 
   Future<void> disconnect() async {
@@ -83,6 +85,7 @@ class WithuCoupleTimetableService {
       if (!force &&
           config.lastRemoteContentHash == contentHash &&
           provider.hasPartnerBinding) {
+        await provider.syncCoupleTimetableWidgetSnapshot();
         return const WithuCouplePullResult(
           status: WithuCouplePullStatus.unchanged,
         );
@@ -104,6 +107,7 @@ class WithuCoupleTimetableService {
           lastRemoteContentHash: contentHash,
         ),
       );
+      await provider.syncCoupleTimetableWidgetSnapshot();
       return WithuCouplePullResult(
         status: importResult.kind.name == 'created'
             ? WithuCouplePullStatus.imported
@@ -128,8 +132,26 @@ class WithuCoupleTimetableService {
     }
   }
 
+  Future<WithuCouplePullResult> syncAfterLogin({
+    required TimetableProvider provider,
+  }) async {
+    final uploadError = await uploadMyTimetableForPartner(provider: provider);
+    final pullResult = await pullPartnerTimetable(
+      provider: provider,
+      force: true,
+    );
+    if (uploadError != null) {
+      return WithuCouplePullResult(
+        status: WithuCouplePullStatus.failed,
+        errorCode: uploadError,
+      );
+    }
+    return pullResult;
+  }
+
   Future<String?> uploadMyTimetableForPartner({
     required TimetableProvider provider,
+    String? packageId,
   }) async {
     if (await _authService.loadSession() == null) {
       return 'withu_couple_not_connected';
@@ -141,8 +163,14 @@ class WithuCoupleTimetableService {
         profileName: provider.activeProfile?.name,
         courses: provider.courses,
         scheduleItems: provider.scheduleItems,
-        settings: provider.settings,
+        settings: _dataTransferService.sanitizeSettingsForPartnerSync(
+          provider.settings,
+        ),
         currentWeek: provider.currentWeek,
+        timeSchemes: provider.timeSchemes,
+        scheduleDateRules: provider.scheduleDateRules,
+        locationTimeGroups: provider.locationTimeGroups,
+        packageId: packageId,
       );
       final decodedContent = jsonDecode(content);
       if (decodedContent is! Map) {
@@ -159,7 +187,30 @@ class WithuCoupleTimetableService {
     }
   }
 
-  String _errorCode(FormatException error) => error.message.startsWith('withu_')
-      ? error.message
-      : 'withu_invalid_response';
+  Future<String?> uploadPersonalSettings({
+    required TimetableProvider provider,
+  }) async {
+    if (await _authService.loadSession() == null) {
+      return 'withu_couple_not_connected';
+    }
+
+    try {
+      await provider.initialize();
+      await _authService.postJson('save_settings', {
+        'content': provider.settings.toJson(),
+      });
+      return null;
+    } on WithuCoupleApiException catch (error) {
+      return error.code;
+    } on FormatException catch (error) {
+      return _errorCode(error);
+    } catch (_) {
+      return 'withu_request_failed';
+    }
+  }
+
+  String _errorCode(FormatException error) {
+    final message = error.message.trim();
+    return message.isEmpty ? 'withu_invalid_response' : message;
+  }
 }

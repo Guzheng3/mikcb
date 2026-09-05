@@ -785,8 +785,14 @@ abstract class AppLocalizations {
   /// No description provided for @withuCoupleLoginMenuTitle.
   ///
   /// In zh, this message translates to:
-  /// **'登录 withU'**
+  /// **'账号登录'**
   String get withuCoupleLoginMenuTitle;
+
+  /// No description provided for @withuCoupleNotLoggedInPrompt.
+  ///
+  /// In zh, this message translates to:
+  /// **'未登录 · 点击登录'**
+  String get withuCoupleNotLoggedInPrompt;
 
   /// No description provided for @withuCouplePullImported.
   ///
@@ -9702,6 +9708,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'今日横宽 4×2'**
   String get homeWidgetTargetTodayWide42;
+
+  /// No description provided for @homeWidgetTargetCoupleTimetable42.
+  ///
+  /// In zh, this message translates to:
+  /// **'情侣课表 4×2'**
+  String get homeWidgetTargetCoupleTimetable42;
 
   /// No description provided for @addCourseSheetTitle.
   ///

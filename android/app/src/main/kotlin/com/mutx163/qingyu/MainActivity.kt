@@ -15,12 +15,12 @@ import android.appwidget.AppWidgetManager
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.ContentResolver
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.provider.OpenableColumns
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
+import android.graphics.Bitmap
+import android.graphics.BitmapFactoryFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -49,7 +49,7 @@ class MainActivity : FlutterActivity() {
         private const val HOME_WIDGET_CHANNEL = "com.mutx163.qingyu/home_widget"
         private const val EXAM_REMINDER_CHANNEL = "com.mutx163.qingyu/exam_reminder"
         private const val WEEKLY_REPORT_CHANNEL = "com.mutx163.qingyu/weekly_report"
-        private const val SUPPORT_CHANNEL = "com.mutx163.qingyu/support"
+        private const val SYSTEM_DOWNLOAD_CHANNEL = "com.mutx163.qingyu/system_download"
         private const val MIGRATION_CHANNEL = "com.mutx163.qingyu/migration"
         private const val CHANNEL_ID = "live_update_channel"
         private const val PERMISSION_REQUEST_CODE = 1001
@@ -80,6 +80,11 @@ class MainActivity : FlutterActivity() {
         val filePath: String? = null,
     )
 
+    private data class PendingWidgetLaunch(
+        val appWidgetId: Int,
+        val side: String?,
+    )
+
     private var pendingExternalImport: PendingExternalImport? = null
 
     /** 外部导入读取请求序号：仅主线程读写；后台读取回填时校验仍是最新请求，
@@ -89,7 +94,7 @@ class MainActivity : FlutterActivity() {
     private var pendingDebugRoute: Map<String, Any?>? = null
 
     /** 桌面卡片点击带进的 appWidgetId，Flutter 侧按绑定档案分流后消费。 */
-    private var pendingWidgetLaunchAppWidgetId: Int? = null
+    private var pendingWidgetLaunch: PendingWidgetLaunch? = null
     private var flutterChannel: MethodChannel? = null
     private var lanEditChannel: MethodChannel? = null
 
@@ -647,6 +652,19 @@ class MainActivity : FlutterActivity() {
                         StatsWidgetSupport.clearSnapshot(applicationContext)
                         result.success(true)
                     }
+                    "syncCoupleSnapshot" -> {
+                        val snapshot = call.arguments as? Map<String, Any?>
+                        if (snapshot != null) {
+                            CoupleTimetableStore.syncSnapshot(applicationContext, snapshot)
+                            result.success(true)
+                        } else {
+                            result.error("INVALID_ARGUMENTS", "Missing couple widget snapshot", null)
+                        }
+                    }
+                    "clearCoupleSnapshot" -> {
+                        CoupleTimetableStore.clearSnapshot(applicationContext)
+                        result.success(true)
+                    }
                     "listTodayWidgetInstances" -> {
                         result.success(listTodayWidgetInstances())
                     }
@@ -702,9 +720,16 @@ class MainActivity : FlutterActivity() {
                         }
                     }
                     "getPendingWidgetLaunch" -> {
-                        val appWidgetId = pendingWidgetLaunchAppWidgetId
-                        pendingWidgetLaunchAppWidgetId = null
-                        result.success(appWidgetId)
+                        val launch = pendingWidgetLaunch
+                        pendingWidgetLaunch = null
+                        result.success(
+                            launch?.let {
+                                mapOf(
+                                    "appWidgetId" to it.appWidgetId,
+                                    "side" to it.side,
+                                )
+                            }
+                        )
                     }
                     "rescheduleRefresh" -> {
                         // 授权状态变化后按最新权限档位重排小组件刷新闹钟。
@@ -793,7 +818,7 @@ class MainActivity : FlutterActivity() {
                 }
             }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SUPPORT_CHANNEL)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SYSTEM_DOWNLOAD_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "enqueueSystemDownload" -> {
@@ -829,26 +854,6 @@ class MainActivity : FlutterActivity() {
                             result.success(querySystemDownloadProgress(downloadId))
                         } catch (e: Exception) {
                             result.error("DOWNLOAD_QUERY_FAILED", e.message, null)
-                        }
-                    }
-                    "saveImageToGallery" -> {
-                        val arguments = call.arguments as? Map<*, *>
-                        val bytes = arguments?.get("bytes") as? ByteArray
-                        val fileName = arguments?.get("fileName") as? String ?: "qingyu_kebiao.png"
-                        val mimeType = arguments?.get("mimeType") as? String ?: "image/png"
-                        if (bytes == null || bytes.isEmpty()) {
-                            result.error("INVALID_ARGUMENTS", "Missing image bytes", null)
-                            return@setMethodCallHandler
-                        }
-                        try {
-                            val savedUri = saveImageToGallery(bytes, fileName, mimeType)
-                            if (savedUri == null) {
-                                result.error("SAVE_FAILED", "Failed to save image to gallery", null)
-                            } else {
-                                result.success(savedUri)
-                            }
-                        } catch (e: Exception) {
-                            result.error("SAVE_FAILED", e.message, null)
                         }
                     }
                     else -> result.notImplemented()
@@ -1188,7 +1193,10 @@ class MainActivity : FlutterActivity() {
             Integer.MIN_VALUE,
         )
         if (appWidgetId == Integer.MIN_VALUE) return
-        pendingWidgetLaunchAppWidgetId = appWidgetId
+        pendingWidgetLaunch = PendingWidgetLaunch(
+            appWidgetId = appWidgetId,
+            side = intent.getStringExtra(TodayWidgetSupport.EXTRA_WIDGET_LAUNCH_SIDE),
+        )
         notifyWidgetLaunchReceived()
     }
 
@@ -1302,6 +1310,7 @@ class MainActivity : FlutterActivity() {
             "stats_strip" -> StatsStripWidgetProvider::class.java
             "exam_card" -> ExamCountdownWidgetProvider::class.java
             "today_wide" -> TodayWideWidgetProvider::class.java
+            "couple_timetable_42" -> CoupleTimetableWidgetProvider::class.java
             else -> null
         } ?: return null
         return ComponentName(this, providerClass)
@@ -1678,53 +1687,6 @@ class MainActivity : FlutterActivity() {
         } catch (_: Exception) {
             false
         }
-    }
-
-    private fun saveImageToGallery(
-        bytes: ByteArray,
-        fileName: String,
-        mimeType: String,
-    ): String? {
-        val safeFileName = if (fileName.contains(".")) fileName else "$fileName.png"
-        val resolver = applicationContext.contentResolver
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val values = ContentValues().apply {
-                put(MediaStore.Images.Media.DISPLAY_NAME, safeFileName)
-                put(MediaStore.Images.Media.MIME_TYPE, mimeType)
-                put(
-                    MediaStore.Images.Media.RELATIVE_PATH,
-                    "${Environment.DIRECTORY_PICTURES}/${getString(R.string.pictures_folder_name)}"
-                )
-                put(MediaStore.Images.Media.IS_PENDING, 1)
-            }
-            val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-                ?: return null
-            return try {
-                resolver.openOutputStream(uri)?.use { output ->
-                    output.write(bytes)
-                    output.flush()
-                } ?: return null
-                values.clear()
-                values.put(MediaStore.Images.Media.IS_PENDING, 0)
-                resolver.update(uri, values, null, null)
-                uri.toString()
-            } catch (e: Exception) {
-                resolver.delete(uri, null, null)
-                throw e
-            }
-        }
-
-        @Suppress("DEPRECATION")
-        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return null
-        @Suppress("DEPRECATION")
-        val inserted = MediaStore.Images.Media.insertImage(
-            resolver,
-            bitmap,
-            safeFileName,
-            getString(R.string.payment_qr_description)
-        )
-        return inserted?.takeIf { it.isNotBlank() }
     }
 
     private fun isPromotedPermissionDeclared(): Boolean {

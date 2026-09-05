@@ -393,7 +393,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get withuCoupleLoginAction => 'Sign in and pull';
 
   @override
-  String get withuCoupleLoginMenuTitle => 'Sign in to withU';
+  String get withuCoupleLoginMenuTitle => 'Account login';
+
+  @override
+  String get withuCoupleNotLoggedInPrompt => 'Not signed in · Tap to sign in';
 
   @override
   String get withuCouplePullImported => 'Partner timetable imported from withU';
@@ -5622,6 +5625,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeWidgetTargetTodayWide42 => 'Today wide 4×2';
+
+  @override
+  String get homeWidgetTargetCoupleTimetable42 => 'Couple timetable 4×2';
 
   @override
   String get addCourseSheetTitle => 'Add Content';

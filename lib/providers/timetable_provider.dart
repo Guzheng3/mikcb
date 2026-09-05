@@ -37,12 +37,14 @@ import '../services/home_widget_service.dart';
 import '../services/home_widget_binding_service.dart';
 import '../services/home_widget_snapshot_service.dart';
 import '../services/class_reminder_service.dart';
+import '../services/couple_timetable_widget_service.dart';
 import '../services/exam_reminder_service.dart';
 import '../services/partner_timetable_service.dart';
 import '../services/stats_widget_service.dart';
 import '../services/storage_service.dart';
 import '../services/sync_operation_gate.dart';
 import '../services/user_data_sync_hooks.dart';
+import '../services/withu_couple_session_store.dart';
 import '../services/ics_import_service.dart';
 import '../services/miui_live_activities_service.dart';
 import '../utils/home_page_background.dart';
@@ -223,6 +225,7 @@ class TimetableProvider with ChangeNotifier {
   final ExamReminderService _examReminderService;
   final HolidayService _holidayService;
   final AppAnalytics _analytics;
+  final WithuCoupleSessionStore _withuSessionStore;
   final bool _enableLiveActivitySync;
 
   List<Course> _courses = [];
@@ -247,6 +250,7 @@ class TimetableProvider with ChangeNotifier {
   String? _currentLiveCourseId;
   String? _lastLiveActivityStageKey;
   String? _lastLiveSnapshotSignature;
+  int _liveSurfaceRequestVersion = 0;
   String? _lastHomeWidgetSnapshotSignature;
 
   /// 绑定卡片（appWidgetId → 专属快照内容签名）的推送去重，语义同上。
@@ -516,6 +520,7 @@ class TimetableProvider with ChangeNotifier {
     ExamReminderService? examReminderService,
     HolidayService? holidayService,
     AppAnalytics? analytics,
+    WithuCoupleSessionStore? withuSessionStore,
     bool autoInitialize = true,
     bool? enableLiveActivitySync,
   }) : _storageService = storageService ?? StorageService(),
@@ -533,7 +538,9 @@ class TimetableProvider with ChangeNotifier {
            homeWidgetBindingService ?? const HomeWidgetBindingService(),
        _examReminderService = examReminderService ?? ExamReminderService(),
        _holidayService = holidayService ?? HolidayService(),
-       _analytics = analytics ?? AppAnalytics.instance {
+       _analytics = analytics ?? AppAnalytics.instance,
+       _withuSessionStore =
+           withuSessionStore ?? const WithuCoupleSessionStore() {
     _holidayService.onRemoteHolidayDataUpdated = (_) {
       unawaited(_loadHolidayData());
     };
@@ -603,7 +610,11 @@ class TimetableProvider with ChangeNotifier {
       await _loadDeferredDataImpl();
       // importFullAppDataBackup may have pushed live surfaces before teachers /
       // locations were reloaded; force one consistent resync after storage load.
+      final requestVersion = ++_liveSurfaceRequestVersion;
       await _runLiveSurfaceExclusive(() async {
+        if (requestVersion != _liveSurfaceRequestVersion) {
+          return;
+        }
         _lastLiveSnapshotSignature = null;
         _lastHomeWidgetSnapshotSignature = null;
         _currentLiveCourseId = null;
@@ -4283,6 +4294,12 @@ class TimetableProvider with ChangeNotifier {
     DateTime? now,
   }) => _liveBuildHomeWidgetSnapshotForProfile(this, profile, now: now);
 
+  Future<CoupleTimetableWidgetSnapshot?> buildCoupleTimetableWidgetSnapshot() =>
+      _liveBuildCoupleWidgetSnapshot(this);
+
+  Future<void> syncCoupleTimetableWidgetSnapshot() =>
+      _liveSyncCoupleWidgetSnapshot(this);
+
   void suspendLiveActivitySyncFor(Duration duration) {
     _liveActivitySuspendedUntil = DateTime.now().add(duration);
   }
@@ -4369,6 +4386,7 @@ class TimetableProvider with ChangeNotifier {
       _partnerBinding = result.binding;
       notifyUserDataChangedForSync();
       notifyListeners();
+      await _syncHomeWidgetSnapshot();
       return result;
     });
   }
@@ -4390,6 +4408,7 @@ class TimetableProvider with ChangeNotifier {
       await _profileRepository.savePartnerTimetableBinding(_partnerBinding);
       notifyUserDataChangedForSync();
       notifyListeners();
+      await _syncHomeWidgetSnapshot();
     });
   }
 
@@ -4413,6 +4432,7 @@ class TimetableProvider with ChangeNotifier {
       await _profileRepository.savePartnerTimetableBinding(_partnerBinding);
       notifyUserDataChangedForSync();
       notifyListeners();
+      await _syncHomeWidgetSnapshot();
     });
   }
 
@@ -4435,6 +4455,7 @@ class TimetableProvider with ChangeNotifier {
       }
       notifyUserDataChangedForSync();
       notifyListeners();
+      await _syncHomeWidgetSnapshot();
     });
   }
 }

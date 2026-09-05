@@ -25,6 +25,7 @@ class HyperosRootPage extends StatelessWidget {
     required this.title,
     required this.child,
     this.suffixes,
+    this.fullWidthCenterChild,
     this.headerExtension,
     this.childPad = false,
     this.backgroundColor,
@@ -39,6 +40,9 @@ class HyperosRootPage extends StatelessWidget {
   final Widget title;
   final Widget child;
   final List<Widget>? suffixes;
+
+  /// See [HyperosRootHeader.fullWidthCenterChild].
+  final Widget? fullWidthCenterChild;
 
   /// Optional chrome rendered below the title row inside the same frosted header
   /// shell (shares live backdrop blur with the status-bar region).
@@ -94,6 +98,7 @@ class HyperosRootPage extends StatelessWidget {
           : HyperosRootHeader(
               title: title,
               suffixes: suffixes ?? const [],
+              fullWidthCenterChild: fullWidthCenterChild,
               padding: headerPadding ?? const EdgeInsets.fromLTRB(8, 0, 8, 2),
             ),
       child: child,

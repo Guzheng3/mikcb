@@ -20,7 +20,11 @@ Future<void> _pumpTimetableFrame(WidgetTester tester) async {
 
 void _seedInitializedPrefs() {
   final now = DateTime(2026, 4, 12);
-  final settings = TimetableSettings.defaults();
+  // These tests cover the classic profile switcher, which is hidden when the
+  // couple timetable overlay is enabled by default.
+  final settings = TimetableSettings.defaults().copyWith(
+    coupleTimetableOverlayEnabled: false,
+  );
   final profile = TimetableProfile(
     id: 'profile-1',
     name: '默认课表',
@@ -190,6 +194,45 @@ void main() {
 
     expect(find.byType(TimetableProfilesScreen), findsOneWidget);
   });
+
+  testWidgets(
+    'couple mode centers the blue sign-in prompt and hides the title',
+    (tester) async {
+      final provider = await createInitializedTestProvider(tester);
+      await runRealAsync(tester, () async {
+        await provider.updateTimetableSettings(
+          provider.settings.copyWith(coupleTimetableOverlayEnabled: true),
+        );
+      });
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: provider,
+          child: const TestApp(
+            home: TimetableScreen(enableProgressTimer: false),
+          ),
+        ),
+      );
+      await _pumpTimetableFrame(tester);
+
+      expect(
+        find.byKey(const ValueKey('profile_switcher_trigger')),
+        findsNothing,
+      );
+      expect(find.text('轻屿课表'), findsNothing);
+
+      final prompt = find.byKey(
+        const ValueKey('withu_couple_not_logged_in_prompt'),
+      );
+      expect(prompt, findsOneWidget);
+      expect(
+        tester.widget<Text>(find.text('未登录 · 点击登录')).style?.color,
+        const Color(0xFF3482FF),
+      );
+      final screenWidth = tester.getSize(find.byType(TimetableScreen)).width;
+      expect(tester.getCenter(prompt).dx, closeTo(screenWidth / 2, 0.5));
+    },
+  );
 
   testWidgets('profile actions use transparent dialog rows in frosted sheet', (
     tester,

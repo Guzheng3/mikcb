@@ -16,6 +16,8 @@ String _homeWidgetTargetLabel(
     HomeWidgetPinTarget.statsStrip41 => l10n.homeWidgetTargetStatsStrip41,
     HomeWidgetPinTarget.examCard22 => l10n.homeWidgetTargetExamCard22,
     HomeWidgetPinTarget.todayWide42 => l10n.homeWidgetTargetTodayWide42,
+    HomeWidgetPinTarget.coupleTimetable42 =>
+      l10n.homeWidgetTargetCoupleTimetable42,
   };
 }
 
@@ -47,6 +49,7 @@ class _HomeWidgetSettingsScreenState extends State<_HomeWidgetSettingsScreen>
   bool _isPersisting = false;
   bool _isCheckingPinSupport = true;
   bool _canRequestPinWidget = false;
+
   /// 「闹钟和提醒」权限检测状态：null 表示尚未查到，避免未授权用户
   /// 首帧横幅闪烁；false 才展示引导横幅。
   bool? _canScheduleExactAlarms;
@@ -106,8 +109,7 @@ class _HomeWidgetSettingsScreenState extends State<_HomeWidgetSettingsScreen>
   }
 
   /// 未授权（已查到且为 false）时多一个「精确闹钟权限」引导分区。
-  int get _exactAlarmBannerSections =>
-      _canScheduleExactAlarms == false ? 1 : 0;
+  int get _exactAlarmBannerSections => _canScheduleExactAlarms == false ? 1 : 0;
 
   int get _homeWidgetSectionCount =>
       (_draft.widgetShowCountdown ? 4 : 3) + 2 + _exactAlarmBannerSections;
@@ -150,6 +152,18 @@ class _HomeWidgetSettingsScreenState extends State<_HomeWidgetSettingsScreen>
                       ),
                     ],
                   ),
+                  if (_draft.coupleTimetableOverlayEnabled) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildPinWidgetButton(
+                            HomeWidgetPinTarget.coupleTimetable42,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -329,7 +343,8 @@ class _HomeWidgetSettingsScreenState extends State<_HomeWidgetSettingsScreen>
               HyperosSliderTile(
                 title: l10n.homeWidgetHeightAdjustTitle,
                 valueLabel: _widgetHeightAdjustmentLabel(l10n),
-                value: _draft.widgetHeightAdjustment -
+                value:
+                    _draft.widgetHeightAdjustment -
                     _defaultWidgetHeightAdjustment,
                 min: -16,
                 max: 16,
@@ -387,7 +402,10 @@ class _HomeWidgetSettingsScreenState extends State<_HomeWidgetSettingsScreen>
           HyperosListGroup(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 child: Text(
                   l10n.homeWidgetBindingEmpty,
                   style: TextStyle(
@@ -422,7 +440,8 @@ class _HomeWidgetSettingsScreenState extends State<_HomeWidgetSettingsScreen>
                 ),
                 items: {
                   l10n.homeWidgetBindingFollowActive: _followActiveValue,
-                  for (final profile in normalProfiles) profile.name: profile.id,
+                  for (final profile in normalProfiles)
+                    profile.name: profile.id,
                   if (partnerProfile != null)
                     partnerProfile.name: partnerProfile.id,
                 },
@@ -451,7 +470,8 @@ class _HomeWidgetSettingsScreenState extends State<_HomeWidgetSettingsScreen>
   }
 
   Future<void> _loadWidgetInstances() async {
-    final instances = await _homeWidgetBindingService.listTodayWidgetInstances();
+    final instances = await _homeWidgetBindingService
+        .listTodayWidgetInstances();
     if (!mounted) {
       return;
     }
@@ -574,7 +594,9 @@ class _HomeWidgetSettingsScreenState extends State<_HomeWidgetSettingsScreen>
         // 已回退到应用详情页，提示用户在其中开启权限即可。
         showAppToast(
           context,
-          message: AppLocalizations.of(context)!.homeWidgetExactAlarmFallbackHint,
+          message: AppLocalizations.of(
+            context,
+          )!.homeWidgetExactAlarmFallbackHint,
         );
       case HomeWidgetExactAlarmRequestResult.failed:
         // 未能打开任何设置页，引导用户手动前往系统设置。

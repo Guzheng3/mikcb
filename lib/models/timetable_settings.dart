@@ -7,13 +7,7 @@ enum AppUpdateDownloadSource { original, mirror }
 
 enum AppUpdateDownloadChannel { pgyer, github, gitcode }
 
-enum AppUpdateMirrorPreset {
-  ghfast,
-  ghLlkk,
-  ghProxyCom,
-  ghproxyNet,
-  custom,
-}
+enum AppUpdateMirrorPreset { ghfast, ghLlkk, ghProxyCom, ghproxyNet, custom }
 
 enum WidgetBackgroundStyle { glass, solid, gradient }
 
@@ -1139,7 +1133,6 @@ class TimetableSettings {
   static const double defaultFrostedSheetBarrierAlpha = 0.20;
   static const bool defaultFrostedBlurEnabled = true;
 
-
   /// 液态玻璃作用范围默认值：下拉选择小弹窗开；对话式全屏选择面板关
   /// （大面积折射长列表默认保持磨砂）；其余家族维持既有行为（开）。
   static const bool defaultLiquidGlassPopupEnabled = true;
@@ -1441,7 +1434,7 @@ class TimetableSettings {
         BackToCurrentWeekButtonStyle.floating,
     this.timetableFloatingBackToCurrentWeekButtonOpacity = 0.96,
     this.timetableLastViewedDayOfWeek = 1,
-    this.coupleTimetableOverlayEnabled = false,
+    this.coupleTimetableOverlayEnabled = true,
     this.timetableSectionTimeDisplayMode = SectionTimeDisplayMode.startAndEnd,
     this.timetableHideWeekends = false,
     this.enableHaptics = true,
@@ -1944,7 +1937,7 @@ class TimetableSettings {
             7,
           ),
       coupleTimetableOverlayEnabled:
-          json['coupleTimetableOverlayEnabled'] as bool? ?? false,
+          json['coupleTimetableOverlayEnabled'] as bool? ?? true,
       timetableSectionTimeDisplayMode: SectionTimeDisplayModeX.fromValue(
         json['timetableSectionTimeDisplayMode'] as String?,
       ),

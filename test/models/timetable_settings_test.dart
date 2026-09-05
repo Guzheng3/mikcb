@@ -27,6 +27,7 @@ void main() {
     expect(settings.widgetCornerRadius, 22);
     expect(settings.appThemeMode, AppThemeMode.system);
     expect(settings.homeTitleStyle, HomeTitleStyle.classic);
+    expect(settings.coupleTimetableOverlayEnabled, isTrue);
     expect(
       settings.timetableBackToCurrentWeekButtonStyle,
       BackToCurrentWeekButtonStyle.floating,
@@ -115,6 +116,7 @@ void main() {
     expect(restored.widgetCornerRadius, 22);
     expect(restored.appThemeMode, AppThemeMode.system);
     expect(restored.homeTitleStyle, HomeTitleStyle.classic);
+    expect(restored.coupleTimetableOverlayEnabled, isTrue);
     expect(
       restored.timetableBackToCurrentWeekButtonStyle,
       BackToCurrentWeekButtonStyle.floating,
@@ -437,12 +439,18 @@ void main() {
     });
 
     // 半透明并入实体卡片；玻璃 / 液态玻璃并入高斯模糊。
-    expect(restore('translucent').courseCardSurfaceStyle,
-        CourseCardSurfaceStyle.solid);
-    expect(restore('glass').courseCardSurfaceStyle,
-        CourseCardSurfaceStyle.gaussian);
-    expect(restore('liquidGlass').courseCardSurfaceStyle,
-        CourseCardSurfaceStyle.gaussian);
+    expect(
+      restore('translucent').courseCardSurfaceStyle,
+      CourseCardSurfaceStyle.solid,
+    );
+    expect(
+      restore('glass').courseCardSurfaceStyle,
+      CourseCardSurfaceStyle.gaussian,
+    );
+    expect(
+      restore('liquidGlass').courseCardSurfaceStyle,
+      CourseCardSurfaceStyle.gaussian,
+    );
   });
 
   test('gaussian course-card style survives json round trip', () {
@@ -1031,20 +1039,17 @@ void main() {
 
     test('missing json keys fall back to shipped defaults', () {
       final restored = TimetableSettings.fromJson(
-        TimetableSettings.defaults().toJson()
-          ..remove('glassDockShowWeekTab'),
+        TimetableSettings.defaults().toJson()..remove('glassDockShowWeekTab'),
       );
       expect(restored.glassDockShowWeekTab, isTrue);
 
       final restored2 = TimetableSettings.fromJson(
-        TimetableSettings.defaults().toJson()
-          ..remove('glassDockButtonEntryId'),
+        TimetableSettings.defaults().toJson()..remove('glassDockButtonEntryId'),
       );
       expect(restored2.glassDockButtonEntryId, 'addCourse');
 
       final restored3 = TimetableSettings.fromJson(
-        TimetableSettings.defaults().toJson()
-          ..remove('glassDockShowAddButton'),
+        TimetableSettings.defaults().toJson()..remove('glassDockShowAddButton'),
       );
       expect(restored3.glassDockShowAddButton, isFalse);
     });
@@ -1064,16 +1069,31 @@ void main() {
 
     test('fromJson heals divergent detail colors while linked', () {
       final settings = TimetableSettings.fromJson(dirtyJson(link: true));
-      expect(settings.courseCardDetailColorLight, settings.courseCardTitleColorLight);
-      expect(settings.courseCardDetailColorDark, settings.courseCardTitleColorDark);
+      expect(
+        settings.courseCardDetailColorLight,
+        settings.courseCardTitleColorLight,
+      );
+      expect(
+        settings.courseCardDetailColorDark,
+        settings.courseCardTitleColorDark,
+      );
     });
 
-    test('fromJson defaults to linked and heals legacy data without the key', () {
-      final settings = TimetableSettings.fromJson(dirtyJson(link: null));
-      expect(settings.linkCourseCardColors, isTrue);
-      expect(settings.courseCardDetailColorLight, settings.courseCardTitleColorLight);
-      expect(settings.courseCardDetailColorDark, settings.courseCardTitleColorDark);
-    });
+    test(
+      'fromJson defaults to linked and heals legacy data without the key',
+      () {
+        final settings = TimetableSettings.fromJson(dirtyJson(link: null));
+        expect(settings.linkCourseCardColors, isTrue);
+        expect(
+          settings.courseCardDetailColorLight,
+          settings.courseCardTitleColorLight,
+        );
+        expect(
+          settings.courseCardDetailColorDark,
+          settings.courseCardTitleColorDark,
+        );
+      },
+    );
 
     test('fromJson keeps explicit detail colors in independent mode', () {
       final settings = TimetableSettings.fromJson(dirtyJson(link: false));
@@ -1104,17 +1124,23 @@ void main() {
       );
       expect(dirty.linkCourseCardColors, isTrue);
       final healed = dirty.copyWith();
-      expect(healed.courseCardDetailColorLight, healed.courseCardTitleColorLight);
+      expect(
+        healed.courseCardDetailColorLight,
+        healed.courseCardTitleColorLight,
+      );
       expect(healed.courseCardDetailColorDark, healed.courseCardTitleColorDark);
     });
 
-    test('copyWith syncs the detail color when the title changes while linked', () {
-      final changed = TimetableSettings.defaults().copyWith(
-        courseCardTitleColorLight: '#0D47A1',
-      );
-      expect(changed.courseCardTitleColorLight, '#0D47A1');
-      expect(changed.courseCardDetailColorLight, '#0D47A1');
-    });
+    test(
+      'copyWith syncs the detail color when the title changes while linked',
+      () {
+        final changed = TimetableSettings.defaults().copyWith(
+          courseCardTitleColorLight: '#0D47A1',
+        );
+        expect(changed.courseCardTitleColorLight, '#0D47A1');
+        expect(changed.courseCardDetailColorLight, '#0D47A1');
+      },
+    );
 
     test('copyWith keeps user-picked detail colors in independent mode', () {
       final base = TimetableSettings.defaults().copyWith(

@@ -85,8 +85,8 @@ void main() {
             (call.arguments as Map)['profileId'] as String?;
         return true;
       };
-      handlerRegistry['getWidgetBinding'] =
-          (call) => stored[(call.arguments as Map)['appWidgetId'] as int];
+      handlerRegistry['getWidgetBinding'] = (call) =>
+          stored[(call.arguments as Map)['appWidgetId'] as int];
 
       const service = HomeWidgetBindingService();
       expect(await service.setWidgetBinding(7, 'profile-a'), isTrue);
@@ -97,10 +97,28 @@ void main() {
       expect(await service.getWidgetBinding(7), isNull);
     });
 
-    test('consumePendingWidgetLaunch 返回原生 pending 的 appWidgetId', () async {
+    test('consumePendingWidgetLaunch 解析 side-aware pending', () async {
       handlerRegistry['getPendingWidgetLaunch'] = (_) => 42;
       const service = HomeWidgetBindingService();
-      expect(await service.consumePendingWidgetLaunch(), 42);
+      final legacy = await service.consumePendingWidgetLaunch();
+      expect(legacy?.appWidgetId, 42);
+      expect(legacy?.side, isNull);
+
+      handlerRegistry['getPendingWidgetLaunch'] = (_) => {
+        'appWidgetId': 43,
+        'side': 'right',
+      };
+      final launch = await service.consumePendingWidgetLaunch();
+      expect(launch?.appWidgetId, 43);
+      expect(launch?.side, 'right');
+
+      handlerRegistry['getPendingWidgetLaunch'] = (_) => {
+        'appWidgetId': 44,
+        'side': 'unknown',
+      };
+      final invalidSide = await service.consumePendingWidgetLaunch();
+      expect(invalidSide?.appWidgetId, 44);
+      expect(invalidSide?.side, isNull);
 
       handlerRegistry['getPendingWidgetLaunch'] = (_) => null;
       expect(await service.consumePendingWidgetLaunch(), isNull);

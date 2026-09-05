@@ -128,6 +128,7 @@ Future<void> _pumpDarkHome(
         homePageBackgroundScope: _scopeAll,
         homePageHeaderBlurEnabled: headerBlur,
         homePageWeekdayBarBlurEnabled: weekdayBlur,
+        coupleTimetableOverlayEnabled: false,
         // 开学锚取「下周一」：开学前对齐第 1 周，'1周' 芯片在任何运行
         // 日期都存在，周一列永不命中今天的 accent（详见 ink 测试同款注释）。
         semesterStartDate: _nextWeekMonday(),

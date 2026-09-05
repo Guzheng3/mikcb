@@ -54,12 +54,30 @@ class WidgetLaunchRouter {
     HomeWidgetBindingService bindingService = const HomeWidgetBindingService(),
     void Function()? onRequestPopToRoot,
   }) async {
-    final appWidgetId = await bindingService.consumePendingWidgetLaunch();
-    if (appWidgetId == null) {
+    final launch = await bindingService.consumePendingWidgetLaunch();
+    if (launch == null) {
       return WidgetLaunchOutcome.none;
     }
     await provider.initialize();
 
+    if (launch.side == 'right') {
+      if (!provider.hasPartnerBinding || provider.partnerProfile == null) {
+        return WidgetLaunchOutcome.bindingMissing;
+      }
+      if (!provider.settings.coupleTimetableOverlayEnabled) {
+        await provider.updateTimetableSettings(
+          provider.settings.copyWith(coupleTimetableOverlayEnabled: true),
+        );
+      }
+      onRequestPopToRoot?.call();
+      coupleOverlayRequestTick.value++;
+      return WidgetLaunchOutcome.partnerOverlay;
+    }
+    if (launch.side == 'left') {
+      return WidgetLaunchOutcome.none;
+    }
+
+    final appWidgetId = launch.appWidgetId;
     final boundProfileId = await bindingService.getWidgetBinding(appWidgetId);
     if (boundProfileId == null) {
       return WidgetLaunchOutcome.none;

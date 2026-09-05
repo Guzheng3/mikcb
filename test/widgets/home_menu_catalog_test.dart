@@ -23,7 +23,12 @@ void main() {
   test('couple login leads the top menu only when overlay is enabled', () {
     final settings = TimetableSettings.defaults();
 
-    final disabled = resolveHomeTopMenuEntries(settings);
+    final defaultEntries = resolveHomeTopMenuEntries(settings);
+    expect(defaultEntries.first.id, 'withuCoupleLogin');
+
+    final disabled = resolveHomeTopMenuEntries(
+      settings.copyWith(coupleTimetableOverlayEnabled: false),
+    );
     expect(
       disabled.map((entry) => entry.id),
       isNot(contains('withuCoupleLogin')),

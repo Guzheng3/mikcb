@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="splash_background">#FF121212</color>
+    <color name="widget_couple_bg">#141218</color>
+    <color name="widget_couple_current_bg">#201F26</color>
+    <color name="widget_couple_text_primary">#F2F2F7</color>
+    <color name="widget_couple_text_secondary">#AEA9AF</color>
+    <color name="widget_couple_shadow">#59F2F2F7</color>
+    <color name="widget_couple_text_hint">#8E8E93</color>
+    <color name="widget_couple_divider">#2C2C2E</color>
+    <color name="widget_couple_left_accent">#64B5F6</color>
+    <color name="widget_couple_right_accent">#F48FB1</color>
 </resources>

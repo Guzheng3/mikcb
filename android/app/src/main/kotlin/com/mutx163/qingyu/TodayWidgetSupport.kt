@@ -148,6 +148,7 @@ object TodayWidgetSupport {
 
     const val EXTRA_WIDGET_LAUNCH = "widget_launch"
     const val EXTRA_WIDGET_LAUNCH_APP_WIDGET_ID = "widget_launch_app_widget_id"
+    const val EXTRA_WIDGET_LAUNCH_SIDE = "widget_launch_side"
 
     fun readSnapshot(context: Context): TodayWidgetSnapshotInfo? {
         // Prefer real-time computed snapshot (state reflects current time).
@@ -208,6 +209,7 @@ object TodayWidgetSupport {
         TodayStripWidgetProvider.updateAll(context)
         ExamCountdownWidgetProvider.updateAll(context)
         TodayWideWidgetProvider.updateAll(context)
+        CoupleTimetableWidgetProvider.updateAll(context)
     }
 
     fun buildSnapshotFromFlutterState(

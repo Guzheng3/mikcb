@@ -378,7 +378,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get withuCoupleLoginAction => 'ログインして取得';
 
   @override
-  String get withuCoupleLoginMenuTitle => 'withU にログイン';
+  String get withuCoupleLoginMenuTitle => 'アカウントでログイン';
+
+  @override
+  String get withuCoupleNotLoggedInPrompt => '未ログイン · タップしてログイン';
 
   @override
   String get withuCouplePullImported => 'withU から相手の時間割をインポートしました';
@@ -5388,6 +5391,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeWidgetTargetTodayWide42 => '今日ワイド 4×2';
+
+  @override
+  String get homeWidgetTargetCoupleTimetable42 => 'カップル時間割 4×2';
 
   @override
   String get addCourseSheetTitle => 'コンテンツ追加';

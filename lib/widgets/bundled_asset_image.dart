@@ -9,8 +9,8 @@ int? _sanitizeCacheDimension(int? value) =>
 
 /// Displays a bundled image from [BundledAssets] or loads it on demand.
 ///
-/// Prefer warming assets in [BundledAssets.warmUp] at startup so the first
-/// frame already shows the real bitmap.
+/// Decoded bytes are remembered in [BundledAssets] so later frames reuse them
+/// instead of re-resolving the asset.
 class BundledAssetImage extends StatelessWidget {
   const BundledAssetImage({
     super.key,
