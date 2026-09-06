@@ -262,6 +262,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'No shared free time this day';
 
   @override
+  String get partnerTimetablePageTitle => 'Partner\'s timetable';
+
+  @override
   String coupleTimetableSharedFreeMeta(int count) {
     return '$count slots';
   }
@@ -399,6 +402,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get withuCoupleNotLoggedInPrompt => 'Not signed in · Tap to sign in';
 
   @override
+  String get withuLoginConfirm => 'Log in';
+
+  @override
+  String get coupleHistorySheetTitle => 'Timetable history';
+
+  @override
+  String get coupleHistoryMineLabel => 'My past timetables';
+
+  @override
+  String get coupleHistoryHersLabel => 'Her past timetables';
+
+  @override
+  String get noHistoryRecords => 'No history yet';
+
+  @override
+  String get coupleHistoryRestored => 'Timetable restored';
+
+  @override
+  String get coupleHistoryRestoreFailed => 'Restore failed, please retry';
+
+  @override
+  String coupleHistoryEntryMeta(String semester, int count) {
+    return '$semester · $count classes';
+  }
+
+  @override
   String get withuCouplePullImported => 'Partner timetable imported from withU';
 
   @override
@@ -414,6 +443,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get withuCoupleMissingCredentials =>
       'Enter the withU server, username, and password';
+
+  @override
+  String get withuCoupleUsernameLabel => 'withU username';
+
+  @override
+  String get withuCoupleUsernameHint => 'Enter your withU username';
+
+  @override
+  String get withuCouplePasswordLabel => 'withU password';
+
+  @override
+  String get withuCouplePasswordHint => 'Enter your withU password';
 
   @override
   String get withuCoupleNotConnectedError => 'Connect withU first';
@@ -439,407 +480,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get withuCoupleSessionCookieMissing =>
       'withU did not return a login session';
-
-  @override
-  String get cloudSyncEntryTitle => 'Cloud Sync';
-
-  @override
-  String get cloudSyncEntrySubtitle =>
-      'Sync timetables and import data across devices via Jianguoyun';
-
-  @override
-  String get cloudSyncEntryDisabled => 'Off';
-
-  @override
-  String get cloudSyncEntryEnabled => 'On';
-
-  @override
-  String get cloudSyncEntrySyncing => 'Syncing';
-
-  @override
-  String get cloudSyncEntryError => 'Last sync failed';
-
-  @override
-  String get cloudSyncTitle => 'Cloud Sync';
-
-  @override
-  String get cloudSyncIntroTitle => 'Multi-device sync';
-
-  @override
-  String get cloudSyncIntroSubtitle =>
-      'Configure Jianguoyun WebDAV to sync timetables, warehouse accounts, and related settings across devices';
-
-  @override
-  String get cloudSyncSettingsSectionTitle => 'Sync settings';
-
-  @override
-  String get cloudSyncSettingsSectionSubtitle =>
-      'Switch between manual and automatic sync';
-
-  @override
-  String get cloudSyncEnabledTitle => 'Enable cloud sync';
-
-  @override
-  String get cloudSyncEnabledSubtitle =>
-      'When off, no snapshot is uploaded or downloaded';
-
-  @override
-  String get cloudSyncProviderTitle => 'Provider';
-
-  @override
-  String get cloudSyncProviderJianguoyun => 'Jianguoyun';
-
-  @override
-  String get cloudSyncProviderCustom => 'Custom WebDAV';
-
-  @override
-  String get cloudSyncModeTitle => 'Sync mode';
-
-  @override
-  String get cloudSyncModeAuto => 'Automatic';
-
-  @override
-  String get cloudSyncModeManual => 'Manual';
-
-  @override
-  String get cloudSyncAccountTitle => 'Account';
-
-  @override
-  String get cloudSyncAccountSubtitle =>
-      'Use a Jianguoyun app-specific password, not your login password. Snapshots include remembered school accounts';
-
-  @override
-  String get cloudSyncUsernameLabel => 'Email / username';
-
-  @override
-  String get cloudSyncUsernameHint => 'Jianguoyun account email';
-
-  @override
-  String get cloudSyncPasswordLabel => 'App-specific password';
-
-  @override
-  String get cloudSyncPasswordHint =>
-      'Generate it in Jianguoyun security settings';
-
-  @override
-  String get cloudSyncPasswordStoredHint =>
-      'Password saved; leave blank to keep the stored password';
-
-  @override
-  String get cloudSyncAdvancedTitle => 'Advanced';
-
-  @override
-  String get cloudSyncBaseUrlLabel => 'WebDAV URL';
-
-  @override
-  String get cloudSyncBaseUrlSecurityNote =>
-      'HTTPS is recommended. HTTP cleartext connections are allowed but only advised on trusted networks';
-
-  @override
-  String get cloudSyncRemoteFolderLabel => 'Remote folder';
-
-  @override
-  String get cloudSyncStatusTitle => 'Status';
-
-  @override
-  String get cloudSyncLastSyncedLabel => 'Last synced';
-
-  @override
-  String get cloudSyncLastErrorLabel => 'Latest error';
-
-  @override
-  String cloudSyncLastSyncedAt(String time) {
-    return 'Last synced: $time';
-  }
-
-  @override
-  String get cloudSyncSyncing => 'Syncing…';
-
-  @override
-  String cloudSyncLastError(String message) {
-    return 'Latest error: $message';
-  }
-
-  @override
-  String get cloudSyncHelpTitle => 'How to get a Jianguoyun app password';
-
-  @override
-  String get cloudSyncHelpBody =>
-      'Open Jianguoyun → Account → Security → Add app password. Default WebDAV URL: https://dav.jianguoyun.com/dav/';
-
-  @override
-  String get cloudSyncTestConnection => 'Test connection';
-
-  @override
-  String get cloudSyncSyncNow => 'Sync now';
-
-  @override
-  String get cloudSyncSyncNowSubtitle =>
-      'Keep timetables aligned across devices: pull cloud updates, then upload local changes';
-
-  @override
-  String get cloudSyncTestSuccess => 'WebDAV connection succeeded';
-
-  @override
-  String get cloudSyncTestFailed =>
-      'WebDAV connection failed. Check account, app password, and network.';
-
-  @override
-  String get cloudSyncResultUploaded => 'Uploaded to cloud';
-
-  @override
-  String get cloudSyncResultDownloaded => 'Restored from cloud';
-
-  @override
-  String get cloudSyncResultUpToDate => 'Already up to date';
-
-  @override
-  String get cloudSyncResultCancelled => 'Sync cancelled';
-
-  @override
-  String cloudSyncResultFailed(String message) {
-    return 'Sync failed: $message';
-  }
-
-  @override
-  String get cloudSyncConflictTitle => 'Sync conflict detected';
-
-  @override
-  String get cloudSyncConflictBody =>
-      'Both this device and the cloud have newer changes. Choose which copy to keep.';
-
-  @override
-  String get cloudSyncUseRemoteAction => 'Use cloud';
-
-  @override
-  String get cloudSyncKeepLocalAction => 'Keep local';
-
-  @override
-  String get cloudSyncAccountSectionTitle => 'Cloud account';
-
-  @override
-  String get cloudSyncNotConnectedHint =>
-      'Connect Jianguoyun to sync timetables and import data across devices';
-
-  @override
-  String get cloudSyncConnectAccount => 'Connect Jianguoyun';
-
-  @override
-  String cloudSyncConnectedAs(String email) {
-    return 'Connected: $email';
-  }
-
-  @override
-  String get cloudSyncDisconnect => 'Disconnect';
-
-  @override
-  String get cloudSyncDisconnectTitle => 'Disconnect cloud account';
-
-  @override
-  String get cloudSyncDisconnectBody =>
-      'This removes saved WebDAV credentials from this device. Local timetables are kept. Continue?';
-
-  @override
-  String get cloudSyncLoginSheetTitle => 'Connect Jianguoyun';
-
-  @override
-  String get cloudSyncLoginSheetSubtitle =>
-      'Use an app-specific password, not your Jianguoyun login password';
-
-  @override
-  String get cloudSyncConfirmConnect => 'Connect';
-
-  @override
-  String get cloudSyncConnectSuccess => 'Account connected';
-
-  @override
-  String get cloudBackupSectionTitle => 'Version history';
-
-  @override
-  String get cloudBackupSectionSubtitle =>
-      'Saved automatically when you sync. Tap to restore a version';
-
-  @override
-  String get cloudBackupCurrentLabel => 'Current version';
-
-  @override
-  String get cloudBackupCurrentBadge => 'Current';
-
-  @override
-  String get cloudBackupCreateNow => 'Back up now';
-
-  @override
-  String get cloudBackupViewAll => 'View all versions';
-
-  @override
-  String get cloudBackupEmpty =>
-      'No versions yet. They are saved automatically when you sync.';
-
-  @override
-  String get cloudBackupSourceAuto => 'Auto backup';
-
-  @override
-  String get cloudBackupSourceManual => 'Manual backup';
-
-  @override
-  String get cloudBackupDefaultDeviceLabel => 'This device';
-
-  @override
-  String get cloudBackupDeviceLabelTitle => 'Device name';
-
-  @override
-  String get cloudBackupDeviceLabelHint =>
-      'Shown in backup list, e.g. My phone';
-
-  @override
-  String cloudBackupSummary(int profileCount, int courseCount) {
-    return '$profileCount timetables · $courseCount courses';
-  }
-
-  @override
-  String get cloudBackupRestoreTitle => 'Restore this backup';
-
-  @override
-  String cloudBackupRestoreBody(String time) {
-    return 'Restore the timetable from $time. Unsynced local changes will be lost. Continue?';
-  }
-
-  @override
-  String get cloudBackupRestoreAction => 'Restore';
-
-  @override
-  String get cloudBackupRestoreSuccess => 'Backup restored';
-
-  @override
-  String cloudBackupRestoreFailed(String message) {
-    return 'Restore failed: $message';
-  }
-
-  @override
-  String get cloudBackupDeleteTitle => 'Delete this backup';
-
-  @override
-  String cloudBackupDeleteBody(String time) {
-    return 'Delete the cloud backup from $time? This cannot be undone.';
-  }
-
-  @override
-  String get cloudBackupDeleteSuccess => 'Backup deleted';
-
-  @override
-  String cloudBackupDeleteFailed(String message) {
-    return 'Delete failed: $message';
-  }
-
-  @override
-  String get cloudBackupCreateSuccess => 'Backup saved to cloud';
-
-  @override
-  String cloudBackupCreateFailed(String message) {
-    return 'Backup failed: $message';
-  }
-
-  @override
-  String get cloudBackupUploadAsCurrentTitle => 'Set as current cloud version';
-
-  @override
-  String get cloudBackupUploadAsCurrentBody =>
-      'Upload this backup as the current cloud version? Recommended to avoid sync conflicts.';
-
-  @override
-  String get cloudBackupUploadAsCurrentYes => 'Set as current';
-
-  @override
-  String get cloudBackupUploadAsCurrentNo => 'Local only';
-
-  @override
-  String get cloudBackupDetailDevice => 'Device';
-
-  @override
-  String get cloudBackupDetailSource => 'Source';
-
-  @override
-  String get cloudBackupDetailSummary => 'Contents';
-
-  @override
-  String get lanEditEntryTitle => 'LAN Editing';
-
-  @override
-  String get lanEditEntrySubtitle =>
-      'Edit the current timetable from a desktop browser';
-
-  @override
-  String get lanEditTitle => 'LAN editing';
-
-  @override
-  String get lanEditIntro =>
-      'While enabled, a computer on the same Wi-Fi or phone hotspot can edit the current timetable in a browser. Data stays on your LAN and access stops when you turn this off';
-
-  @override
-  String get lanEditStart => 'Start LAN editing';
-
-  @override
-  String get lanEditStop => 'Stop';
-
-  @override
-  String get lanEditStatusRunning => 'LAN editing is active';
-
-  @override
-  String get lanEditAddressLabel => 'Address';
-
-  @override
-  String get lanEditAddressUnavailable =>
-      'No LAN IP detected. Connect to Wi-Fi or enable hotspot.';
-
-  @override
-  String get lanEditPinLabel => 'PIN';
-
-  @override
-  String get lanEditPortLabel => 'Port';
-
-  @override
-  String get lanEditCopyAddress => 'Copy address';
-
-  @override
-  String get lanEditCopied => 'Address copied';
-
-  @override
-  String get lanEditHotspotHint =>
-      'If dorm Wi-Fi blocks device-to-device access, try phone hotspot instead';
-
-  @override
-  String get lanEditQrHint =>
-      'Scan the QR code on a PC browser on the same LAN (link includes PIN)';
-
-  @override
-  String get lanEditStartFailed => 'Failed to start';
-
-  @override
-  String get lanEditConnectedClientsLabel => 'Connected';
-
-  @override
-  String get lanEditConnectedClientsNone => 'None';
-
-  @override
-  String lanEditConnectedClientsValue(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count devices',
-      one: '1 device',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get lanEditLastActivityLabel => 'Last activity';
-
-  @override
-  String get lanEditKeepAliveWhenLeavingTitle => 'Keep open after leaving';
-
-  @override
-  String get lanEditKeepAliveWhenLeavingSubtitle =>
-      'When on, leaving this page keeps LAN editing running; when off, leaving stops it';
 
   @override
   String get aboutSupportSectionTitle => 'About & Support';
@@ -6449,9 +6089,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyRecordsLabel => 'History';
 
   @override
-  String get noHistoryRecords => 'No history yet';
-
-  @override
   String get weekPickerTitle => 'Select weeks';
 
   @override
@@ -7358,54 +6995,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Hand off to the system download manager';
 
   @override
-  String get syncErrorAuthFailed => 'Invalid username or password';
-
-  @override
-  String get syncErrorAccessDenied => 'Access denied';
-
-  @override
-  String get syncErrorCertificateError => 'Certificate error';
-
-  @override
-  String get syncErrorConnectionTimeout => 'Connection timed out';
-
-  @override
-  String get syncErrorConnectionFailed => 'Could not connect to server';
-
-  @override
-  String get syncErrorNetworkError => 'Network error';
-
-  @override
-  String get syncErrorInvalidResponse => 'Invalid server response';
-
-  @override
-  String get syncErrorLocalChangesPendingSync =>
-      'Skipped auto sync because local changes are pending';
-
-  @override
-  String get syncErrorMissingCredentials => 'Configure sync account first';
-
-  @override
-  String get syncErrorBackupNotFound => 'Backup not found';
-
-  @override
-  String get syncErrorMissingBackupSnapshot => 'Backup snapshot is missing';
-
-  @override
-  String get syncErrorCannotDeleteCurrentBackup =>
-      'Cannot delete the current backup';
-
-  @override
-  String get syncErrorProviderNotReady => 'Timetable is not ready';
-
-  @override
-  String get syncErrorInsecureUrl =>
-      'Only HTTPS encrypted connections are supported; HTTP cleartext protocol is disabled.';
-
-  @override
-  String get syncErrorSyncFailed => 'Sync failed';
-
-  @override
   String get sectionTimeDisplayHidden => 'Hidden';
 
   @override
@@ -7674,26 +7263,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get serviceMsgUseProfileBackupNotFull =>
       'Use a timetable profile backup JSON, not a full data backup.';
-
-  @override
-  String get serviceMsgUnrecognizedSyncSnapshot =>
-      'Not a recognizable mikcb cloud sync snapshot.';
-
-  @override
-  String get serviceMsgMissingSyncTimetableData =>
-      'Cloud sync timetable data is missing.';
-
-  @override
-  String get serviceMsgSyncSnapshotChecksumFailed =>
-      'Cloud sync snapshot verification failed.';
-
-  @override
-  String get serviceMsgSyncSnapshotNoProfiles =>
-      'No recoverable timetables in the cloud sync snapshot.';
-
-  @override
-  String get serviceMsgSyncSnapshotUnrecognized =>
-      'Cloud sync snapshot could not be recognized.';
 
   @override
   String get serviceMsgTimeSchemeNotFound => 'Time scheme not found.';
@@ -8257,9 +7826,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get serviceMsgInvalidResponse => 'Invalid server response.';
-
-  @override
-  String get serviceMsgSyncFailed => 'Sync failed.';
 
   @override
   String get serviceMsgUsageTypeOverride => 'override time scheme';
@@ -9001,43 +8567,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Failed to suspend Live Island schedule triggers';
 
   @override
-  String get logLanEditAuthFailed => 'LAN edit: authentication failed';
-
-  @override
-  String get logLanEditCourseCreated => 'LAN edit: course created';
-
-  @override
-  String get logLanEditCourseUpdated => 'LAN edit: course updated';
-
-  @override
-  String get logLanEditCourseDeleted => 'LAN edit: course deleted';
-
-  @override
-  String get logLanEditCourseGroupSaved => 'LAN edit: course group saved';
-
-  @override
-  String get logLanEditMergeImported => 'LAN edit: merge backup imported';
-
-  @override
-  String get logLanEditCoursesBatchDeleted => 'LAN edit: courses batch deleted';
-
-  @override
-  String get logLanEditCurrentWeekSet => 'LAN edit: current week set';
-
-  @override
-  String get logLanEditProfileSwitched =>
-      'LAN edit: timetable profile switched';
-
-  @override
-  String get logLanEditSpreadsheetImported => 'LAN edit: spreadsheet imported';
-
-  @override
-  String get logLanEditSessionStarted => 'LAN edit: session started';
-
-  @override
-  String get logLanEditSessionStopped => 'LAN edit: session stopped';
-
-  @override
   String get logLiveUpdateTestRequested =>
       'User requested manual Live Island test notification';
 
@@ -9461,41 +8990,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'live island: snapshot clear failed';
 
   @override
-  String get logCatLanEditAuthFailed => 'lan edit auth failed';
-
-  @override
-  String get logCatLanEditCourseCreated => 'lan edit course created';
-
-  @override
-  String get logCatLanEditCourseUpdated => 'lan edit course updated';
-
-  @override
-  String get logCatLanEditCourseDeleted => 'lan edit course deleted';
-
-  @override
-  String get logCatLanEditCourseGroupSaved => 'lan edit course group saved';
-
-  @override
-  String get logCatLanEditMergeImported => 'lan edit merge imported';
-
-  @override
-  String get logCatLanEditCoursesBatchDeleted =>
-      'lan edit courses batch deleted';
-
-  @override
-  String get logCatLanEditCurrentWeekSet => 'lan edit current week set';
-
-  @override
-  String get logCatLanEditSpreadsheetImported =>
-      'lan edit spreadsheet imported';
-
-  @override
-  String get logCatLanEditSessionStarted => 'lan edit session started';
-
-  @override
-  String get logCatLanEditSessionStopped => 'lan edit session stopped';
-
-  @override
   String get logCatLiveUpdateTestRequested => 'live island: test requested';
 
   @override
@@ -9659,32 +9153,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter a custom mirror URL prefix';
 
   @override
-  String get cloudBackupRetentionTitle => 'Backup retention';
-
-  @override
-  String get cloudBackupMaxCountTitle => 'Maximum backups';
-
-  @override
-  String get cloudBackupMaxCountSubtitle =>
-      'Oldest backups are removed when exceeded';
-
-  @override
-  String cloudBackupMaxCountOption(int count) {
-    return '$count backups';
-  }
-
-  @override
-  String get cloudBackupMaxAgeTitle => 'Maximum age';
-
-  @override
-  String get cloudBackupMaxAgeSubtitle => 'Backups older than this are removed';
-
-  @override
-  String cloudBackupMaxAgeOption(int days) {
-    return '$days days';
-  }
-
-  @override
   String get statisticsShareText => 'Semester statistics from mikcb';
 
   @override
@@ -9714,13 +9182,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unnamedTimetableProfile => 'Unnamed timetable';
-
-  @override
-  String get cloudBackupManualProtectedTitle => 'Protect manual backups';
-
-  @override
-  String get cloudBackupManualProtectedSubtitle =>
-      'Manual backups are never auto-deleted when enabled';
 
   @override
   String courseImportPortalUrlMissingBody(
@@ -10929,4 +10390,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get classAlarmDetailSeparator => '; ';
+
+  @override
+  String get globalSettingsTitle => 'Global display settings';
+
+  @override
+  String get globalSettingsConfigured => 'Configured';
+
+  @override
+  String get globalSettingsNotConfigured => 'Not configured';
+
+  @override
+  String get globalSettingsDescriptionTitle => 'About';
+
+  @override
+  String get globalSettingsDescriptionBody =>
+      'Display options set here apply to all timetables. Items changed in a specific timetable still follow that timetable\'s own setting. Timetable-specific content such as semester and periods (time scheme) is not part of the global settings.';
+
+  @override
+  String get globalSettingsClearTitle => 'Clear global display settings';
+
+  @override
+  String get globalSettingsClearConfirm =>
+      'After clearing, all timetables will use their own settings again.';
+
+  @override
+  String get globalSettingsCleared => 'Global display settings cleared';
 }

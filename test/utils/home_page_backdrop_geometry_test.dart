@@ -95,11 +95,19 @@ void main() {
   });
 
   group('prepareHomePageVisualReadiness', () {
-    test('missing path returns empty regardless of theme', () async {
+    test('no wallpaper returns empty regardless of theme', () async {
+      final settings = TimetableSettings.defaults().copyWith(
+        homePageWallpaperPath: '',
+      );
+      final readiness = await prepareHomePageVisualReadiness(settings);
+      expect(readiness, HomePageVisualReadiness.empty);
+    });
+
+    test('bundled default wallpaper is ready', () async {
       final readiness = await prepareHomePageVisualReadiness(
         TimetableSettings.defaults(),
       );
-      expect(readiness, HomePageVisualReadiness.empty);
+      expect(readiness.hasBackdrop, isTrue);
     });
 
     test('missing file still returns empty via hasBackdrop gate', () async {
@@ -173,6 +181,40 @@ void main() {
     test('null falls back', () {
       expect(
         homePageChromeForegroundForLuminance(
+          null,
+          fallback: const Color(0xFF112233),
+        ),
+        const Color(0xFF112233),
+      );
+    });
+  });
+
+  group('homePageHighContrastForegroundForLuminance', () {
+    test('chooses white on dark wallpaper', () {
+      expect(
+        homePageHighContrastForegroundForLuminance(0.1),
+        homePageChromeForegroundOnDark,
+      );
+    });
+
+    test('chooses black on light wallpaper', () {
+      expect(
+        homePageHighContrastForegroundForLuminance(0.8),
+        homePageChromeForegroundOnLight,
+      );
+    });
+
+    test('uses the higher contrast ink on mid-tone wallpaper', () {
+      // At 0.3 black is ~7:1 while white is only ~3:1.
+      expect(
+        homePageHighContrastForegroundForLuminance(0.3),
+        homePageChromeForegroundOnLight,
+      );
+    });
+
+    test('null falls back', () {
+      expect(
+        homePageHighContrastForegroundForLuminance(
           null,
           fallback: const Color(0xFF112233),
         ),
@@ -418,23 +460,17 @@ void main() {
       },
     );
 
-    test(
-      'side overdraw pushes glass corners off-screen at any thickness',
-      () {
-        // Must exceed the maximum user-tunable thickness (40) so the shape
-        // corners (the source of diagonal "triangle" fringe / picture-frame
-        // streaks) stay outside the visible band at any thickness. The
-        // top/bottom edges intentionally stay at the band so thickness
-        // tuning keeps its visible edge refraction.
-        expect(homePageChromeGlassEdgeOverdraw, greaterThanOrEqualTo(40.0));
-      },
-    );
+    test('side overdraw pushes glass corners off-screen at any thickness', () {
+      // Must exceed the maximum user-tunable thickness (40) so the shape
+      // corners (the source of diagonal "triangle" fringe / picture-frame
+      // streaks) stay outside the visible band at any thickness. The
+      // top/bottom edges intentionally stay at the band so thickness
+      // tuning keeps its visible edge refraction.
+      expect(homePageChromeGlassEdgeOverdraw, greaterThanOrEqualTo(40.0));
+    });
 
-    test(
-      'top overdraw hides liquid specular hairline seam',
-      () {
-        expect(homePageChromeGlassTopEdgeOverdraw, greaterThanOrEqualTo(2.0));
-      },
-    );
+    test('top overdraw hides liquid specular hairline seam', () {
+      expect(homePageChromeGlassTopEdgeOverdraw, greaterThanOrEqualTo(2.0));
+    });
   });
 }

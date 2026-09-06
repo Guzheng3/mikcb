@@ -86,4 +86,31 @@ void main() {
 
     expect(restored.currentWeek, 12);
   });
+
+  test('settingsOverrideKeys round-trips and tolerates legacy payloads', () {
+    final profile = TimetableProfile(
+      id: 'profile-1',
+      name: '大一上',
+      courses: const [],
+      settings: TimetableSettings.defaults(),
+      settingsOverrideKeys: const ['courseCardFontSize', 'sectionHeight'],
+      currentWeek: 1,
+      createdAt: DateTime(2026, 3, 22, 9),
+      lastUsedAt: DateTime(2026, 3, 22, 10),
+    );
+    final restored = TimetableProfile.fromJson(profile.toJson());
+    expect(
+      restored.settingsOverrideKeys,
+      ['courseCardFontSize', 'sectionHeight'],
+    );
+
+    // 旧数据没有该字段、或字段损坏时一律回退为空列表。
+    final legacyJson = profile.toJson()
+      ..remove('settingsOverrideKeys');
+    expect(TimetableProfile.fromJson(legacyJson).settingsOverrideKeys, isEmpty);
+
+    final corruptJson = profile.toJson()
+      ..['settingsOverrideKeys'] = {'bad': true};
+    expect(TimetableProfile.fromJson(corruptJson).settingsOverrideKeys, isEmpty);
+  });
 }

@@ -78,19 +78,6 @@ abstract final class AppLogMessageLocalizer {
         l10n.logLiveUpdateSnapshotClearFailed,
       'log_live_update_suspend_triggers_failed' =>
         l10n.logLiveUpdateSuspendTriggersFailed,
-      'log_lan_edit_auth_failed' => l10n.logLanEditAuthFailed,
-      'log_lan_edit_course_created' => l10n.logLanEditCourseCreated,
-      'log_lan_edit_course_updated' => l10n.logLanEditCourseUpdated,
-      'log_lan_edit_course_deleted' => l10n.logLanEditCourseDeleted,
-      'log_lan_edit_course_group_saved' => l10n.logLanEditCourseGroupSaved,
-      'log_lan_edit_merge_imported' => l10n.logLanEditMergeImported,
-      'log_lan_edit_courses_batch_deleted' =>
-        l10n.logLanEditCoursesBatchDeleted,
-      'log_lan_edit_current_week_set' => l10n.logLanEditCurrentWeekSet,
-      'log_lan_edit_profile_switched' => l10n.logLanEditProfileSwitched,
-      'log_lan_edit_spreadsheet_imported' => l10n.logLanEditSpreadsheetImported,
-      'log_lan_edit_session_started' => l10n.logLanEditSessionStarted,
-      'log_lan_edit_session_stopped' => l10n.logLanEditSessionStopped,
       'log_live_update_test_requested' => l10n.logLiveUpdateTestRequested,
       'log_live_update_test_no_selection' => l10n.logLiveUpdateTestNoSelection,
       'log_live_update_test_selection_ready' =>
@@ -275,20 +262,6 @@ abstract final class AppLogMessageLocalizer {
         l10n.logCatLiveUpdateSnapshotSyncFailed,
       'log_cat_live_update_snapshot_clear_failed' =>
         l10n.logCatLiveUpdateSnapshotClearFailed,
-      'log_cat_lan_edit_auth_failed' => l10n.logCatLanEditAuthFailed,
-      'log_cat_lan_edit_course_created' => l10n.logCatLanEditCourseCreated,
-      'log_cat_lan_edit_course_updated' => l10n.logCatLanEditCourseUpdated,
-      'log_cat_lan_edit_course_deleted' => l10n.logCatLanEditCourseDeleted,
-      'log_cat_lan_edit_course_group_saved' =>
-        l10n.logCatLanEditCourseGroupSaved,
-      'log_cat_lan_edit_merge_imported' => l10n.logCatLanEditMergeImported,
-      'log_cat_lan_edit_courses_batch_deleted' =>
-        l10n.logCatLanEditCoursesBatchDeleted,
-      'log_cat_lan_edit_current_week_set' => l10n.logCatLanEditCurrentWeekSet,
-      'log_cat_lan_edit_spreadsheet_imported' =>
-        l10n.logCatLanEditSpreadsheetImported,
-      'log_cat_lan_edit_session_started' => l10n.logCatLanEditSessionStarted,
-      'log_cat_lan_edit_session_stopped' => l10n.logCatLanEditSessionStopped,
       'log_cat_live_update_test_requested' =>
         l10n.logCatLiveUpdateTestRequested,
       'log_cat_live_update_test_no_selection' =>

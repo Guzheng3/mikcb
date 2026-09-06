@@ -56,202 +56,6 @@
   },
   "dataTransferEntryTitle": "データバックアップと移行",
   "dataTransferEntrySubtitle": "時間割ファイルをエクスポートして、他の人が直接インポート可能",
-  "cloudSyncEntryTitle": "クラウド同期",
-  "cloudSyncEntrySubtitle": "Jianguoyun などで時間割とインポートデータを複数端末同期",
-  "cloudSyncEntryDisabled": "オフ",
-  "cloudSyncEntryEnabled": "オン",
-  "cloudSyncEntrySyncing": "同期中",
-  "cloudSyncEntryError": "前回の同期に失敗",
-  "cloudSyncTitle": "クラウド同期",
-  "cloudSyncIntroTitle": "複数端末同期",
-  "cloudSyncIntroSubtitle": "Jianguoyun WebDAV を設定すると、スマホやタブレット間で時間割、倉庫アカウント、関連設定を自動同期できます",
-  "cloudSyncSettingsSectionTitle": "同期設定",
-  "cloudSyncSettingsSectionSubtitle": "手動または自動同期を切り替えられます",
-  "cloudSyncEnabledTitle": "クラウド同期を有効にする",
-  "cloudSyncEnabledSubtitle": "オフにすると、スナップショットのアップロード・ダウンロードは行われません",
-  "cloudSyncProviderTitle": "サービスプロバイダ",
-  "cloudSyncProviderJianguoyun": "Jianguoyun",
-  "cloudSyncProviderCustom": "カスタム WebDAV",
-  "cloudSyncModeTitle": "同期方式",
-  "cloudSyncModeAuto": "自動同期",
-  "cloudSyncModeManual": "手動同期",
-  "cloudSyncAccountTitle": "アカウント設定",
-  "cloudSyncAccountSubtitle": "Jianguoyun のアプリ専用パスワードを使用してください（ログインパスワードではありません），スナップショットには倉庫に保存された学校アカウントも含まれます",
-  "cloudSyncUsernameLabel": "メール / ユーザー名",
-  "cloudSyncUsernameHint": "Jianguoyun 登録メール",
-  "cloudSyncPasswordLabel": "アプリ専用パスワード",
-  "cloudSyncPasswordHint": "Jianguoyun アカウントのセキュリティ設定で生成",
-  "cloudSyncPasswordStoredHint": "パスワードを保存済み，空欄のままにすると保存済みのパスワードを使用します",
-  "cloudSyncAdvancedTitle": "詳細設定",
-  "cloudSyncBaseUrlLabel": "WebDAV URL",
-  "cloudSyncBaseUrlSecurityNote": "HTTPS 暗号化接続を推奨します。HTTP 平文接続は信頼できるネットワークでのみ使用してください",
-  "cloudSyncRemoteFolderLabel": "リモートフォルダ",
-  "cloudSyncStatusTitle": "同期状態",
-  "cloudSyncLastSyncedLabel": "最終同期",
-  "cloudSyncLastErrorLabel": "最新のエラー",
-  "cloudSyncLastSyncedAt": "最終同期：{time}",
-  "@cloudSyncLastSyncedAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncSyncing": "同期中…",
-  "cloudSyncLastError": "最新のエラー：{message}",
-  "@cloudSyncLastError": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncHelpTitle": "Jianguoyun アプリパスワードの取得方法",
-  "cloudSyncHelpBody": "Jianguoyun ウェブまたはクライアント → アカウント情報 → セキュリティ → アプリパスワードを追加。WebDAV URL デフォルト：https://dav.jianguoyun.com/dav/",
-  "cloudSyncTestConnection": "接続テスト",
-  "cloudSyncSyncNow": "今すぐ同期",
-  "cloudSyncSyncNowSubtitle": "他の端末と時間割を揃えます：クラウドを取得してから端末の変更をアップロード",
-  "cloudSyncTestSuccess": "WebDAV 接続成功",
-  "cloudSyncTestFailed": "WebDAV 接続に失敗しました。アカウント、アプリパスワード、ネットワークを確認してください",
-  "cloudSyncResultUploaded": "クラウドにアップロードしました",
-  "cloudSyncResultDownloaded": "クラウドから復元しました",
-  "cloudSyncResultUpToDate": "ローカルとクラウドは一致しています",
-  "cloudSyncResultCancelled": "同期をキャンセルしました",
-  "cloudSyncResultFailed": "同期に失敗しました：{message}",
-  "@cloudSyncResultFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncConflictTitle": "同期の競合が検出されました",
-  "cloudSyncConflictBody": "この端末とクラウドの両方に新しい変更があります。どちらのデータを保持するか選択してください。",
-  "cloudSyncUseRemoteAction": "クラウドを使用",
-  "cloudSyncKeepLocalAction": "ローカルを保持",
-  "cloudSyncAccountSectionTitle": "クラウドアカウント",
-  "cloudSyncNotConnectedHint": "Jianguoyun に接続すると、複数端末間で時間割とインポートデータを同期できます",
-  "cloudSyncConnectAccount": "Jianguoyun に接続",
-  "cloudSyncConnectedAs": "接続済み：{email}",
-  "@cloudSyncConnectedAs": {
-    "placeholders": {
-      "email": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncDisconnect": "接続を解除",
-  "cloudSyncDisconnectTitle": "クラウド同期アカウントの切断",
-  "cloudSyncDisconnectBody": "切断すると、この端末に保存された WebDAV 認証情報が削除されます。時間割データは端末に残ります。続行しますか？",
-  "cloudSyncLoginSheetTitle": "Jianguoyun に接続",
-  "cloudSyncLoginSheetSubtitle": "アプリ専用パスワードを使用してください（Jianguoyun ログインパスワードではありません）",
-  "cloudSyncConfirmConnect": "接続を確認",
-  "cloudSyncConnectSuccess": "アカウント接続成功",
-  "cloudBackupSectionTitle": "履歴バージョン",
-  "cloudBackupSectionSubtitle": "同期時に自動保存，タップしてこのバージョンに復元できます",
-  "cloudBackupCurrentLabel": "現在のバージョン",
-  "cloudBackupCurrentBadge": "現在",
-  "cloudBackupCreateNow": "今すぐバックアップ",
-  "cloudBackupViewAll": "すべての履歴を表示",
-  "cloudBackupEmpty": "履歴はまだありません。同期すると自動保存されます",
-  "cloudBackupSourceAuto": "自動バックアップ",
-  "cloudBackupSourceManual": "手動バックアップ",
-  "cloudBackupDefaultDeviceLabel": "この端末",
-  "cloudBackupDeviceLabelTitle": "デバイス名",
-  "cloudBackupDeviceLabelHint": "バックアップ一覧に表示されます（例：私のスマホ）",
-  "cloudBackupSummary": "時間割 {profileCount} 件 · 授業 {courseCount} 件",
-  "@cloudBackupSummary": {
-    "placeholders": {
-      "profileCount": {
-        "type": "int"
-      },
-      "courseCount": {
-        "type": "int"
-      }
-    }
-  },
-  "cloudBackupRestoreTitle": "このバックアップに復元",
-  "cloudBackupRestoreBody": "{time} の時間割に復元します。未同期のローカル変更は失われます。続行しますか？",
-  "@cloudBackupRestoreBody": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupRestoreAction": "復元",
-  "cloudBackupRestoreSuccess": "バックアップを復元しました",
-  "cloudBackupRestoreFailed": "復元に失敗しました：{message}",
-  "@cloudBackupRestoreFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupDeleteTitle": "このバックアップを削除",
-  "cloudBackupDeleteBody": "{time} のクラウドバックアップを削除しますか？元に戻せません。",
-  "@cloudBackupDeleteBody": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupDeleteSuccess": "バックアップを削除しました",
-  "cloudBackupDeleteFailed": "削除に失敗しました：{message}",
-  "@cloudBackupDeleteFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupCreateSuccess": "バックアップをクラウドに保存しました",
-  "cloudBackupCreateFailed": "バックアップに失敗しました：{message}",
-  "@cloudBackupCreateFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupUploadAsCurrentTitle": "現在のクラウド版に設定",
-  "cloudBackupUploadAsCurrentBody": "このバックアップを現在のクラウド版にしますか？同期の競合を避けるために推奨します。",
-  "cloudBackupUploadAsCurrentYes": "現在の版に設定",
-  "cloudBackupUploadAsCurrentNo": "ローカルのみ復元",
-  "cloudBackupDetailDevice": "デバイス",
-  "cloudBackupDetailSource": "種類",
-  "cloudBackupDetailSummary": "内容",
-  "lanEditEntryTitle": "LAN編集",
-  "lanEditEntrySubtitle": "PCブラウザから現在の時間割を編集",
-  "lanEditTitle": "LAN編集",
-  "lanEditIntro": "有効にすると、同じWi-Fiまたはテザリング中のPCブラウザから現在の時間割を編集できます，データはクラウドに送信されず、停止するとアクセスできなくなります",
-  "lanEditStart": "LAN編集を開始",
-  "lanEditStop": "停止",
-  "lanEditStatusRunning": "LAN編集セッション実行中",
-  "lanEditAddressLabel": "アクセスURL",
-  "lanEditAddressUnavailable": "LAN IPが見つかりません。Wi-Fiまたはテザリングを確認してください",
-  "lanEditPinLabel": "PIN",
-  "lanEditPortLabel": "ポート",
-  "lanEditCopyAddress": "URLをコピー",
-  "lanEditCopied": "コピーしました",
-  "lanEditHotspotHint": "寮Wi-Fiで接続できない場合は、スマホのテザリングを試してください",
-  "lanEditQrHint": "同じLANのPCブラウザでQRコードを読み取ってください（PIN付きリンク）",
-  "lanEditStartFailed": "開始に失敗しました",
-  "lanEditConnectedClientsLabel": "接続中",
-  "lanEditConnectedClientsNone": "なし",
-  "lanEditConnectedClientsValue": "{count} 台",
-  "@lanEditConnectedClientsValue": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "lanEditLastActivityLabel": "最終アクティビティ",
-  "lanEditKeepAliveWhenLeavingTitle": "退出後も維持",
-  "lanEditKeepAliveWhenLeavingSubtitle": "オンにするとこの画面を離れてもLAN編集を継続し、オフにすると退出時に停止します",
   "aboutSupportSectionTitle": "アプリ情報とサポート",
   "feedbackEntryTitle": "問題報告",
   "feedbackEntrySubtitle": "Issue、コミュニティチャネルとフィードバック",
@@ -3893,24 +3697,6 @@
   "aboutInAppDownloadSubtitle": "Install directly in the app after download completes",
   "aboutSystemDownloaderTitle": "System download manager",
   "aboutSystemDownloaderChoiceSubtitle": "Hand off to the system download manager",
-  "syncErrorAuthFailed": "Invalid username or password",
-  "syncErrorAccessDenied": "Access denied",
-  "syncErrorCertificateError": "Certificate error",
-  "syncErrorConnectionTimeout": "Connection timed out",
-  "syncErrorConnectionFailed": "Could not connect to server",
-  "syncErrorNetworkError": "Network error",
-  "syncErrorInvalidResponse": "Invalid server response",
-  "syncErrorLocalChangesPendingSync": "Skipped auto sync because local changes are pending",
-  "syncErrorMissingCredentials": "Configure sync account first",
-  "syncErrorBackupNotFound": "Backup not found",
-  "syncErrorMissingBackupSnapshot": "Backup snapshot is missing",
-  "syncErrorCannotDeleteCurrentBackup": "Cannot delete the current backup",
-  "syncErrorProviderNotReady": "Timetable is not ready",
-  "syncErrorInsecureUrl": "HTTPS暗号化接続のみ対応しています。HTTP平文プロトコルは無効です。",
-  "@syncErrorInsecureUrl": {
-    "description": "Error shown when the WebDAV URL uses insecure HTTP protocol, which is blocked in release builds"
-  },
-  "syncErrorSyncFailed": "同期に失敗しました",
   "sectionTimeDisplayHidden": "Hidden",
   "sectionTimeDisplayStartOnly": "Start time only",
   "sectionTimeDisplayStartAndEnd": "Start and end times",
@@ -4016,11 +3802,6 @@
   "serviceMsgUnrecognizedMikcbFullBackup": "Not a recognizable mikcb full backup file.",
   "serviceMsgMissingFullBackupData": "Complete backup data is missing.",
   "serviceMsgUseProfileBackupNotFull": "Use a timetable profile backup JSON, not a full data backup.",
-  "serviceMsgUnrecognizedSyncSnapshot": "Not a recognizable mikcb cloud sync snapshot.",
-  "serviceMsgMissingSyncTimetableData": "Cloud sync timetable data is missing.",
-  "serviceMsgSyncSnapshotChecksumFailed": "Cloud sync snapshot verification failed.",
-  "serviceMsgSyncSnapshotNoProfiles": "No recoverable timetables in the cloud sync snapshot.",
-  "serviceMsgSyncSnapshotUnrecognized": "Cloud sync snapshot could not be recognized.",
   "serviceMsgTimeSchemeNotFound": "Time scheme not found.",
   "serviceMsgTimeSchemeConfigUnavailable": "Current timetable time configuration is unavailable.",
   "serviceMsgTimeSchemeNotFoundSelected": "Selected time scheme was not found.",
@@ -4567,7 +4348,6 @@
   "serviceMsgConnectionTimeout": "Connection timed out.",
   "serviceMsgConnectionFailed": "Could not connect to the server.",
   "serviceMsgInvalidResponse": "Invalid server response.",
-  "serviceMsgSyncFailed": "Sync failed.",
   "serviceMsgUsageTypeOverride": "override time scheme",
   "serviceMsgUsageTypeProfile": "profile main time scheme",
   "dataTransferProfileShareText": "This is a full backup of the current timetable from Qingyu Timetable. Import it to restore courses and settings.",
@@ -5086,18 +4866,6 @@
   "logLiveUpdateSnapshotSyncFailed": "Failed to sync Live Island timetable snapshot",
   "logLiveUpdateSnapshotClearFailed": "Failed to clear Live Island timetable snapshot",
   "logLiveUpdateSuspendTriggersFailed": "Failed to suspend Live Island schedule triggers",
-  "logLanEditAuthFailed": "LAN edit: authentication failed",
-  "logLanEditCourseCreated": "LAN edit: course created",
-  "logLanEditCourseUpdated": "LAN edit: course updated",
-  "logLanEditCourseDeleted": "LAN edit: course deleted",
-  "logLanEditCourseGroupSaved": "LAN edit: course group saved",
-  "logLanEditMergeImported": "LAN edit: merge backup imported",
-  "logLanEditCoursesBatchDeleted": "LAN edit: courses batch deleted",
-  "logLanEditCurrentWeekSet": "LAN edit: current week set",
-  "logLanEditProfileSwitched": "LAN edit: timetable profile switched",
-  "logLanEditSpreadsheetImported": "LAN edit: spreadsheet imported",
-  "logLanEditSessionStarted": "LAN edit: session started",
-  "logLanEditSessionStopped": "LAN edit: session stopped",
   "logLiveUpdateTestRequested": "User requested manual Live Island test notification",
   "logLiveUpdateTestNoSelection": "Manual Live Island test: no course available",
   "logLiveUpdateTestSelectionReady": "Manual Live Island test: target course resolved",
@@ -5250,17 +5018,6 @@
   "logCatLiveUpdateSettingsSynced": "live island: settings synced",
   "logCatLiveUpdateSnapshotSyncFailed": "live island: snapshot sync failed",
   "logCatLiveUpdateSnapshotClearFailed": "live island: snapshot clear failed",
-  "logCatLanEditAuthFailed": "lan edit auth failed",
-  "logCatLanEditCourseCreated": "lan edit course created",
-  "logCatLanEditCourseUpdated": "lan edit course updated",
-  "logCatLanEditCourseDeleted": "lan edit course deleted",
-  "logCatLanEditCourseGroupSaved": "lan edit course group saved",
-  "logCatLanEditMergeImported": "lan edit merge imported",
-  "logCatLanEditCoursesBatchDeleted": "lan edit courses batch deleted",
-  "logCatLanEditCurrentWeekSet": "lan edit current week set",
-  "logCatLanEditSpreadsheetImported": "lan edit spreadsheet imported",
-  "logCatLanEditSessionStarted": "lan edit session started",
-  "logCatLanEditSessionStopped": "lan edit session stopped",
   "logCatLiveUpdateTestRequested": "live island: test requested",
   "logCatLiveUpdateTestNoSelection": "live island: test no selection",
   "logCatLiveUpdateTestSelectionReady": "live island: test selection ready",
@@ -5309,27 +5066,6 @@
   "appUpdateMirrorPresetGhproxyNet": "Backup mirror 4",
   "appUpdateMirrorPresetCustom": "Custom",
   "appUpdateMirrorPresetCustomDescription": "Enter a custom mirror URL prefix",
-  "cloudBackupRetentionTitle": "Backup retention",
-  "cloudBackupMaxCountTitle": "Maximum backups",
-  "cloudBackupMaxCountSubtitle": "Oldest backups are removed when exceeded",
-  "cloudBackupMaxCountOption": "{count} backups",
-  "@cloudBackupMaxCountOption": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "cloudBackupMaxAgeTitle": "Maximum age",
-  "cloudBackupMaxAgeSubtitle": "Backups older than this are removed",
-  "cloudBackupMaxAgeOption": "{days} days",
-  "@cloudBackupMaxAgeOption": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
   "statisticsShareText": "Semester statistics from mikcb",
   "aboutUpdateAvailableHeadline": "Update available",
   "aboutAlreadyLatestHeadline": "Already up to date",
@@ -5353,8 +5089,6 @@
   },
   "currentProfileTimeSchemeName": "Current timetable schedule",
   "unnamedTimetableProfile": "Unnamed timetable",
-  "cloudBackupManualProtectedTitle": "Protect manual backups",
-  "cloudBackupManualProtectedSubtitle": "Manual backups are never auto-deleted when enabled",
   "courseImportPortalUrlMissingBody": "\"{schoolName} / {adapterName}\" has no default login URL. Enter the school portal URL first.",
   "@courseImportPortalUrlMissingBody": {
     "placeholders": {
@@ -5908,6 +5642,7 @@
   "coupleTimetableSharedFreeTitleOtherDay": "この日の共同空き時間",
   "coupleTimetableNoSharedFree": "今日は共同の空き時間がありません",
   "coupleTimetableNoSharedFreeOtherDay": "この日は共同の空き時間がありません",
+  "partnerTimetablePageTitle": "相手の時間割",
   "coupleTimetableSharedFreeMeta": "全{count}コマ",
   "coupleTimetableSharedFreeMoreCount": "あと{count}コマ",
   "coupleTimetableSharedFreeUnavailable": "現在、共同の空き時間を計算できません",
@@ -5945,11 +5680,32 @@
   "withuCoupleLoginAction": "ログインして取得",
   "withuCoupleLoginMenuTitle": "アカウントでログイン",
   "withuCoupleNotLoggedInPrompt": "未ログイン · タップしてログイン",
+  "withuLoginConfirm": "ログイン",
+  "coupleHistorySheetTitle": "履歴",
+  "coupleHistoryMineLabel": "私の過去の時間割",
+  "coupleHistoryHersLabel": "彼女の過去の時間割",
+  "coupleHistoryRestored": "時間割を復元しました",
+  "coupleHistoryRestoreFailed": "復元に失敗しました。もう一度お試しください",
+  "coupleHistoryEntryMeta": "{semester} · 全{count}コマ",
+  "@coupleHistoryEntryMeta": {
+    "placeholders": {
+      "semester": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "withuCouplePullImported": "withU から相手の時間割をインポートしました",
   "withuCouplePullUpdated": "withU から相手の時間割を更新しました",
   "withuCouplePullUnchanged": "相手の時間割に変更はありません",
   "withuCoupleUploadSuccess": "時間割をアップロードしました。相手は取得できます",
   "withuCoupleMissingCredentials": "withU のサーバー、ユーザー名、パスワードを入力してください",
+  "withuCoupleUsernameLabel": "withU ユーザー名",
+  "withuCoupleUsernameHint": "withU ユーザー名を入力",
+  "withuCouplePasswordLabel": "withU パスワード",
+  "withuCouplePasswordHint": "withU パスワードを入力",
   "withuCoupleNotConnectedError": "先に withU に接続してください",
   "withuCoupleAuthFailed": "withU のユーザー名またはパスワードが正しくありません",
   "withuCoupleSessionExpired": "withU のセッションが期限切れです。再度ログインしてください",
@@ -6171,5 +5927,13 @@
     }
   },
   "classAlarmDaySeparator": "、",
-  "classAlarmDetailSeparator": "；"
+  "classAlarmDetailSeparator": "；",
+  "globalSettingsTitle": "グローバル表示設定",
+  "globalSettingsConfigured": "設定済み",
+  "globalSettingsNotConfigured": "未設定",
+  "globalSettingsDescriptionTitle": "説明",
+  "globalSettingsDescriptionBody": "ここで設定した表示項目はすべての時間割に適用されます。個別の時間割で変更した項目は、その時間割自身の設定が優先されます。学期や時限（時間テンプレート）など時間割固有の内容はグローバル設定の対象外です。",
+  "globalSettingsClearTitle": "グローバル表示設定をクリア",
+  "globalSettingsClearConfirm": "クリア後、すべての時間割はそれぞれの設定に戻ります。",
+  "globalSettingsCleared": "グローバル表示設定をクリアしました"
 }

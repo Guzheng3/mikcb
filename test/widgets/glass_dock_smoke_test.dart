@@ -23,6 +23,7 @@ void main() {
       provider.settings.copyWith(
         homeNavigationForm: form,
         timetableAutoFitSectionHeight: autoFitSectionHeight,
+        homePageWallpaperPath: '',
       ),
     );
     await tester.pumpWidget(

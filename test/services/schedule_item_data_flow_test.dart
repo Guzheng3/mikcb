@@ -2,9 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:university_timetable/models/schedule_item.dart';
 import 'package:university_timetable/models/timetable_profile.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
-import 'package:university_timetable/services/app_sync_snapshot_service.dart';
 import 'package:university_timetable/services/data_transfer_service.dart';
-import 'package:university_timetable/services/warehouse_import_preferences_service.dart';
 
 void main() {
   final item = ScheduleItem(
@@ -83,27 +81,4 @@ void main() {
     expectScheduleItemPreserved(restored.profiles.single);
   });
 
-  test('sync snapshot JSON preserves schedule items inside profiles', () {
-    final service = AppSyncSnapshotService();
-    final exportedAt = DateTime(2026, 4, 2);
-    final snapshot = AppSyncSnapshot(
-      profiles: [buildProfile()],
-      activeProfileId: 'profile-1',
-      timeSchemes: const [],
-      teacherRecords: const [],
-      locationRecords: const [],
-      warehouse: const WarehouseSyncBundle(),
-      macros: const [],
-      customHolidays: const [],
-      exportedAt: exportedAt,
-      deviceId: 'device-a',
-      contentSha256: '',
-    );
-
-    final restored = service.parseSnapshotJson(
-      service.buildSnapshotJsonFromSnapshot(snapshot),
-    );
-
-    expectScheduleItemPreserved(restored.profiles.single);
-  });
 }

@@ -1,7 +1,11 @@
 part of '../timetable_settings_screen.dart';
 
 class _AppearanceSettingsScreen extends StatefulWidget {
-  const _AppearanceSettingsScreen();
+  const _AppearanceSettingsScreen({this.scope = SettingsScope.profile});
+
+  /// [SettingsScope.global] 时编辑全局显示设置（所有课表共享）；此时
+  /// 主题库（课表自身的主题收藏）入口隐藏。
+  final SettingsScope scope;
 
   @override
   State<_AppearanceSettingsScreen> createState() =>
@@ -22,11 +26,15 @@ class _AppearanceSettingsScreenState extends State<_AppearanceSettingsScreen> {
   Timer? _autoSaveTimer;
   Future<void> _saveQueue = Future<void>.value();
 
+  bool get _isGlobal => widget.scope == SettingsScope.global;
+
   @override
   void initState() {
     super.initState();
     _timetableProvider = context.read<TimetableProvider>();
-    _draft = _timetableProvider.settings;
+    _draft = _isGlobal
+        ? _timetableProvider.globalSettings ?? _timetableProvider.settings
+        : _timetableProvider.settings;
   }
 
   @override
@@ -192,17 +200,20 @@ class _AppearanceSettingsScreenState extends State<_AppearanceSettingsScreen> {
         title: l10n.themeSeedSectionTitle,
         child: HyperosListGroup(
           children: [
-            HyperosListTile(
-              title: l10n.themeManageTitle,
-              details: l10n.themeManageSubtitle,
-              onTap: () {
-                HyperosNavigation.push(
-                  context,
-                  settings: const RouteSettings(name: '/settings/theme'),
-                  builder: (_) => const _ThemeManageScreen(),
-                );
-              },
-            ),
+            // 主题库挂在课表自身的设置上（savedThemes 不参与全局合并），
+            // 全局模式不展示管理入口，只留全局的主题预设/种子色。
+            if (!_isGlobal)
+              HyperosListTile(
+                title: l10n.themeManageTitle,
+                details: l10n.themeManageSubtitle,
+                onTap: () {
+                  HyperosNavigation.push(
+                    context,
+                    settings: const RouteSettings(name: '/settings/theme'),
+                    builder: (_) => const _ThemeManageScreen(),
+                  );
+                },
+              ),
             HyperosSelectTile<ForuiTheme>(
               label: l10n.themePreset,
               subtitle: l10n.themeSeedSectionSubtitle,
@@ -263,7 +274,8 @@ class _AppearanceSettingsScreenState extends State<_AppearanceSettingsScreen> {
                         showFrostedSheetSettingsDemo(context),
                   ),
                 ),
-                if (_draft.frostedGlassMode == FrostedGlassMode.liquidGlass)
+                if (!_isGlobal &&
+                    _draft.frostedGlassMode == FrostedGlassMode.liquidGlass)
                   HyperosListTile(
                     title: l10n.advancedMaterialTitle,
                     details: l10n.advancedMaterialEntrySubtitle,
@@ -277,7 +289,7 @@ class _AppearanceSettingsScreenState extends State<_AppearanceSettingsScreen> {
                       );
                       if (!mounted) return;
                       setState(() {
-                        _draft = context.read<TimetableProvider>().settings;
+                        _draft = _timetableProvider.settings;
                       });
                     },
                   ),
@@ -391,6 +403,7 @@ class _AppearanceSettingsScreenState extends State<_AppearanceSettingsScreen> {
       4 => _SettingsResetTile(
         scope: SettingsResetScope.appearance,
         onReset: _updateDraft,
+        resetSource: _draft,
       ),
       _ => const SizedBox.shrink(),
     };
@@ -432,6 +445,10 @@ class _AppearanceSettingsScreenState extends State<_AppearanceSettingsScreen> {
     }
     // Use the cached provider — dispose may fire after the Element is unmounted.
     final provider = _timetableProvider;
+    if (_isGlobal) {
+      await provider.updateGlobalTimetableSettings(next);
+      return;
+    }
     final message = await provider.updateTimetableSettings(next);
     if (!mounted) {
       return;

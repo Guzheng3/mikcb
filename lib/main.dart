@@ -19,12 +19,12 @@ import 'blackbox_adapters.dart';
 import 'logging/app_log_messages.dart';
 import 'models/timetable_settings.dart';
 import 'providers/timetable_provider.dart';
+import 'providers/withu_couple_session_provider.dart';
 import 'screens/course_import_screen.dart';
 import 'screens/startup_flow_screens.dart';
 import 'screens/user_guide_screen.dart';
 import 'screens/timetable_screen.dart';
 import 'screens/timetable_settings_screen.dart';
-import 'screens/lan_edit_screen.dart';
 import 'utils/app_toast.dart';
 import 'utils/home_startup_visual_primer.dart';
 import 'widgets/app_startup_splash.dart';
@@ -35,11 +35,8 @@ import 'services/fair_memory_service.dart';
 import 'services/memory_stats_service.dart';
 import 'services/debug_deep_link_navigator.dart';
 import 'services/debug_deep_link_service.dart';
-import 'services/lan_edit_foreground_service.dart';
 import 'services/app_migration_service.dart';
 import 'services/storage_service.dart';
-import 'services/user_data_sync_hooks.dart';
-import 'services/webdav_sync_coordinator.dart';
 import 'services/android_animation_scale_service.dart';
 import 'services/umeng_analytics_service.dart';
 import 'services/withu_couple_auth_service.dart';
@@ -381,6 +378,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => TimetableProvider(autoInitialize: false),
         ),
+        ChangeNotifierProvider(create: (_) => WithuCoupleSessionProvider()),
       ],
       child:
           Selector<
@@ -493,8 +491,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
     with WidgetsBindingObserver {
   final StorageService _storageService = StorageService();
   final AppMigrationService _migrationService = AppMigrationService();
-  final WebdavSyncCoordinator _cloudSyncCoordinator =
-      WebdavSyncCoordinator.instance();
   final WithuCoupleAuthService _withuAuthService = WithuCoupleAuthService();
   late final WithuCoupleTimetableService _withuTimetableService =
       WithuCoupleTimetableService(authService: _withuAuthService);
@@ -565,6 +561,8 @@ class _AppEntryScreenState extends State<AppEntryScreen>
     // 无法直接持有状态，经全局钩子解耦）。
     _forcedHomeRevealHook = _forceRevealHomeFromWatchdog;
     final provider = context.read<TimetableProvider>();
+    // 恢复 withU 情侣登录态：首页情侣标题（昵称/爱心/登录提示）依赖它。
+    unawaited(context.read<WithuCoupleSessionProvider>().restoreSession());
     FairMemoryService.instance.registerSnapshotProvider(() async {
       return <String, Object?>{
         'activeProfileId': provider.activeProfileId,
@@ -573,7 +571,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
         'currentDayOfWeek': provider.currentDayOfWeek,
       };
     });
-    scheduleCloudSyncUpload = _cloudSyncCoordinator.scheduleUpload;
     // Shared MethodChannel handler for external import + debug deep links.
     // Installed early so routes that arrive during splash are not dropped.
     unawaited(_installSharedMethodChannelHandler());
@@ -627,15 +624,11 @@ class _AppEntryScreenState extends State<AppEntryScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       unawaited(refreshHyperosMotionFromAndroid());
-      // Pull first, then live resync. Concurrent pull apply + handleAppResumed
-      // can push stale schedule snapshots to the island / home widget.
-      unawaited(_handleAppResumedWithCloudPull());
+      unawaited(_handleAppResumed());
     }
   }
 
-  /// Serializes WebDAV auto-pull and live-activity resume recovery.
-  Future<void> _handleAppResumedWithCloudPull() async {
-    await _cloudSyncCoordinator.maybePullRemote();
+  Future<void> _handleAppResumed() async {
     if (!mounted) {
       return;
     }
@@ -670,7 +663,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
 
       // 老用户快速路径：等待本地课表快照完成后再进入主界面。
       if (hasAcceptedPrivacy && hasSeenGuide) {
-        _cloudSyncCoordinator.bindProvider(provider);
         await provider.initialize();
         _withuAutoSyncService.bind(provider);
         // 启动画面保持到首页视觉资产（壁纸位图 / 预模糊磨砂 / 墨色亮度采样）
@@ -684,7 +676,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
         unawaited(UmengAnalyticsService.initializeIfNeeded());
         unawaited(_checkPendingExternalImport());
         unawaited(_checkPendingWidgetLaunch());
-        unawaited(_installLanEditNotificationHandler());
         unawaited(
           AppLogService.instance.info(
             'startup_flow_completed',
@@ -693,9 +684,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
         );
         unawaited(_maybeShowDeferredMigrationGuide());
         await _revealMainContent();
-        // Remote sync is intentionally post-reveal: local data drives the
-        // first correct frame, while network work can update it afterward.
-        unawaited(_cloudSyncCoordinator.maybePullRemote());
         return;
       }
 
@@ -715,7 +703,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       final hasHandledPackageMigration = startupResults[2];
 
       await Future.wait([providerInitFuture, legacyPackageFuture]);
-      _cloudSyncCoordinator.bindProvider(provider);
       _withuAutoSyncService.bind(provider);
       // 与老用户快速路径同一保证：首页换入前视觉资产已就绪（无壁纸时
       // prime 立即返回）。
@@ -723,7 +710,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       // 收口玻璃预热：启动画面期间并行，首页换入前必须完成。
       await _glassShadersWarm;
       _revealHomeOnce();
-      unawaited(_cloudSyncCoordinator.maybePullRemote());
       final legacyPackage = await legacyPackageFuture;
       final shouldShowMigrationGuide =
           !hasHandledPackageMigration && isDataEmpty && legacyPackage != null;
@@ -783,7 +769,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       }
 
       unawaited(_checkPendingExternalImport());
-      unawaited(_installLanEditNotificationHandler());
       unawaited(
         AppLogService.instance.info(
           'startup_flow_completed',
@@ -883,17 +868,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
     }
 
     final navigator = Navigator.of(context);
-    if (lastRoute == '/settings/lan-edit') {
-      unawaited(
-        navigator.push<void>(
-          HyperosPageRoute(
-            settings: const RouteSettings(name: '/settings/lan-edit'),
-            builder: (_) => const LanEditScreen(),
-          ),
-        ),
-      );
-      return;
-    }
     if (lastRoute.startsWith('/settings')) {
       unawaited(
         navigator.push<void>(
@@ -1160,8 +1134,10 @@ class _AppEntryScreenState extends State<AppEntryScreen>
     }
     try {
       final outcome = await WidgetLaunchRouter.handle(context);
-      if (!mounted ||
-          outcome != WidgetLaunchOutcome.bindingMissing) {
+      if (!mounted) {
+        return;
+      }
+      if (outcome != WidgetLaunchOutcome.bindingMissing) {
         return;
       }
       showAppToast(
@@ -1178,43 +1154,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
           extras: {'error': '$e'},
         ),
       );
-    }
-  }
-
-  Future<void> _installLanEditNotificationHandler() async {
-    await LanEditForegroundBridge.installNotificationTapHandler();
-    LanEditForegroundBridge.onNotificationTapped = () {
-      unawaited(_openLanEditFromNotification());
-    };
-    await _openLanEditFromNotification();
-  }
-
-  Future<void> _openLanEditFromNotification() async {
-    try {
-      final pending = await LanEditForegroundBridge.consumePendingOpen();
-      if (!pending || !mounted) {
-        return;
-      }
-      final navigator = Navigator.of(context);
-      var alreadyOnLanEdit = false;
-      navigator.popUntil((route) {
-        if (route.settings.name == '/settings/lan-edit') {
-          alreadyOnLanEdit = true;
-          return true;
-        }
-        return route.isFirst;
-      });
-      if (alreadyOnLanEdit) {
-        return;
-      }
-      await navigator.push(
-        HyperosPageRoute(
-          settings: const RouteSettings(name: '/settings/lan-edit'),
-          builder: (_) => const LanEditScreen(),
-        ),
-      );
-    } catch (_) {
-      // Non-critical navigation helper.
     }
   }
 

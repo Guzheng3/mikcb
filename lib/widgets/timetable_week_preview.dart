@@ -217,8 +217,9 @@ class _TimetableWeekPreviewBody extends StatelessWidget {
     // proportionally so the edge highlight stays a thin sheen while the
     // interior remains real liquid refraction — not flat gaussian blur.
     // Combined bands (~84dp) keep full thickness like the home sheet.
-    final double? bandMaxThickness =
-        height <= 52 ? (height * 0.28).clamp(8.0, 14.0) : null;
+    final double? bandMaxThickness = height <= 52
+        ? (height * 0.28).clamp(8.0, 14.0)
+        : null;
     return [
       Positioned(
         top: top,
@@ -670,6 +671,7 @@ class _TimetableWeekPreviewBody extends StatelessWidget {
       themeFallback: colorScheme.onSurface,
       hasBackdrop: weekdayChromeOverWallpaper,
       wallpaperLuminance: weekdayLuminance,
+      keepDefaultColorOverWallpaper: true,
     );
 
     return Container(
@@ -717,6 +719,7 @@ class _TimetableWeekPreviewBody extends StatelessWidget {
                   themeFallback: colorScheme.onSurface,
                   hasBackdrop: weekdayChromeOverWallpaper,
                   wallpaperLuminance: weekdayLuminance,
+                  keepDefaultColorOverWallpaper: true,
                 );
                 final accentColor = homePageOverWallpaperAccent(
                   configuredHex: isDark
@@ -997,6 +1000,7 @@ class _TimetableWeekPreviewBody extends StatelessWidget {
       themeFallback: isDark ? Colors.white : Colors.grey.shade800,
       hasBackdrop: timeAxisOverWallpaper,
       wallpaperLuminance: wallpaperBodyLuminance ?? wallpaperTopLuminance,
+      keepDefaultColorOverWallpaper: true,
     );
     final timeAxisMutedColor = homePageOverWallpaperMutedInk(timeAxisColor);
     final compactTextStyle = TextStyle(

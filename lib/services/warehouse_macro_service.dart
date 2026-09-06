@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/warehouse_macro_models.dart';
-import 'user_data_sync_hooks.dart';
 
 /// 录制回放持久化服务
 class WarehouseMacroService {
@@ -18,7 +17,6 @@ class WarehouseMacroService {
     );
     await prefs.setString(key, jsonEncode(record.toJson()));
     await _addToIndex(prefs, record.schoolId, record.adapterId);
-    notifyUserDataChangedForSync();
   }
 
   /// 加载指定学校+适配器的宏录制记录
@@ -192,7 +190,6 @@ class WarehouseMacroService {
       await prefs.setString(entry.key, entry.value);
     }
     await prefs.setString(WarehouseMacroRecord.indexKey, indexJson);
-    notifyUserDataChangedForSync();
   }
 }
 

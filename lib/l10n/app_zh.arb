@@ -92,6 +92,7 @@
   "coupleTimetableSharedFreeTitleOtherDay": "该日共同空闲",
   "coupleTimetableNoSharedFree": "今天没有共同空闲时段",
   "coupleTimetableNoSharedFreeOtherDay": "该日没有共同空闲时段",
+  "partnerTimetablePageTitle": "TA的课表",
   "coupleTimetableSharedFreeMeta": "共 {count} 段",
   "@coupleTimetableSharedFreeMeta": {
     "placeholders": {
@@ -181,11 +182,33 @@
   "withuCoupleLoginAction": "登录并拉取",
   "withuCoupleLoginMenuTitle": "账号登录",
   "withuCoupleNotLoggedInPrompt": "未登录 · 点击登录",
+  "withuLoginConfirm": "登录",
+  "coupleHistorySheetTitle": "历史课表",
+  "coupleHistoryMineLabel": "我的历史课表",
+  "coupleHistoryHersLabel": "她的历史课表",
+  "noHistoryRecords": "暂无历史记录",
+  "coupleHistoryRestored": "已恢复历史课表",
+  "coupleHistoryRestoreFailed": "恢复失败，请重试",
+  "coupleHistoryEntryMeta": "{semester} · 共 {count} 节课",
+  "@coupleHistoryEntryMeta": {
+    "placeholders": {
+      "semester": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "withuCouplePullImported": "已从 withU 导入对方课表",
   "withuCouplePullUpdated": "已从 withU 更新对方课表",
   "withuCouplePullUnchanged": "对方课表无变化",
   "withuCoupleUploadSuccess": "已上传课表，对方可拉取",
   "withuCoupleMissingCredentials": "请填写 withU 服务器、用户名和密码",
+  "withuCoupleUsernameLabel": "withU 用户名",
+  "withuCoupleUsernameHint": "请输入 withU 用户名",
+  "withuCouplePasswordLabel": "withU 密码",
+  "withuCouplePasswordHint": "请输入 withU 密码",
   "withuCoupleNotConnectedError": "请先连接 withU",
   "withuCoupleAuthFailed": "withU 用户名或密码不正确",
   "withuCoupleSessionExpired": "withU 会话已过期，请重新登录",
@@ -193,205 +216,6 @@
   "withuCouplePartnerTimetableMissing": "未找到对方课表，请让对方先上传",
   "withuCoupleRequestFailed": "withU 请求失败，请稍后重试",
   "withuCoupleSessionCookieMissing": "withU 未返回登录会话",
-  "cloudSyncEntryTitle": "云同步",
-  "cloudSyncEntrySubtitle": "通过坚果云等多设备同步课表与导入数据",
-  "cloudSyncEntryDisabled": "已关闭",
-  "cloudSyncEntryEnabled": "已开启",
-  "cloudSyncEntrySyncing": "同步中",
-  "cloudSyncEntryError": "上次同步失败",
-  "cloudSyncTitle": "云同步",
-  "cloudSyncIntroTitle": "多设备同步",
-  "cloudSyncIntroSubtitle": "配置坚果云 WebDAV 后，可在手机、平板之间自动同步课表、仓库账号与相关设置",
-  "cloudSyncSettingsSectionTitle": "同步设置",
-  "cloudSyncSettingsSectionSubtitle": "可切换手动或自动同步",
-  "cloudSyncEnabledTitle": "启用云同步",
-  "cloudSyncEnabledSubtitle": "关闭后不会上传或下载云端快照",
-  "cloudSyncProviderTitle": "服务提供商",
-  "cloudSyncProviderJianguoyun": "坚果云",
-  "cloudSyncProviderCustom": "自定义 WebDAV",
-  "cloudSyncModeTitle": "同步方式",
-  "cloudSyncModeAuto": "自动同步",
-  "cloudSyncModeManual": "手动同步",
-  "cloudSyncAccountTitle": "账号配置",
-  "cloudSyncAccountSubtitle": "请使用坚果云应用专用密码，而不是登录密码，快照会包含仓库记住的学校账号",
-  "cloudSyncUsernameLabel": "邮箱 / 用户名",
-  "cloudSyncUsernameHint": "坚果云注册邮箱",
-  "cloudSyncPasswordLabel": "应用专用密码",
-  "cloudSyncPasswordHint": "在坚果云账户安全选项中生成",
-  "cloudSyncPasswordStoredHint": "已保存密码；留空表示继续使用已保存的密码",
-  "cloudSyncAdvancedTitle": "高级设置",
-  "cloudSyncBaseUrlLabel": "WebDAV 地址",
-  "cloudSyncBaseUrlSecurityNote": "建议使用 HTTPS 加密连接；HTTP 明文连接仅建议在可信网络环境下使用",
-  "@cloudSyncBaseUrlSecurityNote": {
-    "description": "安全提示：说明正式版仅支持HTTPS加密连接，HTTP明文协议已被禁用"
-  },
-  "cloudSyncRemoteFolderLabel": "远程目录",
-  "cloudSyncStatusTitle": "同步状态",
-  "cloudSyncLastSyncedLabel": "上次同步",
-  "cloudSyncLastErrorLabel": "最近错误",
-  "cloudSyncLastSyncedAt": "上次同步：{time}",
-  "@cloudSyncLastSyncedAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncSyncing": "正在同步…",
-  "cloudSyncLastError": "最近错误：{message}",
-  "@cloudSyncLastError": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncHelpTitle": "如何获取坚果云应用密码",
-  "cloudSyncHelpBody": "打开坚果云网页或客户端 → 账户信息 → 安全选项 → 添加应用密码，WebDAV 地址默认为 https://dav.jianguoyun.com/dav/ ",
-  "cloudSyncTestConnection": "测试连接",
-  "cloudSyncSyncNow": "立即同步",
-  "cloudSyncSyncNowSubtitle": "与其他设备对齐课表：先拉取云端更新，再上传本机修改",
-  "cloudSyncTestSuccess": "WebDAV 连接成功",
-  "cloudSyncTestFailed": "WebDAV 连接失败，请检查账号、应用密码和网络",
-  "cloudSyncResultUploaded": "已上传到云端",
-  "cloudSyncResultDownloaded": "已从云端恢复",
-  "cloudSyncResultUpToDate": "本地与云端已一致",
-  "cloudSyncResultCancelled": "已取消同步",
-  "cloudSyncResultFailed": "同步失败：{message}",
-  "@cloudSyncResultFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncConflictTitle": "检测到同步冲突",
-  "cloudSyncConflictBody": "本机和云端都有新的修改，请选择保留哪一边的数据",
-  "cloudSyncUseRemoteAction": "使用云端",
-  "cloudSyncKeepLocalAction": "保留本机",
-  "cloudSyncAccountSectionTitle": "云账号",
-  "cloudSyncNotConnectedHint": "连接坚果云后，可在多设备间同步课表与导入数据",
-  "cloudSyncConnectAccount": "连接坚果云",
-  "cloudSyncConnectedAs": "已连接：{email}",
-  "@cloudSyncConnectedAs": {
-    "placeholders": {
-      "email": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncDisconnect": "断开连接",
-  "cloudSyncDisconnectTitle": "断开云同步账号",
-  "cloudSyncDisconnectBody": "断开后将清除本机保存的 WebDAV 凭据，课表数据仍保留在本机，是否继续？",
-  "cloudSyncLoginSheetTitle": "连接坚果云",
-  "cloudSyncLoginSheetSubtitle": "请使用应用专用密码，不要使用坚果云登录密码",
-  "cloudSyncConfirmConnect": "确认连接",
-  "cloudSyncConnectSuccess": "账号连接成功",
-  "cloudBackupSectionTitle": "可恢复版本",
-  "cloudBackupSectionSubtitle": "每次同步都会自动保留可恢复版本",
-  "cloudBackupCurrentLabel": "当前版本",
-  "cloudBackupCurrentBadge": "当前",
-  "cloudBackupCreateNow": "立即备份",
-  "cloudBackupViewAll": "查看全部可恢复版本",
-  "cloudBackupEmpty": "暂无可恢复版本，同步后会自动生成",
-  "cloudBackupSourceAuto": "自动备份",
-  "cloudBackupSourceManual": "手动备份",
-  "cloudBackupDefaultDeviceLabel": "本机",
-  "cloudBackupDeviceLabelTitle": "设备名称",
-  "cloudBackupDeviceLabelHint": "在备份列表中显示，例如「我的手机」",
-  "cloudBackupSummary": "{profileCount} 个课表 · {courseCount} 门课程",
-  "@cloudBackupSummary": {
-    "placeholders": {
-      "profileCount": {
-        "type": "int"
-      },
-      "courseCount": {
-        "type": "int"
-      }
-    }
-  },
-  "cloudBackupRestoreTitle": "恢复到此备份",
-  "cloudBackupRestoreBody": "将恢复到 {time} 的课表，本地未同步的修改会丢失，是否继续？",
-  "@cloudBackupRestoreBody": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupRestoreAction": "恢复",
-  "cloudBackupRestoreSuccess": "已恢复到此备份",
-  "cloudBackupRestoreFailed": "恢复失败：{message}",
-  "@cloudBackupRestoreFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupDeleteTitle": "删除此备份",
-  "cloudBackupDeleteBody": "确定删除 {time} 的云端备份吗？此操作不可撤销",
-  "@cloudBackupDeleteBody": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupDeleteSuccess": "备份已删除",
-  "cloudBackupDeleteFailed": "删除失败：{message}",
-  "@cloudBackupDeleteFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupCreateSuccess": "备份已保存到云端",
-  "cloudBackupCreateFailed": "备份失败：{message}",
-  "@cloudBackupCreateFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupUploadAsCurrentTitle": "设为当前云端版本",
-  "cloudBackupUploadAsCurrentBody": "是否将此备份设为当前云端版本？建议开启，可避免其他设备同步冲突",
-  "cloudBackupUploadAsCurrentYes": "设为当前版本",
-  "cloudBackupUploadAsCurrentNo": "仅恢复本地",
-  "cloudBackupDetailDevice": "设备",
-  "cloudBackupDetailSource": "来源",
-  "cloudBackupDetailSummary": "内容",
-  "lanEditEntryTitle": "局域网编辑",
-  "lanEditEntrySubtitle": "在电脑浏览器中编辑当前课表",
-  "lanEditTitle": "局域网编辑",
-  "lanEditIntro": "开启后，同一 WiFi 或手机热点下的电脑可通过浏览器编辑当前课表，数据不会上传云端，关闭后即停止访问",
-  "lanEditStart": "开启局域网编辑",
-  "lanEditStop": "停止",
-  "lanEditStatusRunning": "编辑会话进行中",
-  "lanEditAddressLabel": "访问地址",
-  "lanEditAddressUnavailable": "未检测到局域网 IP，请确认已连接 WiFi 或已开启热点",
-  "lanEditPinLabel": "PIN",
-  "lanEditPortLabel": "端口",
-  "lanEditCopyAddress": "复制地址",
-  "lanEditCopied": "地址已复制",
-  "lanEditHotspotHint": "如果宿舍 WiFi 无法访问，请尝试用手机开热点，再让电脑连接该热点",
-  "lanEditQrHint": "电脑浏览器扫描上方二维码可打开控制台（链接已含 PIN，需同一局域网）",
-  "lanEditStartFailed": "启动失败",
-  "lanEditConnectedClientsLabel": "已连接",
-  "lanEditConnectedClientsNone": "暂无",
-  "lanEditConnectedClientsValue": "{count} 台",
-  "@lanEditConnectedClientsValue": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "lanEditLastActivityLabel": "最近活动",
-  "lanEditKeepAliveWhenLeavingTitle": "离开后保持开启",
-  "lanEditKeepAliveWhenLeavingSubtitle": "开启后，返回设置页不会自动关闭局域网编辑；关闭后离开本页即停止",
   "aboutSupportSectionTitle": "关于与支持",
   "feedbackEntryTitle": "问题反馈",
   "feedbackEntrySubtitle": "Issue、社区渠道和建议反馈入口",
@@ -3541,7 +3365,6 @@
   "selectTeacherTitle": "选择教师",
   "selectLocationTitle": "选择教室",
   "historyRecordsLabel": "历史记录",
-  "noHistoryRecords": "暂无历史记录",
   "weekPickerTitle": "选择上课周次",
   "selectTimeSchemeTitle": "选择时间方案",
   "manageTimeSchemesAction": "管理时间方案",
@@ -4174,24 +3997,6 @@
   "aboutInAppDownloadSubtitle": "下载完成后直接在应用内安装",
   "aboutSystemDownloaderTitle": "系统管理器",
   "aboutSystemDownloaderChoiceSubtitle": "交给系统下载管理器处理",
-  "syncErrorAuthFailed": "账号或密码错误",
-  "syncErrorAccessDenied": "没有访问权限",
-  "syncErrorCertificateError": "证书校验失败",
-  "syncErrorConnectionTimeout": "连接超时",
-  "syncErrorConnectionFailed": "无法连接服务器",
-  "syncErrorNetworkError": "网络异常",
-  "syncErrorInvalidResponse": "服务器响应无效",
-  "syncErrorLocalChangesPendingSync": "本地有未同步修改，已跳过自动覆盖",
-  "syncErrorMissingCredentials": "请先配置云同步账号",
-  "syncErrorBackupNotFound": "备份不存在",
-  "syncErrorMissingBackupSnapshot": "备份快照缺失",
-  "syncErrorCannotDeleteCurrentBackup": "不能删除当前备份",
-  "syncErrorProviderNotReady": "课表尚未就绪",
-  "syncErrorInsecureUrl": "仅支持 HTTPS 加密连接，HTTP 明文协议已被禁用",
-  "@syncErrorInsecureUrl": {
-    "description": "Error shown when the WebDAV URL uses insecure HTTP protocol, which is blocked in release builds"
-  },
-  "syncErrorSyncFailed": "同步失败",
   "sectionTimeDisplayHidden": "不显示",
   "sectionTimeDisplayStartOnly": "仅显示上课时间",
   "sectionTimeDisplayStartAndEnd": "显示上下课时间",
@@ -4297,11 +4102,6 @@
   "serviceMsgUnrecognizedMikcbFullBackup": "不是可识别的 mikcb 全量备份文件",
   "serviceMsgMissingFullBackupData": "缺少完整备份数据",
   "serviceMsgUseProfileBackupNotFull": "请使用课表档案备份 JSON，而非全部数据备份",
-  "serviceMsgUnrecognizedSyncSnapshot": "不是可识别的 mikcb 云同步快照",
-  "serviceMsgMissingSyncTimetableData": "缺少云同步课表数据",
-  "serviceMsgSyncSnapshotChecksumFailed": "云同步快照校验失败",
-  "serviceMsgSyncSnapshotNoProfiles": "云同步快照中没有可恢复的课表",
-  "serviceMsgSyncSnapshotUnrecognized": "云同步快照无法识别",
   "serviceMsgTimeSchemeNotFound": "时间模板不存在",
   "serviceMsgTimeSchemeConfigUnavailable": "当前课表时间配置不可用",
   "serviceMsgTimeSchemeNotFoundSelected": "未找到所选时间模板",
@@ -4848,7 +4648,6 @@
   "serviceMsgConnectionTimeout": "连接超时",
   "serviceMsgConnectionFailed": "无法连接服务器",
   "serviceMsgInvalidResponse": "服务器响应无效",
-  "serviceMsgSyncFailed": "同步失败",
   "serviceMsgUsageTypeOverride": "副时间表",
   "serviceMsgUsageTypeProfile": "课表主时间表",
   "dataTransferProfileShareText": "这是轻屿课表当前课表的完整备份文件，导入后可直接恢复课程和设置",
@@ -5367,18 +5166,6 @@
   "logLiveUpdateSnapshotSyncFailed": "同步超级岛课表快照失败",
   "logLiveUpdateSnapshotClearFailed": "清空超级岛课表快照失败",
   "logLiveUpdateSuspendTriggersFailed": "挂起超级岛课表调度失败",
-  "logLanEditAuthFailed": "局域网编辑：认证失败",
-  "logLanEditCourseCreated": "局域网编辑：已创建课程",
-  "logLanEditCourseUpdated": "局域网编辑：已更新课程",
-  "logLanEditCourseDeleted": "局域网编辑：已删除课程",
-  "logLanEditCourseGroupSaved": "局域网编辑：已保存课程组",
-  "logLanEditMergeImported": "局域网编辑：已导入合并备份",
-  "logLanEditCoursesBatchDeleted": "局域网编辑：已批量删除课程",
-  "logLanEditCurrentWeekSet": "局域网编辑：已设置当前周次",
-  "logLanEditProfileSwitched": "局域网编辑：已切换课表",
-  "logLanEditSpreadsheetImported": "局域网编辑：已导入表格",
-  "logLanEditSessionStarted": "局域网编辑：会话已启动",
-  "logLanEditSessionStopped": "局域网编辑：会话已停止",
   "logLiveUpdateTestRequested": "用户请求手动超级岛测试通知",
   "logLiveUpdateTestNoSelection": "手动超级岛测试：未找到可用课程",
   "logLiveUpdateTestSelectionReady": "手动超级岛测试：已解析目标课程",
@@ -5531,17 +5318,6 @@
   "logCatLiveUpdateSettingsSynced": "超级岛：设置已同步",
   "logCatLiveUpdateSnapshotSyncFailed": "超级岛：快照同步失败",
   "logCatLiveUpdateSnapshotClearFailed": "超级岛：快照清空失败",
-  "logCatLanEditAuthFailed": "局域网编辑：认证",
-  "logCatLanEditCourseCreated": "局域网编辑：创建课程",
-  "logCatLanEditCourseUpdated": "局域网编辑：更新课程",
-  "logCatLanEditCourseDeleted": "局域网编辑：删除课程",
-  "logCatLanEditCourseGroupSaved": "局域网编辑：保存课程组",
-  "logCatLanEditMergeImported": "局域网编辑：合并导入",
-  "logCatLanEditCoursesBatchDeleted": "局域网编辑：批量删除",
-  "logCatLanEditCurrentWeekSet": "局域网编辑：设置周次",
-  "logCatLanEditSpreadsheetImported": "局域网编辑：表格导入",
-  "logCatLanEditSessionStarted": "局域网编辑：会话启动",
-  "logCatLanEditSessionStopped": "局域网编辑：会话停止",
   "logCatLiveUpdateTestRequested": "超级岛测试：请求",
   "logCatLiveUpdateTestNoSelection": "超级岛测试：无课程",
   "logCatLiveUpdateTestSelectionReady": "超级岛测试：已选课程",
@@ -5590,27 +5366,6 @@
   "appUpdateMirrorPresetGhproxyNet": "备用镜像 4",
   "appUpdateMirrorPresetCustom": "自定义",
   "appUpdateMirrorPresetCustomDescription": "填写自定义镜像地址前缀",
-  "cloudBackupRetentionTitle": "备份保留策略",
-  "cloudBackupMaxCountTitle": "最多保留份数",
-  "cloudBackupMaxCountSubtitle": "超过后自动删除最旧的备份",
-  "cloudBackupMaxCountOption": "{count} 份",
-  "@cloudBackupMaxCountOption": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "cloudBackupMaxAgeTitle": "最长保留天数",
-  "cloudBackupMaxAgeSubtitle": "超过后自动删除过期备份",
-  "cloudBackupMaxAgeOption": "{days} 天",
-  "@cloudBackupMaxAgeOption": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
   "statisticsShareText": "来自轻屿课表的学期统计",
   "aboutUpdateAvailableHeadline": "有版本更新",
   "aboutAlreadyLatestHeadline": "已是最新版本",
@@ -5634,8 +5389,6 @@
   },
   "currentProfileTimeSchemeName": "当前课表时间",
   "unnamedTimetableProfile": "未命名课表",
-  "cloudBackupManualProtectedTitle": "手动备份永不过期",
-  "cloudBackupManualProtectedSubtitle": "开启后，手动创建的备份不会被自动清理",
   "courseImportPortalUrlMissingBody": "“{schoolName} / {adapterName}” 没有默认登录地址，请先输入学校教务系统网址",
   "@courseImportPortalUrlMissingBody": {
     "placeholders": {
@@ -6242,5 +5995,13 @@
     }
   },
   "classAlarmDaySeparator": "、",
-  "classAlarmDetailSeparator": "；"
+  "classAlarmDetailSeparator": "；",
+  "globalSettingsTitle": "全局显示设置",
+  "globalSettingsConfigured": "已配置",
+  "globalSettingsNotConfigured": "未配置",
+  "globalSettingsDescriptionTitle": "说明",
+  "globalSettingsDescriptionBody": "在这里设置的显示项会应用到所有课表；某份课表单独改过的项目，仍以该课表自己的设置为准。学期、节次（时间方案）等课表专属内容不参与全局设置。",
+  "globalSettingsClearTitle": "清除全局显示设置",
+  "globalSettingsClearConfirm": "清除后，所有课表将恢复使用各自的设置。",
+  "globalSettingsCleared": "已清除全局显示设置"
 }

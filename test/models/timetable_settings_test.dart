@@ -18,7 +18,7 @@ void main() {
     expect(settings.courseCardShowTimeLabels, isTrue);
     expect(settings.courseCardShowWeeks, isFalse);
     expect(settings.courseCardShowDescription, isFalse);
-    expect(settings.timetableAutoFitSectionHeight, isFalse);
+    expect(settings.timetableAutoFitSectionHeight, isTrue);
     expect(settings.widgetBackgroundStyle, WidgetBackgroundStyle.solid);
     expect(settings.widgetShowLocation, isTrue);
     expect(settings.widgetShowCountdown, isTrue);
@@ -27,7 +27,6 @@ void main() {
     expect(settings.widgetCornerRadius, 22);
     expect(settings.appThemeMode, AppThemeMode.system);
     expect(settings.homeTitleStyle, HomeTitleStyle.classic);
-    expect(settings.coupleTimetableOverlayEnabled, isTrue);
     expect(
       settings.timetableBackToCurrentWeekButtonStyle,
       BackToCurrentWeekButtonStyle.floating,
@@ -107,7 +106,7 @@ void main() {
     expect(restored.courseCardShowTimeLabels, isTrue);
     expect(restored.courseCardShowWeeks, isFalse);
     expect(restored.courseCardShowDescription, isFalse);
-    expect(restored.timetableAutoFitSectionHeight, isFalse);
+    expect(restored.timetableAutoFitSectionHeight, isTrue);
     expect(restored.widgetBackgroundStyle, WidgetBackgroundStyle.solid);
     expect(restored.widgetShowLocation, isTrue);
     expect(restored.widgetShowCountdown, isTrue);
@@ -116,7 +115,6 @@ void main() {
     expect(restored.widgetCornerRadius, 22);
     expect(restored.appThemeMode, AppThemeMode.system);
     expect(restored.homeTitleStyle, HomeTitleStyle.classic);
-    expect(restored.coupleTimetableOverlayEnabled, isTrue);
     expect(
       restored.timetableBackToCurrentWeekButtonStyle,
       BackToCurrentWeekButtonStyle.floating,

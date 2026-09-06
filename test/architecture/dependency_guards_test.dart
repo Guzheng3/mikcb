@@ -45,7 +45,17 @@ void main() {
     // 4433→4440: PR#63 成就导出在 main 合入时给 provider 带 +7 行正当
     // 增长但未同步基线（PR#90 的 4433 基于尚未含 #63 的旧 main），
     // 合并后实测 4440，按测试约定同步真实值。
-    const baselineLines = 4440;
+    // 4440→4461: main 上既有漂移（未同步基线，与本次情侣历史课表无关），
+    // 按测试约定并入基线。
+    // 4461→4608: 情侣历史课表（withu-home-heart-nickname 方案 follow-up）
+    // +147——换学期/覆盖导入前的学期快照捕获、restoreCoupleTimetableHistory
+    // 恢复入口与历史读取转发、服务注入参数，属正当功能增长；拆分归阶段 3
+    // 重构，按测试约定同步基线。
+    // 4608→4620: TA 课表可切换（移除情侣叠加视图 follow-up）+12——
+    // switchProfile 解除 TA 禁令、activeProfile 回退改写、新增
+    // myTimetableProfile（情侣快照/导出/上传固定指向我的课表），
+    // 属正当功能增长，按测试约定同步基线。
+    const baselineLines = 4620;
     final lines = providerFile.readAsLinesSync().length;
     expect(
       lines,
@@ -87,7 +97,10 @@ void main() {
   });
 
   test('_persistActiveProfileState 调用点棘轮：写放大只减不增', () {
-    const baselineCallSites = 48;
+    // 48→49: 情侣历史课表恢复（restoreCoupleTimetableHistory）需要把
+    // 还原后的课程/学期整量写回活动课表，是新的正当全量写路径，按测试
+    // 约定同步基线。
+    const baselineCallSites = 49;
     final partFiles = [
       providerFile,
       File('lib/providers/timetable/import_export_service.dart'),

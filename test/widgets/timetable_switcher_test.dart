@@ -3,13 +3,18 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:university_timetable/models/timetable_profile.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
+import 'package:university_timetable/providers/withu_couple_session_provider.dart';
 import 'package:university_timetable/screens/timetable_screen.dart';
 import 'package:university_timetable/screens/timetable_profiles_screen.dart';
 import 'package:university_timetable/services/storage_service.dart';
+import 'package:university_timetable/services/withu_couple_auth_service.dart';
+import 'package:university_timetable/services/withu_couple_session_store.dart';
 import 'package:university_timetable/ui/hyperos/hyperos.dart';
 import '../helpers_test_app.dart';
 
@@ -18,13 +23,71 @@ Future<void> _pumpTimetableFrame(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 500));
 }
 
+/// 内存版安全存储：预置 withU 凭证，让会话恢复走 MockClient 的 bootstrap。
+class _FakeSecureStorage extends WithuCoupleSecureStorage {
+  _FakeSecureStorage(Map<String, String> initial) : _values = initial;
+
+  final Map<String, String> _values;
+
+  @override
+  Future<String?> read({required String key}) async => _values[key];
+
+  @override
+  Future<void> write({required String key, required String value}) async {
+    _values[key] = value;
+  }
+
+  @override
+  Future<void> delete({required String key}) async {
+    _values.remove(key);
+  }
+}
+
+/// 预置 withU 登录态的会话 Provider：bootstrap 返回双方昵称（小明/小红）。
+WithuCoupleSessionProvider createLoggedInTestSession() {
+  final authService = WithuCoupleAuthService(
+    client: MockClient((request) async {
+      // 中文昵称必须走 UTF-8 字节（http.Response(String) 默认 Latin-1）。
+      return http.Response.bytes(
+        utf8.encode(
+          jsonEncode({
+            'success': true,
+            'logged_in': true,
+            'user': {
+              'id': 1,
+              'username': 'me',
+              'nickname': '小明',
+              'role': 'user1',
+            },
+            'partner': {
+              'id': 2,
+              'username': 'her',
+              'nickname': '小红',
+              'role': 'user2',
+            },
+          }),
+        ),
+        200,
+        headers: {'content-type': 'application/json; charset=utf-8'},
+      );
+    }),
+    sessionStore: WithuCoupleSessionStore(
+      storage: _FakeSecureStorage(_seededSessionValues()),
+    ),
+  );
+  return WithuCoupleSessionProvider(authService: authService);
+}
+
+Map<String, String> _seededSessionValues() => {
+  'withu_couple_username': 'me',
+  'withu_couple_phpsessid': 'session-id',
+  'withu_couple_csrf_token': 'csrf-token',
+};
+
 void _seedInitializedPrefs() {
   final now = DateTime(2026, 4, 12);
-  // These tests cover the classic profile switcher, which is hidden when the
-  // couple timetable overlay is enabled by default.
-  final settings = TimetableSettings.defaults().copyWith(
-    coupleTimetableOverlayEnabled: false,
-  );
+  // These tests cover the classic profile switcher.
+  final settings = TimetableSettings.defaults();
   final profile = TimetableProfile(
     id: 'profile-1',
     name: '默认课表',
@@ -40,6 +103,10 @@ void _seedInitializedPrefs() {
     'timetable_profiles': jsonEncode([profile.toJson()]),
     'active_timetable_profile_id': profile.id,
     'time_schemes': '[]',
+    // 情侣标题登录态恢复会读 withU 配置；预置合法 baseUrl。
+    'withu_couple_config_v1': jsonEncode({
+      'baseUrl': 'https://withu.example.com',
+    }),
   });
 }
 
@@ -194,45 +261,6 @@ void main() {
 
     expect(find.byType(TimetableProfilesScreen), findsOneWidget);
   });
-
-  testWidgets(
-    'couple mode centers the blue sign-in prompt and hides the title',
-    (tester) async {
-      final provider = await createInitializedTestProvider(tester);
-      await runRealAsync(tester, () async {
-        await provider.updateTimetableSettings(
-          provider.settings.copyWith(coupleTimetableOverlayEnabled: true),
-        );
-      });
-
-      await tester.pumpWidget(
-        ChangeNotifierProvider.value(
-          value: provider,
-          child: const TestApp(
-            home: TimetableScreen(enableProgressTimer: false),
-          ),
-        ),
-      );
-      await _pumpTimetableFrame(tester);
-
-      expect(
-        find.byKey(const ValueKey('profile_switcher_trigger')),
-        findsNothing,
-      );
-      expect(find.text('轻屿课表'), findsNothing);
-
-      final prompt = find.byKey(
-        const ValueKey('withu_couple_not_logged_in_prompt'),
-      );
-      expect(prompt, findsOneWidget);
-      expect(
-        tester.widget<Text>(find.text('未登录 · 点击登录')).style?.color,
-        const Color(0xFF3482FF),
-      );
-      final screenWidth = tester.getSize(find.byType(TimetableScreen)).width;
-      expect(tester.getCenter(prompt).dx, closeTo(screenWidth / 2, 0.5));
-    },
-  );
 
   testWidgets('profile actions use transparent dialog rows in frosted sheet', (
     tester,

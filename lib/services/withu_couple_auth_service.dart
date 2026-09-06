@@ -115,9 +115,10 @@ class WithuCoupleAuthService {
       throw const WithuCoupleApiException('withu_session_cookie_missing');
     }
 
+    // 密码只用于本次登录请求；会话过期后由服务端凭 withu_device
+    // 可信设备 Cookie 自动恢复，不落盘。
     final session = WithuCoupleSession(
       username: normalizedUsername,
-      password: password,
       sessionId: sessionId,
       deviceToken: _cookieValue(result.response, 'withu_device'),
       csrfToken: csrfToken.trim(),

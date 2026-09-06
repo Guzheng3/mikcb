@@ -144,8 +144,8 @@ void main() {
       defaults.homePageHeaderBlurEnabled,
     );
     expect(result.weekdayBarFontColorLight, defaults.weekdayBarFontColorLight);
-    // 壁纸文件路径必须一并清掉，否则「恢复默认」后背景还在。
-    expect(result.homePageWallpaperPath, isNull);
+    // 壁纸路径回到内置默认图；旧版背景图字段一并清掉。
+    expect(result.homePageWallpaperPath, defaults.homePageWallpaperPath);
     expect(result.homePageBackgroundImagePath, isNull);
 
     final dirty = dirtySettings();

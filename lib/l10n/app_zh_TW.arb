@@ -56,202 +56,6 @@
   },
   "dataTransferEntryTitle": "資料備份與遷移",
   "dataTransferEntrySubtitle": "匯出完整課表檔案，給別人直接匯入使用",
-  "cloudSyncEntryTitle": "雲端同步",
-  "cloudSyncEntrySubtitle": "透過堅果雲等多裝置同步課表與匯入資料",
-  "cloudSyncEntryDisabled": "已關閉",
-  "cloudSyncEntryEnabled": "已開啟",
-  "cloudSyncEntrySyncing": "同步中",
-  "cloudSyncEntryError": "上次同步失敗",
-  "cloudSyncTitle": "雲端同步",
-  "cloudSyncIntroTitle": "多裝置同步",
-  "cloudSyncIntroSubtitle": "設定堅果雲 WebDAV 後，可在手機、平板之間自動同步課表、倉庫帳號與相關設定",
-  "cloudSyncSettingsSectionTitle": "同步設定",
-  "cloudSyncSettingsSectionSubtitle": "可切換手動或自動同步",
-  "cloudSyncEnabledTitle": "啟用雲端同步",
-  "cloudSyncEnabledSubtitle": "關閉後不會上傳或下載雲端快照",
-  "cloudSyncProviderTitle": "服務提供商",
-  "cloudSyncProviderJianguoyun": "堅果雲",
-  "cloudSyncProviderCustom": "自訂 WebDAV",
-  "cloudSyncModeTitle": "同步方式",
-  "cloudSyncModeAuto": "自動同步",
-  "cloudSyncModeManual": "手動同步",
-  "cloudSyncAccountTitle": "帳號設定",
-  "cloudSyncAccountSubtitle": "請使用堅果雲應用程式專用密碼，而不是登入密碼，快照會包含倉庫記住的學校帳號",
-  "cloudSyncUsernameLabel": "電子郵件 / 使用者名稱",
-  "cloudSyncUsernameHint": "堅果雲註冊電子郵件",
-  "cloudSyncPasswordLabel": "應用程式專用密碼",
-  "cloudSyncPasswordHint": "在堅果雲帳戶安全選項中產生",
-  "cloudSyncPasswordStoredHint": "已儲存密碼；留空表示繼續使用已儲存的密碼",
-  "cloudSyncAdvancedTitle": "進階設定",
-  "cloudSyncBaseUrlLabel": "WebDAV 網址",
-  "cloudSyncBaseUrlSecurityNote": "建議使用 HTTPS 加密連線；HTTP 明文連線僅建議在可信網路環境下使用",
-  "cloudSyncRemoteFolderLabel": "遠端目錄",
-  "cloudSyncStatusTitle": "同步狀態",
-  "cloudSyncLastSyncedLabel": "上次同步",
-  "cloudSyncLastErrorLabel": "最近錯誤",
-  "cloudSyncLastSyncedAt": "上次同步：{time}",
-  "@cloudSyncLastSyncedAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncSyncing": "正在同步…",
-  "cloudSyncLastError": "最近錯誤：{message}",
-  "@cloudSyncLastError": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncHelpTitle": "如何取得堅果雲應用程式密碼",
-  "cloudSyncHelpBody": "開啟堅果雲網頁或客戶端 → 帳戶資訊 → 安全選項 → 新增應用程式密碼，WebDAV 網址預設為 https://dav.jianguoyun.com/dav/ ",
-  "cloudSyncTestConnection": "測試連線",
-  "cloudSyncSyncNow": "立即同步",
-  "cloudSyncSyncNowSubtitle": "與其他裝置對齊課表：先拉取雲端更新，再上傳本機修改",
-  "cloudSyncTestSuccess": "WebDAV 連線成功",
-  "cloudSyncTestFailed": "WebDAV 連線失敗，請檢查帳號、應用程式密碼和網路",
-  "cloudSyncResultUploaded": "已上傳到雲端",
-  "cloudSyncResultDownloaded": "已從雲端還原",
-  "cloudSyncResultUpToDate": "本機與雲端已一致",
-  "cloudSyncResultCancelled": "已取消同步",
-  "cloudSyncResultFailed": "同步失敗：{message}",
-  "@cloudSyncResultFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncConflictTitle": "偵測到同步衝突",
-  "cloudSyncConflictBody": "本機和雲端都有新的修改，請選擇保留哪一邊的資料",
-  "cloudSyncUseRemoteAction": "使用雲端",
-  "cloudSyncKeepLocalAction": "保留本機",
-  "cloudSyncAccountSectionTitle": "雲端帳號",
-  "cloudSyncNotConnectedHint": "連接堅果雲後，可在多裝置間同步課表與匯入資料",
-  "cloudSyncConnectAccount": "連接堅果雲",
-  "cloudSyncConnectedAs": "已連接：{email}",
-  "@cloudSyncConnectedAs": {
-    "placeholders": {
-      "email": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncDisconnect": "中斷連線",
-  "cloudSyncDisconnectTitle": "中斷雲端同步帳號",
-  "cloudSyncDisconnectBody": "中斷後將清除本機儲存的 WebDAV 憑證，課表資料仍保留在本機，是否繼續？",
-  "cloudSyncLoginSheetTitle": "連接堅果雲",
-  "cloudSyncLoginSheetSubtitle": "請使用應用程式專用密碼，不要使用堅果雲登入密碼",
-  "cloudSyncConfirmConnect": "確認連接",
-  "cloudSyncConnectSuccess": "帳號連接成功",
-  "cloudBackupSectionTitle": "可恢復版本",
-  "cloudBackupSectionSubtitle": "每次同步都會自動保留可恢復版本",
-  "cloudBackupCurrentLabel": "目前版本",
-  "cloudBackupCurrentBadge": "目前",
-  "cloudBackupCreateNow": "立即備份",
-  "cloudBackupViewAll": "查看全部可恢復版本",
-  "cloudBackupEmpty": "暫無可恢復版本，同步後會自動生成",
-  "cloudBackupSourceAuto": "自動備份",
-  "cloudBackupSourceManual": "手動備份",
-  "cloudBackupDefaultDeviceLabel": "本機",
-  "cloudBackupDeviceLabelTitle": "裝置名稱",
-  "cloudBackupDeviceLabelHint": "在備份列表中顯示，例如「我的手機」",
-  "cloudBackupSummary": "{profileCount} 個課表 · {courseCount} 門課程",
-  "@cloudBackupSummary": {
-    "placeholders": {
-      "profileCount": {
-        "type": "int"
-      },
-      "courseCount": {
-        "type": "int"
-      }
-    }
-  },
-  "cloudBackupRestoreTitle": "恢復到此備份",
-  "cloudBackupRestoreBody": "將恢復到 {time} 的課表，本機未同步的修改會遺失，是否繼續？",
-  "@cloudBackupRestoreBody": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupRestoreAction": "恢復",
-  "cloudBackupRestoreSuccess": "已恢復到此備份",
-  "cloudBackupRestoreFailed": "恢復失敗：{message}",
-  "@cloudBackupRestoreFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupDeleteTitle": "刪除此備份",
-  "cloudBackupDeleteBody": "確定刪除 {time} 的雲端備份嗎？此操作不可撤銷",
-  "@cloudBackupDeleteBody": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupDeleteSuccess": "備份已刪除",
-  "cloudBackupDeleteFailed": "刪除失敗：{message}",
-  "@cloudBackupDeleteFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupCreateSuccess": "備份已儲存到雲端",
-  "cloudBackupCreateFailed": "備份失敗：{message}",
-  "@cloudBackupCreateFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupUploadAsCurrentTitle": "設為目前雲端版本",
-  "cloudBackupUploadAsCurrentBody": "是否將此備份設為目前雲端版本？建議開啟，可避免其他裝置同步衝突",
-  "cloudBackupUploadAsCurrentYes": "設為目前版本",
-  "cloudBackupUploadAsCurrentNo": "僅恢復本機",
-  "cloudBackupDetailDevice": "裝置",
-  "cloudBackupDetailSource": "來源",
-  "cloudBackupDetailSummary": "內容",
-  "lanEditEntryTitle": "區域網路編輯",
-  "lanEditEntrySubtitle": "在電腦瀏覽器中編輯目前課表",
-  "lanEditTitle": "區域網路編輯",
-  "lanEditIntro": "開啟後，同一 Wi-Fi 或手機熱點下的電腦可透過瀏覽器編輯目前課表，資料不會上傳雲端，關閉後即停止存取",
-  "lanEditStart": "開啟區域網路編輯",
-  "lanEditStop": "停止",
-  "lanEditStatusRunning": "編輯工作階段進行中",
-  "lanEditAddressLabel": "存取網址",
-  "lanEditAddressUnavailable": "未偵測到區域網路 IP，請確認已連接 Wi-Fi 或已開啟熱點",
-  "lanEditPinLabel": "PIN",
-  "lanEditPortLabel": "連接埠",
-  "lanEditCopyAddress": "複製網址",
-  "lanEditCopied": "網址已複製",
-  "lanEditHotspotHint": "若宿舍 Wi-Fi 無法存取，請嘗試用手機開熱點，再讓電腦連接該熱點",
-  "lanEditQrHint": "電腦瀏覽器掃描上方二維碼可開啟控制台（連結已含 PIN，需同一區域網路）",
-  "lanEditStartFailed": "啟動失敗",
-  "lanEditConnectedClientsLabel": "已連接",
-  "lanEditConnectedClientsNone": "暫無",
-  "lanEditConnectedClientsValue": "{count} 台",
-  "@lanEditConnectedClientsValue": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "lanEditLastActivityLabel": "最近活動",
-  "lanEditKeepAliveWhenLeavingTitle": "離開後保持開啟",
-  "lanEditKeepAliveWhenLeavingSubtitle": "開啟後，返回設定頁不會自動關閉區域網路編輯；關閉後離開本頁即停止",
   "aboutSupportSectionTitle": "關於與支持",
   "feedbackEntryTitle": "問題回饋",
   "feedbackEntrySubtitle": "Issue、社区渠道和建議反饋入口",
@@ -3893,24 +3697,6 @@
   "aboutInAppDownloadSubtitle": "下載完成後直接在應用內安裝",
   "aboutSystemDownloaderTitle": "系统管理器",
   "aboutSystemDownloaderChoiceSubtitle": "交給系統下載管理器處理",
-  "syncErrorAuthFailed": "帳號或密碼錯誤",
-  "syncErrorAccessDenied": "沒有存取權限",
-  "syncErrorCertificateError": "憑證校驗失敗",
-  "syncErrorConnectionTimeout": "連線逾時",
-  "syncErrorConnectionFailed": "無法連線伺服器",
-  "syncErrorNetworkError": "網路異常",
-  "syncErrorInvalidResponse": "伺服器回應無效",
-  "syncErrorLocalChangesPendingSync": "本機有未同步修改，已跳過自動覆蓋",
-  "syncErrorMissingCredentials": "請先設定雲同步帳號",
-  "syncErrorBackupNotFound": "備份不存在",
-  "syncErrorMissingBackupSnapshot": "備份快照缺失",
-  "syncErrorCannotDeleteCurrentBackup": "不能刪除目前備份",
-  "syncErrorProviderNotReady": "課表尚未就緒",
-  "syncErrorInsecureUrl": "僅支援 HTTPS 加密連線，HTTP 明文協定已被停用",
-  "@syncErrorInsecureUrl": {
-    "description": "Error shown when the WebDAV URL uses insecure HTTP protocol, which is blocked in release builds"
-  },
-  "syncErrorSyncFailed": "同步失敗",
   "sectionTimeDisplayHidden": "不显示",
   "sectionTimeDisplayStartOnly": "仅显示上课时间",
   "sectionTimeDisplayStartAndEnd": "显示上下课时间",
@@ -4016,11 +3802,6 @@
   "serviceMsgUnrecognizedMikcbFullBackup": "Not a recognizable mikcb full backup file.",
   "serviceMsgMissingFullBackupData": "Complete backup data is missing.",
   "serviceMsgUseProfileBackupNotFull": "Use a timetable profile backup JSON, not a full data backup.",
-  "serviceMsgUnrecognizedSyncSnapshot": "Not a recognizable mikcb cloud sync snapshot.",
-  "serviceMsgMissingSyncTimetableData": "Cloud sync timetable data is missing.",
-  "serviceMsgSyncSnapshotChecksumFailed": "Cloud sync snapshot verification failed.",
-  "serviceMsgSyncSnapshotNoProfiles": "No recoverable timetables in the cloud sync snapshot.",
-  "serviceMsgSyncSnapshotUnrecognized": "Cloud sync snapshot could not be recognized.",
   "serviceMsgTimeSchemeNotFound": "Time scheme not found.",
   "serviceMsgTimeSchemeConfigUnavailable": "Current timetable time configuration is unavailable.",
   "serviceMsgTimeSchemeNotFoundSelected": "Selected time scheme was not found.",
@@ -4567,7 +4348,6 @@
   "serviceMsgConnectionTimeout": "Connection timed out.",
   "serviceMsgConnectionFailed": "Could not connect to the server.",
   "serviceMsgInvalidResponse": "Invalid server response.",
-  "serviceMsgSyncFailed": "Sync failed.",
   "serviceMsgUsageTypeOverride": "override time scheme",
   "serviceMsgUsageTypeProfile": "profile main time scheme",
   "dataTransferProfileShareText": "这是轻屿课表当前课表的完整备份文件，导入后可直接恢复课程和设置",
@@ -5086,18 +4866,6 @@
   "logLiveUpdateSnapshotSyncFailed": "同步超级岛课表快照失败",
   "logLiveUpdateSnapshotClearFailed": "清空超级岛课表快照失败",
   "logLiveUpdateSuspendTriggersFailed": "挂起超级岛课表调度失败",
-  "logLanEditAuthFailed": "局域网编辑：认证失败",
-  "logLanEditCourseCreated": "局域网编辑：已创建课程",
-  "logLanEditCourseUpdated": "局域网编辑：已更新课程",
-  "logLanEditCourseDeleted": "局域网编辑：已删除课程",
-  "logLanEditCourseGroupSaved": "局域网编辑：已保存课程组",
-  "logLanEditMergeImported": "局域网编辑：已导入合并备份",
-  "logLanEditCoursesBatchDeleted": "局域网编辑：已批量删除课程",
-  "logLanEditCurrentWeekSet": "局域网编辑：已设置当前周次",
-  "logLanEditProfileSwitched": "局域网编辑：已切换课表",
-  "logLanEditSpreadsheetImported": "局域网编辑：已导入表格",
-  "logLanEditSessionStarted": "局域网编辑：会话已启动",
-  "logLanEditSessionStopped": "局域网编辑：会话已停止",
   "logLiveUpdateTestRequested": "用户请求手动超级岛测试通知",
   "logLiveUpdateTestNoSelection": "手动超级岛测试：未找到可用课程",
   "logLiveUpdateTestSelectionReady": "手动超级岛测试：已解析目标课程",
@@ -5250,17 +5018,6 @@
   "logCatLiveUpdateSettingsSynced": "超级岛：设置已同步",
   "logCatLiveUpdateSnapshotSyncFailed": "超级岛：快照同步失败",
   "logCatLiveUpdateSnapshotClearFailed": "超级岛：快照清空失败",
-  "logCatLanEditAuthFailed": "局域网编辑：认证",
-  "logCatLanEditCourseCreated": "局域网编辑：创建课程",
-  "logCatLanEditCourseUpdated": "局域网编辑：更新课程",
-  "logCatLanEditCourseDeleted": "局域网编辑：删除课程",
-  "logCatLanEditCourseGroupSaved": "局域网编辑：保存课程组",
-  "logCatLanEditMergeImported": "局域网编辑：合并导入",
-  "logCatLanEditCoursesBatchDeleted": "局域网编辑：批量删除",
-  "logCatLanEditCurrentWeekSet": "局域网编辑：设置周次",
-  "logCatLanEditSpreadsheetImported": "局域网编辑：表格导入",
-  "logCatLanEditSessionStarted": "局域网编辑：会话启动",
-  "logCatLanEditSessionStopped": "局域网编辑：会话停止",
   "logCatLiveUpdateTestRequested": "超级岛测试：请求",
   "logCatLiveUpdateTestNoSelection": "超级岛测试：无课程",
   "logCatLiveUpdateTestSelectionReady": "超级岛测试：已选课程",
@@ -5309,27 +5066,6 @@
   "appUpdateMirrorPresetGhproxyNet": "备用镜像 4",
   "appUpdateMirrorPresetCustom": "自定义",
   "appUpdateMirrorPresetCustomDescription": "填写自定义镜像地址前缀",
-  "cloudBackupRetentionTitle": "备份保留策略",
-  "cloudBackupMaxCountTitle": "最多保留份数",
-  "cloudBackupMaxCountSubtitle": "超过后自动删除最旧的备份",
-  "cloudBackupMaxCountOption": "{count} 份",
-  "@cloudBackupMaxCountOption": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "cloudBackupMaxAgeTitle": "最长保留天数",
-  "cloudBackupMaxAgeSubtitle": "超过后自动删除过期备份",
-  "cloudBackupMaxAgeOption": "{days} 天",
-  "@cloudBackupMaxAgeOption": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
   "statisticsShareText": "来自轻屿课表的学期统计",
   "aboutUpdateAvailableHeadline": "有版本更新",
   "aboutAlreadyLatestHeadline": "已是最新版本",
@@ -5353,8 +5089,6 @@
   },
   "currentProfileTimeSchemeName": "当前课表时间",
   "unnamedTimetableProfile": "未命名课表",
-  "cloudBackupManualProtectedTitle": "手动备份永不过期",
-  "cloudBackupManualProtectedSubtitle": "开启后，手动创建的备份不会被自动清理",
   "courseImportPortalUrlMissingBody": "“{schoolName} / {adapterName}” 没有默认登录地址，请先输入学校教务系统网址",
   "@courseImportPortalUrlMissingBody": {
     "placeholders": {
@@ -5855,6 +5589,7 @@
   "coupleTimetableSharedFreeTitleOtherDay": "當日共同空閒",
   "coupleTimetableNoSharedFree": "今天沒有共同空閒時段",
   "coupleTimetableNoSharedFreeOtherDay": "當日沒有共同空閒時段",
+  "partnerTimetablePageTitle": "TA的課表",
   "@coupleTimetableSharedFreeMeta": {
     "placeholders": {
       "count": {
@@ -5923,11 +5658,32 @@
   "withuCoupleLoginAction": "登入並拉取",
   "withuCoupleLoginMenuTitle": "帳號登入",
   "withuCoupleNotLoggedInPrompt": "未登入 · 點擊登入",
+  "withuLoginConfirm": "登入",
+  "coupleHistorySheetTitle": "歷史課表",
+  "coupleHistoryMineLabel": "我的歷史課表",
+  "coupleHistoryHersLabel": "她的歷史課表",
+  "coupleHistoryRestored": "已恢復歷史課表",
+  "coupleHistoryRestoreFailed": "恢復失敗，請重試",
+  "coupleHistoryEntryMeta": "{semester} · 共 {count} 節課",
+  "@coupleHistoryEntryMeta": {
+    "placeholders": {
+      "semester": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "withuCouplePullImported": "已從 withU 匯入對方課表",
   "withuCouplePullUpdated": "已從 withU 更新對方課表",
   "withuCouplePullUnchanged": "對方課表無變化",
   "withuCoupleUploadSuccess": "已上傳課表，對方可拉取",
   "withuCoupleMissingCredentials": "請填寫 withU 伺服器、用戶名和密碼",
+  "withuCoupleUsernameLabel": "withU 使用者名稱",
+  "withuCoupleUsernameHint": "請輸入 withU 使用者名稱",
+  "withuCouplePasswordLabel": "withU 密碼",
+  "withuCouplePasswordHint": "請輸入 withU 密碼",
   "withuCoupleNotConnectedError": "請先連接 withU",
   "withuCoupleAuthFailed": "withU 用戶名或密碼不正確",
   "withuCoupleSessionExpired": "withU 會話已過期，請重新登入",
@@ -6171,5 +5927,13 @@
     }
   },
   "classAlarmDaySeparator": "、",
-  "classAlarmDetailSeparator": "；"
+  "classAlarmDetailSeparator": "；",
+  "globalSettingsTitle": "全域顯示設定",
+  "globalSettingsConfigured": "已配置",
+  "globalSettingsNotConfigured": "未配置",
+  "globalSettingsDescriptionTitle": "說明",
+  "globalSettingsDescriptionBody": "在這裡設定的顯示項目會套用到所有課表；個別課表單獨修改過的項目，仍以該課表自己的設定為準。學期、節次（時間範本）等課表專屬內容不參與全域設定。",
+  "globalSettingsClearTitle": "清除全域顯示設定",
+  "globalSettingsClearConfirm": "清除後，所有課表將恢復使用各自的設定。",
+  "globalSettingsCleared": "已清除全域顯示設定"
 }

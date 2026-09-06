@@ -6,7 +6,6 @@ import 'package:university_timetable/screens/add_schedule_item_screen.dart';
 import 'package:university_timetable/screens/add_task_screen.dart';
 import 'package:university_timetable/screens/advanced_material_settings_screen.dart';
 import 'package:university_timetable/screens/changelog_screen.dart';
-import 'package:university_timetable/screens/cloud_sync_screen.dart';
 import 'package:university_timetable/screens/couple_timetable_settings_screen.dart';
 import 'package:university_timetable/screens/course_conflict_screen.dart';
 import 'package:university_timetable/screens/course_import_screen.dart';
@@ -16,7 +15,6 @@ import 'package:university_timetable/screens/data_transfer_screen.dart';
 import 'package:university_timetable/screens/exam_list_screen.dart';
 import 'package:university_timetable/screens/feedback_screen.dart';
 import 'package:university_timetable/screens/ics_export_screen.dart';
-import 'package:university_timetable/screens/lan_edit_screen.dart';
 import 'package:university_timetable/screens/location_time_match_screen.dart';
 import 'package:university_timetable/screens/memory_stats_screen.dart';
 import 'package:university_timetable/screens/open_source_licenses_screen.dart';
@@ -52,8 +50,6 @@ final Map<String, WidgetBuilder> kInlineDockPages = {
   'exams': (context) => const ExamListScreen(),
   'tasks': (context) => const TaskListScreen(),
   'dataTransfer': (context) => const DataTransferScreen(),
-  'cloudSync': (context) => const CloudSyncScreen(),
-  'lanEdit': (context) => const LanEditScreen(),
   'coupleTimetable': (context) => const CoupleTimetableSettingsScreen(),
   'timeSchemes': (context) => const TimeSchemeManagementScreen(),
   'icsExport': (context) => const IcsExportScreen(),
@@ -92,8 +88,6 @@ final Map<String, Widget Function()> kHomeCatalogPages = {
   'timeSchemesPage': () => const TimeSchemeManagementScreen(),
   'timetableProfilesPage': () => const TimetableProfilesScreen(),
   'dataTransferPage': () => const DataTransferScreen(),
-  'cloudSyncPage': () => const CloudSyncScreen(),
-  'lanEditPage': () => const LanEditScreen(),
   'coupleTimetablePage': () => const CoupleTimetableSettingsScreen(),
   'settingsPage': _buildSettingsScreen,
   'statisticsSettingsPage': () => const StatisticsSettingsScreen(),

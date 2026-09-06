@@ -42,6 +42,11 @@ class TimetableProfile {
   final List<ScheduleItem> scheduleItems;
   final List<Exam> exams;
   final TimetableSettings settings;
+
+  /// 课表自身「明确配置过」的设置字段（settings.toJson 的顶层 key）。
+  /// 全局显示设置打底时，这些 key 优先取课表自身值；空表表示沿用历史
+  /// 惰性判定（与内置默认不同的字段视为配置过）。
+  final List<String> settingsOverrideKeys;
   final int currentWeek;
   final DateTime createdAt;
   final DateTime lastUsedAt;
@@ -55,6 +60,7 @@ class TimetableProfile {
     this.scheduleItems = const [],
     this.exams = const [],
     required this.settings,
+    this.settingsOverrideKeys = const [],
     required this.currentWeek,
     required this.createdAt,
     required this.lastUsedAt,
@@ -73,6 +79,7 @@ class TimetableProfile {
       'scheduleItems': scheduleItems.map((item) => item.toJson()).toList(),
       'exams': exams.map((exam) => exam.toJson()).toList(),
       'settings': settings.toJson(),
+      'settingsOverrideKeys': settingsOverrideKeys,
       'currentWeek': currentWeek,
       'createdAt': createdAt.toIso8601String(),
       'lastUsedAt': lastUsedAt.toIso8601String(),
@@ -110,6 +117,9 @@ class TimetableProfile {
         onDropped: () {},
       ),
       settings: settings,
+      settingsOverrideKeys: _parseStringListLenient(
+        json['settingsOverrideKeys'],
+      ),
       currentWeek: clampCurrentWeekToSettings(
         ((json['currentWeek'] as num?)?.toInt() ?? 1).clamp(1, 30),
         settings,
@@ -171,6 +181,9 @@ class TimetableProfile {
         onDropped: () => stats?.droppedExams += 1,
       ),
       settings: settings,
+      settingsOverrideKeys: _parseStringListLenient(
+        json['settingsOverrideKeys'],
+      ),
       currentWeek: clampCurrentWeekToSettings(
         ((json['currentWeek'] as num?)?.toInt() ?? 1).clamp(1, 30),
         settings,
@@ -235,6 +248,13 @@ class TimetableProfile {
     return parsed;
   }
 
+  static List<String> _parseStringListLenient(Object? rawList) {
+    if (rawList is! List) {
+      return const [];
+    }
+    return rawList.map((item) => item.toString()).toList();
+  }
+
   TimetableProfile copyWith({
     String? id,
     String? name,
@@ -243,6 +263,7 @@ class TimetableProfile {
     List<ScheduleItem>? scheduleItems,
     List<Exam>? exams,
     TimetableSettings? settings,
+    List<String>? settingsOverrideKeys,
     int? currentWeek,
     DateTime? createdAt,
     DateTime? lastUsedAt,
@@ -256,6 +277,7 @@ class TimetableProfile {
       scheduleItems: scheduleItems ?? this.scheduleItems,
       exams: exams ?? this.exams,
       settings: settings ?? this.settings,
+      settingsOverrideKeys: settingsOverrideKeys ?? this.settingsOverrideKeys,
       currentWeek: currentWeek ?? this.currentWeek,
       createdAt: createdAt ?? this.createdAt,
       lastUsedAt: lastUsedAt ?? this.lastUsedAt,

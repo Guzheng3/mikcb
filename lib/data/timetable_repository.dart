@@ -5,6 +5,7 @@ import '../models/partner_timetable_binding.dart';
 import '../models/schedule_date_rule.dart';
 import '../models/time_scheme.dart';
 import '../models/timetable_profile.dart';
+import '../models/timetable_settings.dart';
 import '../services/storage_service.dart';
 
 /// 课表域持久化仓储 —— 解耦阶段 2 的收口缝（OPTIMIZATION.md §4 阶段 2）。
@@ -48,6 +49,17 @@ class TimetableRepository {
   /// （幂等、比对盘上值），此处无需额外处理。
   Future<void> saveProfiles(List<TimetableProfile> profiles) =>
       _storage.saveProfiles(profiles);
+
+  // —— 全局显示设置（所有课表默认跟随，课表自身配置优先） ——
+
+  Future<TimetableSettings?> getGlobalTimetableSettings() =>
+      _storage.getGlobalTimetableSettings();
+
+  Future<void> saveGlobalTimetableSettings(TimetableSettings settings) =>
+      _storage.saveGlobalTimetableSettings(settings);
+
+  Future<void> clearGlobalTimetableSettings() =>
+      _storage.clearGlobalTimetableSettings();
 
   // —— 时间方案 ——
 

@@ -56,203 +56,7 @@
   },
   "dataTransferEntryTitle": "데이터 백업 및 마이그레이션",
   "dataTransferEntrySubtitle": "시간표 파일을 내보내 다른 사람이 바로 가져올 수 있습니다",
-  "cloudSyncEntryTitle": "클라우드 동기화",
-  "cloudSyncEntrySubtitle": "Jianguoyun 등으로 여러 기기에서 시간표와 가져온 데이터 동기화",
-  "cloudSyncEntryDisabled": "꺼짐",
-  "cloudSyncEntryEnabled": "켜짐",
-  "cloudSyncEntrySyncing": "동기화 중",
-  "cloudSyncEntryError": "마지막 동기화 실패",
-  "cloudSyncTitle": "클라우드 동기화",
-  "cloudSyncIntroTitle": "다중 기기 동기화",
-  "cloudSyncIntroSubtitle": "Jianguoyun WebDAV를 설정하면 휴대폰, 태블릿 간 시간표, 창고 계정 및 관련 설정을 자동으로 동기화할 수 있습니다",
-  "cloudSyncSettingsSectionTitle": "동기화 설정",
-  "cloudSyncSettingsSectionSubtitle": "수동 또는 자동 동기화를 전환할 수 있습니다",
-  "cloudSyncEnabledTitle": "클라우드 동기화 사용",
-  "cloudSyncEnabledSubtitle": "끄면 스냅샷을 업로드하거나 다운로드하지 않습니다",
-  "cloudSyncProviderTitle": "서비스 제공자",
-  "cloudSyncProviderJianguoyun": "Jianguoyun",
-  "cloudSyncProviderCustom": "사용자 지정 WebDAV",
-  "cloudSyncModeTitle": "동기화 방식",
-  "cloudSyncModeAuto": "자동 동기화",
-  "cloudSyncModeManual": "수동 동기화",
-  "cloudSyncAccountTitle": "계정 설정",
-  "cloudSyncAccountSubtitle": "Jianguoyun 앱 전용 비밀번호를 사용하세요 (로그인 비밀번호 아님). 스냅샷에는 창고에 저장된 학교 계정도 포함됩니다",
-  "cloudSyncUsernameLabel": "이메일 / 사용자명",
-  "cloudSyncUsernameHint": "Jianguoyun 가입 이메일",
-  "cloudSyncPasswordLabel": "앱 전용 비밀번호",
-  "cloudSyncPasswordHint": "Jianguoyun 계정 보안 설정에서 생성",
-  "cloudSyncPasswordStoredHint": "비밀번호 저장됨. 비워 두면 저장된 비밀번호를 계속 사용합니다",
-  "cloudSyncAdvancedTitle": "고급 설정",
-  "cloudSyncBaseUrlLabel": "WebDAV 주소",
-  "cloudSyncBaseUrlSecurityNote": "HTTPS 암호화 연결을 권장합니다. HTTP 평문 연결은 신뢰할 수 있는 네트워크에서만 사용하세요",
-  "cloudSyncRemoteFolderLabel": "원격 폴더",
-  "cloudSyncStatusTitle": "동기화 상태",
-  "cloudSyncLastSyncedLabel": "마지막 동기화",
-  "cloudSyncLastErrorLabel": "최근 오류",
-  "cloudSyncLastSyncedAt": "마지막 동기화: {time}",
-  "@cloudSyncLastSyncedAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncSyncing": "동기화 중…",
-  "cloudSyncLastError": "최근 오류: {message}",
-  "@cloudSyncLastError": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncHelpTitle": "Jianguoyun 앱 비밀번호 받는 방법",
-  "cloudSyncHelpBody": "Jianguoyun 웹 또는 클라이언트 → 계정 정보 → 보안 → 앱 비밀번호 추가. WebDAV 주소 기본값: https://dav.jianguoyun.com/dav/",
-  "cloudSyncTestConnection": "연결 테스트",
-  "cloudSyncSyncNow": "지금 동기화",
-  "cloudSyncSyncNowSubtitle": "다른 기기와 시간표를 맞춥니다: 클라우드에서 받은 뒤 기기 변경을 업로드",
-  "cloudSyncTestSuccess": "WebDAV 연결 성공",
-  "cloudSyncTestFailed": "WebDAV 연결 실패. 계정, 앱 비밀번호, 네트워크를 확인하세요",
-  "cloudSyncResultUploaded": "클라우드에 업로드됨",
-  "cloudSyncResultDownloaded": "클라우드에서 복원됨",
-  "cloudSyncResultUpToDate": "로컬과 클라우드가 일치함",
-  "cloudSyncResultCancelled": "동기화 취소됨",
-  "cloudSyncResultFailed": "동기화 실패: {message}",
-  "@cloudSyncResultFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncConflictTitle": "동기화 충돌 감지",
-  "cloudSyncConflictBody": "이 기기와 클라우드 모두 새 변경 사항이 있습니다. 유지할 데이터를 선택하세요.",
-  "cloudSyncUseRemoteAction": "클라우드 사용",
-  "cloudSyncKeepLocalAction": "로컬 유지",
-  "cloudSyncAccountSectionTitle": "클라우드 계정",
-  "cloudSyncNotConnectedHint": "Jianguoyun에 연결하면 여러 기기에서 시간표와 가져온 데이터를 동기화할 수 있습니다",
-  "cloudSyncConnectAccount": "Jianguoyun 연결",
-  "cloudSyncConnectedAs": "연결됨: {email}",
-  "@cloudSyncConnectedAs": {
-    "placeholders": {
-      "email": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncDisconnect": "연결 해제",
-  "cloudSyncDisconnectTitle": "클라우드 동기화 계정 연결 해제",
-  "cloudSyncDisconnectBody": "연결 해제 시 이 기기에 저장된 WebDAV 자격 증명이 삭제됩니다. 시간표 데이터는 기기에 남습니다. 계속하시겠습니까?",
-  "cloudSyncLoginSheetTitle": "Jianguoyun 연결",
-  "cloudSyncLoginSheetSubtitle": "앱 전용 비밀번호를 사용하세요 (Jianguoyun 로그인 비밀번호 아님)",
-  "cloudSyncConfirmConnect": "연결 확인",
-  "cloudSyncConnectSuccess": "계정 연결 성공",
-  "cloudBackupSectionTitle": "버전 기록",
-  "cloudBackupSectionSubtitle": "동기화할 때 자동 저장됩니다. 탭하여 해당 버전으로 복원",
-  "cloudBackupCurrentLabel": "현재 버전",
-  "cloudBackupCurrentBadge": "현재",
-  "cloudBackupCreateNow": "지금 백업",
-  "cloudBackupViewAll": "모든 버전 보기",
-  "cloudBackupEmpty": "아직 버전 기록이 없습니다. 동기화하면 자동 저장됩니다",
-  "cloudBackupSourceAuto": "자동 백업",
-  "cloudBackupSourceManual": "수동 백업",
-  "cloudBackupDefaultDeviceLabel": "이 기기",
-  "cloudBackupDeviceLabelTitle": "기기 이름",
-  "cloudBackupDeviceLabelHint": "백업 목록에 표시됩니다. 예: 내 휴대폰",
-  "cloudBackupSummary": "시간표 {profileCount}개 · 강의 {courseCount}개",
-  "@cloudBackupSummary": {
-    "placeholders": {
-      "profileCount": {
-        "type": "int"
-      },
-      "courseCount": {
-        "type": "int"
-      }
-    }
-  },
-  "cloudBackupRestoreTitle": "이 백업으로 복원",
-  "cloudBackupRestoreBody": "{time} 시간표로 복원합니다. 동기화되지 않은 로컬 변경은 사라집니다. 계속할까요?",
-  "@cloudBackupRestoreBody": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupRestoreAction": "복원",
-  "cloudBackupRestoreSuccess": "백업을 복원했습니다",
-  "cloudBackupRestoreFailed": "복원 실패: {message}",
-  "@cloudBackupRestoreFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupDeleteTitle": "이 백업 삭제",
-  "cloudBackupDeleteBody": "{time} 클라우드 백업을 삭제할까요? 되돌릴 수 없습니다.",
-  "@cloudBackupDeleteBody": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupDeleteSuccess": "백업을 삭제했습니다",
-  "cloudBackupDeleteFailed": "삭제 실패: {message}",
-  "@cloudBackupDeleteFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupCreateSuccess": "백업을 클라우드에 저장했습니다",
-  "cloudBackupCreateFailed": "백업 실패: {message}",
-  "@cloudBackupCreateFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupUploadAsCurrentTitle": "현재 클라우드 버전으로 설정",
-  "cloudBackupUploadAsCurrentBody": "이 백업을 현재 클라우드 버전으로 업로드할까요? 동기화 충돌을 줄이려면 권장합니다.",
-  "cloudBackupUploadAsCurrentYes": "현재 버전으로 설정",
-  "cloudBackupUploadAsCurrentNo": "로컬만 복원",
-  "cloudBackupDetailDevice": "기기",
-  "cloudBackupDetailSource": "유형",
-  "cloudBackupDetailSummary": "내용",
   "aboutSupportSectionTitle": "앱 정보 및 지원",
-  "lanEditEntryTitle": "LAN 편집",
-  "lanEditEntrySubtitle": "PC 브라우저에서 현재 시간표 편집",
-  "lanEditTitle": "LAN 편집",
-  "lanEditIntro": "활성화하면 같은 Wi-Fi 또는 핫스팟의 PC 브라우저에서 현재 시간표를 편집할 수 있습니다",
-  "lanEditStart": "LAN 편집 시작",
-  "lanEditStop": "중지",
-  "lanEditStatusRunning": "LAN 편집 세션 진행 중",
-  "lanEditAddressLabel": "접속 주소",
-  "lanEditAddressUnavailable": "LAN IP를 찾을 수 없습니다",
-  "lanEditPinLabel": "PIN",
-  "lanEditPortLabel": "포트",
-  "lanEditCopyAddress": "주소 복사",
-  "lanEditCopied": "주소가 복사되었습니다",
-  "lanEditHotspotHint": "기숙사 Wi-Fi에서 연결되지 않으면 휴대폰 핫스팟을 사용해 보세요",
-  "lanEditQrHint": "같은 LAN의 PC 브라우저로 QR 코드를 스캔하세요(PIN 포함 링크)",
-  "lanEditStartFailed": "시작 실패",
-  "lanEditConnectedClientsLabel": "연결됨",
-  "lanEditConnectedClientsNone": "없음",
-  "lanEditConnectedClientsValue": "{count}대",
-  "@lanEditConnectedClientsValue": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "lanEditLastActivityLabel": "최근 활동",
-  "lanEditKeepAliveWhenLeavingTitle": "나가도 유지",
-  "lanEditKeepAliveWhenLeavingSubtitle": "켜면 이 화면을 떠나도 LAN 편집이 유지되고, 끄면 나갈 때 중지됩니다",
   "feedbackEntryTitle": "문제 제보",
   "feedbackEntrySubtitle": "이슈, 커뮤니티 채널 및 피드백",
   "aboutEntryTitle": "앱 정보",
@@ -3893,24 +3697,6 @@
   "aboutInAppDownloadSubtitle": "Install directly in the app after download completes",
   "aboutSystemDownloaderTitle": "System download manager",
   "aboutSystemDownloaderChoiceSubtitle": "Hand off to the system download manager",
-  "syncErrorAuthFailed": "Invalid username or password",
-  "syncErrorAccessDenied": "Access denied",
-  "syncErrorCertificateError": "Certificate error",
-  "syncErrorConnectionTimeout": "Connection timed out",
-  "syncErrorConnectionFailed": "Could not connect to server",
-  "syncErrorNetworkError": "Network error",
-  "syncErrorInvalidResponse": "Invalid server response",
-  "syncErrorLocalChangesPendingSync": "Skipped auto sync because local changes are pending",
-  "syncErrorMissingCredentials": "Configure sync account first",
-  "syncErrorBackupNotFound": "Backup not found",
-  "syncErrorMissingBackupSnapshot": "Backup snapshot is missing",
-  "syncErrorCannotDeleteCurrentBackup": "Cannot delete the current backup",
-  "syncErrorProviderNotReady": "Timetable is not ready",
-  "syncErrorInsecureUrl": "HTTPS 암호화 연결만 지원됩니다. HTTP 평문 프로토콜은 비활성화되었습니다.",
-  "@syncErrorInsecureUrl": {
-    "description": "Error shown when the WebDAV URL uses insecure HTTP protocol, which is blocked in release builds"
-  },
-  "syncErrorSyncFailed": "동기화 실패",
   "sectionTimeDisplayHidden": "Hidden",
   "sectionTimeDisplayStartOnly": "Start time only",
   "sectionTimeDisplayStartAndEnd": "Start and end times",
@@ -4016,11 +3802,6 @@
   "serviceMsgUnrecognizedMikcbFullBackup": "Not a recognizable mikcb full backup file.",
   "serviceMsgMissingFullBackupData": "Complete backup data is missing.",
   "serviceMsgUseProfileBackupNotFull": "Use a timetable profile backup JSON, not a full data backup.",
-  "serviceMsgUnrecognizedSyncSnapshot": "Not a recognizable mikcb cloud sync snapshot.",
-  "serviceMsgMissingSyncTimetableData": "Cloud sync timetable data is missing.",
-  "serviceMsgSyncSnapshotChecksumFailed": "Cloud sync snapshot verification failed.",
-  "serviceMsgSyncSnapshotNoProfiles": "No recoverable timetables in the cloud sync snapshot.",
-  "serviceMsgSyncSnapshotUnrecognized": "Cloud sync snapshot could not be recognized.",
   "serviceMsgTimeSchemeNotFound": "Time scheme not found.",
   "serviceMsgTimeSchemeConfigUnavailable": "Current timetable time configuration is unavailable.",
   "serviceMsgTimeSchemeNotFoundSelected": "Selected time scheme was not found.",
@@ -4567,7 +4348,6 @@
   "serviceMsgConnectionTimeout": "Connection timed out.",
   "serviceMsgConnectionFailed": "Could not connect to the server.",
   "serviceMsgInvalidResponse": "Invalid server response.",
-  "serviceMsgSyncFailed": "Sync failed.",
   "serviceMsgUsageTypeOverride": "override time scheme",
   "serviceMsgUsageTypeProfile": "profile main time scheme",
   "dataTransferProfileShareText": "This is a full backup of the current timetable from Qingyu Timetable. Import it to restore courses and settings.",
@@ -5086,18 +4866,6 @@
   "logLiveUpdateSnapshotSyncFailed": "Failed to sync Live Island timetable snapshot",
   "logLiveUpdateSnapshotClearFailed": "Failed to clear Live Island timetable snapshot",
   "logLiveUpdateSuspendTriggersFailed": "Failed to suspend Live Island schedule triggers",
-  "logLanEditAuthFailed": "LAN edit: authentication failed",
-  "logLanEditCourseCreated": "LAN edit: course created",
-  "logLanEditCourseUpdated": "LAN edit: course updated",
-  "logLanEditCourseDeleted": "LAN edit: course deleted",
-  "logLanEditCourseGroupSaved": "LAN edit: course group saved",
-  "logLanEditMergeImported": "LAN edit: merge backup imported",
-  "logLanEditCoursesBatchDeleted": "LAN edit: courses batch deleted",
-  "logLanEditCurrentWeekSet": "LAN edit: current week set",
-  "logLanEditProfileSwitched": "LAN edit: timetable profile switched",
-  "logLanEditSpreadsheetImported": "LAN edit: spreadsheet imported",
-  "logLanEditSessionStarted": "LAN edit: session started",
-  "logLanEditSessionStopped": "LAN edit: session stopped",
   "logLiveUpdateTestRequested": "User requested manual Live Island test notification",
   "logLiveUpdateTestNoSelection": "Manual Live Island test: no course available",
   "logLiveUpdateTestSelectionReady": "Manual Live Island test: target course resolved",
@@ -5250,17 +5018,6 @@
   "logCatLiveUpdateSettingsSynced": "live island: settings synced",
   "logCatLiveUpdateSnapshotSyncFailed": "live island: snapshot sync failed",
   "logCatLiveUpdateSnapshotClearFailed": "live island: snapshot clear failed",
-  "logCatLanEditAuthFailed": "lan edit auth failed",
-  "logCatLanEditCourseCreated": "lan edit course created",
-  "logCatLanEditCourseUpdated": "lan edit course updated",
-  "logCatLanEditCourseDeleted": "lan edit course deleted",
-  "logCatLanEditCourseGroupSaved": "lan edit course group saved",
-  "logCatLanEditMergeImported": "lan edit merge imported",
-  "logCatLanEditCoursesBatchDeleted": "lan edit courses batch deleted",
-  "logCatLanEditCurrentWeekSet": "lan edit current week set",
-  "logCatLanEditSpreadsheetImported": "lan edit spreadsheet imported",
-  "logCatLanEditSessionStarted": "lan edit session started",
-  "logCatLanEditSessionStopped": "lan edit session stopped",
   "logCatLiveUpdateTestRequested": "live island: test requested",
   "logCatLiveUpdateTestNoSelection": "live island: test no selection",
   "logCatLiveUpdateTestSelectionReady": "live island: test selection ready",
@@ -5309,27 +5066,6 @@
   "appUpdateMirrorPresetGhproxyNet": "Backup mirror 4",
   "appUpdateMirrorPresetCustom": "Custom",
   "appUpdateMirrorPresetCustomDescription": "Enter a custom mirror URL prefix",
-  "cloudBackupRetentionTitle": "Backup retention",
-  "cloudBackupMaxCountTitle": "Maximum backups",
-  "cloudBackupMaxCountSubtitle": "Oldest backups are removed when exceeded",
-  "cloudBackupMaxCountOption": "{count} backups",
-  "@cloudBackupMaxCountOption": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "cloudBackupMaxAgeTitle": "Maximum age",
-  "cloudBackupMaxAgeSubtitle": "Backups older than this are removed",
-  "cloudBackupMaxAgeOption": "{days} days",
-  "@cloudBackupMaxAgeOption": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
   "statisticsShareText": "Semester statistics from mikcb",
   "aboutUpdateAvailableHeadline": "Update available",
   "aboutAlreadyLatestHeadline": "Already up to date",
@@ -5353,8 +5089,6 @@
   },
   "currentProfileTimeSchemeName": "Current timetable schedule",
   "unnamedTimetableProfile": "Unnamed timetable",
-  "cloudBackupManualProtectedTitle": "Protect manual backups",
-  "cloudBackupManualProtectedSubtitle": "Manual backups are never auto-deleted when enabled",
   "courseImportPortalUrlMissingBody": "\"{schoolName} / {adapterName}\" has no default login URL. Enter the school portal URL first.",
   "@courseImportPortalUrlMissingBody": {
     "placeholders": {
@@ -5908,6 +5642,7 @@
   "coupleTimetableSharedFreeTitleOtherDay": "이날 공통 공강 시간",
   "coupleTimetableNoSharedFree": "오늘 공통 공강 시간이 없습니다",
   "coupleTimetableNoSharedFreeOtherDay": "이날 공통 공강 시간이 없습니다",
+  "partnerTimetablePageTitle": "상대 시간표",
   "coupleTimetableSharedFreeMeta": "총 {count}개 구간",
   "coupleTimetableSharedFreeMoreCount": "{count}개 구간 더",
   "coupleTimetableSharedFreeUnavailable": "지금은 공통 공강 시간을 계산할 수 없습니다",
@@ -5945,11 +5680,32 @@
   "withuCoupleLoginAction": "로그인하고 가져오기",
   "withuCoupleLoginMenuTitle": "계정 로그인",
   "withuCoupleNotLoggedInPrompt": "로그인 안 됨 · 탭해서 로그인",
+  "withuLoginConfirm": "로그인",
+  "coupleHistorySheetTitle": "히스토리",
+  "coupleHistoryMineLabel": "내 지난 시간표",
+  "coupleHistoryHersLabel": "그녀의 지난 시간표",
+  "coupleHistoryRestored": "시간표를 복원했습니다",
+  "coupleHistoryRestoreFailed": "복원에 실패했습니다. 다시 시도해 주세요",
+  "coupleHistoryEntryMeta": "{semester} · {count}교시",
+  "@coupleHistoryEntryMeta": {
+    "placeholders": {
+      "semester": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "withuCouplePullImported": "withU에서 상대방 시간표를 가져왔습니다",
   "withuCouplePullUpdated": "withU에서 상대방 시간표를 업데이트했습니다",
   "withuCouplePullUnchanged": "상대방 시간표에 변화가 없습니다",
   "withuCoupleUploadSuccess": "시간표를 업로드했습니다. 상대방이 가져올 수 있습니다",
   "withuCoupleMissingCredentials": "withU 서버, 사용자 이름, 비밀번호를 입력하세요",
+  "withuCoupleUsernameLabel": "withU 사용자 이름",
+  "withuCoupleUsernameHint": "withU 사용자 이름 입력",
+  "withuCouplePasswordLabel": "withU 비밀번호",
+  "withuCouplePasswordHint": "withU 비밀번호 입력",
   "withuCoupleNotConnectedError": "먼저 withU에 연결하세요",
   "withuCoupleAuthFailed": "withU 사용자 이름 또는 비밀번호가 올바르지 않습니다",
   "withuCoupleSessionExpired": "withU 세션이 만료되었습니다. 다시 로그인하세요",
@@ -6171,5 +5927,13 @@
     }
   },
   "classAlarmDaySeparator": ", ",
-  "classAlarmDetailSeparator": "; "
+  "classAlarmDetailSeparator": "; ",
+  "globalSettingsTitle": "전역 표시 설정",
+  "globalSettingsConfigured": "구성됨",
+  "globalSettingsNotConfigured": "구성되지 않음",
+  "globalSettingsDescriptionTitle": "설명",
+  "globalSettingsDescriptionBody": "여기에서 설정한 표시 항목은 모든 시간표에 적용됩니다. 특정 시간표에서 변경한 항목은 해당 시간표의 자체 설정이 우선합니다. 학기, 교시(시간 템플릿) 등 시간표 고유 항목은 전역 설정 대상이 아닙니다.",
+  "globalSettingsClearTitle": "전역 표시 설정 지우기",
+  "globalSettingsClearConfirm": "지우면 모든 시간표가 각자의 설정을 다시 사용합니다.",
+  "globalSettingsCleared": "전역 표시 설정을 지웠습니다"
 }

@@ -47,13 +47,13 @@ class TimetableProfilesScreen extends StatelessWidget {
                           profiles.length > 1 &&
                           !profiles[index].isPartnerImported,
                       isPartnerImported: profiles[index].isPartnerImported,
-                      onSwitch: profiles[index].isPartnerImported
-                          ? () {}
-                          : () => _switchProfile(
-                              context,
-                              profiles[index].id,
-                              profiles[index].name,
-                            ),
+                      // TA 课表同为可切换课表（情侣标题/卡片右半直达），
+                      // 管理页允许切换，改名/复制等仍保留禁用。
+                      onSwitch: () => _switchProfile(
+                        context,
+                        profiles[index].id,
+                        profiles[index].name,
+                      ),
                       onRename: profiles[index].isPartnerImported
                           ? () {}
                           : () => _renameProfile(

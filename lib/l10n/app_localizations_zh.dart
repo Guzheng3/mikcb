@@ -249,6 +249,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coupleTimetableNoSharedFreeOtherDay => '该日没有共同空闲时段';
 
   @override
+  String get partnerTimetablePageTitle => 'TA的课表';
+
+  @override
   String coupleTimetableSharedFreeMeta(int count) {
     return '共 $count 段';
   }
@@ -376,6 +379,32 @@ class AppLocalizationsZh extends AppLocalizations {
   String get withuCoupleNotLoggedInPrompt => '未登录 · 点击登录';
 
   @override
+  String get withuLoginConfirm => '登录';
+
+  @override
+  String get coupleHistorySheetTitle => '历史课表';
+
+  @override
+  String get coupleHistoryMineLabel => '我的历史课表';
+
+  @override
+  String get coupleHistoryHersLabel => '她的历史课表';
+
+  @override
+  String get noHistoryRecords => '暂无历史记录';
+
+  @override
+  String get coupleHistoryRestored => '已恢复历史课表';
+
+  @override
+  String get coupleHistoryRestoreFailed => '恢复失败，请重试';
+
+  @override
+  String coupleHistoryEntryMeta(String semester, int count) {
+    return '$semester · 共 $count 节课';
+  }
+
+  @override
   String get withuCouplePullImported => '已从 withU 导入对方课表';
 
   @override
@@ -389,6 +418,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get withuCoupleMissingCredentials => '请填写 withU 服务器、用户名和密码';
+
+  @override
+  String get withuCoupleUsernameLabel => 'withU 用户名';
+
+  @override
+  String get withuCoupleUsernameHint => '请输入 withU 用户名';
+
+  @override
+  String get withuCouplePasswordLabel => 'withU 密码';
+
+  @override
+  String get withuCouplePasswordHint => '请输入 withU 密码';
 
   @override
   String get withuCoupleNotConnectedError => '请先连接 withU';
@@ -410,383 +451,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get withuCoupleSessionCookieMissing => 'withU 未返回登录会话';
-
-  @override
-  String get cloudSyncEntryTitle => '云同步';
-
-  @override
-  String get cloudSyncEntrySubtitle => '通过坚果云等多设备同步课表与导入数据';
-
-  @override
-  String get cloudSyncEntryDisabled => '已关闭';
-
-  @override
-  String get cloudSyncEntryEnabled => '已开启';
-
-  @override
-  String get cloudSyncEntrySyncing => '同步中';
-
-  @override
-  String get cloudSyncEntryError => '上次同步失败';
-
-  @override
-  String get cloudSyncTitle => '云同步';
-
-  @override
-  String get cloudSyncIntroTitle => '多设备同步';
-
-  @override
-  String get cloudSyncIntroSubtitle =>
-      '配置坚果云 WebDAV 后，可在手机、平板之间自动同步课表、仓库账号与相关设置';
-
-  @override
-  String get cloudSyncSettingsSectionTitle => '同步设置';
-
-  @override
-  String get cloudSyncSettingsSectionSubtitle => '可切换手动或自动同步';
-
-  @override
-  String get cloudSyncEnabledTitle => '启用云同步';
-
-  @override
-  String get cloudSyncEnabledSubtitle => '关闭后不会上传或下载云端快照';
-
-  @override
-  String get cloudSyncProviderTitle => '服务提供商';
-
-  @override
-  String get cloudSyncProviderJianguoyun => '坚果云';
-
-  @override
-  String get cloudSyncProviderCustom => '自定义 WebDAV';
-
-  @override
-  String get cloudSyncModeTitle => '同步方式';
-
-  @override
-  String get cloudSyncModeAuto => '自动同步';
-
-  @override
-  String get cloudSyncModeManual => '手动同步';
-
-  @override
-  String get cloudSyncAccountTitle => '账号配置';
-
-  @override
-  String get cloudSyncAccountSubtitle => '请使用坚果云应用专用密码，而不是登录密码，快照会包含仓库记住的学校账号';
-
-  @override
-  String get cloudSyncUsernameLabel => '邮箱 / 用户名';
-
-  @override
-  String get cloudSyncUsernameHint => '坚果云注册邮箱';
-
-  @override
-  String get cloudSyncPasswordLabel => '应用专用密码';
-
-  @override
-  String get cloudSyncPasswordHint => '在坚果云账户安全选项中生成';
-
-  @override
-  String get cloudSyncPasswordStoredHint => '已保存密码；留空表示继续使用已保存的密码';
-
-  @override
-  String get cloudSyncAdvancedTitle => '高级设置';
-
-  @override
-  String get cloudSyncBaseUrlLabel => 'WebDAV 地址';
-
-  @override
-  String get cloudSyncBaseUrlSecurityNote =>
-      '建议使用 HTTPS 加密连接；HTTP 明文连接仅建议在可信网络环境下使用';
-
-  @override
-  String get cloudSyncRemoteFolderLabel => '远程目录';
-
-  @override
-  String get cloudSyncStatusTitle => '同步状态';
-
-  @override
-  String get cloudSyncLastSyncedLabel => '上次同步';
-
-  @override
-  String get cloudSyncLastErrorLabel => '最近错误';
-
-  @override
-  String cloudSyncLastSyncedAt(String time) {
-    return '上次同步：$time';
-  }
-
-  @override
-  String get cloudSyncSyncing => '正在同步…';
-
-  @override
-  String cloudSyncLastError(String message) {
-    return '最近错误：$message';
-  }
-
-  @override
-  String get cloudSyncHelpTitle => '如何获取坚果云应用密码';
-
-  @override
-  String get cloudSyncHelpBody =>
-      '打开坚果云网页或客户端 → 账户信息 → 安全选项 → 添加应用密码，WebDAV 地址默认为 https://dav.jianguoyun.com/dav/ ';
-
-  @override
-  String get cloudSyncTestConnection => '测试连接';
-
-  @override
-  String get cloudSyncSyncNow => '立即同步';
-
-  @override
-  String get cloudSyncSyncNowSubtitle => '与其他设备对齐课表：先拉取云端更新，再上传本机修改';
-
-  @override
-  String get cloudSyncTestSuccess => 'WebDAV 连接成功';
-
-  @override
-  String get cloudSyncTestFailed => 'WebDAV 连接失败，请检查账号、应用密码和网络';
-
-  @override
-  String get cloudSyncResultUploaded => '已上传到云端';
-
-  @override
-  String get cloudSyncResultDownloaded => '已从云端恢复';
-
-  @override
-  String get cloudSyncResultUpToDate => '本地与云端已一致';
-
-  @override
-  String get cloudSyncResultCancelled => '已取消同步';
-
-  @override
-  String cloudSyncResultFailed(String message) {
-    return '同步失败：$message';
-  }
-
-  @override
-  String get cloudSyncConflictTitle => '检测到同步冲突';
-
-  @override
-  String get cloudSyncConflictBody => '本机和云端都有新的修改，请选择保留哪一边的数据';
-
-  @override
-  String get cloudSyncUseRemoteAction => '使用云端';
-
-  @override
-  String get cloudSyncKeepLocalAction => '保留本机';
-
-  @override
-  String get cloudSyncAccountSectionTitle => '云账号';
-
-  @override
-  String get cloudSyncNotConnectedHint => '连接坚果云后，可在多设备间同步课表与导入数据';
-
-  @override
-  String get cloudSyncConnectAccount => '连接坚果云';
-
-  @override
-  String cloudSyncConnectedAs(String email) {
-    return '已连接：$email';
-  }
-
-  @override
-  String get cloudSyncDisconnect => '断开连接';
-
-  @override
-  String get cloudSyncDisconnectTitle => '断开云同步账号';
-
-  @override
-  String get cloudSyncDisconnectBody =>
-      '断开后将清除本机保存的 WebDAV 凭据，课表数据仍保留在本机，是否继续？';
-
-  @override
-  String get cloudSyncLoginSheetTitle => '连接坚果云';
-
-  @override
-  String get cloudSyncLoginSheetSubtitle => '请使用应用专用密码，不要使用坚果云登录密码';
-
-  @override
-  String get cloudSyncConfirmConnect => '确认连接';
-
-  @override
-  String get cloudSyncConnectSuccess => '账号连接成功';
-
-  @override
-  String get cloudBackupSectionTitle => '可恢复版本';
-
-  @override
-  String get cloudBackupSectionSubtitle => '每次同步都会自动保留可恢复版本';
-
-  @override
-  String get cloudBackupCurrentLabel => '当前版本';
-
-  @override
-  String get cloudBackupCurrentBadge => '当前';
-
-  @override
-  String get cloudBackupCreateNow => '立即备份';
-
-  @override
-  String get cloudBackupViewAll => '查看全部可恢复版本';
-
-  @override
-  String get cloudBackupEmpty => '暂无可恢复版本，同步后会自动生成';
-
-  @override
-  String get cloudBackupSourceAuto => '自动备份';
-
-  @override
-  String get cloudBackupSourceManual => '手动备份';
-
-  @override
-  String get cloudBackupDefaultDeviceLabel => '本机';
-
-  @override
-  String get cloudBackupDeviceLabelTitle => '设备名称';
-
-  @override
-  String get cloudBackupDeviceLabelHint => '在备份列表中显示，例如「我的手机」';
-
-  @override
-  String cloudBackupSummary(int profileCount, int courseCount) {
-    return '$profileCount 个课表 · $courseCount 门课程';
-  }
-
-  @override
-  String get cloudBackupRestoreTitle => '恢复到此备份';
-
-  @override
-  String cloudBackupRestoreBody(String time) {
-    return '将恢复到 $time 的课表，本地未同步的修改会丢失，是否继续？';
-  }
-
-  @override
-  String get cloudBackupRestoreAction => '恢复';
-
-  @override
-  String get cloudBackupRestoreSuccess => '已恢复到此备份';
-
-  @override
-  String cloudBackupRestoreFailed(String message) {
-    return '恢复失败：$message';
-  }
-
-  @override
-  String get cloudBackupDeleteTitle => '删除此备份';
-
-  @override
-  String cloudBackupDeleteBody(String time) {
-    return '确定删除 $time 的云端备份吗？此操作不可撤销';
-  }
-
-  @override
-  String get cloudBackupDeleteSuccess => '备份已删除';
-
-  @override
-  String cloudBackupDeleteFailed(String message) {
-    return '删除失败：$message';
-  }
-
-  @override
-  String get cloudBackupCreateSuccess => '备份已保存到云端';
-
-  @override
-  String cloudBackupCreateFailed(String message) {
-    return '备份失败：$message';
-  }
-
-  @override
-  String get cloudBackupUploadAsCurrentTitle => '设为当前云端版本';
-
-  @override
-  String get cloudBackupUploadAsCurrentBody =>
-      '是否将此备份设为当前云端版本？建议开启，可避免其他设备同步冲突';
-
-  @override
-  String get cloudBackupUploadAsCurrentYes => '设为当前版本';
-
-  @override
-  String get cloudBackupUploadAsCurrentNo => '仅恢复本地';
-
-  @override
-  String get cloudBackupDetailDevice => '设备';
-
-  @override
-  String get cloudBackupDetailSource => '来源';
-
-  @override
-  String get cloudBackupDetailSummary => '内容';
-
-  @override
-  String get lanEditEntryTitle => '局域网编辑';
-
-  @override
-  String get lanEditEntrySubtitle => '在电脑浏览器中编辑当前课表';
-
-  @override
-  String get lanEditTitle => '局域网编辑';
-
-  @override
-  String get lanEditIntro =>
-      '开启后，同一 WiFi 或手机热点下的电脑可通过浏览器编辑当前课表，数据不会上传云端，关闭后即停止访问';
-
-  @override
-  String get lanEditStart => '开启局域网编辑';
-
-  @override
-  String get lanEditStop => '停止';
-
-  @override
-  String get lanEditStatusRunning => '编辑会话进行中';
-
-  @override
-  String get lanEditAddressLabel => '访问地址';
-
-  @override
-  String get lanEditAddressUnavailable => '未检测到局域网 IP，请确认已连接 WiFi 或已开启热点';
-
-  @override
-  String get lanEditPinLabel => 'PIN';
-
-  @override
-  String get lanEditPortLabel => '端口';
-
-  @override
-  String get lanEditCopyAddress => '复制地址';
-
-  @override
-  String get lanEditCopied => '地址已复制';
-
-  @override
-  String get lanEditHotspotHint => '如果宿舍 WiFi 无法访问，请尝试用手机开热点，再让电脑连接该热点';
-
-  @override
-  String get lanEditQrHint => '电脑浏览器扫描上方二维码可打开控制台（链接已含 PIN，需同一局域网）';
-
-  @override
-  String get lanEditStartFailed => '启动失败';
-
-  @override
-  String get lanEditConnectedClientsLabel => '已连接';
-
-  @override
-  String get lanEditConnectedClientsNone => '暂无';
-
-  @override
-  String lanEditConnectedClientsValue(int count) {
-    return '$count 台';
-  }
-
-  @override
-  String get lanEditLastActivityLabel => '最近活动';
-
-  @override
-  String get lanEditKeepAliveWhenLeavingTitle => '离开后保持开启';
-
-  @override
-  String get lanEditKeepAliveWhenLeavingSubtitle =>
-      '开启后，返回设置页不会自动关闭局域网编辑；关闭后离开本页即停止';
 
   @override
   String get aboutSupportSectionTitle => '关于与支持';
@@ -6089,9 +5753,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get historyRecordsLabel => '历史记录';
 
   @override
-  String get noHistoryRecords => '暂无历史记录';
-
-  @override
   String get weekPickerTitle => '选择上课周次';
 
   @override
@@ -6966,51 +6627,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutSystemDownloaderChoiceSubtitle => '交给系统下载管理器处理';
 
   @override
-  String get syncErrorAuthFailed => '账号或密码错误';
-
-  @override
-  String get syncErrorAccessDenied => '没有访问权限';
-
-  @override
-  String get syncErrorCertificateError => '证书校验失败';
-
-  @override
-  String get syncErrorConnectionTimeout => '连接超时';
-
-  @override
-  String get syncErrorConnectionFailed => '无法连接服务器';
-
-  @override
-  String get syncErrorNetworkError => '网络异常';
-
-  @override
-  String get syncErrorInvalidResponse => '服务器响应无效';
-
-  @override
-  String get syncErrorLocalChangesPendingSync => '本地有未同步修改，已跳过自动覆盖';
-
-  @override
-  String get syncErrorMissingCredentials => '请先配置云同步账号';
-
-  @override
-  String get syncErrorBackupNotFound => '备份不存在';
-
-  @override
-  String get syncErrorMissingBackupSnapshot => '备份快照缺失';
-
-  @override
-  String get syncErrorCannotDeleteCurrentBackup => '不能删除当前备份';
-
-  @override
-  String get syncErrorProviderNotReady => '课表尚未就绪';
-
-  @override
-  String get syncErrorInsecureUrl => '仅支持 HTTPS 加密连接，HTTP 明文协议已被禁用';
-
-  @override
-  String get syncErrorSyncFailed => '同步失败';
-
-  @override
   String get sectionTimeDisplayHidden => '不显示';
 
   @override
@@ -7269,21 +6885,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get serviceMsgUseProfileBackupNotFull => '请使用课表档案备份 JSON，而非全部数据备份';
-
-  @override
-  String get serviceMsgUnrecognizedSyncSnapshot => '不是可识别的 mikcb 云同步快照';
-
-  @override
-  String get serviceMsgMissingSyncTimetableData => '缺少云同步课表数据';
-
-  @override
-  String get serviceMsgSyncSnapshotChecksumFailed => '云同步快照校验失败';
-
-  @override
-  String get serviceMsgSyncSnapshotNoProfiles => '云同步快照中没有可恢复的课表';
-
-  @override
-  String get serviceMsgSyncSnapshotUnrecognized => '云同步快照无法识别';
 
   @override
   String get serviceMsgTimeSchemeNotFound => '时间模板不存在';
@@ -7814,9 +7415,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get serviceMsgInvalidResponse => '服务器响应无效';
-
-  @override
-  String get serviceMsgSyncFailed => '同步失败';
 
   @override
   String get serviceMsgUsageTypeOverride => '副时间表';
@@ -8513,42 +8111,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logLiveUpdateSuspendTriggersFailed => '挂起超级岛课表调度失败';
 
   @override
-  String get logLanEditAuthFailed => '局域网编辑：认证失败';
-
-  @override
-  String get logLanEditCourseCreated => '局域网编辑：已创建课程';
-
-  @override
-  String get logLanEditCourseUpdated => '局域网编辑：已更新课程';
-
-  @override
-  String get logLanEditCourseDeleted => '局域网编辑：已删除课程';
-
-  @override
-  String get logLanEditCourseGroupSaved => '局域网编辑：已保存课程组';
-
-  @override
-  String get logLanEditMergeImported => '局域网编辑：已导入合并备份';
-
-  @override
-  String get logLanEditCoursesBatchDeleted => '局域网编辑：已批量删除课程';
-
-  @override
-  String get logLanEditCurrentWeekSet => '局域网编辑：已设置当前周次';
-
-  @override
-  String get logLanEditProfileSwitched => '局域网编辑：已切换课表';
-
-  @override
-  String get logLanEditSpreadsheetImported => '局域网编辑：已导入表格';
-
-  @override
-  String get logLanEditSessionStarted => '局域网编辑：会话已启动';
-
-  @override
-  String get logLanEditSessionStopped => '局域网编辑：会话已停止';
-
-  @override
   String get logLiveUpdateTestRequested => '用户请求手动超级岛测试通知';
 
   @override
@@ -8932,39 +8494,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logCatLiveUpdateSnapshotClearFailed => '超级岛：快照清空失败';
 
   @override
-  String get logCatLanEditAuthFailed => '局域网编辑：认证';
-
-  @override
-  String get logCatLanEditCourseCreated => '局域网编辑：创建课程';
-
-  @override
-  String get logCatLanEditCourseUpdated => '局域网编辑：更新课程';
-
-  @override
-  String get logCatLanEditCourseDeleted => '局域网编辑：删除课程';
-
-  @override
-  String get logCatLanEditCourseGroupSaved => '局域网编辑：保存课程组';
-
-  @override
-  String get logCatLanEditMergeImported => '局域网编辑：合并导入';
-
-  @override
-  String get logCatLanEditCoursesBatchDeleted => '局域网编辑：批量删除';
-
-  @override
-  String get logCatLanEditCurrentWeekSet => '局域网编辑：设置周次';
-
-  @override
-  String get logCatLanEditSpreadsheetImported => '局域网编辑：表格导入';
-
-  @override
-  String get logCatLanEditSessionStarted => '局域网编辑：会话启动';
-
-  @override
-  String get logCatLanEditSessionStopped => '局域网编辑：会话停止';
-
-  @override
   String get logCatLiveUpdateTestRequested => '超级岛测试：请求';
 
   @override
@@ -9109,31 +8638,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appUpdateMirrorPresetCustomDescription => '填写自定义镜像地址前缀';
 
   @override
-  String get cloudBackupRetentionTitle => '备份保留策略';
-
-  @override
-  String get cloudBackupMaxCountTitle => '最多保留份数';
-
-  @override
-  String get cloudBackupMaxCountSubtitle => '超过后自动删除最旧的备份';
-
-  @override
-  String cloudBackupMaxCountOption(int count) {
-    return '$count 份';
-  }
-
-  @override
-  String get cloudBackupMaxAgeTitle => '最长保留天数';
-
-  @override
-  String get cloudBackupMaxAgeSubtitle => '超过后自动删除过期备份';
-
-  @override
-  String cloudBackupMaxAgeOption(int days) {
-    return '$days 天';
-  }
-
-  @override
   String get statisticsShareText => '来自轻屿课表的学期统计';
 
   @override
@@ -9163,12 +8667,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get unnamedTimetableProfile => '未命名课表';
-
-  @override
-  String get cloudBackupManualProtectedTitle => '手动备份永不过期';
-
-  @override
-  String get cloudBackupManualProtectedSubtitle => '开启后，手动创建的备份不会被自动清理';
 
   @override
   String courseImportPortalUrlMissingBody(
@@ -10326,6 +9824,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get classAlarmDetailSeparator => '；';
+
+  @override
+  String get globalSettingsTitle => '全局显示设置';
+
+  @override
+  String get globalSettingsConfigured => '已配置';
+
+  @override
+  String get globalSettingsNotConfigured => '未配置';
+
+  @override
+  String get globalSettingsDescriptionTitle => '说明';
+
+  @override
+  String get globalSettingsDescriptionBody =>
+      '在这里设置的显示项会应用到所有课表；某份课表单独改过的项目，仍以该课表自己的设置为准。学期、节次（时间方案）等课表专属内容不参与全局设置。';
+
+  @override
+  String get globalSettingsClearTitle => '清除全局显示设置';
+
+  @override
+  String get globalSettingsClearConfirm => '清除后，所有课表将恢复使用各自的设置。';
+
+  @override
+  String get globalSettingsCleared => '已清除全局显示设置';
 }
 
 /// The translations for Chinese, as used in Hong Kong (`zh_HK`).
@@ -10573,6 +10096,9 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get coupleTimetableNoSharedFreeOtherDay => '當日沒有共同空閒時段';
 
   @override
+  String get partnerTimetablePageTitle => 'TA的課表';
+
+  @override
   String coupleTimetableSharedFreeMeta(int count) {
     return '共 $count 段';
   }
@@ -10700,6 +10226,32 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get withuCoupleNotLoggedInPrompt => '未登入 · 點擊登入';
 
   @override
+  String get withuLoginConfirm => '登入';
+
+  @override
+  String get coupleHistorySheetTitle => '歷史課表';
+
+  @override
+  String get coupleHistoryMineLabel => '我的歷史課表';
+
+  @override
+  String get coupleHistoryHersLabel => '她的歷史課表';
+
+  @override
+  String get noHistoryRecords => '暫無歷史記錄';
+
+  @override
+  String get coupleHistoryRestored => '已恢復歷史課表';
+
+  @override
+  String get coupleHistoryRestoreFailed => '恢復失敗，請重試';
+
+  @override
+  String coupleHistoryEntryMeta(String semester, int count) {
+    return '$semester · 共 $count 節課';
+  }
+
+  @override
   String get withuCouplePullImported => '已從 withU 匯入對方課表';
 
   @override
@@ -10713,6 +10265,18 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get withuCoupleMissingCredentials => '請填寫 withU 伺服器、用戶名和密碼';
+
+  @override
+  String get withuCoupleUsernameLabel => 'withU 用戶名稱';
+
+  @override
+  String get withuCoupleUsernameHint => '請輸入 withU 用戶名稱';
+
+  @override
+  String get withuCouplePasswordLabel => 'withU 密碼';
+
+  @override
+  String get withuCouplePasswordHint => '請輸入 withU 密碼';
 
   @override
   String get withuCoupleNotConnectedError => '請先連接 withU';
@@ -10734,384 +10298,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get withuCoupleSessionCookieMissing => 'withU 未返回登入會話';
-
-  @override
-  String get cloudSyncEntryTitle => '雲端同步';
-
-  @override
-  String get cloudSyncEntrySubtitle => '透過堅果雲等多裝置同步課表與匯入資料';
-
-  @override
-  String get cloudSyncEntryDisabled => '已關閉';
-
-  @override
-  String get cloudSyncEntryEnabled => '已開啟';
-
-  @override
-  String get cloudSyncEntrySyncing => '同步中';
-
-  @override
-  String get cloudSyncEntryError => '上次同步失敗';
-
-  @override
-  String get cloudSyncTitle => '雲端同步';
-
-  @override
-  String get cloudSyncIntroTitle => '多裝置同步';
-
-  @override
-  String get cloudSyncIntroSubtitle =>
-      '設定堅果雲 WebDAV 後，可在手機、平板之間自動同步課表、倉庫帳號與相關設定';
-
-  @override
-  String get cloudSyncSettingsSectionTitle => '同步設定';
-
-  @override
-  String get cloudSyncSettingsSectionSubtitle => '可切換手動或自動同步';
-
-  @override
-  String get cloudSyncEnabledTitle => '啟用雲端同步';
-
-  @override
-  String get cloudSyncEnabledSubtitle => '關閉後不會上傳或下載雲端快照';
-
-  @override
-  String get cloudSyncProviderTitle => '服務提供商';
-
-  @override
-  String get cloudSyncProviderJianguoyun => '堅果雲';
-
-  @override
-  String get cloudSyncProviderCustom => '自訂 WebDAV';
-
-  @override
-  String get cloudSyncModeTitle => '同步方式';
-
-  @override
-  String get cloudSyncModeAuto => '自動同步';
-
-  @override
-  String get cloudSyncModeManual => '手動同步';
-
-  @override
-  String get cloudSyncAccountTitle => '帳號設定';
-
-  @override
-  String get cloudSyncAccountSubtitle =>
-      '請使用堅果雲應用程式專用密碼，而不是登入密碼，快照會包含倉庫記住的學校帳號';
-
-  @override
-  String get cloudSyncUsernameLabel => '電郵 / 用戶名稱';
-
-  @override
-  String get cloudSyncUsernameHint => '堅果雲註冊電郵';
-
-  @override
-  String get cloudSyncPasswordLabel => '應用程式專用密碼';
-
-  @override
-  String get cloudSyncPasswordHint => '在堅果雲帳戶安全選項中產生';
-
-  @override
-  String get cloudSyncPasswordStoredHint => '已儲存密碼；留空表示繼續使用已儲存的密碼';
-
-  @override
-  String get cloudSyncAdvancedTitle => '進階設定';
-
-  @override
-  String get cloudSyncBaseUrlLabel => 'WebDAV 網址';
-
-  @override
-  String get cloudSyncBaseUrlSecurityNote =>
-      '建議使用 HTTPS 加密連線；HTTP 明文連線僅建議在可信網路環境下使用';
-
-  @override
-  String get cloudSyncRemoteFolderLabel => '遠端目錄';
-
-  @override
-  String get cloudSyncStatusTitle => '同步狀態';
-
-  @override
-  String get cloudSyncLastSyncedLabel => '上次同步';
-
-  @override
-  String get cloudSyncLastErrorLabel => '最近錯誤';
-
-  @override
-  String cloudSyncLastSyncedAt(String time) {
-    return '上次同步：$time';
-  }
-
-  @override
-  String get cloudSyncSyncing => '正在同步…';
-
-  @override
-  String cloudSyncLastError(String message) {
-    return '最近錯誤：$message';
-  }
-
-  @override
-  String get cloudSyncHelpTitle => '如何取得堅果雲應用程式密碼';
-
-  @override
-  String get cloudSyncHelpBody =>
-      '開啟堅果雲網頁或客戶端 → 帳戶資料 → 安全選項 → 新增應用程式密碼，WebDAV 網址預設為 https://dav.jianguoyun.com/dav/ ';
-
-  @override
-  String get cloudSyncTestConnection => '測試連線';
-
-  @override
-  String get cloudSyncSyncNow => '立即同步';
-
-  @override
-  String get cloudSyncSyncNowSubtitle => '與其他設備對齊課表：先拉取雲端更新，再上傳本地修改';
-
-  @override
-  String get cloudSyncTestSuccess => 'WebDAV 連線成功';
-
-  @override
-  String get cloudSyncTestFailed => 'WebDAV 連線失敗，請檢查帳號、應用程式密碼和網絡';
-
-  @override
-  String get cloudSyncResultUploaded => '已上傳到雲端';
-
-  @override
-  String get cloudSyncResultDownloaded => '已從雲端還原';
-
-  @override
-  String get cloudSyncResultUpToDate => '本機與雲端已一致';
-
-  @override
-  String get cloudSyncResultCancelled => '已取消同步';
-
-  @override
-  String cloudSyncResultFailed(String message) {
-    return '同步失敗：$message';
-  }
-
-  @override
-  String get cloudSyncConflictTitle => '偵測到同步衝突';
-
-  @override
-  String get cloudSyncConflictBody => '本機和雲端都有新的修改，請選擇保留哪一邊的資料';
-
-  @override
-  String get cloudSyncUseRemoteAction => '使用雲端';
-
-  @override
-  String get cloudSyncKeepLocalAction => '保留本機';
-
-  @override
-  String get cloudSyncAccountSectionTitle => '雲端帳號';
-
-  @override
-  String get cloudSyncNotConnectedHint => '連接堅果雲後，可在多裝置間同步課表與匯入資料';
-
-  @override
-  String get cloudSyncConnectAccount => '連接堅果雲';
-
-  @override
-  String cloudSyncConnectedAs(String email) {
-    return '已連接：$email';
-  }
-
-  @override
-  String get cloudSyncDisconnect => '中斷連線';
-
-  @override
-  String get cloudSyncDisconnectTitle => '中斷雲端同步帳號';
-
-  @override
-  String get cloudSyncDisconnectBody =>
-      '中斷後將清除本機儲存的 WebDAV 憑證，課表資料仍保留在本機，是否繼續？';
-
-  @override
-  String get cloudSyncLoginSheetTitle => '連接堅果雲';
-
-  @override
-  String get cloudSyncLoginSheetSubtitle => '請使用應用程式專用密碼，不要使用堅果雲登入密碼';
-
-  @override
-  String get cloudSyncConfirmConnect => '確認連接';
-
-  @override
-  String get cloudSyncConnectSuccess => '帳號連接成功';
-
-  @override
-  String get cloudBackupSectionTitle => '可恢復版本';
-
-  @override
-  String get cloudBackupSectionSubtitle => '每次同步都會自動保留可恢復版本';
-
-  @override
-  String get cloudBackupCurrentLabel => '當前版本';
-
-  @override
-  String get cloudBackupCurrentBadge => '當前';
-
-  @override
-  String get cloudBackupCreateNow => '立即備份';
-
-  @override
-  String get cloudBackupViewAll => '查看全部可恢復版本';
-
-  @override
-  String get cloudBackupEmpty => '暫無可恢復版本，同步後會自動生成';
-
-  @override
-  String get cloudBackupSourceAuto => '自動備份';
-
-  @override
-  String get cloudBackupSourceManual => '手動備份';
-
-  @override
-  String get cloudBackupDefaultDeviceLabel => '本機';
-
-  @override
-  String get cloudBackupDeviceLabelTitle => '裝置名稱';
-
-  @override
-  String get cloudBackupDeviceLabelHint => '在備份列表中顯示，例如「我的手機」';
-
-  @override
-  String cloudBackupSummary(int profileCount, int courseCount) {
-    return '$profileCount 個課表 · $courseCount 門課程';
-  }
-
-  @override
-  String get cloudBackupRestoreTitle => '恢復到此備份';
-
-  @override
-  String cloudBackupRestoreBody(String time) {
-    return '將恢復到 $time 的課表，本地未同步的修改會丟失，是否繼續？';
-  }
-
-  @override
-  String get cloudBackupRestoreAction => '恢復';
-
-  @override
-  String get cloudBackupRestoreSuccess => '已恢復到此備份';
-
-  @override
-  String cloudBackupRestoreFailed(String message) {
-    return '恢復失敗：$message';
-  }
-
-  @override
-  String get cloudBackupDeleteTitle => '刪除此備份';
-
-  @override
-  String cloudBackupDeleteBody(String time) {
-    return '確定刪除 $time 的雲端備份嗎？此操作不可撤銷';
-  }
-
-  @override
-  String get cloudBackupDeleteSuccess => '備份已刪除';
-
-  @override
-  String cloudBackupDeleteFailed(String message) {
-    return '刪除失敗：$message';
-  }
-
-  @override
-  String get cloudBackupCreateSuccess => '備份已保存到雲端';
-
-  @override
-  String cloudBackupCreateFailed(String message) {
-    return '備份失敗：$message';
-  }
-
-  @override
-  String get cloudBackupUploadAsCurrentTitle => '設為當前雲端版本';
-
-  @override
-  String get cloudBackupUploadAsCurrentBody =>
-      '是否將此備份設為當前雲端版本？建議開啟，可避免其他設備同步衝突';
-
-  @override
-  String get cloudBackupUploadAsCurrentYes => '設為當前版本';
-
-  @override
-  String get cloudBackupUploadAsCurrentNo => '僅恢復本地';
-
-  @override
-  String get cloudBackupDetailDevice => '設備';
-
-  @override
-  String get cloudBackupDetailSource => '來源';
-
-  @override
-  String get cloudBackupDetailSummary => '內容';
-
-  @override
-  String get lanEditEntryTitle => '局域網編輯';
-
-  @override
-  String get lanEditEntrySubtitle => '在電腦瀏覽器中編輯當前課表';
-
-  @override
-  String get lanEditTitle => '局域網編輯';
-
-  @override
-  String get lanEditIntro =>
-      '開啟後，同一 Wi-Fi 或手機熱點下的電腦可透過瀏覽器編輯當前課表，資料不會上傳雲端，關閉後即停止存取';
-
-  @override
-  String get lanEditStart => '開啟局域網編輯';
-
-  @override
-  String get lanEditStop => '停止';
-
-  @override
-  String get lanEditStatusRunning => '編輯會話進行中';
-
-  @override
-  String get lanEditAddressLabel => '存取網址';
-
-  @override
-  String get lanEditAddressUnavailable => '未偵測到局域網 IP，請確認已連接 Wi-Fi 或已開啟熱點';
-
-  @override
-  String get lanEditPinLabel => 'PIN';
-
-  @override
-  String get lanEditPortLabel => '連接埠';
-
-  @override
-  String get lanEditCopyAddress => '複製網址';
-
-  @override
-  String get lanEditCopied => '網址已複製';
-
-  @override
-  String get lanEditHotspotHint => '若宿舍 Wi-Fi 無法存取，請嘗試用手機開熱點，再讓電腦連接該熱點';
-
-  @override
-  String get lanEditQrHint => '電腦瀏覽器掃描上方二維碼可開啟控制台（連結已含 PIN，需同一區域網路）';
-
-  @override
-  String get lanEditStartFailed => '啟動失敗';
-
-  @override
-  String get lanEditConnectedClientsLabel => '已連接';
-
-  @override
-  String get lanEditConnectedClientsNone => '暫無';
-
-  @override
-  String lanEditConnectedClientsValue(int count) {
-    return '$count 台';
-  }
-
-  @override
-  String get lanEditLastActivityLabel => '最近活動';
-
-  @override
-  String get lanEditKeepAliveWhenLeavingTitle => '離開後保持開啟';
-
-  @override
-  String get lanEditKeepAliveWhenLeavingSubtitle =>
-      '開啟後，返回設定頁不會自動關閉局域網編輯；關閉後離開本頁即停止';
 
   @override
   String get aboutSupportSectionTitle => '關於與支持';
@@ -16413,9 +15599,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get historyRecordsLabel => '歷史記錄';
 
   @override
-  String get noHistoryRecords => '暫無歷史記錄';
-
-  @override
   String get weekPickerTitle => '選擇上課週次';
 
   @override
@@ -17290,51 +16473,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get aboutSystemDownloaderChoiceSubtitle => '交給系統下載管理器處理';
 
   @override
-  String get syncErrorAuthFailed => '帳號或密碼錯誤';
-
-  @override
-  String get syncErrorAccessDenied => '沒有存取權限';
-
-  @override
-  String get syncErrorCertificateError => '憑證校驗失敗';
-
-  @override
-  String get syncErrorConnectionTimeout => '連線逾時';
-
-  @override
-  String get syncErrorConnectionFailed => '無法連線伺服器';
-
-  @override
-  String get syncErrorNetworkError => '網路異常';
-
-  @override
-  String get syncErrorInvalidResponse => '伺服器回應無效';
-
-  @override
-  String get syncErrorLocalChangesPendingSync => '本機有未同步修改，已跳過自動覆蓋';
-
-  @override
-  String get syncErrorMissingCredentials => '請先設定雲同步帳號';
-
-  @override
-  String get syncErrorBackupNotFound => '備份不存在';
-
-  @override
-  String get syncErrorMissingBackupSnapshot => '備份快照缺失';
-
-  @override
-  String get syncErrorCannotDeleteCurrentBackup => '不能刪除目前備份';
-
-  @override
-  String get syncErrorProviderNotReady => '課表尚未就緒';
-
-  @override
-  String get syncErrorInsecureUrl => '僅支援 HTTPS 加密連線，HTTP 明文協定已被停用';
-
-  @override
-  String get syncErrorSyncFailed => '同步失敗';
-
-  @override
   String get sectionTimeDisplayHidden => '不顯示';
 
   @override
@@ -17599,26 +16737,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   @override
   String get serviceMsgUseProfileBackupNotFull =>
       'Use a timetable profile backup JSON, not a full data backup.';
-
-  @override
-  String get serviceMsgUnrecognizedSyncSnapshot =>
-      'Not a recognizable mikcb cloud sync snapshot.';
-
-  @override
-  String get serviceMsgMissingSyncTimetableData =>
-      'Cloud sync timetable data is missing.';
-
-  @override
-  String get serviceMsgSyncSnapshotChecksumFailed =>
-      'Cloud sync snapshot verification failed.';
-
-  @override
-  String get serviceMsgSyncSnapshotNoProfiles =>
-      'No recoverable timetables in the cloud sync snapshot.';
-
-  @override
-  String get serviceMsgSyncSnapshotUnrecognized =>
-      'Cloud sync snapshot could not be recognized.';
 
   @override
   String get serviceMsgTimeSchemeNotFound => 'Time scheme not found.';
@@ -18182,9 +17300,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get serviceMsgInvalidResponse => 'Invalid server response.';
-
-  @override
-  String get serviceMsgSyncFailed => 'Sync failed.';
 
   @override
   String get serviceMsgUsageTypeOverride => 'override time scheme';
@@ -18881,42 +17996,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get logLiveUpdateSuspendTriggersFailed => '掛起超級島課表調度失敗';
 
   @override
-  String get logLanEditAuthFailed => '局域網編輯：認證失敗';
-
-  @override
-  String get logLanEditCourseCreated => '局域網編輯：已創建課程';
-
-  @override
-  String get logLanEditCourseUpdated => '局域網編輯：已更新課程';
-
-  @override
-  String get logLanEditCourseDeleted => '局域網編輯：已刪除課程';
-
-  @override
-  String get logLanEditCourseGroupSaved => '局域網編輯：已保存課程組';
-
-  @override
-  String get logLanEditMergeImported => '局域網編輯：已導入合並備份';
-
-  @override
-  String get logLanEditCoursesBatchDeleted => '局域網編輯：已批量刪除課程';
-
-  @override
-  String get logLanEditCurrentWeekSet => '局域網編輯：已設置當前周次';
-
-  @override
-  String get logLanEditProfileSwitched => '局域網編輯：已切換課表';
-
-  @override
-  String get logLanEditSpreadsheetImported => '局域網編輯：已導入表格';
-
-  @override
-  String get logLanEditSessionStarted => '局域網編輯：會話已啟動';
-
-  @override
-  String get logLanEditSessionStopped => '局域網編輯：會話已停止';
-
-  @override
   String get logLiveUpdateTestRequested => '用戶請求手動超級島測試通知';
 
   @override
@@ -19300,39 +18379,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get logCatLiveUpdateSnapshotClearFailed => '超級島：快照清空失敗';
 
   @override
-  String get logCatLanEditAuthFailed => '局域網編輯：認證';
-
-  @override
-  String get logCatLanEditCourseCreated => '局域網編輯：創建課程';
-
-  @override
-  String get logCatLanEditCourseUpdated => '局域網編輯：更新課程';
-
-  @override
-  String get logCatLanEditCourseDeleted => '局域網編輯：刪除課程';
-
-  @override
-  String get logCatLanEditCourseGroupSaved => '局域網編輯：保存課程組';
-
-  @override
-  String get logCatLanEditMergeImported => '局域網編輯：合並導入';
-
-  @override
-  String get logCatLanEditCoursesBatchDeleted => '局域網編輯：批量刪除';
-
-  @override
-  String get logCatLanEditCurrentWeekSet => '局域網編輯：設置周次';
-
-  @override
-  String get logCatLanEditSpreadsheetImported => '局域網編輯：表格導入';
-
-  @override
-  String get logCatLanEditSessionStarted => '局域網編輯：會話啟動';
-
-  @override
-  String get logCatLanEditSessionStopped => '局域網編輯：會話停止';
-
-  @override
   String get logCatLiveUpdateTestRequested => '超級島測試：請求';
 
   @override
@@ -19477,31 +18523,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get appUpdateMirrorPresetCustomDescription => '填寫自定義镜像地址前缀';
 
   @override
-  String get cloudBackupRetentionTitle => '備份保留策略';
-
-  @override
-  String get cloudBackupMaxCountTitle => '最多保留份數';
-
-  @override
-  String get cloudBackupMaxCountSubtitle => '超過後自動刪除最舊的備份';
-
-  @override
-  String cloudBackupMaxCountOption(int count) {
-    return '$count 份';
-  }
-
-  @override
-  String get cloudBackupMaxAgeTitle => '最長保留天數';
-
-  @override
-  String get cloudBackupMaxAgeSubtitle => '超過後自動刪除過期備份';
-
-  @override
-  String cloudBackupMaxAgeOption(int days) {
-    return '$days 天';
-  }
-
-  @override
   String get statisticsShareText => '來自輕誘課表的學期統計';
 
   @override
@@ -19531,12 +18552,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get unnamedTimetableProfile => '未命名課表';
-
-  @override
-  String get cloudBackupManualProtectedTitle => '手動備份永不過期';
-
-  @override
-  String get cloudBackupManualProtectedSubtitle => '開啟後，手動創建的備份不會被自動清理';
 
   @override
   String courseImportPortalUrlMissingBody(
@@ -20694,6 +19709,31 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get classAlarmDetailSeparator => '；';
+
+  @override
+  String get globalSettingsTitle => '全域顯示設定';
+
+  @override
+  String get globalSettingsConfigured => '已配置';
+
+  @override
+  String get globalSettingsNotConfigured => '未配置';
+
+  @override
+  String get globalSettingsDescriptionTitle => '說明';
+
+  @override
+  String get globalSettingsDescriptionBody =>
+      '在這裡設定的顯示項目會套用到所有課表；個別課表單獨修改過的項目，仍以該課表自己的設定為準。學期、節次（時間範本）等課表專屬內容不參與全域設定。';
+
+  @override
+  String get globalSettingsClearTitle => '清除全域顯示設定';
+
+  @override
+  String get globalSettingsClearConfirm => '清除後，所有課表將恢復使用各自的設定。';
+
+  @override
+  String get globalSettingsCleared => '已清除全域顯示設定';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -20941,6 +19981,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get coupleTimetableNoSharedFreeOtherDay => '當日沒有共同空閒時段';
 
   @override
+  String get partnerTimetablePageTitle => 'TA的課表';
+
+  @override
   String coupleTimetableSharedFreeMeta(int count) {
     return '共 $count 段';
   }
@@ -21068,6 +20111,32 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get withuCoupleNotLoggedInPrompt => '未登入 · 點擊登入';
 
   @override
+  String get withuLoginConfirm => '登入';
+
+  @override
+  String get coupleHistorySheetTitle => '歷史課表';
+
+  @override
+  String get coupleHistoryMineLabel => '我的歷史課表';
+
+  @override
+  String get coupleHistoryHersLabel => '她的歷史課表';
+
+  @override
+  String get noHistoryRecords => '目前沒有歷史紀錄';
+
+  @override
+  String get coupleHistoryRestored => '已恢復歷史課表';
+
+  @override
+  String get coupleHistoryRestoreFailed => '恢復失敗，請重試';
+
+  @override
+  String coupleHistoryEntryMeta(String semester, int count) {
+    return '$semester · 共 $count 節課';
+  }
+
+  @override
   String get withuCouplePullImported => '已從 withU 匯入對方課表';
 
   @override
@@ -21081,6 +20150,18 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get withuCoupleMissingCredentials => '請填寫 withU 伺服器、用戶名和密碼';
+
+  @override
+  String get withuCoupleUsernameLabel => 'withU 使用者名稱';
+
+  @override
+  String get withuCoupleUsernameHint => '請輸入 withU 使用者名稱';
+
+  @override
+  String get withuCouplePasswordLabel => 'withU 密碼';
+
+  @override
+  String get withuCouplePasswordHint => '請輸入 withU 密碼';
 
   @override
   String get withuCoupleNotConnectedError => '請先連接 withU';
@@ -21102,384 +20183,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get withuCoupleSessionCookieMissing => 'withU 未返回登入會話';
-
-  @override
-  String get cloudSyncEntryTitle => '雲端同步';
-
-  @override
-  String get cloudSyncEntrySubtitle => '透過堅果雲等多裝置同步課表與匯入資料';
-
-  @override
-  String get cloudSyncEntryDisabled => '已關閉';
-
-  @override
-  String get cloudSyncEntryEnabled => '已開啟';
-
-  @override
-  String get cloudSyncEntrySyncing => '同步中';
-
-  @override
-  String get cloudSyncEntryError => '上次同步失敗';
-
-  @override
-  String get cloudSyncTitle => '雲端同步';
-
-  @override
-  String get cloudSyncIntroTitle => '多裝置同步';
-
-  @override
-  String get cloudSyncIntroSubtitle =>
-      '設定堅果雲 WebDAV 後，可在手機、平板之間自動同步課表、倉庫帳號與相關設定';
-
-  @override
-  String get cloudSyncSettingsSectionTitle => '同步設定';
-
-  @override
-  String get cloudSyncSettingsSectionSubtitle => '可切換手動或自動同步';
-
-  @override
-  String get cloudSyncEnabledTitle => '啟用雲端同步';
-
-  @override
-  String get cloudSyncEnabledSubtitle => '關閉後不會上傳或下載雲端快照';
-
-  @override
-  String get cloudSyncProviderTitle => '服務提供商';
-
-  @override
-  String get cloudSyncProviderJianguoyun => '堅果雲';
-
-  @override
-  String get cloudSyncProviderCustom => '自訂 WebDAV';
-
-  @override
-  String get cloudSyncModeTitle => '同步方式';
-
-  @override
-  String get cloudSyncModeAuto => '自動同步';
-
-  @override
-  String get cloudSyncModeManual => '手動同步';
-
-  @override
-  String get cloudSyncAccountTitle => '帳號設定';
-
-  @override
-  String get cloudSyncAccountSubtitle =>
-      '請使用堅果雲應用程式專用密碼，而不是登入密碼，快照會包含倉庫記住的學校帳號';
-
-  @override
-  String get cloudSyncUsernameLabel => '電子郵件 / 使用者名稱';
-
-  @override
-  String get cloudSyncUsernameHint => '堅果雲註冊電子郵件';
-
-  @override
-  String get cloudSyncPasswordLabel => '應用程式專用密碼';
-
-  @override
-  String get cloudSyncPasswordHint => '在堅果雲帳戶安全選項中產生';
-
-  @override
-  String get cloudSyncPasswordStoredHint => '已儲存密碼；留空表示繼續使用已儲存的密碼';
-
-  @override
-  String get cloudSyncAdvancedTitle => '進階設定';
-
-  @override
-  String get cloudSyncBaseUrlLabel => 'WebDAV 網址';
-
-  @override
-  String get cloudSyncBaseUrlSecurityNote =>
-      '建議使用 HTTPS 加密連線；HTTP 明文連線僅建議在可信網路環境下使用';
-
-  @override
-  String get cloudSyncRemoteFolderLabel => '遠端目錄';
-
-  @override
-  String get cloudSyncStatusTitle => '同步狀態';
-
-  @override
-  String get cloudSyncLastSyncedLabel => '上次同步';
-
-  @override
-  String get cloudSyncLastErrorLabel => '最近錯誤';
-
-  @override
-  String cloudSyncLastSyncedAt(String time) {
-    return '上次同步：$time';
-  }
-
-  @override
-  String get cloudSyncSyncing => '正在同步…';
-
-  @override
-  String cloudSyncLastError(String message) {
-    return '最近錯誤：$message';
-  }
-
-  @override
-  String get cloudSyncHelpTitle => '如何取得堅果雲應用程式密碼';
-
-  @override
-  String get cloudSyncHelpBody =>
-      '開啟堅果雲網頁或客戶端 → 帳戶資訊 → 安全選項 → 新增應用程式密碼，WebDAV 網址預設為 https://dav.jianguoyun.com/dav/ ';
-
-  @override
-  String get cloudSyncTestConnection => '測試連線';
-
-  @override
-  String get cloudSyncSyncNow => '立即同步';
-
-  @override
-  String get cloudSyncSyncNowSubtitle => '與其他裝置對齊課表：先拉取雲端更新，再上傳本機修改';
-
-  @override
-  String get cloudSyncTestSuccess => 'WebDAV 連線成功';
-
-  @override
-  String get cloudSyncTestFailed => 'WebDAV 連線失敗，請檢查帳號、應用程式密碼和網路';
-
-  @override
-  String get cloudSyncResultUploaded => '已上傳到雲端';
-
-  @override
-  String get cloudSyncResultDownloaded => '已從雲端還原';
-
-  @override
-  String get cloudSyncResultUpToDate => '本機與雲端已一致';
-
-  @override
-  String get cloudSyncResultCancelled => '已取消同步';
-
-  @override
-  String cloudSyncResultFailed(String message) {
-    return '同步失敗：$message';
-  }
-
-  @override
-  String get cloudSyncConflictTitle => '偵測到同步衝突';
-
-  @override
-  String get cloudSyncConflictBody => '本機和雲端都有新的修改，請選擇保留哪一邊的資料';
-
-  @override
-  String get cloudSyncUseRemoteAction => '使用雲端';
-
-  @override
-  String get cloudSyncKeepLocalAction => '保留本機';
-
-  @override
-  String get cloudSyncAccountSectionTitle => '雲端帳號';
-
-  @override
-  String get cloudSyncNotConnectedHint => '連接堅果雲後，可在多裝置間同步課表與匯入資料';
-
-  @override
-  String get cloudSyncConnectAccount => '連接堅果雲';
-
-  @override
-  String cloudSyncConnectedAs(String email) {
-    return '已連接：$email';
-  }
-
-  @override
-  String get cloudSyncDisconnect => '中斷連線';
-
-  @override
-  String get cloudSyncDisconnectTitle => '中斷雲端同步帳號';
-
-  @override
-  String get cloudSyncDisconnectBody =>
-      '中斷後將清除本機儲存的 WebDAV 憑證，課表資料仍保留在本機，是否繼續？';
-
-  @override
-  String get cloudSyncLoginSheetTitle => '連接堅果雲';
-
-  @override
-  String get cloudSyncLoginSheetSubtitle => '請使用應用程式專用密碼，不要使用堅果雲登入密碼';
-
-  @override
-  String get cloudSyncConfirmConnect => '確認連接';
-
-  @override
-  String get cloudSyncConnectSuccess => '帳號連接成功';
-
-  @override
-  String get cloudBackupSectionTitle => '可恢復版本';
-
-  @override
-  String get cloudBackupSectionSubtitle => '每次同步都會自動保留可恢復版本';
-
-  @override
-  String get cloudBackupCurrentLabel => '目前版本';
-
-  @override
-  String get cloudBackupCurrentBadge => '目前';
-
-  @override
-  String get cloudBackupCreateNow => '立即備份';
-
-  @override
-  String get cloudBackupViewAll => '查看全部可恢復版本';
-
-  @override
-  String get cloudBackupEmpty => '暫無可恢復版本，同步後會自動生成';
-
-  @override
-  String get cloudBackupSourceAuto => '自動備份';
-
-  @override
-  String get cloudBackupSourceManual => '手動備份';
-
-  @override
-  String get cloudBackupDefaultDeviceLabel => '本機';
-
-  @override
-  String get cloudBackupDeviceLabelTitle => '裝置名稱';
-
-  @override
-  String get cloudBackupDeviceLabelHint => '在備份列表中顯示，例如「我的手機」';
-
-  @override
-  String cloudBackupSummary(int profileCount, int courseCount) {
-    return '$profileCount 個課表 · $courseCount 門課程';
-  }
-
-  @override
-  String get cloudBackupRestoreTitle => '恢復到此備份';
-
-  @override
-  String cloudBackupRestoreBody(String time) {
-    return '將恢復到 $time 的課表，本機未同步的修改會遺失，是否繼續？';
-  }
-
-  @override
-  String get cloudBackupRestoreAction => '恢復';
-
-  @override
-  String get cloudBackupRestoreSuccess => '已恢復到此備份';
-
-  @override
-  String cloudBackupRestoreFailed(String message) {
-    return '恢復失敗：$message';
-  }
-
-  @override
-  String get cloudBackupDeleteTitle => '刪除此備份';
-
-  @override
-  String cloudBackupDeleteBody(String time) {
-    return '確定刪除 $time 的雲端備份嗎？此操作不可撤銷';
-  }
-
-  @override
-  String get cloudBackupDeleteSuccess => '備份已刪除';
-
-  @override
-  String cloudBackupDeleteFailed(String message) {
-    return '刪除失敗：$message';
-  }
-
-  @override
-  String get cloudBackupCreateSuccess => '備份已儲存到雲端';
-
-  @override
-  String cloudBackupCreateFailed(String message) {
-    return '備份失敗：$message';
-  }
-
-  @override
-  String get cloudBackupUploadAsCurrentTitle => '設為目前雲端版本';
-
-  @override
-  String get cloudBackupUploadAsCurrentBody =>
-      '是否將此備份設為目前雲端版本？建議開啟，可避免其他裝置同步衝突';
-
-  @override
-  String get cloudBackupUploadAsCurrentYes => '設為目前版本';
-
-  @override
-  String get cloudBackupUploadAsCurrentNo => '僅恢復本機';
-
-  @override
-  String get cloudBackupDetailDevice => '裝置';
-
-  @override
-  String get cloudBackupDetailSource => '來源';
-
-  @override
-  String get cloudBackupDetailSummary => '內容';
-
-  @override
-  String get lanEditEntryTitle => '區域網路編輯';
-
-  @override
-  String get lanEditEntrySubtitle => '在電腦瀏覽器中編輯目前課表';
-
-  @override
-  String get lanEditTitle => '區域網路編輯';
-
-  @override
-  String get lanEditIntro =>
-      '開啟後，同一 Wi-Fi 或手機熱點下的電腦可透過瀏覽器編輯目前課表，資料不會上傳雲端，關閉後即停止存取';
-
-  @override
-  String get lanEditStart => '開啟區域網路編輯';
-
-  @override
-  String get lanEditStop => '停止';
-
-  @override
-  String get lanEditStatusRunning => '編輯工作階段進行中';
-
-  @override
-  String get lanEditAddressLabel => '存取網址';
-
-  @override
-  String get lanEditAddressUnavailable => '未偵測到區域網路 IP，請確認已連接 Wi-Fi 或已開啟熱點';
-
-  @override
-  String get lanEditPinLabel => 'PIN';
-
-  @override
-  String get lanEditPortLabel => '連接埠';
-
-  @override
-  String get lanEditCopyAddress => '複製網址';
-
-  @override
-  String get lanEditCopied => '網址已複製';
-
-  @override
-  String get lanEditHotspotHint => '若宿舍 Wi-Fi 無法存取，請嘗試用手機開熱點，再讓電腦連接該熱點';
-
-  @override
-  String get lanEditQrHint => '電腦瀏覽器掃描上方二維碼可開啟控制台（連結已含 PIN，需同一區域網路）';
-
-  @override
-  String get lanEditStartFailed => '啟動失敗';
-
-  @override
-  String get lanEditConnectedClientsLabel => '已連接';
-
-  @override
-  String get lanEditConnectedClientsNone => '暫無';
-
-  @override
-  String lanEditConnectedClientsValue(int count) {
-    return '$count 台';
-  }
-
-  @override
-  String get lanEditLastActivityLabel => '最近活動';
-
-  @override
-  String get lanEditKeepAliveWhenLeavingTitle => '離開後保持開啟';
-
-  @override
-  String get lanEditKeepAliveWhenLeavingSubtitle =>
-      '開啟後，返回設定頁不會自動關閉區域網路編輯；關閉後離開本頁即停止';
 
   @override
   String get aboutSupportSectionTitle => '關於與支持';
@@ -26781,9 +25484,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get historyRecordsLabel => '歷史紀錄';
 
   @override
-  String get noHistoryRecords => '目前沒有歷史紀錄';
-
-  @override
   String get weekPickerTitle => '選擇上課週次';
 
   @override
@@ -27658,51 +26358,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get aboutSystemDownloaderChoiceSubtitle => '交給系統下載管理器處理';
 
   @override
-  String get syncErrorAuthFailed => '帳號或密碼錯誤';
-
-  @override
-  String get syncErrorAccessDenied => '沒有存取權限';
-
-  @override
-  String get syncErrorCertificateError => '憑證校驗失敗';
-
-  @override
-  String get syncErrorConnectionTimeout => '連線逾時';
-
-  @override
-  String get syncErrorConnectionFailed => '無法連線伺服器';
-
-  @override
-  String get syncErrorNetworkError => '網路異常';
-
-  @override
-  String get syncErrorInvalidResponse => '伺服器回應無效';
-
-  @override
-  String get syncErrorLocalChangesPendingSync => '本機有未同步修改，已跳過自動覆蓋';
-
-  @override
-  String get syncErrorMissingCredentials => '請先設定雲同步帳號';
-
-  @override
-  String get syncErrorBackupNotFound => '備份不存在';
-
-  @override
-  String get syncErrorMissingBackupSnapshot => '備份快照缺失';
-
-  @override
-  String get syncErrorCannotDeleteCurrentBackup => '不能刪除目前備份';
-
-  @override
-  String get syncErrorProviderNotReady => '課表尚未就緒';
-
-  @override
-  String get syncErrorInsecureUrl => '僅支援 HTTPS 加密連線，HTTP 明文協定已被停用';
-
-  @override
-  String get syncErrorSyncFailed => '同步失敗';
-
-  @override
   String get sectionTimeDisplayHidden => '不显示';
 
   @override
@@ -27967,26 +26622,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String get serviceMsgUseProfileBackupNotFull =>
       'Use a timetable profile backup JSON, not a full data backup.';
-
-  @override
-  String get serviceMsgUnrecognizedSyncSnapshot =>
-      'Not a recognizable mikcb cloud sync snapshot.';
-
-  @override
-  String get serviceMsgMissingSyncTimetableData =>
-      'Cloud sync timetable data is missing.';
-
-  @override
-  String get serviceMsgSyncSnapshotChecksumFailed =>
-      'Cloud sync snapshot verification failed.';
-
-  @override
-  String get serviceMsgSyncSnapshotNoProfiles =>
-      'No recoverable timetables in the cloud sync snapshot.';
-
-  @override
-  String get serviceMsgSyncSnapshotUnrecognized =>
-      'Cloud sync snapshot could not be recognized.';
 
   @override
   String get serviceMsgTimeSchemeNotFound => 'Time scheme not found.';
@@ -28550,9 +27185,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get serviceMsgInvalidResponse => 'Invalid server response.';
-
-  @override
-  String get serviceMsgSyncFailed => 'Sync failed.';
 
   @override
   String get serviceMsgUsageTypeOverride => 'override time scheme';
@@ -29249,42 +27881,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get logLiveUpdateSuspendTriggersFailed => '挂起超级岛课表调度失败';
 
   @override
-  String get logLanEditAuthFailed => '局域网编辑：认证失败';
-
-  @override
-  String get logLanEditCourseCreated => '局域网编辑：已创建课程';
-
-  @override
-  String get logLanEditCourseUpdated => '局域网编辑：已更新课程';
-
-  @override
-  String get logLanEditCourseDeleted => '局域网编辑：已删除课程';
-
-  @override
-  String get logLanEditCourseGroupSaved => '局域网编辑：已保存课程组';
-
-  @override
-  String get logLanEditMergeImported => '局域网编辑：已导入合并备份';
-
-  @override
-  String get logLanEditCoursesBatchDeleted => '局域网编辑：已批量删除课程';
-
-  @override
-  String get logLanEditCurrentWeekSet => '局域网编辑：已设置当前周次';
-
-  @override
-  String get logLanEditProfileSwitched => '局域网编辑：已切换课表';
-
-  @override
-  String get logLanEditSpreadsheetImported => '局域网编辑：已导入表格';
-
-  @override
-  String get logLanEditSessionStarted => '局域网编辑：会话已启动';
-
-  @override
-  String get logLanEditSessionStopped => '局域网编辑：会话已停止';
-
-  @override
   String get logLiveUpdateTestRequested => '用户请求手动超级岛测试通知';
 
   @override
@@ -29668,39 +28264,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get logCatLiveUpdateSnapshotClearFailed => '超级岛：快照清空失败';
 
   @override
-  String get logCatLanEditAuthFailed => '局域网编辑：认证';
-
-  @override
-  String get logCatLanEditCourseCreated => '局域网编辑：创建课程';
-
-  @override
-  String get logCatLanEditCourseUpdated => '局域网编辑：更新课程';
-
-  @override
-  String get logCatLanEditCourseDeleted => '局域网编辑：删除课程';
-
-  @override
-  String get logCatLanEditCourseGroupSaved => '局域网编辑：保存课程组';
-
-  @override
-  String get logCatLanEditMergeImported => '局域网编辑：合并导入';
-
-  @override
-  String get logCatLanEditCoursesBatchDeleted => '局域网编辑：批量删除';
-
-  @override
-  String get logCatLanEditCurrentWeekSet => '局域网编辑：设置周次';
-
-  @override
-  String get logCatLanEditSpreadsheetImported => '局域网编辑：表格导入';
-
-  @override
-  String get logCatLanEditSessionStarted => '局域网编辑：会话启动';
-
-  @override
-  String get logCatLanEditSessionStopped => '局域网编辑：会话停止';
-
-  @override
   String get logCatLiveUpdateTestRequested => '超级岛测试：请求';
 
   @override
@@ -29845,31 +28408,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get appUpdateMirrorPresetCustomDescription => '填写自定义镜像地址前缀';
 
   @override
-  String get cloudBackupRetentionTitle => '备份保留策略';
-
-  @override
-  String get cloudBackupMaxCountTitle => '最多保留份数';
-
-  @override
-  String get cloudBackupMaxCountSubtitle => '超过后自动删除最旧的备份';
-
-  @override
-  String cloudBackupMaxCountOption(int count) {
-    return '$count 份';
-  }
-
-  @override
-  String get cloudBackupMaxAgeTitle => '最长保留天数';
-
-  @override
-  String get cloudBackupMaxAgeSubtitle => '超过后自动删除过期备份';
-
-  @override
-  String cloudBackupMaxAgeOption(int days) {
-    return '$days 天';
-  }
-
-  @override
   String get statisticsShareText => '来自轻屿课表的学期统计';
 
   @override
@@ -29899,12 +28437,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get unnamedTimetableProfile => '未命名课表';
-
-  @override
-  String get cloudBackupManualProtectedTitle => '手动备份永不过期';
-
-  @override
-  String get cloudBackupManualProtectedSubtitle => '开启后，手动创建的备份不会被自动清理';
 
   @override
   String courseImportPortalUrlMissingBody(
@@ -31062,4 +29594,29 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get classAlarmDetailSeparator => '；';
+
+  @override
+  String get globalSettingsTitle => '全域顯示設定';
+
+  @override
+  String get globalSettingsConfigured => '已配置';
+
+  @override
+  String get globalSettingsNotConfigured => '未配置';
+
+  @override
+  String get globalSettingsDescriptionTitle => '說明';
+
+  @override
+  String get globalSettingsDescriptionBody =>
+      '在這裡設定的顯示項目會套用到所有課表；個別課表單獨修改過的項目，仍以該課表自己的設定為準。學期、節次（時間範本）等課表專屬內容不參與全域設定。';
+
+  @override
+  String get globalSettingsClearTitle => '清除全域顯示設定';
+
+  @override
+  String get globalSettingsClearConfirm => '清除後，所有課表將恢復使用各自的設定。';
+
+  @override
+  String get globalSettingsCleared => '已清除全域顯示設定';
 }

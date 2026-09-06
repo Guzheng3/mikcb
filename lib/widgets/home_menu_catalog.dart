@@ -218,20 +218,6 @@ final List<HomeMenuEntry> kHomeMenuCatalog = [
     open: (context) => pushHomeMenuPage(context, homePage('dataTransferPage')),
   ),
   HomeMenuEntry(
-    id: 'cloudSync',
-    title: (l10n) => l10n.cloudSyncTitle,
-    icon: Icons.cloud_sync_outlined,
-    category: HomeMenuEntryCategory.data,
-    open: (context) => pushHomeMenuPage(context, homePage('cloudSyncPage')),
-  ),
-  HomeMenuEntry(
-    id: 'lanEdit',
-    title: (l10n) => l10n.lanEditTitle,
-    icon: Icons.lan_outlined,
-    category: HomeMenuEntryCategory.data,
-    open: (context) => pushHomeMenuPage(context, homePage('lanEditPage')),
-  ),
-  HomeMenuEntry(
     id: 'coupleTimetable',
     title: (l10n) => l10n.coupleTimetableTitle,
     icon: Icons.favorite_outline_rounded,

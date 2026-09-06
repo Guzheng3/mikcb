@@ -1059,14 +1059,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.1.1"
-  webdav_plus:
-    dependency: "direct main"
-    description:
-      name: webdav_plus
-      sha256: "9ba5382b6498eac8927864ccc11c9e45a92fa2e3e5f3f3fc0f6d38cb433ab188"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.2.2"
   webview_flutter:
     dependency: "direct main"
     description:

@@ -20,24 +20,23 @@ void main() {
     expect(homeMenuEntryById(HomeGridMenu.pinnedActionId), isNotNull);
   });
 
-  test('couple login leads the top menu only when overlay is enabled', () {
-    final settings = TimetableSettings.defaults();
+  test('couple login entry leads the top menu only while the switch is on', () {
+    // 开关默认开启：登录入口置顶。
+    final enabled = resolveHomeTopMenuEntries(TimetableSettings.defaults());
+    expect(enabled.first.id, 'withuCoupleLogin');
 
-    final defaultEntries = resolveHomeTopMenuEntries(settings);
-    expect(defaultEntries.first.id, 'withuCoupleLogin');
-
+    // 开关关闭：登录入口从右上角菜单消失。
     final disabled = resolveHomeTopMenuEntries(
-      settings.copyWith(coupleTimetableOverlayEnabled: false),
+      TimetableSettings.defaults().copyWith(
+        coupleTimetableOverlayEnabled: false,
+      ),
     );
     expect(
       disabled.map((entry) => entry.id),
       isNot(contains('withuCoupleLogin')),
     );
 
-    final enabled = resolveHomeTopMenuEntries(
-      settings.copyWith(coupleTimetableOverlayEnabled: true),
-    );
-    expect(enabled.first.id, 'withuCoupleLogin');
+    // 登录入口是瞬态条目，不进八宫格持久化候选目录。
     expect(
       kHomeMenuCatalog.map((entry) => entry.id),
       isNot(contains('withuCoupleLogin')),

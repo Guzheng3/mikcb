@@ -16,6 +16,7 @@ class StorageService {
   static const String _currentWeekKey = 'current_week';
   static const String _semesterStartKey = 'semester_start';
   static const String _timetableSettingsKey = 'timetable_settings';
+  static const String _globalTimetableSettingsKey = 'global_timetable_settings';
   static const String _profilesKey = 'timetable_profiles';
   static const String _activeProfileIdKey = 'active_timetable_profile_id';
   static const String _timeSchemesKey = 'time_schemes';
@@ -295,6 +296,38 @@ class StorageService {
   Future<void> saveTimetableSettings(TimetableSettings settings) async {
     if (_prefs == null) await init();
     await _prefs?.setString(_timetableSettingsKey, settings.toJsonString());
+  }
+
+  /// 全局显示设置（独立于任何课表，所有课表默认跟随，课表自身有配置时
+  /// 课表优先）。未配置时返回 null，由调用方决定回退行为。
+  Future<TimetableSettings?> getGlobalTimetableSettings() async {
+    if (_prefs == null) await init();
+    final settingsJson = _prefs?.getString(_globalTimetableSettingsKey);
+    if (settingsJson == null || settingsJson.isEmpty) {
+      return null;
+    }
+    try {
+      return TimetableSettings.fromJsonString(settingsJson);
+    } catch (_) {
+      await _backupAndRemoveCorruptString(
+        _globalTimetableSettingsKey,
+        settingsJson,
+      );
+      return null;
+    }
+  }
+
+  Future<void> saveGlobalTimetableSettings(TimetableSettings settings) async {
+    if (_prefs == null) await init();
+    await _prefs?.setString(
+      _globalTimetableSettingsKey,
+      settings.toJsonString(),
+    );
+  }
+
+  Future<void> clearGlobalTimetableSettings() async {
+    if (_prefs == null) await init();
+    await _prefs?.remove(_globalTimetableSettingsKey);
   }
 
   // 当前周次存储

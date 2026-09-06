@@ -111,18 +111,6 @@ String localizeServiceMessage(
     case 'use_profile_backup_not_full':
       return l10n.serviceMsgUseProfileBackupNotFull;
 
-    // Cloud sync snapshot
-    case 'unrecognized_sync_snapshot':
-      return l10n.serviceMsgUnrecognizedSyncSnapshot;
-    case 'missing_sync_timetable_data':
-      return l10n.serviceMsgMissingSyncTimetableData;
-    case 'sync_snapshot_checksum_failed':
-      return l10n.serviceMsgSyncSnapshotChecksumFailed;
-    case 'sync_snapshot_no_profiles':
-      return l10n.serviceMsgSyncSnapshotNoProfiles;
-    case 'sync_snapshot_unrecognized':
-      return l10n.serviceMsgSyncSnapshotUnrecognized;
-
     // Time scheme
     case 'time_scheme_not_found':
       return l10n.serviceMsgTimeSchemeNotFound;
@@ -495,22 +483,6 @@ String localizeServiceMessage(
       return l10n.serviceMsgStatisticsShareFailed(
         resolvedArgs['detail']?.toString() ?? '',
       );
-
-    // WebDAV / sync (shared with sanitizeWebdavErrorMessage)
-    case 'auth_failed':
-      return l10n.serviceMsgAuthFailed;
-    case 'access_denied':
-      return l10n.serviceMsgAccessDenied;
-    case 'certificate_error':
-      return l10n.serviceMsgCertificateError;
-    case 'connection_timeout':
-      return l10n.serviceMsgConnectionTimeout;
-    case 'connection_failed':
-      return l10n.serviceMsgConnectionFailed;
-    case 'invalid_response':
-      return l10n.serviceMsgInvalidResponse;
-    case 'sync_failed':
-      return l10n.serviceMsgSyncFailed;
 
     // Usage type labels for time scheme detail
     case 'usage_type_override':

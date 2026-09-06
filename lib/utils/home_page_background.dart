@@ -11,6 +11,7 @@ import 'dart:ui'
         instantiateImageCodecFromBuffer;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/timetable_settings.dart';
 import 'hex_color.dart';
@@ -31,6 +32,19 @@ class HomePageBackgroundVisual {
         ? DecorationImage(image: imageProvider!, fit: BoxFit.cover)
         : null,
   );
+}
+
+const String _bundledWallpaperScheme = 'asset://';
+
+bool isBundledHomePageWallpaperPath(String? path) {
+  return path != null && path.startsWith(_bundledWallpaperScheme);
+}
+
+String? bundledHomePageWallpaperAssetName(String? path) {
+  if (!isBundledHomePageWallpaperPath(path)) {
+    return null;
+  }
+  return path!.substring(_bundledWallpaperScheme.length);
 }
 
 /// Memoized wallpaper-file existence, keyed by absolute path.
@@ -54,13 +68,17 @@ bool _homePageFileExistsSync(String path) {
 /// Call whenever a wallpaper file is created, replaced or deleted so the next
 /// build re-probes instead of trusting a stale memo.
 void invalidateHomePageBackdropFileExists(String? path) {
-  if (path == null || path.isEmpty) {
+  if (isBundledHomePageWallpaperPath(path) || path == null || path.isEmpty) {
     return;
   }
   _homePageBackdropFileExistsCache.remove(path);
 }
 
 ImageProvider? homePageImageProvider(String? path) {
+  final assetName = bundledHomePageWallpaperAssetName(path);
+  if (assetName != null) {
+    return AssetImage(assetName);
+  }
   if (path == null || path.isEmpty) {
     return null;
   }
@@ -81,13 +99,23 @@ int homePageBackdropDecodeWidth() {
 }
 
 ImageProvider? homePageBackdropImageProvider(String? path) {
+  final assetName = bundledHomePageWallpaperAssetName(path);
+  if (assetName != null) {
+    return ResizeImage(
+      AssetImage(assetName),
+      width: homePageBackdropDecodeWidth(),
+    );
+  }
   if (path == null || path.isEmpty) {
     return null;
   }
   if (!_homePageFileExistsSync(path)) {
     return null;
   }
-  return ResizeImage(FileImage(File(path)), width: homePageBackdropDecodeWidth());
+  return ResizeImage(
+    FileImage(File(path)),
+    width: homePageBackdropDecodeWidth(),
+  );
 }
 
 /// Warm the image cache so the home backdrop appears on the first frame.
@@ -126,6 +154,14 @@ Future<void> precacheHomePageBackdropImage(TimetableSettings settings) async {
 }
 
 void evictHomePageImageCache(String? path) {
+  final assetName = bundledHomePageWallpaperAssetName(path);
+  if (assetName != null) {
+    PaintingBinding.instance.imageCache.evict(AssetImage(assetName));
+    PaintingBinding.instance.imageCache.evict(
+      ResizeImage(AssetImage(assetName), width: homePageBackdropDecodeWidth()),
+    );
+    return;
+  }
   invalidateHomePageBackdropFileExists(path);
   if (path == null || path.isEmpty) {
     return;
@@ -397,6 +433,27 @@ Color homePageChromeForegroundForLuminance(
       : homePageChromeForegroundOnLight;
 }
 
+/// Picks whichever of the near-black / near-white chrome inks has the higher
+/// WCAG contrast against [luminance].
+///
+/// A fixed polarity threshold leaves a band of mid-tone wallpapers where both
+/// white and black are only ~2:1. This variant flips at the actual contrast
+/// crossover (relative luminance ≈ 0.179) so the selected ink is always the
+/// best available black/white choice.
+Color homePageHighContrastForegroundForLuminance(
+  double? luminance, {
+  Color fallback = homePageChromeForegroundOnLight,
+}) {
+  if (luminance == null) {
+    return fallback;
+  }
+  final blackContrast = (luminance + 0.05) / 0.05;
+  final whiteContrast = 1.05 / (luminance + 0.05);
+  return whiteContrast >= blackContrast
+      ? homePageChromeForegroundOnDark
+      : homePageChromeForegroundOnLight;
+}
+
 /// Secondary/muted ink derived from the primary chrome foreground.
 Color homePageChromeMutedForeground(Color foreground) {
   final isLightInk = foreground == homePageChromeForegroundOnDark;
@@ -435,6 +492,9 @@ Color homePageOverWallpaperInk({
   required bool hasBackdrop,
   required double? wallpaperLuminance,
   double darkThreshold = 0.45,
+  double minContrastRatio = 3.0,
+  bool maximizeContrast = false,
+  bool keepDefaultColorOverWallpaper = false,
 }) {
   final configured = tryParseHexColor(configuredHex);
   final usesDefault = homePageInkUsesBuiltInDefault(configuredHex, defaultHex);
@@ -442,6 +502,24 @@ Color homePageOverWallpaperInk({
   if (!hasBackdrop) {
     return configured ?? themeFallback;
   }
+  final fallback = configured ?? themeFallback;
+  if (keepDefaultColorOverWallpaper && usesDefault) {
+    return fallback;
+  }
+  Color autoForeground(double? luminance, Color fallbackColor) {
+    if (maximizeContrast) {
+      return homePageHighContrastForegroundForLuminance(
+        luminance,
+        fallback: fallbackColor,
+      );
+    }
+    return homePageChromeForegroundForLuminance(
+      luminance,
+      darkThreshold: darkThreshold,
+      fallback: fallbackColor,
+    );
+  }
+
   if (!usesDefault && configured != null) {
     // A user-picked colour stays as long as it keeps ~3:1 contrast against
     // the wallpaper band behind this chrome; below that the ink would render
@@ -450,20 +528,16 @@ Color homePageOverWallpaperInk({
     // view of it) is gone.
     final luminance = wallpaperLuminance;
     if (luminance != null &&
-        !homePageInkHasSufficientContrast(configured, luminance)) {
-      return homePageChromeForegroundForLuminance(
-        luminance,
-        darkThreshold: darkThreshold,
-        fallback: configured,
-      );
+        !homePageInkHasSufficientContrast(
+          configured,
+          luminance,
+          minContrastRatio: minContrastRatio,
+        )) {
+      return autoForeground(luminance, configured);
     }
     return configured;
   }
-  return homePageChromeForegroundForLuminance(
-    wallpaperLuminance,
-    darkThreshold: darkThreshold,
-    fallback: configured ?? themeFallback,
-  );
+  return autoForeground(wallpaperLuminance, fallback);
 }
 
 /// Whether [ink] keeps at least ~3:1 contrast against a wallpaper band of
@@ -496,6 +570,8 @@ Color homePageOverWallpaperAccent({
   bool hasBackdrop = false,
   double? wallpaperLuminance,
   double darkThreshold = 0.45,
+  double minContrastRatio = 3.0,
+  bool maximizeContrast = false,
 }) {
   final configured = tryParseHexColor(configuredHex) ?? themeFallback;
   if (!hasBackdrop) {
@@ -503,12 +579,21 @@ Color homePageOverWallpaperAccent({
   }
   final luminance = wallpaperLuminance;
   if (luminance != null &&
-      !homePageInkHasSufficientContrast(configured, luminance)) {
-    return homePageChromeForegroundForLuminance(
-      luminance,
-      darkThreshold: darkThreshold,
-      fallback: configured,
-    );
+      !homePageInkHasSufficientContrast(
+        configured,
+        luminance,
+        minContrastRatio: minContrastRatio,
+      )) {
+    return maximizeContrast
+        ? homePageHighContrastForegroundForLuminance(
+            luminance,
+            fallback: configured,
+          )
+        : homePageChromeForegroundForLuminance(
+            luminance,
+            darkThreshold: darkThreshold,
+            fallback: configured,
+          );
   }
   return configured;
 }
@@ -616,7 +701,16 @@ Future<ui.Image?> _decodeHomePageWallpaperSample(String path) async {
   // Transfer ownership to the engine decoder instead of materializing the
   // complete file as a Dart Uint8List. The returned sample is bounded to a
   // small width and is independent of ImageCache/listener timing.
-  final buffer = await ui.ImmutableBuffer.fromFilePath(path);
+  final assetName = bundledHomePageWallpaperAssetName(path);
+  final ui.ImmutableBuffer buffer;
+  if (assetName != null) {
+    final data = await rootBundle.load(assetName);
+    buffer = await ui.ImmutableBuffer.fromUint8List(
+      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+    );
+  } else {
+    buffer = await ui.ImmutableBuffer.fromFilePath(path);
+  }
   final codec = await ui.instantiateImageCodecFromBuffer(
     buffer,
     targetWidth: 128,
@@ -648,9 +742,11 @@ sampleHomePageWallpaperLuminanceBands(
   if (path == null || path.isEmpty) {
     return null;
   }
-  final file = File(path);
-  if (!file.existsSync()) {
-    return null;
+  if (!isBundledHomePageWallpaperPath(path)) {
+    final file = File(path);
+    if (!file.existsSync()) {
+      return null;
+    }
   }
   try {
     final image = await _decodeHomePageWallpaperSample(path);

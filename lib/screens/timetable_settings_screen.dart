@@ -23,7 +23,6 @@ import '../services/home_widget_binding_service.dart';
 import '../services/miui_live_activities_service.dart';
 import '../services/app_log_service.dart';
 import '../services/umeng_analytics_service.dart';
-import '../services/webdav_sync_coordinator.dart';
 import '../utils/app_toast.dart';
 import '../utils/hex_color.dart';
 import '../utils/home_page_background.dart';
@@ -51,8 +50,6 @@ import '../services/memory_stats_service.dart';
 import 'about_screen.dart';
 import 'couple_timetable_settings_screen.dart';
 import 'data_transfer_screen.dart';
-import 'cloud_sync_screen.dart';
-import 'lan_edit_screen.dart';
 import 'memory_stats_screen.dart';
 import 'live_settings_subpages.dart';
 import 'log_viewer_entry.dart';
@@ -74,6 +71,7 @@ part 'settings/settings_diagnostics.dart';
 part 'settings/settings_course_card.dart';
 part 'settings/settings_general.dart';
 part 'settings/settings_live.dart';
+part 'settings/settings_global.dart';
 part 'settings/settings_timetable_page.dart';
 part 'settings/settings_home_widget.dart';
 part 'settings/settings_holiday.dart';
@@ -87,6 +85,12 @@ String formatLiveTimeCorrection(AppLocalizations l10n, int seconds) {
   }
   return l10n.liveTimeCorrectionAdvance(seconds.abs());
 }
+
+/// 设置页的编辑对象：当前课表自身设置，或所有课表共享的全局显示设置。
+///
+/// 全局模式下同一组页面编辑的是「全局显示设置」：所有课表默认跟随，
+/// 课表自身配置过的字段仍然课表优先。
+enum SettingsScope { profile, global }
 
 /// 八宫格等外部入口直达设置子页的工厂。
 ///
@@ -102,6 +106,7 @@ Widget? settingsSubpageById(String id) {
     'holidaySettings' => const _HolidaySettingsScreen(),
     'homeWidgetSettings' => const _HomeWidgetSettingsScreen(),
     'diagnosticsSettings' => const _DiagnosticsScreen(),
+    'globalSettings' => const _GlobalTimetableSettingsScreen(),
     _ => null,
   };
 }
@@ -167,6 +172,14 @@ class TimetableSettingsScreen extends StatelessWidget {
           );
         }
 
+        void openGlobalTimetableSettings() {
+          HyperosNavigation.push(
+            context,
+            settings: const RouteSettings(name: '/settings/global-display'),
+            builder: (_) => const _GlobalTimetableSettingsScreen(),
+          );
+        }
+
         void openTimetablePageSettings() {
           HyperosNavigation.push(
             context,
@@ -213,22 +226,6 @@ class TimetableSettingsScreen extends StatelessWidget {
             // Canonical name; deep link also accepts `/settings/couple`.
             settings: const RouteSettings(name: '/settings/couple-timetable'),
             builder: (_) => const CoupleTimetableSettingsScreen(),
-          );
-        }
-
-        void openCloudSync() {
-          HyperosNavigation.push(
-            context,
-            settings: const RouteSettings(name: '/settings/cloud-sync'),
-            builder: (_) => const CloudSyncScreen(),
-          );
-        }
-
-        void openLanEdit() {
-          HyperosNavigation.push(
-            context,
-            settings: const RouteSettings(name: '/settings/lan-edit'),
-            builder: (_) => const LanEditScreen(),
           );
         }
 
@@ -328,6 +325,7 @@ class TimetableSettingsScreen extends StatelessWidget {
             openProfiles: openProfiles,
             openHolidaySettings: openHolidaySettings,
             openCourseCardSettings: openCourseCardSettings,
+            openGlobalTimetableSettings: openGlobalTimetableSettings,
             openTimetablePageSettings: openTimetablePageSettings,
             openHomeNavigation: openHomeNavigation,
             openLiveSettings: openLiveSettings,
@@ -335,8 +333,6 @@ class TimetableSettingsScreen extends StatelessWidget {
             openAppearance: openAppearance,
             openGeneralSettings: openGeneralSettings,
             openDataTransfer: openDataTransfer,
-            openCloudSync: openCloudSync,
-            openLanEdit: openLanEdit,
             openCoupleTimetable: openCoupleTimetable,
             openAbout: openAbout,
             openUserGuide: openUserGuide,
@@ -384,6 +380,7 @@ class TimetableSettingsScreen extends StatelessWidget {
     required VoidCallback openProfiles,
     required VoidCallback openHolidaySettings,
     required VoidCallback openCourseCardSettings,
+    required VoidCallback openGlobalTimetableSettings,
     required VoidCallback openTimetablePageSettings,
     required VoidCallback openHomeNavigation,
     required VoidCallback openLiveSettings,
@@ -391,8 +388,6 @@ class TimetableSettingsScreen extends StatelessWidget {
     required VoidCallback openAppearance,
     required VoidCallback openGeneralSettings,
     required VoidCallback openDataTransfer,
-    required VoidCallback openCloudSync,
-    required VoidCallback openLanEdit,
     required VoidCallback openCoupleTimetable,
     required VoidCallback openAbout,
     required VoidCallback openUserGuide,
@@ -432,6 +427,22 @@ class TimetableSettingsScreen extends StatelessWidget {
           HyperosSectionLabel(text: l10n.settingsTimetableSectionTitle),
           HyperosListGroup(
             children: [
+              _MiuixSettingsPreference(
+                startAction: _settingsIconBadge(
+                  MiuixIcons.extended.byName('favoritesFill')!,
+                  HyperosIconColors.purple,
+                ),
+                title: l10n.coupleTimetableEntryTitle,
+                endActions: [
+                  Text(
+                    provider.hasPartnerBinding
+                        ? l10n.coupleTimetableEntryBound
+                        : l10n.coupleTimetableEntryUnboundLabel,
+                    style: HyperosTypography.listDetail(context),
+                  ),
+                ],
+                onClick: openCoupleTimetable,
+              ),
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
                   MiuixIcons.extended.byName('layers')!,
@@ -494,6 +505,22 @@ class TimetableSettingsScreen extends StatelessWidget {
           HyperosSectionLabel(text: l10n.settingsDisplayAppearanceSectionTitle),
           HyperosListGroup(
             children: [
+              _MiuixSettingsPreference(
+                startAction: _settingsIconBadge(
+                  MiuixIcons.extended.byName('settings')!,
+                  HyperosIconColors.teal,
+                ),
+                title: l10n.globalSettingsTitle,
+                endActions: [
+                  Text(
+                    provider.globalSettings == null
+                        ? l10n.globalSettingsNotConfigured
+                        : l10n.globalSettingsConfigured,
+                    style: HyperosTypography.listDetail(context),
+                  ),
+                ],
+                onClick: openGlobalTimetableSettings,
+              ),
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
                   MiuixIcons.extended.byName('gridView')!,
@@ -595,31 +622,6 @@ class TimetableSettingsScreen extends StatelessWidget {
                 ),
                 title: l10n.dataTransferEntryTitle,
                 onClick: openDataTransfer,
-              ),
-              _CloudSyncEntryTile(onTap: openCloudSync),
-              _MiuixSettingsPreference(
-                startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('link')!,
-                  HyperosIconColors.indigo,
-                ),
-                title: l10n.lanEditEntryTitle,
-                onClick: openLanEdit,
-              ),
-              _MiuixSettingsPreference(
-                startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('favoritesFill')!,
-                  HyperosIconColors.purple,
-                ),
-                title: l10n.coupleTimetableEntryTitle,
-                endActions: [
-                  Text(
-                    provider.hasPartnerBinding
-                        ? l10n.coupleTimetableEntryBound
-                        : l10n.coupleTimetableEntryUnboundLabel,
-                    style: HyperosTypography.listDetail(context),
-                  ),
-                ],
-                onClick: openCoupleTimetable,
               ),
             ],
           ),
@@ -918,95 +920,6 @@ class _LiveEntryTileState extends State<_LiveEntryTile>
           ? [Text(detailsText, style: HyperosTypography.listDetail(context))]
           : null,
       onClick: widget.onTap,
-    );
-  }
-}
-
-/// 云同步入口，带配置状态。
-///
-/// 「云同步不工作」的第一因是根本没配 WebDAV（IA 规范 §6 要求把该状态
-/// 前置到入口行尾）。配置存于 SharedPreferences：异步读一次并缓存 Future
-/// （不在 build 里发起 I/O），App 恢复前台时重读一次——用户去云同步页
-/// 开完开关回来要立刻反映。同步中的动态状态由 coordinator 的
-/// ChangeNotifier 供给，ListenableBuilder 直接跟随。
-class _CloudSyncEntryTile extends StatefulWidget {
-  const _CloudSyncEntryTile({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  State<_CloudSyncEntryTile> createState() => _CloudSyncEntryTileState();
-}
-
-class _CloudSyncEntryTileState extends State<_CloudSyncEntryTile>
-    with WidgetsBindingObserver {
-  Future<bool>? _enabledFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _enabledFuture = _loadEnabled();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      setState(() {
-        _enabledFuture = _loadEnabled();
-      });
-    }
-  }
-
-  Future<bool> _loadEnabled() async {
-    final config = await WebdavSyncCoordinator.instance().syncService
-        .loadConfig();
-    return config.enabled;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return ListenableBuilder(
-      listenable: WebdavSyncCoordinator.instance(),
-      builder: (context, _) => FutureBuilder<bool>(
-        future: _enabledFuture,
-        builder: (context, snapshot) {
-          // 配置未读完前行尾留白，避免先闪一帧错误的「未开启」。
-          final detailsText = snapshot.connectionState != ConnectionState.done
-              ? null
-              : !(snapshot.data ?? false)
-              ? l10n.cloudSyncEntryDisabled
-              : WebdavSyncCoordinator.instance().status.isSyncing
-              ? l10n.cloudSyncEntrySyncing
-              : WebdavSyncCoordinator.instance().status.lastError != null
-              ? l10n.cloudSyncEntryError
-              : l10n.cloudSyncEntryEnabled;
-          return _MiuixSettingsPreference(
-            key: const ValueKey<String>('settings-cloud-sync-entry'),
-            startAction: _settingsIconBadge(
-              MiuixIcons.extended.byName('backup')!,
-              HyperosIconColors.cyan,
-            ),
-            title: l10n.cloudSyncEntryTitle,
-            endActions: detailsText == null
-                ? null
-                : [
-                    Text(
-                      detailsText,
-                      style: HyperosTypography.listDetail(context),
-                    ),
-                  ],
-            onClick: widget.onTap,
-          );
-        },
-      ),
     );
   }
 }

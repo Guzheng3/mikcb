@@ -11,7 +11,6 @@ import 'package:provider/provider.dart';
 import '../providers/timetable_provider.dart';
 import '../screens/couple_timetable_settings_screen.dart';
 import '../screens/course_import_screen.dart';
-import '../screens/lan_edit_screen.dart';
 import '../screens/live_settings_subpages.dart';
 import '../screens/timetable_settings_screen.dart';
 import '../services/app_log_service.dart';
@@ -74,8 +73,6 @@ class DebugDeepLinkNavigator {
           await _openKeepAlive(context);
         case 'settings/couple':
           await _openCouple(context);
-        case 'settings/lan-edit':
-          await _openLanEdit(context);
         case 'courses/import':
           await _openCourseImport(context);
         case 'action/resume':
@@ -198,18 +195,6 @@ class DebugDeepLinkNavigator {
       context,
       settings: const RouteSettings(name: '/settings/couple'),
       builder: (_) => const CoupleTimetableSettingsScreen(),
-    );
-  }
-
-  static Future<void> _openLanEdit(BuildContext context) async {
-    _popToRoot(context);
-    if (!context.mounted) {
-      return;
-    }
-    _pushRoute(
-      context,
-      settings: const RouteSettings(name: '/settings/lan-edit'),
-      builder: (_) => const LanEditScreen(),
     );
   }
 

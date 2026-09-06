@@ -164,8 +164,7 @@ Future<int> _timetableImportParsedCourses(
     }
     host._currentDateWeek = host._resolveCurrentDateWeek();
     // Persist once at end of import; suppress mid-import cloud sync notify.
-    await host._persistActiveProfileState(notifySync: false);
-    notifyUserDataChangedForSync();
+    await host._persistActiveProfileState();
     host._currentLiveCourseId = null;
     host._notifyStateChanged();
     host._analytics.logEventLater(

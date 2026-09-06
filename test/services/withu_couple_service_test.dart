@@ -215,11 +215,27 @@ void main() {
     expect(result?.csrfToken, 'csrf-token');
     expect(storage.values.values.toSet(), {
       'alice',
-      'password',
       'session-id',
       'device-token',
       'csrf-token',
     });
+  });
+
+  test('load wipes the legacy stored password from secure storage', () async {
+    final storage = _MemorySecureStorage();
+    storage.values.addAll({
+      'withu_couple_username': 'alice',
+      'withu_couple_password': 'legacy-secret',
+      'withu_couple_phpsessid': 'session-id',
+      'withu_couple_csrf_token': 'csrf-token',
+    });
+    final store = WithuCoupleSessionStore(storage: storage);
+
+    final session = await store.load();
+
+    expect(session, isNotNull);
+    expect(session?.cookieHeader, 'PHPSESSID=session-id');
+    expect(storage.values.containsKey('withu_couple_password'), isFalse);
   });
 
   test('pull imports, updates, then reports unchanged', () async {
@@ -638,7 +654,6 @@ void main() {
 
     final values = {
       'withu_couple_username': 'alice',
-      'withu_couple_password': 'password',
       'withu_couple_phpsessid': 'session-id',
       'withu_couple_csrf_token': 'csrf-token',
     };

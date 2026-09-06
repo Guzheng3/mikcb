@@ -238,6 +238,8 @@ void main() {
             SectionTime(startTime: '14:00', endTime: '14:45'),
           ],
           homePageWallpaperPath: wallpaper.path,
+          homePageHeaderBlurEnabled: true,
+          homePageWeekdayBarBlurEnabled: true,
         );
         final provider = await createInitializedTestProvider(tester);
 

@@ -16,6 +16,7 @@ import '../models/schedule_date_rule.dart';
 import '../models/schedule_item.dart';
 import '../models/time_scheme.dart';
 import '../models/partner_timetable_binding.dart';
+import '../models/couple_timetable_history.dart';
 import '../models/timetable_profile.dart';
 import '../models/timetable_settings.dart';
 import '../data/timetable_repository.dart';
@@ -40,10 +41,10 @@ import '../services/class_reminder_service.dart';
 import '../services/couple_timetable_widget_service.dart';
 import '../services/exam_reminder_service.dart';
 import '../services/partner_timetable_service.dart';
+import '../services/couple_timetable_history_service.dart';
 import '../services/stats_widget_service.dart';
 import '../services/storage_service.dart';
 import '../services/sync_operation_gate.dart';
-import '../services/user_data_sync_hooks.dart';
 import '../services/withu_couple_session_store.dart';
 import '../services/ics_import_service.dart';
 import '../services/miui_live_activities_service.dart';
@@ -226,6 +227,7 @@ class TimetableProvider with ChangeNotifier {
   final HolidayService _holidayService;
   final AppAnalytics _analytics;
   final WithuCoupleSessionStore _withuSessionStore;
+  final CoupleTimetableHistoryService _coupleHistoryService;
   final bool _enableLiveActivitySync;
 
   List<Course> _courses = [];
@@ -235,6 +237,21 @@ class TimetableProvider with ChangeNotifier {
   TimetableSettings _settings = TimetableSettings.defaults();
   int _currentWeek = 1;
   int _currentDateWeek = 1;
+
+  /// 全局显示设置（可选）。所有课表默认跟随；课表自身某字段与内置默认值
+  /// 不同（即「课表自己配过」）时该字段课表优先。null = 未配置全局设置。
+  TimetableSettings? _globalSettings;
+
+  /// 当前课表「明确配置过」的设置字段（settings.toJson 顶层 key 集合）。
+  /// 用户在设置页改动字段时记录；与「和内置默认不同」的惰性判定取并集，
+  /// 保证把字段改回默认值也能继续覆盖全局（否则会被误判成「没配过」）。
+  Set<String> _settingsOverrideKeys = <String>{};
+
+  /// [settings] 解析结果的记忆缓存：[settings] 在每次构建里被高频读取，
+  /// 只在 [_settings] 或 [_globalSettings] 的实例标识变化时才重新合并。
+  TimetableSettings? _resolvedSettingsCache;
+  TimetableSettings? _resolvedSettingsCacheOwn;
+  TimetableSettings? _resolvedSettingsCacheGlobal;
 
   // Calendar week used for today's courses; unlike currentDateWeek it is not
   // clamped to the configured semester length.
@@ -278,7 +295,21 @@ class TimetableProvider with ChangeNotifier {
   List<CourseTask> get tasks => List.unmodifiable(_tasks);
   List<ScheduleItem> get scheduleItems => List.unmodifiable(_scheduleItems);
   List<Exam> get exams => List.unmodifiable(_exams);
-  TimetableSettings get settings => _settings;
+
+  /// 当前课表的生效设置：全局显示设置打底，课表自身配置过的字段覆盖全局。
+  /// 未配置全局设置时与课表自身设置完全一致（历史行为不变）。
+  TimetableSettings get settings {
+    if (!identical(_resolvedSettingsCacheOwn, _settings) ||
+        !identical(_resolvedSettingsCacheGlobal, _globalSettings)) {
+      _resolvedSettingsCache = _resolveEffectiveSettings(_settings);
+      _resolvedSettingsCacheOwn = _settings;
+      _resolvedSettingsCacheGlobal = _globalSettings;
+    }
+    return _resolvedSettingsCache!;
+  }
+
+  /// 全局显示设置原始值（未经课表覆盖）。null = 尚未配置。
+  TimetableSettings? get globalSettings => _globalSettings;
 
   // 主题撤销状态（仅保存主题相关字段，避免误回滚其他设置）
   ThemeConfig? _undoThemeConfig;
@@ -320,17 +351,70 @@ class TimetableProvider with ChangeNotifier {
     await updateSettings(restored);
   }
 
-  /// 批量更新设置（用于主题导入）
+  /// 批量更新设置（用于主题导入 / 撤销 / 传输合并）。
+  ///
+  /// 经 [_applySettingsChangeToOwn] 落回课表自身设置：无全局设置时等价于
+  /// 原样替换；有全局设置时只有真正变化的字段成为课表自身的配置。
   Future<void> updateSettings(TimetableSettings newSettings) {
     return _runMutation(() async {
-      _settings = _normalizeSettingsWithTimeScheme(newSettings);
-      hyperosSetEdgeHapticsEnabled(_settings.enableHaptics);
+      _settings = _normalizeSettingsWithTimeScheme(
+        _applySettingsChangeToOwn(_settings, newSettings),
+      );
+      hyperosSetEdgeHapticsEnabled(settings.enableHaptics);
       _writeEpoch++;
       final epoch = _writeEpoch;
       await _persistActiveProfileState();
       if (_writeEpoch == epoch) {
         notifyListeners();
       }
+    });
+  }
+
+  /// 更新全局显示设置并持久化。所有课表立即按新全局值重新解析生效
+  /// 设置（课表自身配置过的字段不受影响），随后同步原生偏好与直播面。
+  Future<void> updateGlobalTimetableSettings(TimetableSettings settings) {
+    return _runMutation(() async {
+      final previousBackdropPath = resolveHomePageBackdropImagePath(
+        this.settings,
+      );
+      _globalSettings = TimetableSettings.fromJson(settings.toJson());
+      hyperosSetEdgeHapticsEnabled(this.settings.enableHaptics);
+      await _profileRepository.saveGlobalTimetableSettings(_globalSettings!);
+      unawaited(_syncNativeRuntimePreferences());
+      _lastLiveSnapshotSignature = null;
+      _currentLiveCourseId = null;
+      notifyListeners();
+      if (resolveHomePageBackdropImagePath(this.settings) !=
+          previousBackdropPath) {
+        await precacheHomePageBackdropImage(this.settings);
+      }
+      unawaited(_syncLiveScheduleSnapshot());
+      unawaited(_updateLiveActivity(syncScheduleSnapshot: false));
+    });
+  }
+
+  /// 清除全局显示设置：所有课表回到各自（或默认）的设置。
+  Future<void> clearGlobalTimetableSettings() {
+    return _runMutation(() async {
+      if (_globalSettings == null) {
+        return;
+      }
+      final previousBackdropPath = resolveHomePageBackdropImagePath(
+        settings,
+      );
+      _globalSettings = null;
+      hyperosSetEdgeHapticsEnabled(settings.enableHaptics);
+      await _profileRepository.clearGlobalTimetableSettings();
+      unawaited(_syncNativeRuntimePreferences());
+      _lastLiveSnapshotSignature = null;
+      _currentLiveCourseId = null;
+      notifyListeners();
+      if (resolveHomePageBackdropImagePath(settings) !=
+          previousBackdropPath) {
+        await precacheHomePageBackdropImage(settings);
+      }
+      unawaited(_syncLiveScheduleSnapshot());
+      unawaited(_updateLiveActivity(syncScheduleSnapshot: false));
     });
   }
 
@@ -446,7 +530,6 @@ class TimetableProvider with ChangeNotifier {
     _teacherRecords.add(teacher);
     _teacherRecords.sort();
     await _profileRepository.saveTeacherRecords(_teacherRecords);
-    notifyUserDataChangedForSync();
   }
 
   /// Record a location name persistently (if not already recorded).
@@ -460,7 +543,6 @@ class TimetableProvider with ChangeNotifier {
     _locationRecords.add(location);
     _locationRecords.sort();
     await _profileRepository.saveLocationRecords(_locationRecords);
-    notifyUserDataChangedForSync();
   }
 
   int get currentDayOfWeek => _currentDayOfWeek;
@@ -487,17 +569,28 @@ class TimetableProvider with ChangeNotifier {
       _getProfileById(PartnerTimetableService.partnerProfileId);
   List<Course> get partnerCourses =>
       partnerProfile?.courses ?? const <Course>[];
+
+  /// 当前课表：TA 课表可切换后，返回值可能就是 TA 的课表。
+  /// 课表缺失（被删/数据损坏）时回退到最近使用的非 TA 课表。
   TimetableProfile? get activeProfile {
     final profile = _getProfileById(_activeProfileId);
-    if (profile != null && !profile.isPartnerImported) {
+    if (profile != null) {
       return profile;
     }
-    for (final candidate in _profiles) {
-      if (!candidate.isPartnerImported) {
-        return candidate;
-      }
+    return myTimetableProfile;
+  }
+
+  /// 情侣语境下的「我的课表」：当前课表切到 TA 之后，快照、导出给对方、
+  /// 上传给对方等情侣功能仍需指向「我的」课表——取最近使用的非 TA 课表。
+  TimetableProfile? get myTimetableProfile {
+    final active = _getProfileById(_activeProfileId);
+    if (active != null && !active.isPartnerImported) {
+      return active;
     }
-    return null;
+    final mine =
+        _profiles.where((profile) => !profile.isPartnerImported).toList()
+          ..sort((a, b) => b.lastUsedAt.compareTo(a.lastUsedAt));
+    return mine.firstOrNull;
   }
 
   TimeScheme? get activeTimeScheme =>
@@ -521,6 +614,7 @@ class TimetableProvider with ChangeNotifier {
     HolidayService? holidayService,
     AppAnalytics? analytics,
     WithuCoupleSessionStore? withuSessionStore,
+    CoupleTimetableHistoryService? coupleTimetableHistoryService,
     bool autoInitialize = true,
     bool? enableLiveActivitySync,
   }) : _storageService = storageService ?? StorageService(),
@@ -540,7 +634,9 @@ class TimetableProvider with ChangeNotifier {
        _holidayService = holidayService ?? HolidayService(),
        _analytics = analytics ?? AppAnalytics.instance,
        _withuSessionStore =
-           withuSessionStore ?? const WithuCoupleSessionStore() {
+           withuSessionStore ?? const WithuCoupleSessionStore(),
+       _coupleHistoryService =
+           coupleTimetableHistoryService ?? const CoupleTimetableHistoryService() {
     _holidayService.onRemoteHolidayDataUpdated = (_) {
       unawaited(_loadHolidayData());
     };
@@ -629,7 +725,7 @@ class TimetableProvider with ChangeNotifier {
     return _liveSurfaceGate.runExclusive(action);
   }
 
-  /// Public entry for external apply paths (WebDAV) that must share the
+  /// Public entry for external apply paths that must share the
   /// timetable mutation gate with local / LAN writes.
   Future<T> runMutationExclusive<T>(Future<T> Function() action) {
     return _runMutation(action);
@@ -657,6 +753,7 @@ class TimetableProvider with ChangeNotifier {
       scheduleItems: List<ScheduleItem>.from(_scheduleItems),
       exams: List<Exam>.from(_exams),
       settings: _settings,
+      settingsOverrideKeys: List<String>.from(_settingsOverrideKeys),
       currentWeek: _currentWeek,
       lastUsedAt: touchLastUsedAt ? DateTime.now() : activeProfile.lastUsedAt,
     );
@@ -677,6 +774,8 @@ class TimetableProvider with ChangeNotifier {
         .getPartnerTimetableBinding();
     final lastAppliedSignature = await _profileRepository
         .getScheduleDateRuleLastAppliedSignature();
+    final globalSettings = await _profileRepository
+        .getGlobalTimetableSettings();
 
     _profiles = profiles;
     _timeSchemes = timeSchemes;
@@ -685,14 +784,14 @@ class TimetableProvider with ChangeNotifier {
     _activeProfileId = activeProfileId;
     _partnerBinding = partnerBinding;
     _scheduleDateRuleLastAppliedSignature = lastAppliedSignature;
+    _globalSettings = globalSettings;
 
     if (_activeProfileId != null) {
       final storedActive = _getProfileById(_activeProfileId);
-      if (storedActive?.isPartnerImported == true) {
-        final fallback = _profiles
-            .where((profile) => !profile.isPartnerImported)
-            .firstOrNull;
-        _activeProfileId = fallback?.id;
+      // TA 课表可作为当前课表持久化（卡片右半切换），不再强制回退；
+      // 仅当 id 指向的课表已不存在时交给 activeProfile 的回退逻辑。
+      if (storedActive == null) {
+        _activeProfileId = null;
       }
     }
 
@@ -719,7 +818,7 @@ class TimetableProvider with ChangeNotifier {
     }
 
     // 壁纸预加载不阻塞首帧；无壁纸时此调用会立即返回。
-    unawaited(precacheHomePageBackdropImage(_settings));
+    unawaited(precacheHomePageBackdropImage(settings));
 
     // --- 迁移逻辑：不阻塞首帧，后台完成 ---
     unawaited(_runAppLogsMigrationIfNeeded(activeProfile));
@@ -907,7 +1006,8 @@ class TimetableProvider with ChangeNotifier {
 
   void _applyProfileState(TimetableProfile profile) {
     _settings = _normalizeSettingsWithTimeScheme(profile.settings);
-    hyperosSetEdgeHapticsEnabled(_settings.enableHaptics);
+    _settingsOverrideKeys = profile.settingsOverrideKeys.toSet();
+    hyperosSetEdgeHapticsEnabled(settings.enableHaptics);
     _courses = _syncCoursesWithEffectiveTimeSchemes(
       List<Course>.from(profile.courses),
       settings: _settings,
@@ -931,15 +1031,15 @@ class TimetableProvider with ChangeNotifier {
   }
 
   Future<void> _syncNativeRuntimePreferences() async {
-    applyHyperosUserTransitionSpeed(_settings.pageTransitionSpeed);
+    applyHyperosUserTransitionSpeed(settings.pageTransitionSpeed);
     await AppLogService.instance.updateLoggingEnabled(
-      _settings.liveEnableLocalDiagnostics,
+      settings.liveEnableLocalDiagnostics,
     );
     await _liveActivitiesService.setLiveDiagnosticsEnabled(
-      _settings.liveEnableLocalDiagnostics,
+      settings.liveEnableLocalDiagnostics,
     );
     await _liveActivitiesService.setHideFromRecents(
-      _settings.liveHideFromRecents,
+      settings.liveHideFromRecents,
     );
   }
 
@@ -960,6 +1060,91 @@ class TimetableProvider with ChangeNotifier {
       sections: List<SectionTime>.from(scheme.sections),
       activeTimeSchemeId: scheme.id,
     );
+  }
+
+  /// 不参与全局合并的课表专属字段：这些字段只属于「这一份课表」，全局
+  /// 设置不覆盖它们，课表保存时也原样写入（不参与「改了才写入」判定）。
+  ///
+  /// - sections / activeTimeSchemeId：由时间方案系统管理；
+  /// - semesterWeekCount / semesterStartDate：每份课表自己的学期；
+  /// - timetableHomeViewMode / timetableLastViewedDayOfWeek：浏览状态；
+  /// - savedThemes / themeCheckpoint*：课表自己的主题库。
+  static const Set<String> _profileOwnedSettingKeys = {
+    'sections',
+    'activeTimeSchemeId',
+    'semesterWeekCount',
+    'semesterStartDate',
+    'timetableHomeViewMode',
+    'timetableLastViewedDayOfWeek',
+    'savedThemes',
+    'themeCheckpointName',
+    'themeCheckpointConfig',
+  };
+
+  static bool _jsonEquals(Object? left, Object? right) {
+    if (identical(left, right)) {
+      return true;
+    }
+    return jsonEncode(left) == jsonEncode(right);
+  }
+
+  /// 计算课表生效设置：全局设置打底，课表自身「配置过」的字段覆盖全局。
+  ///
+  /// 「配置过」= 明确记录在 settingsOverrideKeys 中，或与内置默认值不同
+  /// （惰性判定，兼容没有 override 记账的历史数据）。[_profileOwnedSettingKeys]
+  /// 中的课表专属字段永远取课表自身值。
+  TimetableSettings _resolveEffectiveSettings(TimetableSettings own) {
+    final global = _globalSettings;
+    if (global == null) {
+      return own;
+    }
+    final defaults = TimetableSettings.defaults();
+    final ownJson = own.toJson();
+    final globalJson = global.toJson();
+    final defaultsJson = defaults.toJson();
+    final merged = <String, dynamic>{};
+    globalJson.forEach((key, globalValue) {
+      final ownValue = ownJson[key];
+      final isOwn = _profileOwnedSettingKeys.contains(key) ||
+          _settingsOverrideKeys.contains(key) ||
+          !_jsonEquals(ownValue, defaultsJson[key]);
+      merged[key] = isOwn ? ownValue : globalValue;
+    });
+    // 同一版本 toJson 的 key 集合必然一致；putIfAbsent 仅作防御性兜底。
+    ownJson.forEach((key, value) {
+      merged.putIfAbsent(key, () => value);
+    });
+    return TimetableSettings.fromJson(merged);
+  }
+
+  /// 把一次「设置变更」落回课表自身设置。
+  ///
+  /// 无全局设置时原样写入（历史行为）。有全局设置时只把「相对当前生效值
+  /// 真正变化了的字段」写进课表自身设置：从全局继承的字段保持继承状态，
+  /// 之后改全局仍会传导到这份课表；课表专属字段一律原样写入。变化的字段
+  /// 同时记入 [_settingsOverrideKeys]，保证改回默认值也能继续覆盖全局。
+  TimetableSettings _applySettingsChangeToOwn(
+    TimetableSettings own,
+    TimetableSettings next,
+  ) {
+    final global = _globalSettings;
+    if (global == null) {
+      return next;
+    }
+    final effectiveJson = _resolveEffectiveSettings(own).toJson();
+    final nextJson = next.toJson();
+    final ownJson = own.toJson();
+    nextJson.forEach((key, value) {
+      if (_profileOwnedSettingKeys.contains(key)) {
+        ownJson[key] = value;
+        return;
+      }
+      if (!_jsonEquals(value, effectiveJson[key])) {
+        ownJson[key] = value;
+        _settingsOverrideKeys.add(key);
+      }
+    });
+    return TimetableSettings.fromJson(ownJson);
   }
 
   List<Course> _syncCoursesWithEffectiveTimeSchemes(
@@ -1116,7 +1301,6 @@ class TimetableProvider with ChangeNotifier {
 
   Future<void> _persistActiveProfileState({
     bool touchLastUsedAt = false,
-    bool notifySync = true,
   }) async {
     _mergeActiveProfileIntoProfilesList(touchLastUsedAt: touchLastUsedAt);
     if (activeProfile == null) {
@@ -1126,19 +1310,14 @@ class TimetableProvider with ChangeNotifier {
     if (_activeProfileId != null) {
       await _profileRepository.setActiveProfileId(_activeProfileId!);
     }
-    if (notifySync) {
-      notifyUserDataChangedForSync();
-    }
   }
 
   Future<void> _persistTimeSchemes() async {
     await _profileRepository.saveTimeSchemes(_timeSchemes);
-    notifyUserDataChangedForSync();
   }
 
   Future<void> _persistLocationTimeGroups() async {
     await _profileRepository.saveLocationTimeGroups(_locationTimeGroups);
-    notifyUserDataChangedForSync();
   }
 
   /// Re-sync course clock times for every profile after location rules change.
@@ -1161,7 +1340,6 @@ class TimetableProvider with ChangeNotifier {
     }
 
     await _profileRepository.saveProfiles(_profiles);
-    notifyUserDataChangedForSync();
     _currentLiveCourseId = null;
     if (notify) {
       _notifyStateChanged();
@@ -1257,7 +1435,6 @@ class TimetableProvider with ChangeNotifier {
 
   Future<void> _persistScheduleDateRules() async {
     await _profileRepository.saveScheduleDateRules(_scheduleDateRules);
-    notifyUserDataChangedForSync();
   }
 
   /// Create a date-range rule that switches the default time scheme.
@@ -1534,7 +1711,6 @@ class TimetableProvider with ChangeNotifier {
     await _profileRepository.saveScheduleDateRuleLastAppliedSignature(
       signature,
     );
-    notifyUserDataChangedForSync();
     _currentLiveCourseId = null;
     _notifyStateChanged();
     await _updateLiveActivity();
@@ -2073,7 +2249,9 @@ class TimetableProvider with ChangeNotifier {
         return;
       }
       final targetProfile = _getProfileById(profileId);
-      if (targetProfile == null || targetProfile.isPartnerImported) {
+      // TA 课表同样是可切换课表（桌面卡片右半/情侣设置入口直达）：
+      // 切过去后主界面按普通课表展示 TA 的课，超级岛/提醒等跟随当前课表。
+      if (targetProfile == null) {
         return;
       }
 
@@ -2126,7 +2304,6 @@ class TimetableProvider with ChangeNotifier {
 
       _profiles[index] = _profiles[index].copyWith(name: name.trim());
       await _profileRepository.saveProfiles(_profiles);
-      notifyUserDataChangedForSync();
       notifyListeners();
     });
   }
@@ -2171,7 +2348,6 @@ class TimetableProvider with ChangeNotifier {
       if (_activeProfileId != null) {
         await _profileRepository.setActiveProfileId(_activeProfileId!);
       }
-      notifyUserDataChangedForSync();
       notifyListeners();
       if (isActive) {
         unawaited(_syncExamReminders());
@@ -3713,11 +3889,19 @@ class TimetableProvider with ChangeNotifier {
       });
     }
 
-    final previousBackdropPath = resolveHomePageBackdropImagePath(_settings);
+    final previousBackdropPath = resolveHomePageBackdropImagePath(this.settings);
     final semesterStartChanged =
         settings.semesterStartDate != _settings.semesterStartDate;
-    _settings = _normalizeSettingsWithTimeScheme(settings);
-    hyperosSetEdgeHapticsEnabled(_settings.enableHaptics);
+    // 换学期（开学日变更）时，把旧学期的当前课表快照进「我的历史课表」
+    // （同一学期只保留一条，见 CoupleTimetableHistoryService.upsert）。
+    // 快照体先同步读旧状态再落盘，不受下方 settings 覆盖影响。
+    if (semesterStartChanged && _settings.semesterStartDate != null) {
+      await _captureSemesterHistorySnapshot(CoupleTimetableRole.mine);
+    }
+    _settings = _normalizeSettingsWithTimeScheme(
+      _applySettingsChangeToOwn(_settings, settings),
+    );
+    hyperosSetEdgeHapticsEnabled(this.settings.enableHaptics);
     _currentCalendarWeek = _resolveCurrentCalendarWeek();
     _currentDateWeek = clampCurrentWeekToSettings(
       _currentCalendarWeek,
@@ -3732,8 +3916,8 @@ class TimetableProvider with ChangeNotifier {
     unawaited(_syncNativeRuntimePreferences());
     _lastLiveSnapshotSignature = null;
     _currentLiveCourseId = null;
-    if (resolveHomePageBackdropImagePath(_settings) != previousBackdropPath) {
-      await precacheHomePageBackdropImage(_settings);
+    if (resolveHomePageBackdropImagePath(this.settings) != previousBackdropPath) {
+      await precacheHomePageBackdropImage(this.settings);
     }
     notifyListeners();
     unawaited(_syncLiveScheduleSnapshot());
@@ -4378,13 +4562,15 @@ class TimetableProvider with ChangeNotifier {
   }) {
     return _runMutation(() async {
       await initialize();
+      // 覆盖对方课表前，把当前对方的课表快照进「她的历史课表」（同角色
+      // 同学期由服务层去重：同学期重复导入只刷新同一条）。
+      await _captureSemesterHistorySnapshot(CoupleTimetableRole.hers);
       final result = await _partnerTimetableService.importFromContent(
         content,
         partnerName: partnerName,
       );
       _profiles = await _profileRepository.loadProfiles();
       _partnerBinding = result.binding;
-      notifyUserDataChangedForSync();
       notifyListeners();
       await _syncHomeWidgetSnapshot();
       return result;
@@ -4406,7 +4592,6 @@ class TimetableProvider with ChangeNotifier {
       }
       _partnerBinding = binding.copyWith(weekOffset: clamped);
       await _profileRepository.savePartnerTimetableBinding(_partnerBinding);
-      notifyUserDataChangedForSync();
       notifyListeners();
       await _syncHomeWidgetSnapshot();
     });
@@ -4430,7 +4615,6 @@ class TimetableProvider with ChangeNotifier {
         togetherColorHex: togetherColorHex,
       );
       await _profileRepository.savePartnerTimetableBinding(_partnerBinding);
-      notifyUserDataChangedForSync();
       notifyListeners();
       await _syncHomeWidgetSnapshot();
     });
@@ -4453,9 +4637,139 @@ class TimetableProvider with ChangeNotifier {
           unawaited(_syncExamReminders());
         }
       }
-      notifyUserDataChangedForSync();
       notifyListeners();
       await _syncHomeWidgetSnapshot();
     });
+  }
+
+  /// 「往期」快照：某角色的课表被替换前，把当前状态写入历史。同角色同学
+  /// 期由服务层 upsert 去重（同一学期的课表只显示一个）。方法体先同步读
+  /// 状态再异步落盘，调用点（换学期/覆盖导入）不受后续赋值影响；快照失
+  /// 败不阻断主流程。
+  Future<void> _captureSemesterHistorySnapshot(
+    CoupleTimetableRole role,
+  ) async {
+    try {
+      final isMine = role == CoupleTimetableRole.mine;
+      final profile = isMine ? activeProfile : partnerProfile;
+      final anchor = isMine
+          ? _settings.semesterStartDate
+          : profile?.settings.semesterStartDate;
+      final courses = isMine ? _courses : (profile?.courses ?? const <Course>[]);
+      if (profile == null || anchor == null || courses.isEmpty) {
+        return;
+      }
+      await _coupleHistoryService.upsert(
+        role: role,
+        semesterAnchor: anchor,
+        name: profile.name,
+        courseJsonList: courses.map((course) => course.toJson()).toList(),
+        currentWeek: isMine ? _currentWeek : profile.currentWeek,
+      );
+    } catch (_) {
+      // 历史快照失败不影响导入/设置主流程。
+    }
+  }
+
+  /// 读取某角色的历史课表条目（长按情侣标题的历史弹层用）。
+  Future<List<CoupleTimetableHistoryEntry>> coupleTimetableHistoryEntriesFor(
+    CoupleTimetableRole role,
+  ) {
+    return _coupleHistoryService.entriesFor(role);
+  }
+
+  /// 恢复一条历史课表。被替换的当前课表先按其学期快照进历史（恢复可撤
+  /// 销），再还原快照内容。返回是否成功。
+  Future<bool> restoreCoupleTimetableHistory(
+    CoupleTimetableHistoryEntry entry,
+  ) {
+    return _runMutation(() async {
+      await initialize();
+      final restored = _coursesFromHistorySnapshot(entry.snapshot);
+      if (restored == null) {
+        return false;
+      }
+      await _captureSemesterHistorySnapshot(entry.role);
+      final anchor =
+          DateTime.tryParse(
+            entry.snapshot['semesterStartDate'] as String? ?? '',
+          ) ??
+          entry.semesterAnchor;
+      final snapshotWeek = (entry.snapshot['currentWeek'] as num?)?.toInt();
+      if (entry.role == CoupleTimetableRole.mine) {
+        await _applyMineHistoryRestore(restored, anchor, snapshotWeek);
+        return true;
+      }
+      return _applyHersHistoryRestore(restored, anchor, snapshotWeek);
+    });
+  }
+
+  List<Course>? _coursesFromHistorySnapshot(Map<String, dynamic> snapshot) {
+    try {
+      final raw = snapshot['courses'];
+      if (raw is! List) {
+        return null;
+      }
+      return raw
+          .whereType<Map<dynamic, dynamic>>()
+          .map((item) => Course.fromJson(Map<String, dynamic>.from(item)))
+          .toList();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 恢复到当前活动课表：替换课程，学期开学日跟随快照；周次口径与
+  /// [_applyProfileState] 一致（有开学时间按日历周对齐）。
+  Future<void> _applyMineHistoryRestore(
+    List<Course> restored,
+    DateTime? anchor,
+    int? snapshotWeek,
+  ) async {
+    _courses = _syncCoursesWithEffectiveTimeSchemes(restored);
+    if (anchor != null && anchor != _settings.semesterStartDate) {
+      _settings = _settings.copyWith(semesterStartDate: anchor);
+      _currentCalendarWeek = _resolveCurrentCalendarWeek();
+      _currentDateWeek = clampCurrentWeekToSettings(
+        _currentCalendarWeek,
+        _settings,
+      );
+    }
+    _currentWeek = _settings.semesterStartDate == null
+        ? clampCurrentWeekToSettings(snapshotWeek ?? _currentWeek, _settings)
+        : clampCurrentWeekToSettings(_currentCalendarWeek, _settings);
+    await _persistActiveProfileState();
+    _lastLiveSnapshotSignature = null;
+    _currentLiveCourseId = null;
+    notifyListeners();
+    unawaited(_syncLiveScheduleSnapshot());
+    unawaited(_updateLiveActivity(syncScheduleSnapshot: false));
+  }
+
+  /// 恢复到对方课表（TA 课表）：直接替换其课程与开学日。
+  Future<bool> _applyHersHistoryRestore(
+    List<Course> restored,
+    DateTime? anchor,
+    int? snapshotWeek,
+  ) async {
+    final partner = partnerProfile;
+    if (partner == null) {
+      return false;
+    }
+    final index = _profiles.indexWhere((profile) => profile.id == partner.id);
+    if (index == -1) {
+      return false;
+    }
+    _profiles[index] = partner.copyWith(
+      courses: restored,
+      currentWeek: snapshotWeek ?? partner.currentWeek,
+      settings: anchor == null
+          ? partner.settings
+          : partner.settings.copyWith(semesterStartDate: anchor),
+    );
+    await _profileRepository.saveProfiles(_profiles);
+    notifyListeners();
+    await _syncHomeWidgetSnapshot();
+    return true;
   }
 }

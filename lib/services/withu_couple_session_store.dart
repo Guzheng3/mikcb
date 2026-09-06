@@ -2,14 +2,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class WithuCoupleSession {
   final String username;
-  final String password;
   final String sessionId;
   final String? deviceToken;
   final String csrfToken;
 
   const WithuCoupleSession({
     required this.username,
-    required this.password,
     required this.sessionId,
     required this.csrfToken,
     this.deviceToken,
@@ -31,14 +29,12 @@ class WithuCoupleSession {
 
   WithuCoupleSession copyWith({
     String? username,
-    String? password,
     String? sessionId,
     String? deviceToken,
     String? csrfToken,
   }) {
     return WithuCoupleSession(
       username: username ?? this.username,
-      password: password ?? this.password,
       sessionId: sessionId ?? this.sessionId,
       deviceToken: deviceToken ?? this.deviceToken,
       csrfToken: csrfToken ?? this.csrfToken,
@@ -49,14 +45,13 @@ class WithuCoupleSession {
   bool operator ==(Object other) =>
       other is WithuCoupleSession &&
       other.username == username &&
-      other.password == password &&
       other.sessionId == sessionId &&
       other.deviceToken == deviceToken &&
       other.csrfToken == csrfToken;
 
   @override
   int get hashCode =>
-      Object.hash(username, password, sessionId, deviceToken, csrfToken);
+      Object.hash(username, sessionId, deviceToken, csrfToken);
 }
 
 abstract class WithuCoupleSecureStorage {
@@ -90,10 +85,14 @@ class FlutterWithuCoupleSecureStorage extends WithuCoupleSecureStorage {
 
 class WithuCoupleSessionStore {
   static const String _usernameKey = 'withu_couple_username';
-  static const String _passwordKey = 'withu_couple_password';
   static const String _sessionIdKey = 'withu_couple_phpsessid';
   static const String _deviceTokenKey = 'withu_couple_device';
   static const String _csrfTokenKey = 'withu_couple_csrf_token';
+
+  /// 旧版本曾把登录密码一并写入安全存储。服务端登录后会下发
+  /// withu_device 可信设备 Cookie，PHP 会话过期时凭它即可自动恢复会话，
+  /// 密码在客户端从未被读取；读取会话时顺手清掉历史遗留值。
+  static const String _legacyPasswordKey = 'withu_couple_password';
 
   const WithuCoupleSessionStore({WithuCoupleSecureStorage? storage})
     : _storage = storage ?? const FlutterWithuCoupleSecureStorage();
@@ -102,19 +101,17 @@ class WithuCoupleSessionStore {
 
   Future<WithuCoupleSession?> load() async {
     final username = await _storage.read(key: _usernameKey);
-    final password = await _storage.read(key: _passwordKey);
     final sessionId = await _storage.read(key: _sessionIdKey);
     final deviceToken = await _storage.read(key: _deviceTokenKey);
     final csrfToken = await _storage.read(key: _csrfTokenKey);
+    await _storage.delete(key: _legacyPasswordKey);
     if (username == null ||
-        password == null ||
         sessionId == null ||
         csrfToken == null) {
       return null;
     }
     return WithuCoupleSession(
       username: username,
-      password: password,
       sessionId: sessionId,
       deviceToken: deviceToken,
       csrfToken: csrfToken,
@@ -123,7 +120,6 @@ class WithuCoupleSessionStore {
 
   Future<void> save(WithuCoupleSession session) async {
     await _storage.write(key: _usernameKey, value: session.username);
-    await _storage.write(key: _passwordKey, value: session.password);
     await _storage.write(key: _sessionIdKey, value: session.sessionId);
     await _storage.write(key: _csrfTokenKey, value: session.csrfToken);
     if (session.deviceToken == null || session.deviceToken!.trim().isEmpty) {
@@ -136,7 +132,7 @@ class WithuCoupleSessionStore {
   Future<void> clear() async {
     for (final key in [
       _usernameKey,
-      _passwordKey,
+      _legacyPasswordKey,
       _sessionIdKey,
       _deviceTokenKey,
       _csrfTokenKey,

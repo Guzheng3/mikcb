@@ -6,7 +6,10 @@ part of '../timetable_settings_screen.dart';
 /// 触感是交互反馈，下拉快速导入是一个手势功能开关。放在这里，外观页才能真的
 /// 只谈「长什么样」。
 class _GeneralSettingsScreen extends StatefulWidget {
-  const _GeneralSettingsScreen();
+  const _GeneralSettingsScreen({this.scope = SettingsScope.profile});
+
+  /// [SettingsScope.global] 时编辑全局显示设置（所有课表共享）。
+  final SettingsScope scope;
 
   @override
   State<_GeneralSettingsScreen> createState() => _GeneralSettingsScreenState();
@@ -18,11 +21,15 @@ class _GeneralSettingsScreenState extends State<_GeneralSettingsScreen> {
   Timer? _autoSaveTimer;
   Future<void> _saveQueue = Future<void>.value();
 
+  bool get _isGlobal => widget.scope == SettingsScope.global;
+
   @override
   void initState() {
     super.initState();
     _timetableProvider = context.read<TimetableProvider>();
-    _draft = _timetableProvider.settings;
+    _draft = _isGlobal
+        ? _timetableProvider.globalSettings ?? _timetableProvider.settings
+        : _timetableProvider.settings;
   }
 
   @override
@@ -118,6 +125,10 @@ class _GeneralSettingsScreenState extends State<_GeneralSettingsScreen> {
 
   Future<void> _persistDraft(TimetableSettings next) async {
     final provider = _timetableProvider;
+    if (_isGlobal) {
+      await provider.updateGlobalTimetableSettings(next);
+      return;
+    }
     final message = await provider.updateTimetableSettings(
       next.copyWith(
         activeTimeSchemeId: provider.settings.activeTimeSchemeId,

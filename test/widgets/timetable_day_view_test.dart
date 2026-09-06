@@ -342,6 +342,37 @@ void main() {
     );
   });
 
+  testWidgets('tap blank area in day view exits day view', (tester) async {
+    final provider = await _createProviderWithTodayCourse(tester);
+    final today = DateTime.now();
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: provider,
+        child: const TestApp(home: TimetableScreen(enableProgressTimer: false)),
+      ),
+    );
+    await _pumpTimetableFrame(tester);
+
+    await tester.tap(find.byKey(ValueKey('weekday-header-1-${today.weekday}')));
+    await _pumpTimetableFrame(tester);
+    expect(
+      find.byKey(ValueKey('timetable-day-view-1-${today.weekday}')),
+      findsOneWidget,
+    );
+
+    final blankArea = tester.getRect(
+      find.byKey(const ValueKey('day-view-swipe-area')),
+    );
+    await tester.tapAt(Offset(blankArea.left + 4, blankArea.top + 40));
+    await _pumpTimetableFrame(tester);
+    expect(
+      find.byKey(ValueKey('timetable-day-view-1-${today.weekday}')),
+      findsNothing,
+    );
+    expect(find.byType(AddCourseScreen), findsNothing);
+  });
+
   testWidgets('tap another weekday switches current day view', (tester) async {
     final provider = await _createProviderWithTodayCourse(tester);
     final today = DateTime.now();

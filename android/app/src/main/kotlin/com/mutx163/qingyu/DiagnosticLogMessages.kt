@@ -49,8 +49,6 @@ object DiagnosticLogMessages {
     const val LOG_KEEP_ALIVE_REFRESH_WIDGET_FAILED = "连接时刷新小组件失败"
     const val LOG_INSPECT_ACCESSIBILITY_SERVICES_FAILED = "检查已启用无障碍服务失败"
     const val LOG_READ_ACCESSIBILITY_SWITCH_FAILED = "读取无障碍总开关失败"
-    const val LOG_LAN_FOREGROUND_START_DENIED = "局域网编辑前台服务启动被拒绝"
-    const val LOG_LAN_FOREGROUND_START_FAILED = "局域网编辑前台服务启动失败"
     const val LOG_RESOLVE_IMPORT_DISPLAY_NAME_FAILED = "解析导入显示名失败"
     const val LOG_READ_IMPORT_BYTES_FAILED = "读取导入 URI 字节失败"
     const val LOG_CACHE_EXTERNAL_IMPORT_FAILED = "缓存外部导入文件失败"

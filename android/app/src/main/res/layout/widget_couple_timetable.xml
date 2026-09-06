@@ -4,6 +4,29 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- 整卡点击兜底层：垫在卡片内容之下，凡内容区没消费掉的触摸
+         （卡片 padding、爱心等）都按左右对半分流到对应一侧。
+         用 FrameLayout 而非普通 View：部分 OEM 桌面应用带普通 View
+         的 RemoteViews 会失败（表现为「载入窗口小部件时出现问题」）。 -->
+    <LinearLayout
+        android:id="@+id/widget_couple_click_shield"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:id="@+id/widget_couple_left_shield"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <FrameLayout
+            android:id="@+id/widget_couple_right_shield"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+    </LinearLayout>
+
     <LinearLayout
         android:id="@+id/widget_card"
         android:layout_width="match_parent"
@@ -75,28 +98,36 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
-                <ListView
-                    android:id="@+id/widget_couple_left_list"
+                <!-- 列表按内容自适应高度：最后一行以下的空白留在列容器里，
+                     触摸冒泡给可点击的列容器，不留「只有课程行能点」的
+                     死区。课程多到放不下时 ListView 仍会被压回区域内。 -->
+                <FrameLayout
+                    android:id="@+id/widget_couple_left_list_area"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:divider="@null"
-                    android:dividerHeight="0dp"
-                    android:overScrollMode="never"
-                    android:scrollbars="none" />
+                    android:layout_weight="1">
 
-                <TextView
-                    android:id="@+id/widget_couple_left_empty"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:gravity="center"
-                    android:maxLines="2"
-                    android:text="@string/widget_no_course_today"
-                    android:textColor="@color/widget_couple_text_hint"
-                    android:textSize="11sp"
-                    android:visibility="gone" />
+                    <ListView
+                        android:id="@+id/widget_couple_left_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:divider="@null"
+                        android:dividerHeight="0dp"
+                        android:overScrollMode="never"
+                        android:scrollbars="none" />
+
+                    <TextView
+                        android:id="@+id/widget_couple_left_empty"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="2"
+                        android:text="@string/widget_no_course_today"
+                        android:textColor="@color/widget_couple_text_hint"
+                        android:textSize="11sp"
+                        android:visibility="gone" />
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/widget_couple_left_footer"
@@ -116,28 +147,33 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
-                <ListView
-                    android:id="@+id/widget_couple_right_list"
+                <FrameLayout
+                    android:id="@+id/widget_couple_right_list_area"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:divider="@null"
-                    android:dividerHeight="0dp"
-                    android:overScrollMode="never"
-                    android:scrollbars="none" />
+                    android:layout_weight="1">
 
-                <TextView
-                    android:id="@+id/widget_couple_right_empty"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:gravity="center"
-                    android:maxLines="2"
-                    android:text="@string/widget_no_course_today"
-                    android:textColor="@color/widget_couple_text_hint"
-                    android:textSize="11sp"
-                    android:visibility="gone" />
+                    <ListView
+                        android:id="@+id/widget_couple_right_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:divider="@null"
+                        android:dividerHeight="0dp"
+                        android:overScrollMode="never"
+                        android:scrollbars="none" />
+
+                    <TextView
+                        android:id="@+id/widget_couple_right_empty"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="2"
+                        android:text="@string/widget_no_course_today"
+                        android:textColor="@color/widget_couple_text_hint"
+                        android:textSize="11sp"
+                        android:visibility="gone" />
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/widget_couple_right_footer"

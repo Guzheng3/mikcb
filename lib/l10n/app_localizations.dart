@@ -572,6 +572,12 @@ abstract class AppLocalizations {
   /// **'该日没有共同空闲时段'**
   String get coupleTimetableNoSharedFreeOtherDay;
 
+  /// No description provided for @partnerTimetablePageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'TA的课表'**
+  String get partnerTimetablePageTitle;
+
   /// No description provided for @coupleTimetableSharedFreeMeta.
   ///
   /// In zh, this message translates to:
@@ -794,6 +800,54 @@ abstract class AppLocalizations {
   /// **'未登录 · 点击登录'**
   String get withuCoupleNotLoggedInPrompt;
 
+  /// No description provided for @withuLoginConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录'**
+  String get withuLoginConfirm;
+
+  /// No description provided for @coupleHistorySheetTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'历史课表'**
+  String get coupleHistorySheetTitle;
+
+  /// No description provided for @coupleHistoryMineLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的历史课表'**
+  String get coupleHistoryMineLabel;
+
+  /// No description provided for @coupleHistoryHersLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'她的历史课表'**
+  String get coupleHistoryHersLabel;
+
+  /// No description provided for @noHistoryRecords.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无历史记录'**
+  String get noHistoryRecords;
+
+  /// No description provided for @coupleHistoryRestored.
+  ///
+  /// In zh, this message translates to:
+  /// **'已恢复历史课表'**
+  String get coupleHistoryRestored;
+
+  /// No description provided for @coupleHistoryRestoreFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复失败，请重试'**
+  String get coupleHistoryRestoreFailed;
+
+  /// No description provided for @coupleHistoryEntryMeta.
+  ///
+  /// In zh, this message translates to:
+  /// **'{semester} · 共 {count} 节课'**
+  String coupleHistoryEntryMeta(String semester, int count);
+
   /// No description provided for @withuCouplePullImported.
   ///
   /// In zh, this message translates to:
@@ -823,6 +877,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'请填写 withU 服务器、用户名和密码'**
   String get withuCoupleMissingCredentials;
+
+  /// No description provided for @withuCoupleUsernameLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'withU 用户名'**
+  String get withuCoupleUsernameLabel;
+
+  /// No description provided for @withuCoupleUsernameHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入 withU 用户名'**
+  String get withuCoupleUsernameHint;
+
+  /// No description provided for @withuCouplePasswordLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'withU 密码'**
+  String get withuCouplePasswordLabel;
+
+  /// No description provided for @withuCouplePasswordHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入 withU 密码'**
+  String get withuCouplePasswordHint;
 
   /// No description provided for @withuCoupleNotConnectedError.
   ///
@@ -865,702 +943,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'withU 未返回登录会话'**
   String get withuCoupleSessionCookieMissing;
-
-  /// No description provided for @cloudSyncEntryTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'云同步'**
-  String get cloudSyncEntryTitle;
-
-  /// No description provided for @cloudSyncEntrySubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'通过坚果云等多设备同步课表与导入数据'**
-  String get cloudSyncEntrySubtitle;
-
-  /// No description provided for @cloudSyncEntryDisabled.
-  ///
-  /// In zh, this message translates to:
-  /// **'已关闭'**
-  String get cloudSyncEntryDisabled;
-
-  /// No description provided for @cloudSyncEntryEnabled.
-  ///
-  /// In zh, this message translates to:
-  /// **'已开启'**
-  String get cloudSyncEntryEnabled;
-
-  /// No description provided for @cloudSyncEntrySyncing.
-  ///
-  /// In zh, this message translates to:
-  /// **'同步中'**
-  String get cloudSyncEntrySyncing;
-
-  /// No description provided for @cloudSyncEntryError.
-  ///
-  /// In zh, this message translates to:
-  /// **'上次同步失败'**
-  String get cloudSyncEntryError;
-
-  /// No description provided for @cloudSyncTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'云同步'**
-  String get cloudSyncTitle;
-
-  /// No description provided for @cloudSyncIntroTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'多设备同步'**
-  String get cloudSyncIntroTitle;
-
-  /// No description provided for @cloudSyncIntroSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'配置坚果云 WebDAV 后，可在手机、平板之间自动同步课表、仓库账号与相关设置'**
-  String get cloudSyncIntroSubtitle;
-
-  /// No description provided for @cloudSyncSettingsSectionTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'同步设置'**
-  String get cloudSyncSettingsSectionTitle;
-
-  /// No description provided for @cloudSyncSettingsSectionSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'可切换手动或自动同步'**
-  String get cloudSyncSettingsSectionSubtitle;
-
-  /// No description provided for @cloudSyncEnabledTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'启用云同步'**
-  String get cloudSyncEnabledTitle;
-
-  /// No description provided for @cloudSyncEnabledSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'关闭后不会上传或下载云端快照'**
-  String get cloudSyncEnabledSubtitle;
-
-  /// No description provided for @cloudSyncProviderTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'服务提供商'**
-  String get cloudSyncProviderTitle;
-
-  /// No description provided for @cloudSyncProviderJianguoyun.
-  ///
-  /// In zh, this message translates to:
-  /// **'坚果云'**
-  String get cloudSyncProviderJianguoyun;
-
-  /// No description provided for @cloudSyncProviderCustom.
-  ///
-  /// In zh, this message translates to:
-  /// **'自定义 WebDAV'**
-  String get cloudSyncProviderCustom;
-
-  /// No description provided for @cloudSyncModeTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'同步方式'**
-  String get cloudSyncModeTitle;
-
-  /// No description provided for @cloudSyncModeAuto.
-  ///
-  /// In zh, this message translates to:
-  /// **'自动同步'**
-  String get cloudSyncModeAuto;
-
-  /// No description provided for @cloudSyncModeManual.
-  ///
-  /// In zh, this message translates to:
-  /// **'手动同步'**
-  String get cloudSyncModeManual;
-
-  /// No description provided for @cloudSyncAccountTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'账号配置'**
-  String get cloudSyncAccountTitle;
-
-  /// No description provided for @cloudSyncAccountSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'请使用坚果云应用专用密码，而不是登录密码，快照会包含仓库记住的学校账号'**
-  String get cloudSyncAccountSubtitle;
-
-  /// No description provided for @cloudSyncUsernameLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'邮箱 / 用户名'**
-  String get cloudSyncUsernameLabel;
-
-  /// No description provided for @cloudSyncUsernameHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'坚果云注册邮箱'**
-  String get cloudSyncUsernameHint;
-
-  /// No description provided for @cloudSyncPasswordLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'应用专用密码'**
-  String get cloudSyncPasswordLabel;
-
-  /// No description provided for @cloudSyncPasswordHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'在坚果云账户安全选项中生成'**
-  String get cloudSyncPasswordHint;
-
-  /// No description provided for @cloudSyncPasswordStoredHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'已保存密码；留空表示继续使用已保存的密码'**
-  String get cloudSyncPasswordStoredHint;
-
-  /// No description provided for @cloudSyncAdvancedTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'高级设置'**
-  String get cloudSyncAdvancedTitle;
-
-  /// No description provided for @cloudSyncBaseUrlLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'WebDAV 地址'**
-  String get cloudSyncBaseUrlLabel;
-
-  /// 安全提示：说明正式版仅支持HTTPS加密连接，HTTP明文协议已被禁用
-  ///
-  /// In zh, this message translates to:
-  /// **'建议使用 HTTPS 加密连接；HTTP 明文连接仅建议在可信网络环境下使用'**
-  String get cloudSyncBaseUrlSecurityNote;
-
-  /// No description provided for @cloudSyncRemoteFolderLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'远程目录'**
-  String get cloudSyncRemoteFolderLabel;
-
-  /// No description provided for @cloudSyncStatusTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'同步状态'**
-  String get cloudSyncStatusTitle;
-
-  /// No description provided for @cloudSyncLastSyncedLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'上次同步'**
-  String get cloudSyncLastSyncedLabel;
-
-  /// No description provided for @cloudSyncLastErrorLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'最近错误'**
-  String get cloudSyncLastErrorLabel;
-
-  /// No description provided for @cloudSyncLastSyncedAt.
-  ///
-  /// In zh, this message translates to:
-  /// **'上次同步：{time}'**
-  String cloudSyncLastSyncedAt(String time);
-
-  /// No description provided for @cloudSyncSyncing.
-  ///
-  /// In zh, this message translates to:
-  /// **'正在同步…'**
-  String get cloudSyncSyncing;
-
-  /// No description provided for @cloudSyncLastError.
-  ///
-  /// In zh, this message translates to:
-  /// **'最近错误：{message}'**
-  String cloudSyncLastError(String message);
-
-  /// No description provided for @cloudSyncHelpTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'如何获取坚果云应用密码'**
-  String get cloudSyncHelpTitle;
-
-  /// No description provided for @cloudSyncHelpBody.
-  ///
-  /// In zh, this message translates to:
-  /// **'打开坚果云网页或客户端 → 账户信息 → 安全选项 → 添加应用密码，WebDAV 地址默认为 https://dav.jianguoyun.com/dav/ '**
-  String get cloudSyncHelpBody;
-
-  /// No description provided for @cloudSyncTestConnection.
-  ///
-  /// In zh, this message translates to:
-  /// **'测试连接'**
-  String get cloudSyncTestConnection;
-
-  /// No description provided for @cloudSyncSyncNow.
-  ///
-  /// In zh, this message translates to:
-  /// **'立即同步'**
-  String get cloudSyncSyncNow;
-
-  /// No description provided for @cloudSyncSyncNowSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'与其他设备对齐课表：先拉取云端更新，再上传本机修改'**
-  String get cloudSyncSyncNowSubtitle;
-
-  /// No description provided for @cloudSyncTestSuccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'WebDAV 连接成功'**
-  String get cloudSyncTestSuccess;
-
-  /// No description provided for @cloudSyncTestFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'WebDAV 连接失败，请检查账号、应用密码和网络'**
-  String get cloudSyncTestFailed;
-
-  /// No description provided for @cloudSyncResultUploaded.
-  ///
-  /// In zh, this message translates to:
-  /// **'已上传到云端'**
-  String get cloudSyncResultUploaded;
-
-  /// No description provided for @cloudSyncResultDownloaded.
-  ///
-  /// In zh, this message translates to:
-  /// **'已从云端恢复'**
-  String get cloudSyncResultDownloaded;
-
-  /// No description provided for @cloudSyncResultUpToDate.
-  ///
-  /// In zh, this message translates to:
-  /// **'本地与云端已一致'**
-  String get cloudSyncResultUpToDate;
-
-  /// No description provided for @cloudSyncResultCancelled.
-  ///
-  /// In zh, this message translates to:
-  /// **'已取消同步'**
-  String get cloudSyncResultCancelled;
-
-  /// No description provided for @cloudSyncResultFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'同步失败：{message}'**
-  String cloudSyncResultFailed(String message);
-
-  /// No description provided for @cloudSyncConflictTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'检测到同步冲突'**
-  String get cloudSyncConflictTitle;
-
-  /// No description provided for @cloudSyncConflictBody.
-  ///
-  /// In zh, this message translates to:
-  /// **'本机和云端都有新的修改，请选择保留哪一边的数据'**
-  String get cloudSyncConflictBody;
-
-  /// No description provided for @cloudSyncUseRemoteAction.
-  ///
-  /// In zh, this message translates to:
-  /// **'使用云端'**
-  String get cloudSyncUseRemoteAction;
-
-  /// No description provided for @cloudSyncKeepLocalAction.
-  ///
-  /// In zh, this message translates to:
-  /// **'保留本机'**
-  String get cloudSyncKeepLocalAction;
-
-  /// No description provided for @cloudSyncAccountSectionTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'云账号'**
-  String get cloudSyncAccountSectionTitle;
-
-  /// No description provided for @cloudSyncNotConnectedHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'连接坚果云后，可在多设备间同步课表与导入数据'**
-  String get cloudSyncNotConnectedHint;
-
-  /// No description provided for @cloudSyncConnectAccount.
-  ///
-  /// In zh, this message translates to:
-  /// **'连接坚果云'**
-  String get cloudSyncConnectAccount;
-
-  /// No description provided for @cloudSyncConnectedAs.
-  ///
-  /// In zh, this message translates to:
-  /// **'已连接：{email}'**
-  String cloudSyncConnectedAs(String email);
-
-  /// No description provided for @cloudSyncDisconnect.
-  ///
-  /// In zh, this message translates to:
-  /// **'断开连接'**
-  String get cloudSyncDisconnect;
-
-  /// No description provided for @cloudSyncDisconnectTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'断开云同步账号'**
-  String get cloudSyncDisconnectTitle;
-
-  /// No description provided for @cloudSyncDisconnectBody.
-  ///
-  /// In zh, this message translates to:
-  /// **'断开后将清除本机保存的 WebDAV 凭据，课表数据仍保留在本机，是否继续？'**
-  String get cloudSyncDisconnectBody;
-
-  /// No description provided for @cloudSyncLoginSheetTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'连接坚果云'**
-  String get cloudSyncLoginSheetTitle;
-
-  /// No description provided for @cloudSyncLoginSheetSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'请使用应用专用密码，不要使用坚果云登录密码'**
-  String get cloudSyncLoginSheetSubtitle;
-
-  /// No description provided for @cloudSyncConfirmConnect.
-  ///
-  /// In zh, this message translates to:
-  /// **'确认连接'**
-  String get cloudSyncConfirmConnect;
-
-  /// No description provided for @cloudSyncConnectSuccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'账号连接成功'**
-  String get cloudSyncConnectSuccess;
-
-  /// No description provided for @cloudBackupSectionTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'可恢复版本'**
-  String get cloudBackupSectionTitle;
-
-  /// No description provided for @cloudBackupSectionSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'每次同步都会自动保留可恢复版本'**
-  String get cloudBackupSectionSubtitle;
-
-  /// No description provided for @cloudBackupCurrentLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'当前版本'**
-  String get cloudBackupCurrentLabel;
-
-  /// No description provided for @cloudBackupCurrentBadge.
-  ///
-  /// In zh, this message translates to:
-  /// **'当前'**
-  String get cloudBackupCurrentBadge;
-
-  /// No description provided for @cloudBackupCreateNow.
-  ///
-  /// In zh, this message translates to:
-  /// **'立即备份'**
-  String get cloudBackupCreateNow;
-
-  /// No description provided for @cloudBackupViewAll.
-  ///
-  /// In zh, this message translates to:
-  /// **'查看全部可恢复版本'**
-  String get cloudBackupViewAll;
-
-  /// No description provided for @cloudBackupEmpty.
-  ///
-  /// In zh, this message translates to:
-  /// **'暂无可恢复版本，同步后会自动生成'**
-  String get cloudBackupEmpty;
-
-  /// No description provided for @cloudBackupSourceAuto.
-  ///
-  /// In zh, this message translates to:
-  /// **'自动备份'**
-  String get cloudBackupSourceAuto;
-
-  /// No description provided for @cloudBackupSourceManual.
-  ///
-  /// In zh, this message translates to:
-  /// **'手动备份'**
-  String get cloudBackupSourceManual;
-
-  /// No description provided for @cloudBackupDefaultDeviceLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'本机'**
-  String get cloudBackupDefaultDeviceLabel;
-
-  /// No description provided for @cloudBackupDeviceLabelTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'设备名称'**
-  String get cloudBackupDeviceLabelTitle;
-
-  /// No description provided for @cloudBackupDeviceLabelHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'在备份列表中显示，例如「我的手机」'**
-  String get cloudBackupDeviceLabelHint;
-
-  /// No description provided for @cloudBackupSummary.
-  ///
-  /// In zh, this message translates to:
-  /// **'{profileCount} 个课表 · {courseCount} 门课程'**
-  String cloudBackupSummary(int profileCount, int courseCount);
-
-  /// No description provided for @cloudBackupRestoreTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'恢复到此备份'**
-  String get cloudBackupRestoreTitle;
-
-  /// No description provided for @cloudBackupRestoreBody.
-  ///
-  /// In zh, this message translates to:
-  /// **'将恢复到 {time} 的课表，本地未同步的修改会丢失，是否继续？'**
-  String cloudBackupRestoreBody(String time);
-
-  /// No description provided for @cloudBackupRestoreAction.
-  ///
-  /// In zh, this message translates to:
-  /// **'恢复'**
-  String get cloudBackupRestoreAction;
-
-  /// No description provided for @cloudBackupRestoreSuccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'已恢复到此备份'**
-  String get cloudBackupRestoreSuccess;
-
-  /// No description provided for @cloudBackupRestoreFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'恢复失败：{message}'**
-  String cloudBackupRestoreFailed(String message);
-
-  /// No description provided for @cloudBackupDeleteTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'删除此备份'**
-  String get cloudBackupDeleteTitle;
-
-  /// No description provided for @cloudBackupDeleteBody.
-  ///
-  /// In zh, this message translates to:
-  /// **'确定删除 {time} 的云端备份吗？此操作不可撤销'**
-  String cloudBackupDeleteBody(String time);
-
-  /// No description provided for @cloudBackupDeleteSuccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'备份已删除'**
-  String get cloudBackupDeleteSuccess;
-
-  /// No description provided for @cloudBackupDeleteFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'删除失败：{message}'**
-  String cloudBackupDeleteFailed(String message);
-
-  /// No description provided for @cloudBackupCreateSuccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'备份已保存到云端'**
-  String get cloudBackupCreateSuccess;
-
-  /// No description provided for @cloudBackupCreateFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'备份失败：{message}'**
-  String cloudBackupCreateFailed(String message);
-
-  /// No description provided for @cloudBackupUploadAsCurrentTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'设为当前云端版本'**
-  String get cloudBackupUploadAsCurrentTitle;
-
-  /// No description provided for @cloudBackupUploadAsCurrentBody.
-  ///
-  /// In zh, this message translates to:
-  /// **'是否将此备份设为当前云端版本？建议开启，可避免其他设备同步冲突'**
-  String get cloudBackupUploadAsCurrentBody;
-
-  /// No description provided for @cloudBackupUploadAsCurrentYes.
-  ///
-  /// In zh, this message translates to:
-  /// **'设为当前版本'**
-  String get cloudBackupUploadAsCurrentYes;
-
-  /// No description provided for @cloudBackupUploadAsCurrentNo.
-  ///
-  /// In zh, this message translates to:
-  /// **'仅恢复本地'**
-  String get cloudBackupUploadAsCurrentNo;
-
-  /// No description provided for @cloudBackupDetailDevice.
-  ///
-  /// In zh, this message translates to:
-  /// **'设备'**
-  String get cloudBackupDetailDevice;
-
-  /// No description provided for @cloudBackupDetailSource.
-  ///
-  /// In zh, this message translates to:
-  /// **'来源'**
-  String get cloudBackupDetailSource;
-
-  /// No description provided for @cloudBackupDetailSummary.
-  ///
-  /// In zh, this message translates to:
-  /// **'内容'**
-  String get cloudBackupDetailSummary;
-
-  /// No description provided for @lanEditEntryTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑'**
-  String get lanEditEntryTitle;
-
-  /// No description provided for @lanEditEntrySubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'在电脑浏览器中编辑当前课表'**
-  String get lanEditEntrySubtitle;
-
-  /// No description provided for @lanEditTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑'**
-  String get lanEditTitle;
-
-  /// No description provided for @lanEditIntro.
-  ///
-  /// In zh, this message translates to:
-  /// **'开启后，同一 WiFi 或手机热点下的电脑可通过浏览器编辑当前课表，数据不会上传云端，关闭后即停止访问'**
-  String get lanEditIntro;
-
-  /// No description provided for @lanEditStart.
-  ///
-  /// In zh, this message translates to:
-  /// **'开启局域网编辑'**
-  String get lanEditStart;
-
-  /// No description provided for @lanEditStop.
-  ///
-  /// In zh, this message translates to:
-  /// **'停止'**
-  String get lanEditStop;
-
-  /// No description provided for @lanEditStatusRunning.
-  ///
-  /// In zh, this message translates to:
-  /// **'编辑会话进行中'**
-  String get lanEditStatusRunning;
-
-  /// No description provided for @lanEditAddressLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'访问地址'**
-  String get lanEditAddressLabel;
-
-  /// No description provided for @lanEditAddressUnavailable.
-  ///
-  /// In zh, this message translates to:
-  /// **'未检测到局域网 IP，请确认已连接 WiFi 或已开启热点'**
-  String get lanEditAddressUnavailable;
-
-  /// No description provided for @lanEditPinLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'PIN'**
-  String get lanEditPinLabel;
-
-  /// No description provided for @lanEditPortLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'端口'**
-  String get lanEditPortLabel;
-
-  /// No description provided for @lanEditCopyAddress.
-  ///
-  /// In zh, this message translates to:
-  /// **'复制地址'**
-  String get lanEditCopyAddress;
-
-  /// No description provided for @lanEditCopied.
-  ///
-  /// In zh, this message translates to:
-  /// **'地址已复制'**
-  String get lanEditCopied;
-
-  /// No description provided for @lanEditHotspotHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'如果宿舍 WiFi 无法访问，请尝试用手机开热点，再让电脑连接该热点'**
-  String get lanEditHotspotHint;
-
-  /// No description provided for @lanEditQrHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'电脑浏览器扫描上方二维码可打开控制台（链接已含 PIN，需同一局域网）'**
-  String get lanEditQrHint;
-
-  /// No description provided for @lanEditStartFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'启动失败'**
-  String get lanEditStartFailed;
-
-  /// No description provided for @lanEditConnectedClientsLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'已连接'**
-  String get lanEditConnectedClientsLabel;
-
-  /// No description provided for @lanEditConnectedClientsNone.
-  ///
-  /// In zh, this message translates to:
-  /// **'暂无'**
-  String get lanEditConnectedClientsNone;
-
-  /// No description provided for @lanEditConnectedClientsValue.
-  ///
-  /// In zh, this message translates to:
-  /// **'{count} 台'**
-  String lanEditConnectedClientsValue(int count);
-
-  /// No description provided for @lanEditLastActivityLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'最近活动'**
-  String get lanEditLastActivityLabel;
-
-  /// No description provided for @lanEditKeepAliveWhenLeavingTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'离开后保持开启'**
-  String get lanEditKeepAliveWhenLeavingTitle;
-
-  /// No description provided for @lanEditKeepAliveWhenLeavingSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'开启后，返回设置页不会自动关闭局域网编辑；关闭后离开本页即停止'**
-  String get lanEditKeepAliveWhenLeavingSubtitle;
 
   /// No description provided for @aboutSupportSectionTitle.
   ///
@@ -11117,12 +10499,6 @@ abstract class AppLocalizations {
   /// **'历史记录'**
   String get historyRecordsLabel;
 
-  /// No description provided for @noHistoryRecords.
-  ///
-  /// In zh, this message translates to:
-  /// **'暂无历史记录'**
-  String get noHistoryRecords;
-
   /// No description provided for @weekPickerTitle.
   ///
   /// In zh, this message translates to:
@@ -12680,96 +12056,6 @@ abstract class AppLocalizations {
   /// **'交给系统下载管理器处理'**
   String get aboutSystemDownloaderChoiceSubtitle;
 
-  /// No description provided for @syncErrorAuthFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'账号或密码错误'**
-  String get syncErrorAuthFailed;
-
-  /// No description provided for @syncErrorAccessDenied.
-  ///
-  /// In zh, this message translates to:
-  /// **'没有访问权限'**
-  String get syncErrorAccessDenied;
-
-  /// No description provided for @syncErrorCertificateError.
-  ///
-  /// In zh, this message translates to:
-  /// **'证书校验失败'**
-  String get syncErrorCertificateError;
-
-  /// No description provided for @syncErrorConnectionTimeout.
-  ///
-  /// In zh, this message translates to:
-  /// **'连接超时'**
-  String get syncErrorConnectionTimeout;
-
-  /// No description provided for @syncErrorConnectionFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'无法连接服务器'**
-  String get syncErrorConnectionFailed;
-
-  /// No description provided for @syncErrorNetworkError.
-  ///
-  /// In zh, this message translates to:
-  /// **'网络异常'**
-  String get syncErrorNetworkError;
-
-  /// No description provided for @syncErrorInvalidResponse.
-  ///
-  /// In zh, this message translates to:
-  /// **'服务器响应无效'**
-  String get syncErrorInvalidResponse;
-
-  /// No description provided for @syncErrorLocalChangesPendingSync.
-  ///
-  /// In zh, this message translates to:
-  /// **'本地有未同步修改，已跳过自动覆盖'**
-  String get syncErrorLocalChangesPendingSync;
-
-  /// No description provided for @syncErrorMissingCredentials.
-  ///
-  /// In zh, this message translates to:
-  /// **'请先配置云同步账号'**
-  String get syncErrorMissingCredentials;
-
-  /// No description provided for @syncErrorBackupNotFound.
-  ///
-  /// In zh, this message translates to:
-  /// **'备份不存在'**
-  String get syncErrorBackupNotFound;
-
-  /// No description provided for @syncErrorMissingBackupSnapshot.
-  ///
-  /// In zh, this message translates to:
-  /// **'备份快照缺失'**
-  String get syncErrorMissingBackupSnapshot;
-
-  /// No description provided for @syncErrorCannotDeleteCurrentBackup.
-  ///
-  /// In zh, this message translates to:
-  /// **'不能删除当前备份'**
-  String get syncErrorCannotDeleteCurrentBackup;
-
-  /// No description provided for @syncErrorProviderNotReady.
-  ///
-  /// In zh, this message translates to:
-  /// **'课表尚未就绪'**
-  String get syncErrorProviderNotReady;
-
-  /// Error shown when the WebDAV URL uses insecure HTTP protocol, which is blocked in release builds
-  ///
-  /// In zh, this message translates to:
-  /// **'仅支持 HTTPS 加密连接，HTTP 明文协议已被禁用'**
-  String get syncErrorInsecureUrl;
-
-  /// No description provided for @syncErrorSyncFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'同步失败'**
-  String get syncErrorSyncFailed;
-
   /// No description provided for @sectionTimeDisplayHidden.
   ///
   /// In zh, this message translates to:
@@ -13273,36 +12559,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'请使用课表档案备份 JSON，而非全部数据备份'**
   String get serviceMsgUseProfileBackupNotFull;
-
-  /// No description provided for @serviceMsgUnrecognizedSyncSnapshot.
-  ///
-  /// In zh, this message translates to:
-  /// **'不是可识别的 mikcb 云同步快照'**
-  String get serviceMsgUnrecognizedSyncSnapshot;
-
-  /// No description provided for @serviceMsgMissingSyncTimetableData.
-  ///
-  /// In zh, this message translates to:
-  /// **'缺少云同步课表数据'**
-  String get serviceMsgMissingSyncTimetableData;
-
-  /// No description provided for @serviceMsgSyncSnapshotChecksumFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'云同步快照校验失败'**
-  String get serviceMsgSyncSnapshotChecksumFailed;
-
-  /// No description provided for @serviceMsgSyncSnapshotNoProfiles.
-  ///
-  /// In zh, this message translates to:
-  /// **'云同步快照中没有可恢复的课表'**
-  String get serviceMsgSyncSnapshotNoProfiles;
-
-  /// No description provided for @serviceMsgSyncSnapshotUnrecognized.
-  ///
-  /// In zh, this message translates to:
-  /// **'云同步快照无法识别'**
-  String get serviceMsgSyncSnapshotUnrecognized;
 
   /// No description provided for @serviceMsgTimeSchemeNotFound.
   ///
@@ -14116,12 +13372,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'服务器响应无效'**
   String get serviceMsgInvalidResponse;
-
-  /// No description provided for @serviceMsgSyncFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'同步失败'**
-  String get serviceMsgSyncFailed;
 
   /// No description provided for @serviceMsgUsageTypeOverride.
   ///
@@ -15339,78 +14589,6 @@ abstract class AppLocalizations {
   /// **'挂起超级岛课表调度失败'**
   String get logLiveUpdateSuspendTriggersFailed;
 
-  /// No description provided for @logLanEditAuthFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：认证失败'**
-  String get logLanEditAuthFailed;
-
-  /// No description provided for @logLanEditCourseCreated.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：已创建课程'**
-  String get logLanEditCourseCreated;
-
-  /// No description provided for @logLanEditCourseUpdated.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：已更新课程'**
-  String get logLanEditCourseUpdated;
-
-  /// No description provided for @logLanEditCourseDeleted.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：已删除课程'**
-  String get logLanEditCourseDeleted;
-
-  /// No description provided for @logLanEditCourseGroupSaved.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：已保存课程组'**
-  String get logLanEditCourseGroupSaved;
-
-  /// No description provided for @logLanEditMergeImported.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：已导入合并备份'**
-  String get logLanEditMergeImported;
-
-  /// No description provided for @logLanEditCoursesBatchDeleted.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：已批量删除课程'**
-  String get logLanEditCoursesBatchDeleted;
-
-  /// No description provided for @logLanEditCurrentWeekSet.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：已设置当前周次'**
-  String get logLanEditCurrentWeekSet;
-
-  /// No description provided for @logLanEditProfileSwitched.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：已切换课表'**
-  String get logLanEditProfileSwitched;
-
-  /// No description provided for @logLanEditSpreadsheetImported.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：已导入表格'**
-  String get logLanEditSpreadsheetImported;
-
-  /// No description provided for @logLanEditSessionStarted.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：会话已启动'**
-  String get logLanEditSessionStarted;
-
-  /// No description provided for @logLanEditSessionStopped.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：会话已停止'**
-  String get logLanEditSessionStopped;
-
   /// No description provided for @logLiveUpdateTestRequested.
   ///
   /// In zh, this message translates to:
@@ -16164,72 +15342,6 @@ abstract class AppLocalizations {
   /// **'超级岛：快照清空失败'**
   String get logCatLiveUpdateSnapshotClearFailed;
 
-  /// No description provided for @logCatLanEditAuthFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：认证'**
-  String get logCatLanEditAuthFailed;
-
-  /// No description provided for @logCatLanEditCourseCreated.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：创建课程'**
-  String get logCatLanEditCourseCreated;
-
-  /// No description provided for @logCatLanEditCourseUpdated.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：更新课程'**
-  String get logCatLanEditCourseUpdated;
-
-  /// No description provided for @logCatLanEditCourseDeleted.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：删除课程'**
-  String get logCatLanEditCourseDeleted;
-
-  /// No description provided for @logCatLanEditCourseGroupSaved.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：保存课程组'**
-  String get logCatLanEditCourseGroupSaved;
-
-  /// No description provided for @logCatLanEditMergeImported.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：合并导入'**
-  String get logCatLanEditMergeImported;
-
-  /// No description provided for @logCatLanEditCoursesBatchDeleted.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：批量删除'**
-  String get logCatLanEditCoursesBatchDeleted;
-
-  /// No description provided for @logCatLanEditCurrentWeekSet.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：设置周次'**
-  String get logCatLanEditCurrentWeekSet;
-
-  /// No description provided for @logCatLanEditSpreadsheetImported.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：表格导入'**
-  String get logCatLanEditSpreadsheetImported;
-
-  /// No description provided for @logCatLanEditSessionStarted.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：会话启动'**
-  String get logCatLanEditSessionStarted;
-
-  /// No description provided for @logCatLanEditSessionStopped.
-  ///
-  /// In zh, this message translates to:
-  /// **'局域网编辑：会话停止'**
-  String get logCatLanEditSessionStopped;
-
   /// No description provided for @logCatLiveUpdateTestRequested.
   ///
   /// In zh, this message translates to:
@@ -16518,48 +15630,6 @@ abstract class AppLocalizations {
   /// **'填写自定义镜像地址前缀'**
   String get appUpdateMirrorPresetCustomDescription;
 
-  /// No description provided for @cloudBackupRetentionTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'备份保留策略'**
-  String get cloudBackupRetentionTitle;
-
-  /// No description provided for @cloudBackupMaxCountTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'最多保留份数'**
-  String get cloudBackupMaxCountTitle;
-
-  /// No description provided for @cloudBackupMaxCountSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'超过后自动删除最旧的备份'**
-  String get cloudBackupMaxCountSubtitle;
-
-  /// No description provided for @cloudBackupMaxCountOption.
-  ///
-  /// In zh, this message translates to:
-  /// **'{count} 份'**
-  String cloudBackupMaxCountOption(int count);
-
-  /// No description provided for @cloudBackupMaxAgeTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'最长保留天数'**
-  String get cloudBackupMaxAgeTitle;
-
-  /// No description provided for @cloudBackupMaxAgeSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'超过后自动删除过期备份'**
-  String get cloudBackupMaxAgeSubtitle;
-
-  /// No description provided for @cloudBackupMaxAgeOption.
-  ///
-  /// In zh, this message translates to:
-  /// **'{days} 天'**
-  String cloudBackupMaxAgeOption(int days);
-
   /// No description provided for @statisticsShareText.
   ///
   /// In zh, this message translates to:
@@ -16613,18 +15683,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'未命名课表'**
   String get unnamedTimetableProfile;
-
-  /// No description provided for @cloudBackupManualProtectedTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'手动备份永不过期'**
-  String get cloudBackupManualProtectedTitle;
-
-  /// No description provided for @cloudBackupManualProtectedSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'开启后，手动创建的备份不会被自动清理'**
-  String get cloudBackupManualProtectedSubtitle;
 
   /// No description provided for @courseImportPortalUrlMissingBody.
   ///
@@ -18785,6 +17843,54 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'；'**
   String get classAlarmDetailSeparator;
+
+  /// No description provided for @globalSettingsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'全局显示设置'**
+  String get globalSettingsTitle;
+
+  /// No description provided for @globalSettingsConfigured.
+  ///
+  /// In zh, this message translates to:
+  /// **'已配置'**
+  String get globalSettingsConfigured;
+
+  /// No description provided for @globalSettingsNotConfigured.
+  ///
+  /// In zh, this message translates to:
+  /// **'未配置'**
+  String get globalSettingsNotConfigured;
+
+  /// No description provided for @globalSettingsDescriptionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'说明'**
+  String get globalSettingsDescriptionTitle;
+
+  /// No description provided for @globalSettingsDescriptionBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'在这里设置的显示项会应用到所有课表；某份课表单独改过的项目，仍以该课表自己的设置为准。学期、节次（时间方案）等课表专属内容不参与全局设置。'**
+  String get globalSettingsDescriptionBody;
+
+  /// No description provided for @globalSettingsClearTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除全局显示设置'**
+  String get globalSettingsClearTitle;
+
+  /// No description provided for @globalSettingsClearConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除后，所有课表将恢复使用各自的设置。'**
+  String get globalSettingsClearConfirm;
+
+  /// No description provided for @globalSettingsCleared.
+  ///
+  /// In zh, this message translates to:
+  /// **'已清除全局显示设置'**
+  String get globalSettingsCleared;
 }
 
 class _AppLocalizationsDelegate

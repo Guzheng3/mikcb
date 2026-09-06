@@ -3,10 +3,10 @@
 <!--
   Cleartext (HTTP) allowlist instead of a global switch.
 
-  Most cleartext traffic in this app never reaches this policy: WebDAV
-  sync, LAN edit and mirror downloads run on the Dart network stack
-  (dart:io), which is not governed by Android's network security config.
-  The WebView stack (campus portal login for course import) IS governed.
+  Most cleartext traffic in this app never reaches this policy: mirror
+  downloads run on the Dart network stack (dart:io), which is not governed
+  by Android's network security config. The WebView stack (campus portal
+  login for course import) IS governed.
 
   Campus academic portals that only serve HTTP are enumerated below
   (all http:// import_url hosts from the qingyu_warehouse adapter
@@ -29,7 +29,7 @@
         </trust-anchors>
     </base-config>
 
-    <!-- Local loopback: LAN edit host page, local WebDAV servers, dev adapters. -->
+    <!-- Local loopback: local adapters used during development. -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="false">localhost</domain>
         <domain includeSubdomains="false">127.0.0.1</domain>

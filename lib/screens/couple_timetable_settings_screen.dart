@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'dart:async';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
@@ -9,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../models/partner_timetable_binding.dart';
 import '../domain/couple_timetable_logic.dart';
 import '../providers/timetable_provider.dart';
+import '../providers/withu_couple_session_provider.dart';
 import '../services/partner_timetable_service.dart';
 import '../services/home_widget_service.dart';
 import '../services/withu_couple_auth_service.dart';
@@ -99,10 +102,29 @@ class _CoupleTimetableSettingsScreenState
                       coupleTimetableOverlayEnabled: value,
                     ),
                   );
+                  if (!value) {
+                    unawaited(_leavePartnerTimetableIfActive(provider));
+                  }
                 },
               ),
             ),
           ),
+          if (binding != null) ...[
+            const HyperosSectionGap(),
+            HyperosControlCard(
+              child: HyperosControlCardRowScope(
+                isFirst: true,
+                isLast: true,
+                child: HyperosNavTile(
+                  icon: Icons.favorite_rounded,
+                  iconAccent: HyperosIconColors.red,
+                  title: l10n.partnerTimetablePageTitle,
+                  subtitle: l10n.coupleTimetableBoundTitle,
+                  onTap: _openPartnerTimetable,
+                ),
+              ),
+            ),
+          ],
           const HyperosSectionGap(),
           HyperosSectionLabel(
             text: binding == null
@@ -140,7 +162,8 @@ class _CoupleTimetableSettingsScreenState
               child: _buildWithuCoupleControl(context, l10n),
             ),
           ),
-          if (provider.settings.coupleTimetableOverlayEnabled) ...[
+          if (binding != null &&
+              provider.settings.coupleTimetableOverlayEnabled) ...[
             const HyperosSectionGap(),
             HyperosSectionLabel(text: l10n.coupleTimetableDesktopCardTitle),
             HyperosControlCard(
@@ -232,6 +255,38 @@ class _CoupleTimetableSettingsScreenState
     });
   }
 
+  /// 把当前课表切到 TA 的课表：TA 课表现在是可切换课表，在原来的
+  /// 主课表界面里查看；回到主界面即可看到。入口本身就是情侣动作，
+  /// 开关未开时自动打开，保证「停在 TA 课表 ⇒ 开关开启」不变量。
+  Future<void> _openPartnerTimetable() async {
+    final provider = context.read<TimetableProvider>();
+    final partnerProfile = provider.partnerProfile;
+    if (partnerProfile == null) {
+      return;
+    }
+    if (!provider.settings.coupleTimetableOverlayEnabled) {
+      await provider.updateSettings(
+        provider.settings.copyWith(coupleTimetableOverlayEnabled: true),
+      );
+    }
+    await provider.switchProfile(partnerProfile.id);
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  /// 开关关闭时若当前正停在 TA 课表，退回我的课表：关闭后课表界面
+  /// 回到原来的「轻屿课表」（我的课表），不停留在情侣课表上。
+  Future<void> _leavePartnerTimetableIfActive(TimetableProvider provider) async {
+    if (provider.activeProfileId != PartnerTimetableService.partnerProfileId) {
+      return;
+    }
+    final myProfile = provider.myTimetableProfile;
+    if (myProfile != null) {
+      await provider.switchProfile(myProfile.id);
+    }
+  }
+
   Widget _buildWithuCoupleControl(BuildContext context, AppLocalizations l10n) {
     final connected = _isWithuCoupleConnected;
     return Column(
@@ -299,6 +354,7 @@ class _CoupleTimetableSettingsScreenState
 
   Future<void> _connectWithuCouple() async {
     final provider = context.read<TimetableProvider>();
+    final sessionProvider = context.read<WithuCoupleSessionProvider>();
     final connected = await showWithuCoupleLoginSheet(
       context: context,
       initialConfig: _withuCoupleConfig,
@@ -308,15 +364,23 @@ class _CoupleTimetableSettingsScreenState
     if (connected != true || !mounted) {
       return;
     }
+    // 登录成功后刷新首页情侣标题的登录态与昵称。
+    unawaited(sessionProvider.restoreSession());
     await provider.syncCoupleTimetableWidgetSnapshot();
     await _loadWithuCoupleState();
   }
 
   Future<void> _disconnectWithuCouple() async {
     final provider = context.read<TimetableProvider>();
+    final sessionProvider = context.read<WithuCoupleSessionProvider>();
     await _withuTimetableService.disconnect();
     await provider.syncCoupleTimetableWidgetSnapshot();
     await _loadWithuCoupleState();
+    if (!mounted) {
+      return;
+    }
+    // 断开后同步熄灭首页情侣标题的登录态（爱心退回「登录」提示）。
+    await sessionProvider.restoreSession();
   }
 
   Future<void> _pinCoupleTimetableWidget() async {
@@ -579,15 +643,20 @@ class _CoupleTimetableSettingsScreenState
   Future<void> _exportForPartner() async {
     final provider = context.read<TimetableProvider>();
     final l10n = AppLocalizations.of(context)!;
+    // 导出的是「我的课表」：当前课表停在 TA 时不能把 TA 的课表发给她自己。
+    final myProfile = provider.myTimetableProfile;
+    if (myProfile == null) {
+      return;
+    }
     setState(() => _isExporting = true);
     try {
       await provider.dataTransferService.exportAndShare(
-        profileName: provider.activeProfile?.name,
-        courses: provider.courses,
-        tasks: provider.tasks,
-        scheduleItems: provider.scheduleItems,
-        settings: provider.settings,
-        currentWeek: provider.currentWeek,
+        profileName: myProfile.name,
+        courses: myProfile.courses,
+        tasks: myProfile.tasks,
+        scheduleItems: myProfile.scheduleItems,
+        settings: myProfile.settings,
+        currentWeek: myProfile.currentWeek,
         shareText: l10n.coupleTimetableShareText,
         shareSubject: l10n.coupleTimetableShareSubject,
       );

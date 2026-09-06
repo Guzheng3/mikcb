@@ -224,12 +224,39 @@ class CoupleTimetableViewsService : RemoteViewsService() {
 
         override fun getViewAt(position: Int): RemoteViews {
             return when (val item = items.getOrNull(position)) {
-                is CoupleWidgetDisplayItem.Course -> renderCourse(item)
-                is CoupleWidgetDisplayItem.Notice -> renderNotice(item.text)
+                is CoupleWidgetDisplayItem.Course -> renderCourse(item).apply {
+                    attachSideTap(R.id.widget_couple_course_root)
+                }
+                is CoupleWidgetDisplayItem.Notice ->
+                    renderNotice(item.text).apply {
+                        attachSideTap(R.id.widget_couple_today_ended)
+                    }
                 CoupleWidgetDisplayItem.Divider ->
-                    RemoteViews(context.packageName, R.layout.widget_couple_course_divider)
-                null -> RemoteViews(context.packageName, R.layout.widget_couple_today_ended_item)
+                    RemoteViews(
+                        context.packageName,
+                        R.layout.widget_couple_course_divider
+                    ).apply {
+                        attachSideTap(R.id.widget_couple_course_divider)
+                    }
+                null -> RemoteViews(
+                    context.packageName,
+                    R.layout.widget_couple_today_ended_item
+                ).apply {
+                    attachSideTap(R.id.widget_couple_today_ended)
+                }
             }
+        }
+
+        // 行点击随 PendingIntentTemplate 派发到对应一侧；不挂 fill intent
+        // 的行不会触发模板，导致课程行区域成为点击死区。
+        private fun RemoteViews.attachSideTap(rootId: Int) {
+            setOnClickFillInIntent(
+                rootId,
+                Intent().putExtra(
+                    TodayWidgetSupport.EXTRA_WIDGET_LAUNCH_SIDE,
+                    if (isLeft) "left" else "right"
+                )
+            )
         }
 
         private fun renderCourse(item: CoupleWidgetDisplayItem.Course): RemoteViews {

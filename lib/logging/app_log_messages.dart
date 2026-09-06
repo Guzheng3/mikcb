@@ -51,19 +51,6 @@ abstract final class AppLogMessages {
       'log_live_update_snapshot_clear_failed';
   static const liveUpdateSuspendTriggersFailed =
       'log_live_update_suspend_triggers_failed';
-  static const lanEditAuthFailed = 'log_lan_edit_auth_failed';
-  static const lanEditCourseCreated = 'log_lan_edit_course_created';
-  static const lanEditCourseUpdated = 'log_lan_edit_course_updated';
-  static const lanEditCourseDeleted = 'log_lan_edit_course_deleted';
-  static const lanEditCourseGroupSaved = 'log_lan_edit_course_group_saved';
-  static const lanEditMergeImported = 'log_lan_edit_merge_imported';
-  static const lanEditCoursesBatchDeleted =
-      'log_lan_edit_courses_batch_deleted';
-  static const lanEditCurrentWeekSet = 'log_lan_edit_current_week_set';
-  static const lanEditProfileSwitched = 'log_lan_edit_profile_switched';
-  static const lanEditSpreadsheetImported = 'log_lan_edit_spreadsheet_imported';
-  static const lanEditSessionStarted = 'log_lan_edit_session_started';
-  static const lanEditSessionStopped = 'log_lan_edit_session_stopped';
   static const liveUpdateTestRequested = 'log_live_update_test_requested';
   static const liveUpdateTestNoSelection = 'log_live_update_test_no_selection';
   static const liveUpdateTestSelectionReady =
@@ -242,17 +229,6 @@ const Map<String, String> appLogCategoryLabels = {
       'log_cat_live_update_snapshot_sync_failed',
   'live_update_snapshot_clear_failed':
       'log_cat_live_update_snapshot_clear_failed',
-  'lan_edit_auth_failed': 'log_cat_lan_edit_auth_failed',
-  'lan_edit_course_created': 'log_cat_lan_edit_course_created',
-  'lan_edit_course_updated': 'log_cat_lan_edit_course_updated',
-  'lan_edit_course_deleted': 'log_cat_lan_edit_course_deleted',
-  'lan_edit_course_group_saved': 'log_cat_lan_edit_course_group_saved',
-  'lan_edit_merge_imported': 'log_cat_lan_edit_merge_imported',
-  'lan_edit_courses_batch_deleted': 'log_cat_lan_edit_courses_batch_deleted',
-  'lan_edit_current_week_set': 'log_cat_lan_edit_current_week_set',
-  'lan_edit_spreadsheet_imported': 'log_cat_lan_edit_spreadsheet_imported',
-  'lan_edit_session_started': 'log_cat_lan_edit_session_started',
-  'lan_edit_session_stopped': 'log_cat_lan_edit_session_stopped',
   'live_update_test_requested': 'log_cat_live_update_test_requested',
   'live_update_test_no_selection': 'log_cat_live_update_test_no_selection',
   'live_update_test_selection_ready':

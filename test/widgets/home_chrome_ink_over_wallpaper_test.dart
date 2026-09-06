@@ -234,7 +234,7 @@ void main() {
       wallpaper!.path,
       _scopeAll,
       weekdayBlur: true,
-      weekdayHex: '#FFFFFF',
+      weekdayHex: '#F0F0F0',
     );
 
     expect(find.text('文字对比度不足'), findsOneWidget);
@@ -272,9 +272,9 @@ void main() {
     expect(logo, isNotNull);
     expect(logo!.computeLuminance(), lessThan(0.3));
     // Default weekday ink on the opaque background: the configured default
-    // black, not the wallpaper-flipped white.
-    expect(_textColor(tester, '周一'), const Color(0xFF000000));
-    expect(_textColor(tester, '1周'), const Color(0xFF000000));
+    // white, not the wallpaper-flipped black.
+    expect(_textColor(tester, '周一'), const Color(0xFFFFFFFF));
+    expect(_textColor(tester, '1周'), const Color(0xFFFFFFFF));
   });
 
   testWidgets(

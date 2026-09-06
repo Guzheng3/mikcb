@@ -159,14 +159,19 @@ class WithuCoupleTimetableService {
 
     try {
       await provider.initialize();
+      // 上传的是「我的课表」：当前课表停在 TA 时不能把 TA 的课表传给对方。
+      final myProfile = provider.myTimetableProfile;
+      if (myProfile == null) {
+        return 'withu_couple_not_connected';
+      }
       final content = _dataTransferService.buildBackupJson(
-        profileName: provider.activeProfile?.name,
-        courses: provider.courses,
-        scheduleItems: provider.scheduleItems,
+        profileName: myProfile.name,
+        courses: myProfile.courses,
+        scheduleItems: myProfile.scheduleItems,
         settings: _dataTransferService.sanitizeSettingsForPartnerSync(
-          provider.settings,
+          myProfile.settings,
         ),
-        currentWeek: provider.currentWeek,
+        currentWeek: myProfile.currentWeek,
         timeSchemes: provider.timeSchemes,
         scheduleDateRules: provider.scheduleDateRules,
         locationTimeGroups: provider.locationTimeGroups,

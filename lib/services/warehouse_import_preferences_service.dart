@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'user_data_sync_hooks.dart';
 
 class WarehouseRememberedLogin {
   final String username;
@@ -263,7 +262,6 @@ class WarehouseImportPreferencesService {
   Future<void> setCustomImportUrl(String adapterId, String url) async {
     final prefs = await _prefs;
     await prefs.setString('$_customImportUrlPrefix$adapterId', url.trim());
-    notifyUserDataChangedForSync();
   }
 
   Future<void> clearCustomImportUrl(String adapterId) async {
@@ -308,7 +306,6 @@ class WarehouseImportPreferencesService {
       value: jsonEncode(login.toJson()),
     );
     await prefs.remove('$_rememberedLoginPrefix$adapterId');
-    notifyUserDataChangedForSync();
   }
 
   Future<void> clearRememberedLogin(String adapterId) async {
@@ -385,7 +382,6 @@ class WarehouseImportPreferencesService {
       _customDebugRecordsKey,
       jsonEncode(next.map((item) => item.toJson()).toList()),
     );
-    notifyUserDataChangedForSync();
   }
 
   Future<void> deleteCustomDebugRecord(String recordId) async {

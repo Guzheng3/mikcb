@@ -92,6 +92,7 @@
   "coupleTimetableSharedFreeTitleOtherDay": "Shared free time this day",
   "coupleTimetableNoSharedFree": "No shared free time today",
   "coupleTimetableNoSharedFreeOtherDay": "No shared free time this day",
+  "partnerTimetablePageTitle": "Partner's timetable",
   "coupleTimetableSharedFreeMeta": "{count} slots",
   "@coupleTimetableSharedFreeMeta": {
     "placeholders": {
@@ -181,11 +182,33 @@
   "withuCoupleLoginAction": "Sign in and pull",
   "withuCoupleLoginMenuTitle": "Account login",
   "withuCoupleNotLoggedInPrompt": "Not signed in · Tap to sign in",
+  "withuLoginConfirm": "Log in",
+  "coupleHistorySheetTitle": "Timetable history",
+  "coupleHistoryMineLabel": "My past timetables",
+  "coupleHistoryHersLabel": "Her past timetables",
+  "noHistoryRecords": "No history yet",
+  "coupleHistoryRestored": "Timetable restored",
+  "coupleHistoryRestoreFailed": "Restore failed, please retry",
+  "coupleHistoryEntryMeta": "{semester} · {count} classes",
+  "@coupleHistoryEntryMeta": {
+    "placeholders": {
+      "semester": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "withuCouplePullImported": "Partner timetable imported from withU",
   "withuCouplePullUpdated": "Partner timetable updated from withU",
   "withuCouplePullUnchanged": "Partner timetable is up to date",
   "withuCoupleUploadSuccess": "Timetable uploaded for your partner to pull",
   "withuCoupleMissingCredentials": "Enter the withU server, username, and password",
+  "withuCoupleUsernameLabel": "withU username",
+  "withuCoupleUsernameHint": "Enter your withU username",
+  "withuCouplePasswordLabel": "withU password",
+  "withuCouplePasswordHint": "Enter your withU password",
   "withuCoupleNotConnectedError": "Connect withU first",
   "withuCoupleAuthFailed": "Incorrect withU username or password",
   "withuCoupleSessionExpired": "withU session expired. Sign in again.",
@@ -193,205 +216,6 @@
   "withuCouplePartnerTimetableMissing": "Partner timetable not found. Ask them to upload first.",
   "withuCoupleRequestFailed": "withU request failed. Try again later.",
   "withuCoupleSessionCookieMissing": "withU did not return a login session",
-  "cloudSyncEntryTitle": "Cloud Sync",
-  "cloudSyncEntrySubtitle": "Sync timetables and import data across devices via Jianguoyun",
-  "cloudSyncEntryDisabled": "Off",
-  "cloudSyncEntryEnabled": "On",
-  "cloudSyncEntrySyncing": "Syncing",
-  "cloudSyncEntryError": "Last sync failed",
-  "cloudSyncTitle": "Cloud Sync",
-  "cloudSyncIntroTitle": "Multi-device sync",
-  "cloudSyncIntroSubtitle": "Configure Jianguoyun WebDAV to sync timetables, warehouse accounts, and related settings across devices",
-  "cloudSyncSettingsSectionTitle": "Sync settings",
-  "cloudSyncSettingsSectionSubtitle": "Switch between manual and automatic sync",
-  "cloudSyncEnabledTitle": "Enable cloud sync",
-  "cloudSyncEnabledSubtitle": "When off, no snapshot is uploaded or downloaded",
-  "cloudSyncProviderTitle": "Provider",
-  "cloudSyncProviderJianguoyun": "Jianguoyun",
-  "cloudSyncProviderCustom": "Custom WebDAV",
-  "cloudSyncModeTitle": "Sync mode",
-  "cloudSyncModeAuto": "Automatic",
-  "cloudSyncModeManual": "Manual",
-  "cloudSyncAccountTitle": "Account",
-  "cloudSyncAccountSubtitle": "Use a Jianguoyun app-specific password, not your login password. Snapshots include remembered school accounts",
-  "cloudSyncUsernameLabel": "Email / username",
-  "cloudSyncUsernameHint": "Jianguoyun account email",
-  "cloudSyncPasswordLabel": "App-specific password",
-  "cloudSyncPasswordHint": "Generate it in Jianguoyun security settings",
-  "cloudSyncPasswordStoredHint": "Password saved; leave blank to keep the stored password",
-  "cloudSyncAdvancedTitle": "Advanced",
-  "cloudSyncBaseUrlLabel": "WebDAV URL",
-  "cloudSyncBaseUrlSecurityNote": "HTTPS is recommended. HTTP cleartext connections are allowed but only advised on trusted networks",
-  "@cloudSyncBaseUrlSecurityNote": {
-    "description": "Security note: explains that release builds only support HTTPS encrypted connections, HTTP cleartext protocol has been disabled"
-  },
-  "cloudSyncRemoteFolderLabel": "Remote folder",
-  "cloudSyncStatusTitle": "Status",
-  "cloudSyncLastSyncedLabel": "Last synced",
-  "cloudSyncLastErrorLabel": "Latest error",
-  "cloudSyncLastSyncedAt": "Last synced: {time}",
-  "@cloudSyncLastSyncedAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncSyncing": "Syncing…",
-  "cloudSyncLastError": "Latest error: {message}",
-  "@cloudSyncLastError": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncHelpTitle": "How to get a Jianguoyun app password",
-  "cloudSyncHelpBody": "Open Jianguoyun → Account → Security → Add app password. Default WebDAV URL: https://dav.jianguoyun.com/dav/",
-  "cloudSyncTestConnection": "Test connection",
-  "cloudSyncSyncNow": "Sync now",
-  "cloudSyncSyncNowSubtitle": "Keep timetables aligned across devices: pull cloud updates, then upload local changes",
-  "cloudSyncTestSuccess": "WebDAV connection succeeded",
-  "cloudSyncTestFailed": "WebDAV connection failed. Check account, app password, and network.",
-  "cloudSyncResultUploaded": "Uploaded to cloud",
-  "cloudSyncResultDownloaded": "Restored from cloud",
-  "cloudSyncResultUpToDate": "Already up to date",
-  "cloudSyncResultCancelled": "Sync cancelled",
-  "cloudSyncResultFailed": "Sync failed: {message}",
-  "@cloudSyncResultFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncConflictTitle": "Sync conflict detected",
-  "cloudSyncConflictBody": "Both this device and the cloud have newer changes. Choose which copy to keep.",
-  "cloudSyncUseRemoteAction": "Use cloud",
-  "cloudSyncKeepLocalAction": "Keep local",
-  "cloudSyncAccountSectionTitle": "Cloud account",
-  "cloudSyncNotConnectedHint": "Connect Jianguoyun to sync timetables and import data across devices",
-  "cloudSyncConnectAccount": "Connect Jianguoyun",
-  "cloudSyncConnectedAs": "Connected: {email}",
-  "@cloudSyncConnectedAs": {
-    "placeholders": {
-      "email": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudSyncDisconnect": "Disconnect",
-  "cloudSyncDisconnectTitle": "Disconnect cloud account",
-  "cloudSyncDisconnectBody": "This removes saved WebDAV credentials from this device. Local timetables are kept. Continue?",
-  "cloudSyncLoginSheetTitle": "Connect Jianguoyun",
-  "cloudSyncLoginSheetSubtitle": "Use an app-specific password, not your Jianguoyun login password",
-  "cloudSyncConfirmConnect": "Connect",
-  "cloudSyncConnectSuccess": "Account connected",
-  "cloudBackupSectionTitle": "Version history",
-  "cloudBackupSectionSubtitle": "Saved automatically when you sync. Tap to restore a version",
-  "cloudBackupCurrentLabel": "Current version",
-  "cloudBackupCurrentBadge": "Current",
-  "cloudBackupCreateNow": "Back up now",
-  "cloudBackupViewAll": "View all versions",
-  "cloudBackupEmpty": "No versions yet. They are saved automatically when you sync.",
-  "cloudBackupSourceAuto": "Auto backup",
-  "cloudBackupSourceManual": "Manual backup",
-  "cloudBackupDefaultDeviceLabel": "This device",
-  "cloudBackupDeviceLabelTitle": "Device name",
-  "cloudBackupDeviceLabelHint": "Shown in backup list, e.g. My phone",
-  "cloudBackupSummary": "{profileCount} timetables · {courseCount} courses",
-  "@cloudBackupSummary": {
-    "placeholders": {
-      "profileCount": {
-        "type": "int"
-      },
-      "courseCount": {
-        "type": "int"
-      }
-    }
-  },
-  "cloudBackupRestoreTitle": "Restore this backup",
-  "cloudBackupRestoreBody": "Restore the timetable from {time}. Unsynced local changes will be lost. Continue?",
-  "@cloudBackupRestoreBody": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupRestoreAction": "Restore",
-  "cloudBackupRestoreSuccess": "Backup restored",
-  "cloudBackupRestoreFailed": "Restore failed: {message}",
-  "@cloudBackupRestoreFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupDeleteTitle": "Delete this backup",
-  "cloudBackupDeleteBody": "Delete the cloud backup from {time}? This cannot be undone.",
-  "@cloudBackupDeleteBody": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupDeleteSuccess": "Backup deleted",
-  "cloudBackupDeleteFailed": "Delete failed: {message}",
-  "@cloudBackupDeleteFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupCreateSuccess": "Backup saved to cloud",
-  "cloudBackupCreateFailed": "Backup failed: {message}",
-  "@cloudBackupCreateFailed": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
-  "cloudBackupUploadAsCurrentTitle": "Set as current cloud version",
-  "cloudBackupUploadAsCurrentBody": "Upload this backup as the current cloud version? Recommended to avoid sync conflicts.",
-  "cloudBackupUploadAsCurrentYes": "Set as current",
-  "cloudBackupUploadAsCurrentNo": "Local only",
-  "cloudBackupDetailDevice": "Device",
-  "cloudBackupDetailSource": "Source",
-  "cloudBackupDetailSummary": "Contents",
-  "lanEditEntryTitle": "LAN Editing",
-  "lanEditEntrySubtitle": "Edit the current timetable from a desktop browser",
-  "lanEditTitle": "LAN editing",
-  "lanEditIntro": "While enabled, a computer on the same Wi-Fi or phone hotspot can edit the current timetable in a browser. Data stays on your LAN and access stops when you turn this off",
-  "lanEditStart": "Start LAN editing",
-  "lanEditStop": "Stop",
-  "lanEditStatusRunning": "LAN editing is active",
-  "lanEditAddressLabel": "Address",
-  "lanEditAddressUnavailable": "No LAN IP detected. Connect to Wi-Fi or enable hotspot.",
-  "lanEditPinLabel": "PIN",
-  "lanEditPortLabel": "Port",
-  "lanEditCopyAddress": "Copy address",
-  "lanEditCopied": "Address copied",
-  "lanEditHotspotHint": "If dorm Wi-Fi blocks device-to-device access, try phone hotspot instead",
-  "lanEditQrHint": "Scan the QR code on a PC browser on the same LAN (link includes PIN)",
-  "lanEditStartFailed": "Failed to start",
-  "lanEditConnectedClientsLabel": "Connected",
-  "lanEditConnectedClientsNone": "None",
-  "lanEditConnectedClientsValue": "{count, plural, =1{1 device} other{{count} devices}}",
-  "@lanEditConnectedClientsValue": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "lanEditLastActivityLabel": "Last activity",
-  "lanEditKeepAliveWhenLeavingTitle": "Keep open after leaving",
-  "lanEditKeepAliveWhenLeavingSubtitle": "When on, leaving this page keeps LAN editing running; when off, leaving stops it",
   "aboutSupportSectionTitle": "About & Support",
   "feedbackEntryTitle": "Feedback",
   "feedbackEntrySubtitle": "Issue tracker, community channels, and suggestion entry",
@@ -3506,7 +3330,6 @@
   "selectTeacherTitle": "Select teacher",
   "selectLocationTitle": "Select location",
   "historyRecordsLabel": "History",
-  "noHistoryRecords": "No history yet",
   "weekPickerTitle": "Select weeks",
   "selectTimeSchemeTitle": "Select time scheme",
   "manageTimeSchemesAction": "Manage time schemes",
@@ -4137,24 +3960,6 @@
   "aboutInAppDownloadSubtitle": "Install directly in the app after download completes",
   "aboutSystemDownloaderTitle": "System download manager",
   "aboutSystemDownloaderChoiceSubtitle": "Hand off to the system download manager",
-  "syncErrorAuthFailed": "Invalid username or password",
-  "syncErrorAccessDenied": "Access denied",
-  "syncErrorCertificateError": "Certificate error",
-  "syncErrorConnectionTimeout": "Connection timed out",
-  "syncErrorConnectionFailed": "Could not connect to server",
-  "syncErrorNetworkError": "Network error",
-  "syncErrorInvalidResponse": "Invalid server response",
-  "syncErrorLocalChangesPendingSync": "Skipped auto sync because local changes are pending",
-  "syncErrorMissingCredentials": "Configure sync account first",
-  "syncErrorBackupNotFound": "Backup not found",
-  "syncErrorMissingBackupSnapshot": "Backup snapshot is missing",
-  "syncErrorCannotDeleteCurrentBackup": "Cannot delete the current backup",
-  "syncErrorProviderNotReady": "Timetable is not ready",
-  "syncErrorInsecureUrl": "Only HTTPS encrypted connections are supported; HTTP cleartext protocol is disabled.",
-  "@syncErrorInsecureUrl": {
-    "description": "Error shown when the WebDAV URL uses insecure HTTP protocol, which is blocked in release builds"
-  },
-  "syncErrorSyncFailed": "Sync failed",
   "sectionTimeDisplayHidden": "Hidden",
   "sectionTimeDisplayStartOnly": "Start time only",
   "sectionTimeDisplayStartAndEnd": "Start and end times",
@@ -4260,11 +4065,6 @@
   "serviceMsgUnrecognizedMikcbFullBackup": "Not a recognizable mikcb full backup file.",
   "serviceMsgMissingFullBackupData": "Complete backup data is missing.",
   "serviceMsgUseProfileBackupNotFull": "Use a timetable profile backup JSON, not a full data backup.",
-  "serviceMsgUnrecognizedSyncSnapshot": "Not a recognizable mikcb cloud sync snapshot.",
-  "serviceMsgMissingSyncTimetableData": "Cloud sync timetable data is missing.",
-  "serviceMsgSyncSnapshotChecksumFailed": "Cloud sync snapshot verification failed.",
-  "serviceMsgSyncSnapshotNoProfiles": "No recoverable timetables in the cloud sync snapshot.",
-  "serviceMsgSyncSnapshotUnrecognized": "Cloud sync snapshot could not be recognized.",
   "serviceMsgTimeSchemeNotFound": "Time scheme not found.",
   "serviceMsgTimeSchemeConfigUnavailable": "Current timetable time configuration is unavailable.",
   "serviceMsgTimeSchemeNotFoundSelected": "Selected time scheme was not found.",
@@ -4811,7 +4611,6 @@
   "serviceMsgConnectionTimeout": "Connection timed out.",
   "serviceMsgConnectionFailed": "Could not connect to the server.",
   "serviceMsgInvalidResponse": "Invalid server response.",
-  "serviceMsgSyncFailed": "Sync failed.",
   "serviceMsgUsageTypeOverride": "override time scheme",
   "serviceMsgUsageTypeProfile": "profile main time scheme",
   "dataTransferProfileShareText": "This is a full backup of the current timetable from Qingyu Timetable. Import it to restore courses and settings.",
@@ -5330,18 +5129,6 @@
   "logLiveUpdateSnapshotSyncFailed": "Failed to sync Live Island timetable snapshot",
   "logLiveUpdateSnapshotClearFailed": "Failed to clear Live Island timetable snapshot",
   "logLiveUpdateSuspendTriggersFailed": "Failed to suspend Live Island schedule triggers",
-  "logLanEditAuthFailed": "LAN edit: authentication failed",
-  "logLanEditCourseCreated": "LAN edit: course created",
-  "logLanEditCourseUpdated": "LAN edit: course updated",
-  "logLanEditCourseDeleted": "LAN edit: course deleted",
-  "logLanEditCourseGroupSaved": "LAN edit: course group saved",
-  "logLanEditMergeImported": "LAN edit: merge backup imported",
-  "logLanEditCoursesBatchDeleted": "LAN edit: courses batch deleted",
-  "logLanEditCurrentWeekSet": "LAN edit: current week set",
-  "logLanEditProfileSwitched": "LAN edit: timetable profile switched",
-  "logLanEditSpreadsheetImported": "LAN edit: spreadsheet imported",
-  "logLanEditSessionStarted": "LAN edit: session started",
-  "logLanEditSessionStopped": "LAN edit: session stopped",
   "logLiveUpdateTestRequested": "User requested manual Live Island test notification",
   "logLiveUpdateTestNoSelection": "Manual Live Island test: no course available",
   "logLiveUpdateTestSelectionReady": "Manual Live Island test: target course resolved",
@@ -5494,17 +5281,6 @@
   "logCatLiveUpdateSettingsSynced": "live island: settings synced",
   "logCatLiveUpdateSnapshotSyncFailed": "live island: snapshot sync failed",
   "logCatLiveUpdateSnapshotClearFailed": "live island: snapshot clear failed",
-  "logCatLanEditAuthFailed": "lan edit auth failed",
-  "logCatLanEditCourseCreated": "lan edit course created",
-  "logCatLanEditCourseUpdated": "lan edit course updated",
-  "logCatLanEditCourseDeleted": "lan edit course deleted",
-  "logCatLanEditCourseGroupSaved": "lan edit course group saved",
-  "logCatLanEditMergeImported": "lan edit merge imported",
-  "logCatLanEditCoursesBatchDeleted": "lan edit courses batch deleted",
-  "logCatLanEditCurrentWeekSet": "lan edit current week set",
-  "logCatLanEditSpreadsheetImported": "lan edit spreadsheet imported",
-  "logCatLanEditSessionStarted": "lan edit session started",
-  "logCatLanEditSessionStopped": "lan edit session stopped",
   "logCatLiveUpdateTestRequested": "live island: test requested",
   "logCatLiveUpdateTestNoSelection": "live island: test no selection",
   "logCatLiveUpdateTestSelectionReady": "live island: test selection ready",
@@ -5553,27 +5329,6 @@
   "appUpdateMirrorPresetGhproxyNet": "Backup mirror 4",
   "appUpdateMirrorPresetCustom": "Custom",
   "appUpdateMirrorPresetCustomDescription": "Enter a custom mirror URL prefix",
-  "cloudBackupRetentionTitle": "Backup retention",
-  "cloudBackupMaxCountTitle": "Maximum backups",
-  "cloudBackupMaxCountSubtitle": "Oldest backups are removed when exceeded",
-  "cloudBackupMaxCountOption": "{count} backups",
-  "@cloudBackupMaxCountOption": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "cloudBackupMaxAgeTitle": "Maximum age",
-  "cloudBackupMaxAgeSubtitle": "Backups older than this are removed",
-  "cloudBackupMaxAgeOption": "{days} days",
-  "@cloudBackupMaxAgeOption": {
-    "placeholders": {
-      "days": {
-        "type": "int"
-      }
-    }
-  },
   "statisticsShareText": "Semester statistics from mikcb",
   "aboutUpdateAvailableHeadline": "Update available",
   "aboutAlreadyLatestHeadline": "Already up to date",
@@ -5597,8 +5352,6 @@
   },
   "currentProfileTimeSchemeName": "Current timetable schedule",
   "unnamedTimetableProfile": "Unnamed timetable",
-  "cloudBackupManualProtectedTitle": "Protect manual backups",
-  "cloudBackupManualProtectedSubtitle": "Manual backups are never auto-deleted when enabled",
   "courseImportPortalUrlMissingBody": "\"{schoolName} / {adapterName}\" has no default login URL. Enter the school portal URL first.",
   "@courseImportPortalUrlMissingBody": {
     "placeholders": {
@@ -6195,5 +5948,13 @@
     }
   },
   "classAlarmDaySeparator": ", ",
-  "classAlarmDetailSeparator": "; "
+  "classAlarmDetailSeparator": "; ",
+  "globalSettingsTitle": "Global display settings",
+  "globalSettingsConfigured": "Configured",
+  "globalSettingsNotConfigured": "Not configured",
+  "globalSettingsDescriptionTitle": "About",
+  "globalSettingsDescriptionBody": "Display options set here apply to all timetables. Items changed in a specific timetable still follow that timetable's own setting. Timetable-specific content such as semester and periods (time scheme) is not part of the global settings.",
+  "globalSettingsClearTitle": "Clear global display settings",
+  "globalSettingsClearConfirm": "After clearing, all timetables will use their own settings again.",
+  "globalSettingsCleared": "Global display settings cleared"
 }

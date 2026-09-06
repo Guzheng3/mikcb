@@ -8,10 +8,13 @@ import 'app_log_service.dart';
 import 'withu_couple_timetable_service.dart';
 
 class WithuCoupleAutoSyncService {
+  // Named parameter keeps the public API (`timetableService:`); a private
+  // initializing formal would rename it, so the assignment stays explicit.
   WithuCoupleAutoSyncService({
     required WithuCoupleTimetableService timetableService,
     this.debounceDelay = const Duration(seconds: 3),
     this.pullOnBind = true,
+    // ignore: prefer_initializing_formals
   }) : _timetableService = timetableService;
 
   final WithuCoupleTimetableService _timetableService;

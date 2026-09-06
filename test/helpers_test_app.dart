@@ -3,14 +3,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:provider/provider.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
+import 'package:university_timetable/providers/withu_couple_session_provider.dart';
 import 'package:university_timetable/providers/timetable_provider.dart';
 import 'package:university_timetable/services/holiday_service.dart';
 import 'package:university_timetable/ui/hyperos/hyperos_navigation.dart';
 
 class TestApp extends StatelessWidget {
   final Widget home;
-  const TestApp({super.key, required this.home});
+
+  /// 可选的 withU 情侣会话 Provider（首页情侣标题数据源）。默认提供
+  /// 未登录态实例——不主动 restore，测试不会触碰网络/安全存储。
+  final WithuCoupleSessionProvider? sessionProvider;
+  const TestApp({super.key, required this.home, this.sessionProvider});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +39,10 @@ class TestApp extends StatelessWidget {
           ),
         );
       },
-      home: home,
+      home: ChangeNotifierProvider<WithuCoupleSessionProvider>(
+        create: (_) => sessionProvider ?? WithuCoupleSessionProvider(),
+        child: home,
+      ),
     );
   }
 }

@@ -3,6 +3,10 @@ import 'package:university_timetable/ui/hyperos/frosted/frosted_appearance.dart'
 import 'package:university_timetable/models/liquid_glass_tuning.dart';
 import 'package:university_timetable/models/class_reminder.dart';
 
+/// Bundled default wallpaper used when no user wallpaper is configured.
+const String defaultHomePageWallpaperPath =
+    'asset://assets/home_page_wallpaper/default.jpg';
+
 enum AppUpdateDownloadSource { original, mirror }
 
 enum AppUpdateDownloadChannel { pgyer, github, gitcode }
@@ -261,6 +265,20 @@ String _normalizeMirrorUrlPrefixValue(String? value) {
   return normalized.endsWith('/')
       ? normalized.substring(0, normalized.length - 1)
       : normalized;
+}
+
+String _migrateLegacyLightChromeInkToWhite(
+  String? value,
+  String legacyDefault,
+) {
+  final normalized = (value ?? '').trim().toLowerCase();
+  if (normalized.isEmpty) {
+    return '#FFFFFF';
+  }
+  if (normalized == legacyDefault.toLowerCase()) {
+    return '#FFFFFF';
+  }
+  return value!;
 }
 
 extension SectionTimeDisplayModeX on SectionTimeDisplayMode {
@@ -1121,11 +1139,11 @@ class TimetableSettings {
   // 颜色默认值常量
   static const String defaultCourseCardTitleColor = '#FFFFFF';
   static const String defaultCourseCardDetailColor = '#FFFFFF';
-  static const String defaultWeekdayBarFontColorLight = '#000000';
+  static const String defaultWeekdayBarFontColorLight = '#FFFFFF';
   static const String defaultWeekdayBarFontColorDark = '#FFFFFF';
   static const String defaultWeekdayBarAccentColorLight = '#2563EB';
   static const String defaultWeekdayBarAccentColorDark = '#93C5FD';
-  static const String defaultTimeAxisFontColorLight = '#757575';
+  static const String defaultTimeAxisFontColorLight = '#FFFFFF';
   static const String defaultTimeAxisFontColorDark = '#FFFFFF';
 
   static const double defaultFrostedSheetBlurSigma = 15;
@@ -1384,7 +1402,7 @@ class TimetableSettings {
     this.activeTimeSchemeId,
     this.sectionHeight = 68,
     this.compactFontSize = 9,
-    this.timetableAutoFitSectionHeight = false,
+    this.timetableAutoFitSectionHeight = true,
     this.semesterWeekCount = 20,
     this.semesterStartDate,
     this.weeklyReportEnabled = false,
@@ -1507,7 +1525,7 @@ class TimetableSettings {
     this.timetablePageBackgroundColor = '#F8FAFC',
     this.homePageBackgroundFill = HomePageBackgroundFill.color,
     this.homePageBackgroundImagePath,
-    this.homePageWallpaperPath,
+    this.homePageWallpaperPath = defaultHomePageWallpaperPath,
     this.homePageWallpaperAlignX = 0,
     this.homePageWallpaperAlignY = 0,
     this.homePageBackgroundScope = HomePageBackgroundScope.defaultValue,
@@ -1550,10 +1568,10 @@ class TimetableSettings {
     this.courseCardSurfaceStyle = CourseCardSurfaceStyle.solid,
     this.liquidGlassPreset = LiquidGlassPreset.standard,
     this.liquidGlassTuning,
-    this.homePageHeaderBlurEnabled = true,
-    this.homePageWeekdayBarBlurEnabled = true,
+    this.homePageHeaderBlurEnabled = false,
+    this.homePageWeekdayBarBlurEnabled = false,
     this.homePageTimeColumnBlurEnabled = false,
-    this.homePageBackdropFollowsWeekPager = true,
+    this.homePageBackdropFollowsWeekPager = false,
     this.savedThemes = const [],
     this.themeCheckpointName,
     this.themeCheckpointConfig,
@@ -1717,8 +1735,7 @@ class TimetableSettings {
       'homePageBackgroundFill': homePageBackgroundFill.value,
       if (homePageBackgroundImagePath != null)
         'homePageBackgroundImagePath': homePageBackgroundImagePath,
-      if (homePageWallpaperPath != null)
-        'homePageWallpaperPath': homePageWallpaperPath,
+      'homePageWallpaperPath': homePageWallpaperPath,
       'homePageWallpaperAlignX': homePageWallpaperAlignX,
       'homePageWallpaperAlignY': homePageWallpaperAlignY,
       'homePageBackgroundScope': homePageBackgroundScope,
@@ -1826,7 +1843,7 @@ class TimetableSettings {
       sectionHeight: (json['sectionHeight'] as num?)?.toDouble() ?? 68,
       compactFontSize: (json['compactFontSize'] as num?)?.toDouble() ?? 9,
       timetableAutoFitSectionHeight:
-          json['timetableAutoFitSectionHeight'] as bool? ?? false,
+          json['timetableAutoFitSectionHeight'] as bool? ?? true,
       semesterWeekCount: (json['semesterWeekCount'] as num?)?.toInt() ?? 20,
       semesterStartDate: (json['semesterStartDate'] as num?) != null
           ? DateTime.fromMillisecondsSinceEpoch(
@@ -2107,7 +2124,9 @@ class TimetableSettings {
       ),
       homePageBackgroundImagePath:
           json['homePageBackgroundImagePath'] as String?,
-      homePageWallpaperPath: json['homePageWallpaperPath'] as String?,
+      homePageWallpaperPath: json.containsKey('homePageWallpaperPath')
+          ? json['homePageWallpaperPath'] as String?
+          : defaultHomePageWallpaperPath,
       homePageWallpaperAlignX:
           (json['homePageWallpaperAlignX'] as num?)?.toDouble() ?? 0,
       homePageWallpaperAlignY:
@@ -2144,9 +2163,10 @@ class TimetableSettings {
       courseCardTitleColorDark: parsedTitleColorDark,
       courseCardDetailColorLight: parsedDetailColorLight,
       courseCardDetailColorDark: parsedDetailColorDark,
-      weekdayBarFontColorLight:
-          json['weekdayBarFontColorLight'] as String? ??
-          defaultWeekdayBarFontColorLight,
+      weekdayBarFontColorLight: _migrateLegacyLightChromeInkToWhite(
+        json['weekdayBarFontColorLight'] as String?,
+        '#000000',
+      ),
       weekdayBarFontColorDark:
           json['weekdayBarFontColorDark'] as String? ??
           defaultWeekdayBarFontColorDark,
@@ -2156,9 +2176,10 @@ class TimetableSettings {
       weekdayBarAccentColorDark:
           json['weekdayBarAccentColorDark'] as String? ??
           defaultWeekdayBarAccentColorDark,
-      timeAxisFontColorLight:
-          json['timeAxisFontColorLight'] as String? ??
-          defaultTimeAxisFontColorLight,
+      timeAxisFontColorLight: _migrateLegacyLightChromeInkToWhite(
+        json['timeAxisFontColorLight'] as String?,
+        '#757575',
+      ),
       timeAxisFontColorDark:
           json['timeAxisFontColorDark'] as String? ??
           defaultTimeAxisFontColorDark,
@@ -2207,13 +2228,13 @@ class TimetableSettings {
             )
           : null,
       homePageHeaderBlurEnabled:
-          json['homePageHeaderBlurEnabled'] as bool? ?? true,
+          json['homePageHeaderBlurEnabled'] as bool? ?? false,
       homePageWeekdayBarBlurEnabled:
-          json['homePageWeekdayBarBlurEnabled'] as bool? ?? true,
+          json['homePageWeekdayBarBlurEnabled'] as bool? ?? false,
       homePageTimeColumnBlurEnabled:
           json['homePageTimeColumnBlurEnabled'] as bool? ?? false,
       homePageBackdropFollowsWeekPager:
-          json['homePageBackdropFollowsWeekPager'] as bool? ?? true,
+          json['homePageBackdropFollowsWeekPager'] as bool? ?? false,
       savedThemes: (() {
         final raw = json['savedThemes'];
         if (raw is! List) return const <SavedTheme>[];

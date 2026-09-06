@@ -83,8 +83,8 @@ TimetableSettings applySettingsReset(
       weekdayBarAccentColorDark: d.weekdayBarAccentColorDark,
       timeAxisFontColorLight: d.timeAxisFontColorLight,
       timeAxisFontColorDark: d.timeAxisFontColorDark,
-      // 壁纸文件路径一并清空，否则「恢复默认」后背景仍在。
-      clearHomePageWallpaperPath: true,
+      // 壁纸回到内置默认图，并清掉旧版背景图字段。
+      homePageWallpaperPath: d.homePageWallpaperPath,
       clearHomePageBackgroundImagePath: true,
     ),
     // 外观页瘦身后的范围：主题模式 / 字体 / 主题种子色与玻璃质感。
@@ -132,10 +132,18 @@ TimetableSettings applySettingsReset(
 ///
 /// 红色图标 + 二次确认：这是不可撤销的批量写入，不能一点就生效。
 class _SettingsResetTile extends StatelessWidget {
-  const _SettingsResetTile({required this.scope, required this.onReset});
+  const _SettingsResetTile({
+    required this.scope,
+    required this.onReset,
+    this.resetSource,
+  });
 
   final SettingsResetScope scope;
   final ValueChanged<TimetableSettings> onReset;
+
+  /// 重置的基准设置。全局模式下应传全局草稿（而非生效设置，避免把课表
+  /// 自身的覆盖值写进全局）；默认取当前生效设置，与历史行为一致。
+  final TimetableSettings? resetSource;
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +197,7 @@ class _SettingsResetTile extends StatelessWidget {
     final staleBackdropPath = scope == SettingsResetScope.timetablePage
         ? resolveHomePageBackdropImagePath(provider.settings)
         : null;
-    onReset(applySettingsReset(provider.settings, scope));
+    onReset(applySettingsReset(resetSource ?? provider.settings, scope));
     unawaited(
       deleteManagedImage(
         staleBackdropPath,

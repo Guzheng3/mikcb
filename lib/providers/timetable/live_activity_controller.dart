@@ -117,7 +117,7 @@ Future<void> _liveHandleAppResumed(TimetableProvider host) async {
   host._liveActivityTimer?.cancel();
   await host.syncTemporalContext();
   final requestVersion = ++host._liveSurfaceRequestVersion;
-  // Clear + push under one exclusive section so a concurrent WebDAV apply
+  // Clear + push under one exclusive section so a concurrent apply
   // cannot interleave a half-updated native snapshot.
   await host._runLiveSurfaceExclusive(() async {
     if (requestVersion != host._liveSurfaceRequestVersion) {
@@ -917,16 +917,18 @@ Future<CoupleTimetableWidgetSnapshot?> _liveBuildCoupleWidgetSnapshot(
   }
   final binding = host.partnerBinding;
   final partnerProfile = host.partnerProfile;
+  final myProfile = host.myTimetableProfile;
   if (session == null ||
       !session.isUsable ||
       binding == null ||
-      partnerProfile == null) {
+      partnerProfile == null ||
+      myProfile == null) {
     return null;
   }
 
   final myName = session.username.trim().isNotEmpty
       ? session.username.trim()
-      : host.activeProfile?.name.trim() ?? '';
+      : myProfile.name.trim();
   final partnerName = binding.partnerName.trim().isNotEmpty
       ? binding.partnerName.trim()
       : partnerProfile.name.trim();
@@ -936,6 +938,23 @@ Future<CoupleTimetableWidgetSnapshot?> _liveBuildCoupleWidgetSnapshot(
 
   final now = DateTime.now();
   final tomorrow = now.add(const Duration(days: 1));
+  // 「我的课表」周次按我自己的开学时间对齐：当前课表切到 TA 后，不能拿
+  // TA 的学期起点来算我的周次（双方卡片左栏仍须是我的课）。
+  int myCalendarWeekFor(DateTime date) =>
+      WeekCalculator.calendarWeekForDate(
+        date,
+        semesterStart: myProfile.settings.semesterStartDate,
+        fallback: myProfile.currentWeek,
+      );
+  List<Course> myCoursesFor(DateTime date) =>
+      myProfile.courses
+          .where(
+            (course) =>
+                course.dayOfWeek == date.weekday &&
+                course.isActiveInWeek(myCalendarWeekFor(date)),
+          )
+          .toList()
+        ..sort((a, b) => a.startSection.compareTo(b.startSection));
   return CoupleTimetableWidgetSnapshot(
     myName: myName,
     partnerName: partnerName,
@@ -945,21 +964,15 @@ Future<CoupleTimetableWidgetSnapshot?> _liveBuildCoupleWidgetSnapshot(
     mine: CoupleTimetableWidgetDayCourses(
       today: _liveBuildCoupleCoursesForDate(
         host,
-        host.getActiveCoursesForDay(
-          now.weekday,
-          week: host._calculateCalendarWeekForDate(now),
-        ),
+        myCoursesFor(now),
         now,
-        settings: host.settings,
+        settings: myProfile.settings,
       ),
       tomorrow: _liveBuildCoupleCoursesForDate(
         host,
-        host.getActiveCoursesForDay(
-          tomorrow.weekday,
-          week: host._calculateCalendarWeekForDate(tomorrow),
-        ),
+        myCoursesFor(tomorrow),
         tomorrow,
-        settings: host.settings,
+        settings: myProfile.settings,
       ),
     ),
     partner: CoupleTimetableWidgetDayCourses(

@@ -65,6 +65,18 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
             accentColor = rightColor,
         )
 
+        // 整卡可点、左右分流：列容器（含列表下方的空白区）与名字区各自
+        // 带 side；列表行经 PendingIntentTemplate 兜底（getViewAt 里逐项
+        // 挂 fill intent）；卡片 padding、爱心等残余区域落到 shield 左右
+        // 对半（垫在内容之下的透明层）；root 挂 left 作最终保险。
+        views.setOnClickPendingIntent(
+            R.id.widget_couple_left_shield,
+            buildLaunchPendingIntent(context, appWidgetId, isLeft = true)
+        )
+        views.setOnClickPendingIntent(
+            R.id.widget_couple_right_shield,
+            buildLaunchPendingIntent(context, appWidgetId, isLeft = false)
+        )
         views.setOnClickPendingIntent(
             R.id.widget_couple_root,
             buildLaunchPendingIntent(context, appWidgetId, isLeft = true)
@@ -75,6 +87,14 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
         )
         views.setOnClickPendingIntent(
             R.id.widget_couple_right_column,
+            buildLaunchPendingIntent(context, appWidgetId, isLeft = false)
+        )
+        views.setOnClickPendingIntent(
+            R.id.widget_couple_left_name_container,
+            buildLaunchPendingIntent(context, appWidgetId, isLeft = true)
+        )
+        views.setOnClickPendingIntent(
+            R.id.widget_couple_right_name_container,
             buildLaunchPendingIntent(context, appWidgetId, isLeft = false)
         )
 
@@ -130,12 +150,30 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
             data = Uri.parse("qingyu://couple-widget/$appWidgetId/$sidePrefix")
         }
         views.setRemoteAdapter(listId, serviceIntent)
+        // 行点击走模板 + 逐项 fill intent（见 CoupleTimetableViewsFactory），
+        // 否则 ListView 会吞掉整块区域的点击。模板必须是 MUTABLE：系统要把
+        // 各行的 fill intent 合并进 PendingIntent，IMMUTABLE 会让部分启动器
+        // 在应用 RemoteViews 时抛异常（表现为「载入窗口小部件时出现问题」）。
+        // 模板使用独立 requestCode：PendingIntent 按 (requestCode, intent) 认
+        // 同身份，与普通点击共用身份会复用旧实例且 mutability 无法后改。
+        views.setPendingIntentTemplate(
+            listId,
+            buildLaunchPendingIntent(
+                context,
+                appWidgetId,
+                isLeft,
+                mutable = true,
+                requestCode = templateRequestCode(appWidgetId, isLeft),
+            )
+        )
     }
 
     private fun buildLaunchPendingIntent(
         context: Context,
         appWidgetId: Int,
         isLeft: Boolean,
+        mutable: Boolean = false,
+        requestCode: Int = appWidgetId,
     ): PendingIntent {
         val side = if (isLeft) "left" else "right"
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -144,12 +182,19 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
             putExtra(TodayWidgetSupport.EXTRA_WIDGET_LAUNCH_SIDE, side)
             data = Uri.parse("qingyu://widget-launch/$appWidgetId/$side")
         }
+        val mutabilityFlag =
+            if (mutable) PendingIntent.FLAG_MUTABLE else PendingIntent.FLAG_IMMUTABLE
         return PendingIntent.getActivity(
             context,
-            appWidgetId,
+            requestCode,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or mutabilityFlag
         )
+    }
+
+    private fun templateRequestCode(appWidgetId: Int, isLeft: Boolean): Int {
+        // 与普通点击的 requestCode（appWidgetId）错开，避免复用旧实例。
+        return 1_000_000 + appWidgetId * 2 + if (isLeft) 0 else 1
     }
 
     private fun parseColorOrNull(value: String): Int? {

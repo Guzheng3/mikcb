@@ -56,7 +56,6 @@ class MainActivity : FlutterActivity() {
         private const val POST_PROMOTED_NOTIFICATIONS_PERMISSION =
             "android.permission.POST_PROMOTED_NOTIFICATIONS"
         private const val ICS_CHANNEL = "com.mutx163.qingyu/ics_import"
-        private const val LAN_EDIT_CHANNEL = "com.mutx163.qingyu/lan_edit"
         private const val FROSTED_BLUR_CHANNEL = "com.mutx163.qingyu/frosted_blur"
         private const val LAUNCH_URL_CHANNEL = "com.mutx163.qingyu/launch_url"
         private const val HAPTIC_CHANNEL = "com.mutx163.qingyu/haptic"
@@ -87,13 +86,11 @@ class MainActivity : FlutterActivity() {
     /** 外部导入读取请求序号：仅主线程读写；后台读取回填时校验仍是最新请求，
      *  防止前一个慢读取（如网盘 provider）回来覆盖更新的导入意图。 */
     private var externalImportRequestSeq = 0
-    private var pendingOpenLanEdit = false
     private var pendingDebugRoute: Map<String, Any?>? = null
 
     /** 桌面卡片点击带进的 appWidgetId，Flutter 侧按绑定档案分流后消费。 */
     private var pendingWidgetLaunch: PendingWidgetLaunch? = null
     private var flutterChannel: MethodChannel? = null
-    private var lanEditChannel: MethodChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Fix: when launched via ACTION_SEND / ACTION_VIEW from another app (e.g.
@@ -136,7 +133,6 @@ class MainActivity : FlutterActivity() {
         // Debug deep links first so automation routes never fall into import.
         handleDebugDeepLinkIntent(intent)
         handleExternalImportIntent(intent)
-        handleLanEditIntent(intent)
         handleWidgetLaunchIntent(intent)
     }
 
@@ -145,7 +141,6 @@ class MainActivity : FlutterActivity() {
         setIntent(intent)
         handleDebugDeepLinkIntent(intent)
         handleExternalImportIntent(intent)
-        handleLanEditIntent(intent)
         handleWidgetLaunchIntent(intent)
     }
 
@@ -878,39 +873,6 @@ class MainActivity : FlutterActivity() {
                 }
             }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, LAN_EDIT_CHANNEL)
-            .also { lanEditChannel = it }
-            .setMethodCallHandler { call, result ->
-                when (call.method) {
-                    "startLanEditForeground" -> {
-                        try {
-                            startLanEditForegroundService()
-                            result.success(true)
-                        } catch (e: Exception) {
-                            val tag = when (e) {
-                                is SecurityException -> DiagnosticLogMessages.LOG_LAN_FOREGROUND_START_DENIED
-                                else -> DiagnosticLogMessages.LOG_LAN_FOREGROUND_START_FAILED
-                            }
-                            Log.e("MainActivity", tag, e)
-                            result.error(
-                                "START_FOREGROUND_FAILED",
-                                e.message,
-                                e.javaClass.simpleName,
-                            )
-                        }
-                    }
-                    "stopLanEditForeground" -> {
-                        stopLanEditForegroundService()
-                        result.success(true)
-                    }
-                    "getPendingLanEditOpen" -> {
-                        val pending = pendingOpenLanEdit
-                        pendingOpenLanEdit = false
-                        result.success(pending)
-                    }
-                    else -> result.notImplemented()
-                }
-            }
     }
 
     /**
@@ -1769,35 +1731,6 @@ class MainActivity : FlutterActivity() {
         // (reschedule cancels the old alarm itself and honors holiday /
         // suspension state; with a cleared snapshot it is a no-op.)
         LiveUpdateScheduler.reschedule(applicationContext, allowImmediateStart = false)
-    }
-
-    private fun startLanEditForegroundService() {
-        val intent = LanEditForegroundService.buildStartIntent(this)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent)
-        } else {
-            startService(intent)
-        }
-    }
-
-    private fun stopLanEditForegroundService() {
-        stopService(
-            Intent(this, LanEditForegroundService::class.java).apply {
-                action = LanEditForegroundService.ACTION_STOP
-            },
-        )
-    }
-
-    private fun handleLanEditIntent(intent: Intent?) {
-        if (intent?.getBooleanExtra(LanEditForegroundService.EXTRA_OPEN_LAN_EDIT, false) != true) {
-            return
-        }
-        pendingOpenLanEdit = true
-        intent.removeExtra(LanEditForegroundService.EXTRA_OPEN_LAN_EDIT)
-        try {
-            lanEditChannel?.invokeMethod("onLanEditNotificationTapped", null)
-        } catch (_: Exception) {
-        }
     }
 
     private fun persistHideFromRecents(hidden: Boolean) {

@@ -250,6 +250,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get coupleTimetableNoSharedFreeOtherDay => '이날 공통 공강 시간이 없습니다';
 
   @override
+  String get partnerTimetablePageTitle => '상대 시간표';
+
+  @override
   String coupleTimetableSharedFreeMeta(int count) {
     return '총 $count개 구간';
   }
@@ -383,6 +386,32 @@ class AppLocalizationsKo extends AppLocalizations {
   String get withuCoupleNotLoggedInPrompt => '로그인 안 됨 · 탭해서 로그인';
 
   @override
+  String get withuLoginConfirm => '로그인';
+
+  @override
+  String get coupleHistorySheetTitle => '히스토리';
+
+  @override
+  String get coupleHistoryMineLabel => '내 지난 시간표';
+
+  @override
+  String get coupleHistoryHersLabel => '그녀의 지난 시간표';
+
+  @override
+  String get noHistoryRecords => '기록 없음';
+
+  @override
+  String get coupleHistoryRestored => '시간표를 복원했습니다';
+
+  @override
+  String get coupleHistoryRestoreFailed => '복원에 실패했습니다. 다시 시도해 주세요';
+
+  @override
+  String coupleHistoryEntryMeta(String semester, int count) {
+    return '$semester · $count교시';
+  }
+
+  @override
   String get withuCouplePullImported => 'withU에서 상대방 시간표를 가져왔습니다';
 
   @override
@@ -396,6 +425,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get withuCoupleMissingCredentials => 'withU 서버, 사용자 이름, 비밀번호를 입력하세요';
+
+  @override
+  String get withuCoupleUsernameLabel => 'withU 사용자 이름';
+
+  @override
+  String get withuCoupleUsernameHint => 'withU 사용자 이름 입력';
+
+  @override
+  String get withuCouplePasswordLabel => 'withU 비밀번호';
+
+  @override
+  String get withuCouplePasswordHint => 'withU 비밀번호 입력';
 
   @override
   String get withuCoupleNotConnectedError => '먼저 withU에 연결하세요';
@@ -418,390 +459,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get withuCoupleSessionCookieMissing => 'withU에서 로그인 세션을 반환하지 않았습니다';
-
-  @override
-  String get cloudSyncEntryTitle => '클라우드 동기화';
-
-  @override
-  String get cloudSyncEntrySubtitle =>
-      'Jianguoyun 등으로 여러 기기에서 시간표와 가져온 데이터 동기화';
-
-  @override
-  String get cloudSyncEntryDisabled => '꺼짐';
-
-  @override
-  String get cloudSyncEntryEnabled => '켜짐';
-
-  @override
-  String get cloudSyncEntrySyncing => '동기화 중';
-
-  @override
-  String get cloudSyncEntryError => '마지막 동기화 실패';
-
-  @override
-  String get cloudSyncTitle => '클라우드 동기화';
-
-  @override
-  String get cloudSyncIntroTitle => '다중 기기 동기화';
-
-  @override
-  String get cloudSyncIntroSubtitle =>
-      'Jianguoyun WebDAV를 설정하면 휴대폰, 태블릿 간 시간표, 창고 계정 및 관련 설정을 자동으로 동기화할 수 있습니다';
-
-  @override
-  String get cloudSyncSettingsSectionTitle => '동기화 설정';
-
-  @override
-  String get cloudSyncSettingsSectionSubtitle => '수동 또는 자동 동기화를 전환할 수 있습니다';
-
-  @override
-  String get cloudSyncEnabledTitle => '클라우드 동기화 사용';
-
-  @override
-  String get cloudSyncEnabledSubtitle => '끄면 스냅샷을 업로드하거나 다운로드하지 않습니다';
-
-  @override
-  String get cloudSyncProviderTitle => '서비스 제공자';
-
-  @override
-  String get cloudSyncProviderJianguoyun => 'Jianguoyun';
-
-  @override
-  String get cloudSyncProviderCustom => '사용자 지정 WebDAV';
-
-  @override
-  String get cloudSyncModeTitle => '동기화 방식';
-
-  @override
-  String get cloudSyncModeAuto => '자동 동기화';
-
-  @override
-  String get cloudSyncModeManual => '수동 동기화';
-
-  @override
-  String get cloudSyncAccountTitle => '계정 설정';
-
-  @override
-  String get cloudSyncAccountSubtitle =>
-      'Jianguoyun 앱 전용 비밀번호를 사용하세요 (로그인 비밀번호 아님). 스냅샷에는 창고에 저장된 학교 계정도 포함됩니다';
-
-  @override
-  String get cloudSyncUsernameLabel => '이메일 / 사용자명';
-
-  @override
-  String get cloudSyncUsernameHint => 'Jianguoyun 가입 이메일';
-
-  @override
-  String get cloudSyncPasswordLabel => '앱 전용 비밀번호';
-
-  @override
-  String get cloudSyncPasswordHint => 'Jianguoyun 계정 보안 설정에서 생성';
-
-  @override
-  String get cloudSyncPasswordStoredHint =>
-      '비밀번호 저장됨. 비워 두면 저장된 비밀번호를 계속 사용합니다';
-
-  @override
-  String get cloudSyncAdvancedTitle => '고급 설정';
-
-  @override
-  String get cloudSyncBaseUrlLabel => 'WebDAV 주소';
-
-  @override
-  String get cloudSyncBaseUrlSecurityNote =>
-      'HTTPS 암호화 연결을 권장합니다. HTTP 평문 연결은 신뢰할 수 있는 네트워크에서만 사용하세요';
-
-  @override
-  String get cloudSyncRemoteFolderLabel => '원격 폴더';
-
-  @override
-  String get cloudSyncStatusTitle => '동기화 상태';
-
-  @override
-  String get cloudSyncLastSyncedLabel => '마지막 동기화';
-
-  @override
-  String get cloudSyncLastErrorLabel => '최근 오류';
-
-  @override
-  String cloudSyncLastSyncedAt(String time) {
-    return '마지막 동기화: $time';
-  }
-
-  @override
-  String get cloudSyncSyncing => '동기화 중…';
-
-  @override
-  String cloudSyncLastError(String message) {
-    return '최근 오류: $message';
-  }
-
-  @override
-  String get cloudSyncHelpTitle => 'Jianguoyun 앱 비밀번호 받는 방법';
-
-  @override
-  String get cloudSyncHelpBody =>
-      'Jianguoyun 웹 또는 클라이언트 → 계정 정보 → 보안 → 앱 비밀번호 추가. WebDAV 주소 기본값: https://dav.jianguoyun.com/dav/';
-
-  @override
-  String get cloudSyncTestConnection => '연결 테스트';
-
-  @override
-  String get cloudSyncSyncNow => '지금 동기화';
-
-  @override
-  String get cloudSyncSyncNowSubtitle =>
-      '다른 기기와 시간표를 맞춥니다: 클라우드에서 받은 뒤 기기 변경을 업로드';
-
-  @override
-  String get cloudSyncTestSuccess => 'WebDAV 연결 성공';
-
-  @override
-  String get cloudSyncTestFailed => 'WebDAV 연결 실패. 계정, 앱 비밀번호, 네트워크를 확인하세요';
-
-  @override
-  String get cloudSyncResultUploaded => '클라우드에 업로드됨';
-
-  @override
-  String get cloudSyncResultDownloaded => '클라우드에서 복원됨';
-
-  @override
-  String get cloudSyncResultUpToDate => '로컬과 클라우드가 일치함';
-
-  @override
-  String get cloudSyncResultCancelled => '동기화 취소됨';
-
-  @override
-  String cloudSyncResultFailed(String message) {
-    return '동기화 실패: $message';
-  }
-
-  @override
-  String get cloudSyncConflictTitle => '동기화 충돌 감지';
-
-  @override
-  String get cloudSyncConflictBody =>
-      '이 기기와 클라우드 모두 새 변경 사항이 있습니다. 유지할 데이터를 선택하세요.';
-
-  @override
-  String get cloudSyncUseRemoteAction => '클라우드 사용';
-
-  @override
-  String get cloudSyncKeepLocalAction => '로컬 유지';
-
-  @override
-  String get cloudSyncAccountSectionTitle => '클라우드 계정';
-
-  @override
-  String get cloudSyncNotConnectedHint =>
-      'Jianguoyun에 연결하면 여러 기기에서 시간표와 가져온 데이터를 동기화할 수 있습니다';
-
-  @override
-  String get cloudSyncConnectAccount => 'Jianguoyun 연결';
-
-  @override
-  String cloudSyncConnectedAs(String email) {
-    return '연결됨: $email';
-  }
-
-  @override
-  String get cloudSyncDisconnect => '연결 해제';
-
-  @override
-  String get cloudSyncDisconnectTitle => '클라우드 동기화 계정 연결 해제';
-
-  @override
-  String get cloudSyncDisconnectBody =>
-      '연결 해제 시 이 기기에 저장된 WebDAV 자격 증명이 삭제됩니다. 시간표 데이터는 기기에 남습니다. 계속하시겠습니까?';
-
-  @override
-  String get cloudSyncLoginSheetTitle => 'Jianguoyun 연결';
-
-  @override
-  String get cloudSyncLoginSheetSubtitle =>
-      '앱 전용 비밀번호를 사용하세요 (Jianguoyun 로그인 비밀번호 아님)';
-
-  @override
-  String get cloudSyncConfirmConnect => '연결 확인';
-
-  @override
-  String get cloudSyncConnectSuccess => '계정 연결 성공';
-
-  @override
-  String get cloudBackupSectionTitle => '버전 기록';
-
-  @override
-  String get cloudBackupSectionSubtitle => '동기화할 때 자동 저장됩니다. 탭하여 해당 버전으로 복원';
-
-  @override
-  String get cloudBackupCurrentLabel => '현재 버전';
-
-  @override
-  String get cloudBackupCurrentBadge => '현재';
-
-  @override
-  String get cloudBackupCreateNow => '지금 백업';
-
-  @override
-  String get cloudBackupViewAll => '모든 버전 보기';
-
-  @override
-  String get cloudBackupEmpty => '아직 버전 기록이 없습니다. 동기화하면 자동 저장됩니다';
-
-  @override
-  String get cloudBackupSourceAuto => '자동 백업';
-
-  @override
-  String get cloudBackupSourceManual => '수동 백업';
-
-  @override
-  String get cloudBackupDefaultDeviceLabel => '이 기기';
-
-  @override
-  String get cloudBackupDeviceLabelTitle => '기기 이름';
-
-  @override
-  String get cloudBackupDeviceLabelHint => '백업 목록에 표시됩니다. 예: 내 휴대폰';
-
-  @override
-  String cloudBackupSummary(int profileCount, int courseCount) {
-    return '시간표 $profileCount개 · 강의 $courseCount개';
-  }
-
-  @override
-  String get cloudBackupRestoreTitle => '이 백업으로 복원';
-
-  @override
-  String cloudBackupRestoreBody(String time) {
-    return '$time 시간표로 복원합니다. 동기화되지 않은 로컬 변경은 사라집니다. 계속할까요?';
-  }
-
-  @override
-  String get cloudBackupRestoreAction => '복원';
-
-  @override
-  String get cloudBackupRestoreSuccess => '백업을 복원했습니다';
-
-  @override
-  String cloudBackupRestoreFailed(String message) {
-    return '복원 실패: $message';
-  }
-
-  @override
-  String get cloudBackupDeleteTitle => '이 백업 삭제';
-
-  @override
-  String cloudBackupDeleteBody(String time) {
-    return '$time 클라우드 백업을 삭제할까요? 되돌릴 수 없습니다.';
-  }
-
-  @override
-  String get cloudBackupDeleteSuccess => '백업을 삭제했습니다';
-
-  @override
-  String cloudBackupDeleteFailed(String message) {
-    return '삭제 실패: $message';
-  }
-
-  @override
-  String get cloudBackupCreateSuccess => '백업을 클라우드에 저장했습니다';
-
-  @override
-  String cloudBackupCreateFailed(String message) {
-    return '백업 실패: $message';
-  }
-
-  @override
-  String get cloudBackupUploadAsCurrentTitle => '현재 클라우드 버전으로 설정';
-
-  @override
-  String get cloudBackupUploadAsCurrentBody =>
-      '이 백업을 현재 클라우드 버전으로 업로드할까요? 동기화 충돌을 줄이려면 권장합니다.';
-
-  @override
-  String get cloudBackupUploadAsCurrentYes => '현재 버전으로 설정';
-
-  @override
-  String get cloudBackupUploadAsCurrentNo => '로컬만 복원';
-
-  @override
-  String get cloudBackupDetailDevice => '기기';
-
-  @override
-  String get cloudBackupDetailSource => '유형';
-
-  @override
-  String get cloudBackupDetailSummary => '내용';
-
-  @override
-  String get lanEditEntryTitle => 'LAN 편집';
-
-  @override
-  String get lanEditEntrySubtitle => 'PC 브라우저에서 현재 시간표 편집';
-
-  @override
-  String get lanEditTitle => 'LAN 편집';
-
-  @override
-  String get lanEditIntro =>
-      '활성화하면 같은 Wi-Fi 또는 핫스팟의 PC 브라우저에서 현재 시간표를 편집할 수 있습니다';
-
-  @override
-  String get lanEditStart => 'LAN 편집 시작';
-
-  @override
-  String get lanEditStop => '중지';
-
-  @override
-  String get lanEditStatusRunning => 'LAN 편집 세션 진행 중';
-
-  @override
-  String get lanEditAddressLabel => '접속 주소';
-
-  @override
-  String get lanEditAddressUnavailable => 'LAN IP를 찾을 수 없습니다';
-
-  @override
-  String get lanEditPinLabel => 'PIN';
-
-  @override
-  String get lanEditPortLabel => '포트';
-
-  @override
-  String get lanEditCopyAddress => '주소 복사';
-
-  @override
-  String get lanEditCopied => '주소가 복사되었습니다';
-
-  @override
-  String get lanEditHotspotHint => '기숙사 Wi-Fi에서 연결되지 않으면 휴대폰 핫스팟을 사용해 보세요';
-
-  @override
-  String get lanEditQrHint => '같은 LAN의 PC 브라우저로 QR 코드를 스캔하세요(PIN 포함 링크)';
-
-  @override
-  String get lanEditStartFailed => '시작 실패';
-
-  @override
-  String get lanEditConnectedClientsLabel => '연결됨';
-
-  @override
-  String get lanEditConnectedClientsNone => '없음';
-
-  @override
-  String lanEditConnectedClientsValue(int count) {
-    return '$count대';
-  }
-
-  @override
-  String get lanEditLastActivityLabel => '최근 활동';
-
-  @override
-  String get lanEditKeepAliveWhenLeavingTitle => '나가도 유지';
-
-  @override
-  String get lanEditKeepAliveWhenLeavingSubtitle =>
-      '켜면 이 화면을 떠나도 LAN 편집이 유지되고, 끄면 나갈 때 중지됩니다';
 
   @override
   String get aboutSupportSectionTitle => '앱 정보 및 지원';
@@ -6230,9 +5887,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get historyRecordsLabel => '기록';
 
   @override
-  String get noHistoryRecords => '기록 없음';
-
-  @override
   String get weekPickerTitle => '수업 주차 선택';
 
   @override
@@ -7120,54 +6774,6 @@ class AppLocalizationsKo extends AppLocalizations {
       'Hand off to the system download manager';
 
   @override
-  String get syncErrorAuthFailed => 'Invalid username or password';
-
-  @override
-  String get syncErrorAccessDenied => 'Access denied';
-
-  @override
-  String get syncErrorCertificateError => 'Certificate error';
-
-  @override
-  String get syncErrorConnectionTimeout => 'Connection timed out';
-
-  @override
-  String get syncErrorConnectionFailed => 'Could not connect to server';
-
-  @override
-  String get syncErrorNetworkError => 'Network error';
-
-  @override
-  String get syncErrorInvalidResponse => 'Invalid server response';
-
-  @override
-  String get syncErrorLocalChangesPendingSync =>
-      'Skipped auto sync because local changes are pending';
-
-  @override
-  String get syncErrorMissingCredentials => 'Configure sync account first';
-
-  @override
-  String get syncErrorBackupNotFound => 'Backup not found';
-
-  @override
-  String get syncErrorMissingBackupSnapshot => 'Backup snapshot is missing';
-
-  @override
-  String get syncErrorCannotDeleteCurrentBackup =>
-      'Cannot delete the current backup';
-
-  @override
-  String get syncErrorProviderNotReady => 'Timetable is not ready';
-
-  @override
-  String get syncErrorInsecureUrl =>
-      'HTTPS 암호화 연결만 지원됩니다. HTTP 평문 프로토콜은 비활성화되었습니다.';
-
-  @override
-  String get syncErrorSyncFailed => '동기화 실패';
-
-  @override
   String get sectionTimeDisplayHidden => 'Hidden';
 
   @override
@@ -7436,26 +7042,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get serviceMsgUseProfileBackupNotFull =>
       'Use a timetable profile backup JSON, not a full data backup.';
-
-  @override
-  String get serviceMsgUnrecognizedSyncSnapshot =>
-      'Not a recognizable mikcb cloud sync snapshot.';
-
-  @override
-  String get serviceMsgMissingSyncTimetableData =>
-      'Cloud sync timetable data is missing.';
-
-  @override
-  String get serviceMsgSyncSnapshotChecksumFailed =>
-      'Cloud sync snapshot verification failed.';
-
-  @override
-  String get serviceMsgSyncSnapshotNoProfiles =>
-      'No recoverable timetables in the cloud sync snapshot.';
-
-  @override
-  String get serviceMsgSyncSnapshotUnrecognized =>
-      'Cloud sync snapshot could not be recognized.';
 
   @override
   String get serviceMsgTimeSchemeNotFound => 'Time scheme not found.';
@@ -8019,9 +7605,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get serviceMsgInvalidResponse => 'Invalid server response.';
-
-  @override
-  String get serviceMsgSyncFailed => 'Sync failed.';
 
   @override
   String get serviceMsgUsageTypeOverride => 'override time scheme';
@@ -8761,43 +8344,6 @@ class AppLocalizationsKo extends AppLocalizations {
       'Failed to suspend Live Island schedule triggers';
 
   @override
-  String get logLanEditAuthFailed => 'LAN edit: authentication failed';
-
-  @override
-  String get logLanEditCourseCreated => 'LAN edit: course created';
-
-  @override
-  String get logLanEditCourseUpdated => 'LAN edit: course updated';
-
-  @override
-  String get logLanEditCourseDeleted => 'LAN edit: course deleted';
-
-  @override
-  String get logLanEditCourseGroupSaved => 'LAN edit: course group saved';
-
-  @override
-  String get logLanEditMergeImported => 'LAN edit: merge backup imported';
-
-  @override
-  String get logLanEditCoursesBatchDeleted => 'LAN edit: courses batch deleted';
-
-  @override
-  String get logLanEditCurrentWeekSet => 'LAN edit: current week set';
-
-  @override
-  String get logLanEditProfileSwitched =>
-      'LAN edit: timetable profile switched';
-
-  @override
-  String get logLanEditSpreadsheetImported => 'LAN edit: spreadsheet imported';
-
-  @override
-  String get logLanEditSessionStarted => 'LAN edit: session started';
-
-  @override
-  String get logLanEditSessionStopped => 'LAN edit: session stopped';
-
-  @override
   String get logLiveUpdateTestRequested =>
       'User requested manual Live Island test notification';
 
@@ -9221,41 +8767,6 @@ class AppLocalizationsKo extends AppLocalizations {
       'live island: snapshot clear failed';
 
   @override
-  String get logCatLanEditAuthFailed => 'lan edit auth failed';
-
-  @override
-  String get logCatLanEditCourseCreated => 'lan edit course created';
-
-  @override
-  String get logCatLanEditCourseUpdated => 'lan edit course updated';
-
-  @override
-  String get logCatLanEditCourseDeleted => 'lan edit course deleted';
-
-  @override
-  String get logCatLanEditCourseGroupSaved => 'lan edit course group saved';
-
-  @override
-  String get logCatLanEditMergeImported => 'lan edit merge imported';
-
-  @override
-  String get logCatLanEditCoursesBatchDeleted =>
-      'lan edit courses batch deleted';
-
-  @override
-  String get logCatLanEditCurrentWeekSet => 'lan edit current week set';
-
-  @override
-  String get logCatLanEditSpreadsheetImported =>
-      'lan edit spreadsheet imported';
-
-  @override
-  String get logCatLanEditSessionStarted => 'lan edit session started';
-
-  @override
-  String get logCatLanEditSessionStopped => 'lan edit session stopped';
-
-  @override
   String get logCatLiveUpdateTestRequested => 'live island: test requested';
 
   @override
@@ -9419,32 +8930,6 @@ class AppLocalizationsKo extends AppLocalizations {
       'Enter a custom mirror URL prefix';
 
   @override
-  String get cloudBackupRetentionTitle => 'Backup retention';
-
-  @override
-  String get cloudBackupMaxCountTitle => 'Maximum backups';
-
-  @override
-  String get cloudBackupMaxCountSubtitle =>
-      'Oldest backups are removed when exceeded';
-
-  @override
-  String cloudBackupMaxCountOption(int count) {
-    return '$count backups';
-  }
-
-  @override
-  String get cloudBackupMaxAgeTitle => 'Maximum age';
-
-  @override
-  String get cloudBackupMaxAgeSubtitle => 'Backups older than this are removed';
-
-  @override
-  String cloudBackupMaxAgeOption(int days) {
-    return '$days days';
-  }
-
-  @override
   String get statisticsShareText => 'Semester statistics from mikcb';
 
   @override
@@ -9474,13 +8959,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get unnamedTimetableProfile => 'Unnamed timetable';
-
-  @override
-  String get cloudBackupManualProtectedTitle => 'Protect manual backups';
-
-  @override
-  String get cloudBackupManualProtectedSubtitle =>
-      'Manual backups are never auto-deleted when enabled';
 
   @override
   String courseImportPortalUrlMissingBody(
@@ -10661,4 +10139,29 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get classAlarmDetailSeparator => '; ';
+
+  @override
+  String get globalSettingsTitle => '전역 표시 설정';
+
+  @override
+  String get globalSettingsConfigured => '구성됨';
+
+  @override
+  String get globalSettingsNotConfigured => '구성되지 않음';
+
+  @override
+  String get globalSettingsDescriptionTitle => '설명';
+
+  @override
+  String get globalSettingsDescriptionBody =>
+      '여기에서 설정한 표시 항목은 모든 시간표에 적용됩니다. 특정 시간표에서 변경한 항목은 해당 시간표의 자체 설정이 우선합니다. 학기, 교시(시간 템플릿) 등 시간표 고유 항목은 전역 설정 대상이 아닙니다.';
+
+  @override
+  String get globalSettingsClearTitle => '전역 표시 설정 지우기';
+
+  @override
+  String get globalSettingsClearConfirm => '지우면 모든 시간표가 각자의 설정을 다시 사용합니다.';
+
+  @override
+  String get globalSettingsCleared => '전역 표시 설정을 지웠습니다';
 }

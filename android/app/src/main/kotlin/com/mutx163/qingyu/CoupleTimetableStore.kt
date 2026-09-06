@@ -72,10 +72,10 @@ object CoupleTimetableStore {
 
     private fun parseSnapshot(json: JSONObject): CoupleTimetableWidgetSnapshot {
         return CoupleTimetableWidgetSnapshot(
-            myName = json.optString("myName"),
-            partnerName = json.optString("partnerName"),
-            leftColorHex = json.optString("leftColorHex").takeIf { it.isNotBlank() },
-            rightColorHex = json.optString("rightColorHex").takeIf { it.isNotBlank() },
+            myName = json.stringOrEmpty("myName"),
+            partnerName = json.stringOrEmpty("partnerName"),
+            leftColorHex = json.stringOrEmpty("leftColorHex").takeIf { it.isNotBlank() },
+            rightColorHex = json.stringOrEmpty("rightColorHex").takeIf { it.isNotBlank() },
             generatedAtMillis = json.optLong("generatedAtMillis"),
             mine = parseDayCourses(json.optJSONObject("mine")),
             partner = parseDayCourses(json.optJSONObject("partner")),
@@ -97,14 +97,14 @@ object CoupleTimetableStore {
                 val course = json.optJSONObject(index) ?: continue
                 add(
                     CoupleWidgetCourse(
-                        id = course.optString("id"),
-                        name = course.optString("name"),
-                        shortName = course.optString("shortName").takeIf { it.isNotBlank() },
-                        location = course.optString("location"),
+                        id = course.stringOrEmpty("id"),
+                        name = course.stringOrEmpty("name"),
+                        shortName = course.stringOrEmpty("shortName").takeIf { it.isNotBlank() },
+                        location = course.stringOrEmpty("location"),
                         startSection = course.optInt("startSection", 1),
                         endSection = course.optInt("endSection", 1),
-                        startTime = course.optString("startTime"),
-                        endTime = course.optString("endTime"),
+                        startTime = course.stringOrEmpty("startTime"),
+                        endTime = course.stringOrEmpty("endTime"),
                         breaks = parseBreaks(course.optJSONArray("breaks")),
                     )
                 )
@@ -119,11 +119,17 @@ object CoupleTimetableStore {
                 val item = json.optJSONObject(index) ?: continue
                 add(
                     CoupleWidgetBreak(
-                        startTime = item.optString("startTime"),
-                        endTime = item.optString("endTime"),
+                        startTime = item.stringOrEmpty("startTime"),
+                        endTime = item.stringOrEmpty("endTime"),
                     )
                 )
             }
         }
     }
+
+    // org.json 的 optString 会把 JSON null 强转成字面量 "null"（快照里
+    // shortName/location 等可空字段经 MethodChannel 落盘就是 null），必须
+    // 先判 isNull 归一成空串，否则「TA 的课」一栏会显示 null。
+    private fun JSONObject.stringOrEmpty(key: String): String =
+        if (isNull(key)) "" else optString(key)
 }

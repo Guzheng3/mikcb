@@ -185,7 +185,10 @@ class PreblurredWallpaperCache {
   }
 
   Future<ui.Image?> _decode(String path, int decodeWidth) async {
-    final provider = ResizeImage(FileImage(File(path)), width: decodeWidth);
+    final assetName = bundledHomePageWallpaperAssetName(path);
+    final provider = assetName != null
+        ? ResizeImage(AssetImage(assetName), width: decodeWidth)
+        : ResizeImage(FileImage(File(path)), width: decodeWidth);
     final stream = provider.resolve(ImageConfiguration.empty);
     final completer = Completer<ui.Image>();
     late ImageStreamListener listener;
@@ -357,7 +360,9 @@ class PreblurredWallpaperScope extends StatefulWidget {
   /// and produces dirty colors from an empty buffer.
   static bool isWaitingForBitmap(BuildContext context) {
     final element = context
-        .getElementForInheritedWidgetOfExactType<_PreblurredWallpaperInherited>();
+        .getElementForInheritedWidgetOfExactType<
+          _PreblurredWallpaperInherited
+        >();
     if (element == null) {
       return false;
     }

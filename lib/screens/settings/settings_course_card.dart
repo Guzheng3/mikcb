@@ -7,7 +7,10 @@ part of '../timetable_settings_screen.dart';
 /// 用户想改课卡上的任何东西都要先猜它归哪一页。这里按「作用对象」收成一页：
 /// 凡是画在课卡上的，都在这。
 class _CourseCardSettingsScreen extends StatefulWidget {
-  const _CourseCardSettingsScreen();
+  const _CourseCardSettingsScreen({this.scope = SettingsScope.profile});
+
+  /// [SettingsScope.global] 时编辑全局显示设置（所有课表共享）。
+  final SettingsScope scope;
 
   @override
   State<_CourseCardSettingsScreen> createState() =>
@@ -19,6 +22,8 @@ class _CourseCardSettingsScreenState extends State<_CourseCardSettingsScreen> {
   late TimetableSettings _draft;
   Timer? _autoSaveTimer;
   Future<void> _saveQueue = Future<void>.value();
+
+  bool get _isGlobal => widget.scope == SettingsScope.global;
 
   static const List<String> _cardColors = [
     '#2563EB',
@@ -35,7 +40,9 @@ class _CourseCardSettingsScreenState extends State<_CourseCardSettingsScreen> {
   void initState() {
     super.initState();
     _timetableProvider = context.read<TimetableProvider>();
-    _draft = _timetableProvider.settings;
+    _draft = _isGlobal
+        ? _timetableProvider.globalSettings ?? _timetableProvider.settings
+        : _timetableProvider.settings;
   }
 
   @override
@@ -310,6 +317,7 @@ class _CourseCardSettingsScreenState extends State<_CourseCardSettingsScreen> {
       7 => _SettingsResetTile(
         scope: SettingsResetScope.courseCard,
         onReset: _updateDraft,
+        resetSource: _draft,
       ),
       _ => const SizedBox.shrink(),
     };
@@ -336,6 +344,10 @@ class _CourseCardSettingsScreenState extends State<_CourseCardSettingsScreen> {
 
   Future<void> _persistDraft(TimetableSettings next) async {
     final provider = _timetableProvider;
+    if (_isGlobal) {
+      await provider.updateGlobalTimetableSettings(next);
+      return;
+    }
     final message = await provider.updateTimetableSettings(
       next.copyWith(
         activeTimeSchemeId: provider.settings.activeTimeSchemeId,

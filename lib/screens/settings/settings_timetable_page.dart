@@ -6,7 +6,10 @@ part of '../timetable_settings_screen.dart';
 /// 显示区域）、星期栏与时间轴的文字色。重构前这些分散在「课表显示」与
 /// 「外观与主题」两页——背景区域那 8 项本是课表页的属性，却挂在应用外观下。
 class _TimetablePageSettingsScreen extends StatefulWidget {
-  const _TimetablePageSettingsScreen();
+  const _TimetablePageSettingsScreen({this.scope = SettingsScope.profile});
+
+  /// [SettingsScope.global] 时编辑全局显示设置（所有课表共享）。
+  final SettingsScope scope;
 
   @override
   State<_TimetablePageSettingsScreen> createState() =>
@@ -19,6 +22,8 @@ class _TimetablePageSettingsScreenState
   late TimetableSettings _draft;
   Timer? _autoSaveTimer;
   Future<void> _saveQueue = Future<void>.value();
+
+  bool get _isGlobal => widget.scope == SettingsScope.global;
 
   static const List<String> _backgroundColors = [
     '#F8FAFC',
@@ -33,7 +38,9 @@ class _TimetablePageSettingsScreenState
   void initState() {
     super.initState();
     _timetableProvider = context.read<TimetableProvider>();
-    _draft = _timetableProvider.settings;
+    _draft = _isGlobal
+        ? _timetableProvider.globalSettings ?? _timetableProvider.settings
+        : _timetableProvider.settings;
   }
 
   @override
@@ -199,19 +206,19 @@ class _TimetablePageSettingsScreenState
               // 「回本周」已收敛为浮钮唯一入口，样式选择行随之移除；
               // 仅保留浮钮透明度调节。
               HyperosSliderTile(
-                  title: l10n.layoutBackToCurrentWeekButtonOpacityTitle,
-                  value: _draft.timetableFloatingBackToCurrentWeekButtonOpacity,
-                  min: 0.55,
-                  divisions: 9,
-                  valueLabel:
-                      '${(_draft.timetableFloatingBackToCurrentWeekButtonOpacity * 100).round()}%',
-                  onChanged: (value) => _updateDraft(
-                    _draft.copyWith(
-                      timetableFloatingBackToCurrentWeekButtonOpacity: value,
-                    ),
-                    debounce: true,
+                title: l10n.layoutBackToCurrentWeekButtonOpacityTitle,
+                value: _draft.timetableFloatingBackToCurrentWeekButtonOpacity,
+                min: 0.55,
+                divisions: 9,
+                valueLabel:
+                    '${(_draft.timetableFloatingBackToCurrentWeekButtonOpacity * 100).round()}%',
+                onChanged: (value) => _updateDraft(
+                  _draft.copyWith(
+                    timetableFloatingBackToCurrentWeekButtonOpacity: value,
                   ),
+                  debounce: true,
                 ),
+              ),
             ],
           ),
         ],
@@ -265,7 +272,9 @@ class _TimetablePageSettingsScreenState
                       stalePath,
                       directoryName: 'home_page_wallpaper',
                       filePrefix: 'wallpaper',
-                    ).then((_) => invalidateHomePageBackdropFileExists(stalePath)),
+                    ).then(
+                      (_) => invalidateHomePageBackdropFileExists(stalePath),
+                    ),
                   );
                   _updateDraft(
                     _draft.copyWith(
@@ -359,6 +368,7 @@ class _TimetablePageSettingsScreenState
       7 => _SettingsResetTile(
         scope: SettingsResetScope.timetablePage,
         onReset: _updateDraft,
+        resetSource: _draft,
       ),
       _ => const SizedBox.shrink(),
     };
@@ -384,9 +394,11 @@ class _TimetablePageSettingsScreenState
     required Future<void> Function() onPick,
     required VoidCallback onClear,
   }) {
-    final fileName = path == null || path.isEmpty
+    final assetName = bundledHomePageWallpaperAssetName(path);
+    final displayPath = assetName ?? path;
+    final fileName = displayPath == null || displayPath.isEmpty
         ? l10n.homePageImageNotSelected
-        : path.split(Platform.pathSeparator).last;
+        : displayPath.split(RegExp(r'[/\\]')).last;
     final hasWallpaper = path != null && path.isNotEmpty;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -453,6 +465,10 @@ class _TimetablePageSettingsScreenState
   Future<void> _editHomePageBackdropPosition() async {
     final existingPath = resolveHomePageBackdropImagePath(_draft);
     if (existingPath == null || existingPath.isEmpty) {
+      await _pickHomePageBackdropImage();
+      return;
+    }
+    if (isBundledHomePageWallpaperPath(existingPath)) {
       await _pickHomePageBackdropImage();
       return;
     }
@@ -550,6 +566,10 @@ class _TimetablePageSettingsScreenState
 
   Future<void> _persistDraft(TimetableSettings next) async {
     final provider = _timetableProvider;
+    if (_isGlobal) {
+      await provider.updateGlobalTimetableSettings(next);
+      return;
+    }
     final message = await provider.updateTimetableSettings(
       next.copyWith(
         activeTimeSchemeId: provider.settings.activeTimeSchemeId,

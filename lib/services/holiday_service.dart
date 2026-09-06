@@ -10,7 +10,6 @@ import '../logging/app_debug_log.dart';
 import 'app_log_service.dart';
 import '../services/app_http_client.dart';
 import '../models/holiday_entry.dart';
-import 'user_data_sync_hooks.dart';
 
 /// A single log entry from the holiday update process.
 class HolidayLogEntry {
@@ -679,7 +678,6 @@ class HolidayService {
       );
     }
     // 仅在确认写盘成功后通知同步链路，失败路径不得触发。
-    notifyUserDataChangedForSync();
   }
 
   /// 新增一条自定义假期
