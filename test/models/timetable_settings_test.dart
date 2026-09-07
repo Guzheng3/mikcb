@@ -74,7 +74,6 @@ void main() {
     expect(settings.liveMiuiIslandExpandedIconPath, isNull);
     expect(settings.appUpdateDownloadSource, 'mirror');
     expect(settings.appUpdateMirrorPreset, 'ghfast');
-    expect(settings.appUpdateIncludePrerelease, isFalse);
     expect(settings.appUpdateMirrorUrlPrefix, defaultAppUpdateMirrorUrlPrefix);
     expect(settings.courseCardVerticalAlign, CourseCardVerticalAlign.center);
     expect(
@@ -161,7 +160,6 @@ void main() {
     expect(restored.liveMiuiIslandExpandedIconPath, isNull);
     expect(restored.appUpdateDownloadSource, 'mirror');
     expect(restored.appUpdateMirrorPreset, 'ghfast');
-    expect(restored.appUpdateIncludePrerelease, isFalse);
     expect(restored.appUpdateMirrorUrlPrefix, defaultAppUpdateMirrorUrlPrefix);
     expect(restored.courseCardVerticalAlign, CourseCardVerticalAlign.center);
     expect(
@@ -239,7 +237,6 @@ void main() {
       liveMiuiIslandExpandedIconPath: '/tmp/expanded.png',
       appUpdateDownloadSource: AppUpdateDownloadSource.original.value,
       appUpdateMirrorPreset: AppUpdateMirrorPreset.custom.value,
-      appUpdateIncludePrerelease: true,
       appUpdateMirrorUrlPrefix: 'https://mirror.example.com/',
     );
 
@@ -315,7 +312,6 @@ void main() {
       AppUpdateDownloadSource.original.value,
     );
     expect(restored.appUpdateMirrorPreset, AppUpdateMirrorPreset.custom.value);
-    expect(restored.appUpdateIncludePrerelease, isTrue);
     expect(restored.appUpdateMirrorUrlPrefix, 'https://mirror.example.com/');
     expect(
       restored.courseCardVerticalAlign,

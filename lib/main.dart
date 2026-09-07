@@ -14,6 +14,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_blackbox/flutter_blackbox.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'blackbox_adapters.dart';
 import 'logging/app_log_messages.dart';
@@ -29,6 +30,7 @@ import 'utils/app_toast.dart';
 import 'utils/home_startup_visual_primer.dart';
 import 'widgets/app_startup_splash.dart';
 import 'widgets/home_menu_route_catalog.dart';
+import 'widgets/home_update_prompt.dart';
 import 'widgets/miuix_font_weight_scope.dart';
 import 'services/app_log_service.dart';
 import 'services/fair_memory_service.dart';
@@ -42,6 +44,8 @@ import 'services/umeng_analytics_service.dart';
 import 'services/withu_couple_auth_service.dart';
 import 'services/withu_couple_auto_sync_service.dart';
 import 'services/withu_couple_timetable_service.dart';
+import 'services/withu_app_update_service.dart';
+import 'services/app_update_service.dart';
 import 'services/frosted_blur_service.dart';
 import 'services/widget_launch_router.dart';
 import 'ui/app_fonts.dart';
@@ -151,10 +155,12 @@ void _releaseFirstFrame({required bool forced}) {
   }
   if (forced) {
     debugPrint('[boot] first-frame watchdog fired: forcing allowFirstFrame');
-    unawaited(AppLogService.instance.error(
-      'first_frame_watchdog',
-      '启动首帧超时未放行，看门狗已强制放行',
-    ));
+    unawaited(
+      AppLogService.instance.error(
+        'first_frame_watchdog',
+        '启动首帧超时未放行，看门狗已强制放行',
+      ),
+    );
   }
 }
 
@@ -305,14 +311,18 @@ Future<void> main() async {
       );
       // 玻璃 shader 预热放到启动画面展示期间并行跑（失败只记日志不阻断，
       // 玻璃按未预热降级，绝不能因此卡死换页）。
-      _glassShadersWarm = LiquidGlassWidgets.initialize()
-          .catchError((Object error, StackTrace stackTrace) {
-        unawaited(AppLogService.instance.error(
-          'liquid_glass_warmup_failed',
-          '玻璃 shader 预热失败：$error',
-          error: error,
-          stackTrace: stackTrace,
-        ));
+      _glassShadersWarm = LiquidGlassWidgets.initialize().catchError((
+        Object error,
+        StackTrace stackTrace,
+      ) {
+        unawaited(
+          AppLogService.instance.error(
+            'liquid_glass_warmup_failed',
+            '玻璃 shader 预热失败：$error',
+            error: error,
+            stackTrace: stackTrace,
+          ),
+        );
       });
       unawaited(_warmUpAfterFirstFrame(packageInfo));
     },
@@ -496,11 +506,16 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       WithuCoupleTimetableService(authService: _withuAuthService);
   late final WithuCoupleAutoSyncService _withuAutoSyncService =
       WithuCoupleAutoSyncService(timetableService: _withuTimetableService);
+  final WithuAppUpdateService _withuAppUpdateService = WithuAppUpdateService();
+  final AppUpdateService _appUpdateService = AppUpdateService();
   bool _startupHandled = false;
   bool _fairMemoryRecoveryHandled = false;
   bool _allowFirstFrameCalled = false;
   bool _homeRevealed = false;
   bool _revealScheduled = false;
+  bool _withuUpdateCheckRunning = false;
+  bool _withuUpdatePromptShowing = false;
+  AppUpdateDownloadController? _withuUpdateDownloadController;
   final Stopwatch _splashClock = Stopwatch()..start();
 
   void _allowFirstFrameOnce() {
@@ -610,8 +625,10 @@ class _AppEntryScreenState extends State<AppEntryScreen>
 
   @override
   void dispose() {
+    _withuUpdateDownloadController?.cancel();
     _withuAutoSyncService.dispose();
     _withuAuthService.dispose();
+    _withuAppUpdateService.dispose();
     if (!kReleaseMode) {
       DebugDeepLinkNavigator.detach();
     }
@@ -625,6 +642,7 @@ class _AppEntryScreenState extends State<AppEntryScreen>
     if (state == AppLifecycleState.resumed) {
       unawaited(refreshHyperosMotionFromAndroid());
       unawaited(_handleAppResumed());
+      unawaited(_checkWithuAppUpdate());
     }
   }
 
@@ -633,6 +651,136 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       return;
     }
     await context.read<TimetableProvider>().handleAppResumed();
+  }
+
+  Future<void> _checkWithuAppUpdate() async {
+    if (!mounted || _withuUpdateCheckRunning || _withuUpdatePromptShowing) {
+      return;
+    }
+    final currentVersion = widget.packageInfo.version.trim();
+    if (currentVersion.isEmpty) {
+      return;
+    }
+
+    _withuUpdateCheckRunning = true;
+    try {
+      final result = await _withuAppUpdateService.checkForUpdates(
+        currentVersion: currentVersion,
+      );
+      if (!mounted || result == null || !result.hasUpdate) {
+        return;
+      }
+      final release = result.latestRelease;
+      if (release == null || release.downloadUrl?.trim().isEmpty != false) {
+        return;
+      }
+      await _showWithuUpdatePrompt(release, currentVersion);
+    } catch (error, stackTrace) {
+      unawaited(
+        AppLogService.instance.warn(
+          'withu_update_check_failed',
+          error.toString(),
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+    } finally {
+      _withuUpdateCheckRunning = false;
+    }
+  }
+
+  Future<void> _showWithuUpdatePrompt(
+    AppReleaseInfo release,
+    String currentVersion,
+  ) async {
+    if (!mounted || _withuUpdatePromptShowing) {
+      return;
+    }
+
+    _withuUpdatePromptShowing = true;
+    final promptController = HomeUpdatePromptController();
+    final downloadController = AppUpdateDownloadController();
+    _withuUpdateDownloadController = downloadController;
+
+    try {
+      await showHomeUpdatePrompt(
+        context,
+        release: release,
+        currentVersion: currentVersion,
+        controller: promptController,
+        onDownload: () => _downloadWithuUpdate(
+          release: release,
+          promptController: promptController,
+          downloadController: downloadController,
+        ),
+        onViewRelease: () async {
+          final uri = Uri.tryParse(release.releaseUrl);
+          if (uri != null) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+        },
+        onCancelDownload: () {
+          _withuUpdateDownloadController?.cancel();
+          promptController.finishInAppDownload(success: false, cancelled: true);
+        },
+        onResumeDownload: () {
+          downloadController.reset();
+          return _downloadWithuUpdate(
+            release: release,
+            promptController: promptController,
+            downloadController: downloadController,
+          );
+        },
+      );
+
+      if (mounted && !release.forceUpdate) {
+        await _withuAppUpdateService.ignoreNonForcedVersion(release.version);
+      }
+    } finally {
+      if (identical(_withuUpdateDownloadController, downloadController)) {
+        _withuUpdateDownloadController = null;
+      }
+      _withuUpdatePromptShowing = false;
+      promptController.dispose();
+    }
+  }
+
+  Future<bool> _downloadWithuUpdate({
+    required AppReleaseInfo release,
+    required HomeUpdatePromptController promptController,
+    required AppUpdateDownloadController downloadController,
+  }) async {
+    final url = release.downloadUrl?.trim() ?? '';
+    if (url.isEmpty) {
+      promptController.finishInAppDownload(success: false);
+      return true;
+    }
+
+    promptController.beginInAppDownload();
+    _withuUpdateDownloadController = downloadController;
+    final error = await _appUpdateService.downloadAndInstallUpdate(
+      url,
+      (downloadedBytes, totalBytes) {
+        promptController.updateInAppProgress(downloadedBytes, totalBytes);
+      },
+      downloadController,
+      expectedApkSha256: release.expectedApkSha256,
+    );
+
+    if (!mounted) {
+      return false;
+    }
+    if (error == null) {
+      promptController.finishInAppDownload(success: true);
+      return false;
+    }
+
+    final cancelled = error == AppUpdateService.downloadCancelledMessage;
+    promptController.finishInAppDownload(success: false, cancelled: cancelled);
+    if (!cancelled && !release.forceUpdate) {
+      await _withuAppUpdateService.ignoreNonForcedVersion(release.version);
+    }
+    return true;
   }
 
   Future<void> _handleStartupFlows() async {
@@ -672,6 +820,7 @@ class _AppEntryScreenState extends State<AppEntryScreen>
         // 收口玻璃预热：启动画面期间并行，首页换入前必须完成。
         await _glassShadersWarm;
         _revealHomeOnce();
+        unawaited(_checkWithuAppUpdate());
         unawaited(AppLogService.instance.updatePrivacyAccepted(true));
         unawaited(UmengAnalyticsService.initializeIfNeeded());
         unawaited(_checkPendingExternalImport());
@@ -776,6 +925,7 @@ class _AppEntryScreenState extends State<AppEntryScreen>
         ),
       );
       await _revealMainContent();
+      unawaited(_checkWithuAppUpdate());
     } catch (e, stackTrace) {
       // 初始化失败时降级换入主界面，避免白屏 hang
       _revealHomeOnce();
@@ -789,6 +939,7 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       );
       if (mounted) {
         await _revealMainContent();
+        unawaited(_checkWithuAppUpdate());
       }
     }
   }

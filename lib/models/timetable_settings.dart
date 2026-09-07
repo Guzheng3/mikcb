@@ -9,8 +9,6 @@ const String defaultHomePageWallpaperPath =
 
 enum AppUpdateDownloadSource { original, mirror }
 
-enum AppUpdateDownloadChannel { pgyer, github, gitcode }
-
 enum AppUpdateMirrorPreset { ghfast, ghLlkk, ghProxyCom, ghproxyNet, custom }
 
 enum WidgetBackgroundStyle { glass, solid, gradient }
@@ -655,21 +653,6 @@ extension AppUpdateDownloadSourceX on AppUpdateDownloadSource {
     return AppUpdateDownloadSource.values.firstWhere(
       (item) => item.value == value,
       orElse: () => AppUpdateDownloadSource.mirror,
-    );
-  }
-}
-
-extension AppUpdateDownloadChannelX on AppUpdateDownloadChannel {
-  String get value => switch (this) {
-    AppUpdateDownloadChannel.pgyer => 'pgyer',
-    AppUpdateDownloadChannel.github => 'github',
-    AppUpdateDownloadChannel.gitcode => 'gitcode',
-  };
-
-  static AppUpdateDownloadChannel fromValue(String? value) {
-    return AppUpdateDownloadChannel.values.firstWhere(
-      (item) => item.value == value,
-      orElse: () => AppUpdateDownloadChannel.gitcode,
     );
   }
 }
@@ -1327,10 +1310,8 @@ class TimetableSettings {
   final bool timetableUseUnifiedCardColor;
   final String timetableUnifiedCardColor;
   final String appUpdateDownloadSource;
-  final String appUpdateDownloadChannel;
   final bool appUpdateUseSystemDownloader;
   final String appUpdateMirrorPreset;
-  final bool appUpdateIncludePrerelease;
   final String appUpdateMirrorUrlPrefix;
 
   /// 检测到新版本时是否在首页自动弹出更新提醒；关闭后仅显示红点角标。
@@ -1532,10 +1513,8 @@ class TimetableSettings {
     this.timetableUseUnifiedCardColor = false,
     this.timetableUnifiedCardColor = '#2563EB',
     this.appUpdateDownloadSource = 'mirror',
-    this.appUpdateDownloadChannel = 'gitcode',
     this.appUpdateUseSystemDownloader = false,
     this.appUpdateMirrorPreset = 'ghfast',
-    this.appUpdateIncludePrerelease = false,
     this.appUpdateMirrorUrlPrefix = defaultAppUpdateMirrorUrlPrefix,
     this.appUpdatePromptEnabled = true,
     this.holidayOverrideEnabled = false,
@@ -1742,10 +1721,8 @@ class TimetableSettings {
       'timetableUseUnifiedCardColor': timetableUseUnifiedCardColor,
       'timetableUnifiedCardColor': timetableUnifiedCardColor,
       'appUpdateDownloadSource': appUpdateDownloadSource,
-      'appUpdateDownloadChannel': appUpdateDownloadChannel,
       'appUpdateUseSystemDownloader': appUpdateUseSystemDownloader,
       'appUpdateMirrorPreset': appUpdateMirrorPreset,
-      'appUpdateIncludePrerelease': appUpdateIncludePrerelease,
       'appUpdateMirrorUrlPrefix': appUpdateMirrorUrlPrefix,
       'appUpdatePromptEnabled': appUpdatePromptEnabled,
       'holidayOverrideEnabled': holidayOverrideEnabled,
@@ -2140,8 +2117,6 @@ class TimetableSettings {
           json['timetableUnifiedCardColor'] as String? ?? '#2563EB',
       appUpdateDownloadSource:
           json['appUpdateDownloadSource'] as String? ?? 'mirror',
-      appUpdateDownloadChannel:
-          json['appUpdateDownloadChannel'] as String? ?? 'gitcode',
       appUpdateUseSystemDownloader:
           json['appUpdateUseSystemDownloader'] as bool? ?? false,
       appUpdateMirrorPreset: (rawAppUpdateMirrorPreset == null
@@ -2149,8 +2124,6 @@ class TimetableSettings {
               rawAppUpdateMirrorUrlPrefix,
             ).value
           : AppUpdateMirrorPresetX.fromValue(rawAppUpdateMirrorPreset).value),
-      appUpdateIncludePrerelease:
-          json['appUpdateIncludePrerelease'] as bool? ?? false,
       appUpdateMirrorUrlPrefix: rawAppUpdateMirrorUrlPrefix,
       appUpdatePromptEnabled: json['appUpdatePromptEnabled'] as bool? ?? true,
       holidayOverrideEnabled: json['holidayOverrideEnabled'] as bool? ?? false,
@@ -2405,10 +2378,8 @@ class TimetableSettings {
     bool? timetableUseUnifiedCardColor,
     String? timetableUnifiedCardColor,
     String? appUpdateDownloadSource,
-    String? appUpdateDownloadChannel,
     bool? appUpdateUseSystemDownloader,
     String? appUpdateMirrorPreset,
-    bool? appUpdateIncludePrerelease,
     String? appUpdateMirrorUrlPrefix,
     bool? appUpdatePromptEnabled,
     bool? holidayOverrideEnabled,
@@ -2721,14 +2692,10 @@ class TimetableSettings {
           timetableUnifiedCardColor ?? this.timetableUnifiedCardColor,
       appUpdateDownloadSource:
           appUpdateDownloadSource ?? this.appUpdateDownloadSource,
-      appUpdateDownloadChannel:
-          appUpdateDownloadChannel ?? this.appUpdateDownloadChannel,
       appUpdateUseSystemDownloader:
           appUpdateUseSystemDownloader ?? this.appUpdateUseSystemDownloader,
       appUpdateMirrorPreset:
           appUpdateMirrorPreset ?? this.appUpdateMirrorPreset,
-      appUpdateIncludePrerelease:
-          appUpdateIncludePrerelease ?? this.appUpdateIncludePrerelease,
       appUpdateMirrorUrlPrefix:
           appUpdateMirrorUrlPrefix ?? this.appUpdateMirrorUrlPrefix,
       appUpdatePromptEnabled:

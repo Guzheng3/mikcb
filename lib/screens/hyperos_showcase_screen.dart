@@ -3,11 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:provider/provider.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 
-import '../models/timetable_settings.dart';
-import '../providers/timetable_provider.dart';
 import '../services/app_update_service.dart';
 import '../ui/hyperos/hyperos.dart';
 import '../utils/hex_color.dart';
@@ -1050,13 +1047,8 @@ class _HyperosShowcaseScreenState extends State<HyperosShowcaseScreen> {
     );
   }
 
-  /// 模拟「发现新版本」推送：用假 Release 数据拉起首页同款更新弹窗。
-  ///
-  /// 仅调试/性能版可达本页。主按钮文案与点击行为按当前设置
-  /// （下载渠道 / 来源 / 镜像）自适应，与线上分支一致；假下载只推进
-  /// 内存进度条，不访问网络、不写磁盘，便于验收各状态。
+  /// 模拟「发现新版本」推送：用 withU 假 Release 数据拉起首页同款更新弹窗。
   Future<void> _demoAppUpdatePrompt() async {
-    final settings = context.read<TimetableProvider>().settings;
     String currentVersion;
     try {
       final packageInfo = await PackageInfo.fromPlatform();
@@ -1068,37 +1060,16 @@ class _HyperosShowcaseScreenState extends State<HyperosShowcaseScreen> {
     if (!mounted) return;
     const release = AppReleaseInfo(
       version: '9.9.9',
-      title: '模拟更新 · 弹窗演示数据',
+      title: 'WithU 模拟更新',
       body: '这是一条用于验收更新弹窗的模拟更新日志。\n'
           '- 假下载只播放进度动画，不访问网络\n'
           '- 下拉或点击遮罩即可关闭',
-      releaseUrl: 'https://github.com/Mutx163/mikcb/releases',
+      releaseUrl: 'https://withu.app',
       downloadUrl:
-          'https://github.com/Mutx163/mikcb/releases/download/demo/demo.apk',
-      pgyerDownloadUrl: 'https://www.pgyer.com/qingyu',
+          'https://withu.app/downloads/demo.apk',
       updatedAt: null,
       isPrerelease: false,
     );
-    final channel = AppUpdateDownloadChannelX.fromValue(
-      settings.appUpdateDownloadChannel,
-    );
-    final source = AppUpdateDownloadSourceX.fromValue(
-      settings.appUpdateDownloadSource,
-    );
-    final mirrorPrefix = resolveAppUpdateMirrorUrlPrefix(
-      preset: AppUpdateMirrorPresetX.fromValue(settings.appUpdateMirrorPreset),
-      customUrlPrefix: settings.appUpdateMirrorUrlPrefix,
-    );
-    // 与线上首页同一条 URL 解析链路：渠道决定蒲公英/GitHub，
-    // 来源与镜像前缀只影响 GitHub 直链。
-    final effectiveDownloadUrl = AppUpdateService().getEffectiveDownloadUrl(
-      release: release,
-      channel: channel,
-      source: source,
-      mirrorUrlPrefix: mirrorPrefix,
-    );
-    final hasDirectDownload =
-        effectiveDownloadUrl != null && effectiveDownloadUrl.trim().isNotEmpty;
     final controller = HomeUpdatePromptController();
     _demoUpdateProgressTimer?.cancel();
     try {
@@ -1106,18 +1077,8 @@ class _HyperosShowcaseScreenState extends State<HyperosShowcaseScreen> {
         context,
         release: release,
         currentVersion: currentVersion,
-        downloadChannel: channel,
-        hasDirectDownload: hasDirectDownload,
         controller: controller,
         onDownload: () async {
-          // 与线上分支一致：蒲公英渠道或无直链时跳浏览器并关弹窗；
-          // 演示里仅以 toast 提示，不真正打开。
-          if (channel == AppUpdateDownloadChannel.pgyer || !hasDirectDownload) {
-            if (mounted) {
-              _demoSnackBar('演示数据：当前配置下会跳转浏览器打开下载页');
-            }
-            return false;
-          }
           return _playFakeDownload(controller);
         },
         onViewRelease: () async {

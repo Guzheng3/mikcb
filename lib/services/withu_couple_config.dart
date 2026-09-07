@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class WithuCoupleConfig {
   static const String prefsKey = 'withu_couple_config_v1';
-  static const String defaultBaseUrl = '';
+  static const String defaultBaseUrl = 'https://gzr.xjy.xn--6qq986b3xl/';
 
   final String baseUrl;
   final DateTime? lastPulledAt;
@@ -38,11 +38,40 @@ class WithuCoupleConfig {
     } else if (path != '/api/timetable.php') {
       path = '$path/api/timetable.php';
     }
+    return _buildUri(uri, path);
+  }
+
+  Uri get appUpdateApiUri {
+    final value = baseUrl.trim();
+    if (!value.startsWith('http://') && !value.startsWith('https://')) {
+      throw const FormatException('withu_invalid_url');
+    }
+    final uri = Uri.parse(value);
+    if (uri.host.trim().isEmpty) {
+      throw const FormatException('withu_invalid_url');
+    }
+
+    var path = uri.path;
+    while (path.length > 1 && path.endsWith('/')) {
+      path = path.substring(0, path.length - 1);
+    }
+    if (path == '/') {
+      path = '';
+    }
+    if (path.isEmpty) {
+      path = '/api/app_update.php';
+    } else if (path != '/api/app_update.php') {
+      path = '$path/api/app_update.php';
+    }
+    return _buildUri(uri, path);
+  }
+
+  Uri _buildUri(Uri base, String path) {
     return Uri(
-      scheme: uri.scheme,
-      userInfo: uri.userInfo,
-      host: uri.host,
-      port: uri.hasPort ? uri.port : null,
+      scheme: base.scheme,
+      userInfo: base.userInfo,
+      host: base.host,
+      port: base.hasPort ? base.port : null,
       path: path,
     );
   }

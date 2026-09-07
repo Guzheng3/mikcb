@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/l10n/service_message_localizer.dart';
-import 'package:university_timetable/l10n/enum_localizations.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -21,12 +20,12 @@ import '../services/app_analytics.dart';
 import 'changelog_screen.dart';
 import 'open_source_licenses_screen.dart';
 import '../services/app_update_service.dart';
+import '../services/withu_app_update_service.dart';
 import '../services/bundled_assets.dart';
 import '../widgets/about_info_sheet.dart';
 import '../widgets/third_party_disclaimer_card.dart';
 import '../widgets/bundled_asset_image.dart';
 import '../utils/app_toast.dart';
-import '../widgets/app_dialogs.dart';
 import '../services/warehouse_repository_service.dart';
 import 'feedback_screen.dart';
 import 'log_viewer_entry.dart';
@@ -41,58 +40,15 @@ enum AboutUpdatePrimaryAction {
 AboutUpdatePrimaryAction resolveAboutUpdatePrimaryAction({
   required bool isAndroid,
   required String? downloadUrl,
-  required AppUpdateDownloadChannel channel,
 }) {
   final hasDownloadUrl = (downloadUrl ?? '').trim().isNotEmpty;
   if (!hasDownloadUrl) {
     return AboutUpdatePrimaryAction.openReleasePage;
   }
-  // 蒲公英渠道：始终用浏览器打开下载页面
-  if (channel == AppUpdateDownloadChannel.pgyer) {
-    return AboutUpdatePrimaryAction.openDownloadLink;
-  }
-  // GitHub 渠道：Android 应用内下载，其他平台打开链接
   if (isAndroid) {
     return AboutUpdatePrimaryAction.downloadInApp;
   }
   return AboutUpdatePrimaryAction.openDownloadLink;
-}
-
-class _MirrorProbeState {
-  final AppUpdateMirrorPreset preset;
-  final String prefix;
-  final AppUpdateDownloadProbeResult result;
-
-  const _MirrorProbeState({
-    required this.preset,
-    required this.prefix,
-    required this.result,
-  });
-}
-
-@visibleForTesting
-AppUpdateMirrorPreset? resolveRecommendedMirrorPreset(
-  Map<AppUpdateMirrorPreset, AppUpdateDownloadProbeResult> probeResults,
-) {
-  final successfulEntries =
-      probeResults.entries.where((entry) => entry.value.isSuccess).toList()
-        ..sort(
-          (left, right) => left.value.elapsed.compareTo(right.value.elapsed),
-        );
-  return successfulEntries.isEmpty ? null : successfulEntries.first.key;
-}
-
-@visibleForTesting
-AppUpdateMirrorPreset? resolveMirrorFallbackPreset({
-  required AppUpdateMirrorPreset currentPreset,
-  required List<AppUpdateMirrorPreset> availablePresets,
-}) {
-  for (final preset in availablePresets) {
-    if (preset != currentPreset) {
-      return preset;
-    }
-  }
-  return null;
 }
 
 final RegExp _releaseNotesVersionHeadingPattern = RegExp(
@@ -204,11 +160,6 @@ class _AboutScreenState extends State<AboutScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
-    final settings = context.select<TimetableProvider, TimetableSettings>((
-      provider,
-    ) {
-      return provider.settings;
-    });
     final versionText = _packageInfo == null
         ? l10n.loadingText
         : l10n.versionLabel(
@@ -273,9 +224,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     context,
                     platformValue: 'Android',
                     focusValue: 'HyperOS',
-                    updateValue: settings.appUpdateIncludePrerelease
-                        ? l10n.prereleaseIncluded
-                        : l10n.stableOnly,
+                    updateValue: l10n.stableOnly,
                   ),
                   const SizedBox(height: 16),
                   ThirdPartyDisclaimerContent(
@@ -409,13 +358,6 @@ class _AboutScreenState extends State<AboutScreen> {
                 },
               ),
               _AboutEntryTile(
-                icon: Icons.code_rounded,
-                iconAccent: HyperosIconColors.indigo,
-                title: l10n.aboutRepositoryTitle,
-                subtitle: l10n.aboutRepositorySubtitle,
-                onTap: () => _showRepositorySheet(context),
-              ),
-              _AboutEntryTile(
                 icon: Icons.gavel_outlined,
                 iconAccent: HyperosIconColors.indigo,
                 title: l10n.aboutOpenSourceLicensesTitle,
@@ -449,53 +391,6 @@ class _AboutScreenState extends State<AboutScreen> {
       context: context,
       builder: (sheetContext) =>
           AboutInfoSheetBody(title: title, subtitle: subtitle, items: items),
-    );
-  }
-
-  void _showRepositorySheet(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    showHyperosSheet<void>(
-      context: context,
-      builder: (sheetContext) => HyperosSheet(
-        title: l10n.aboutRepositorySheetTitle,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              AppUpdateService.repositoryUrl,
-              style: HyperosTypography.listDetail(sheetContext),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              l10n.aboutRepositorySheetHint,
-              style: HyperosTypography.listDetail(sheetContext),
-            ),
-            const SizedBox(height: 16),
-            // Buttons sit on the frosted sheet surface — do not wrap in
-            // HyperosCard (solid white) or the action block looks opaque.
-            HyperosButton(
-              label: l10n.aboutOpenGitHubAction,
-              expand: true,
-              onPressed: _openRepository,
-            ),
-            const SizedBox(height: 10),
-            HyperosButton(
-              label: l10n.aboutOpenWarehouseRepoAction,
-              variant: HyperosButtonVariant.secondary,
-              expand: true,
-              onPressed: _openWarehouseRepository,
-            ),
-            const SizedBox(height: 10),
-            HyperosButton(
-              label: l10n.copyAddress,
-              variant: HyperosButtonVariant.secondary,
-              expand: true,
-              onPressed: _copyRepositoryUrl,
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -547,36 +442,6 @@ class _AboutScreenState extends State<AboutScreen> {
       ),
     );
   }
-
-  Future<void> _openRepository() async {
-    final uri = Uri.tryParse(AppUpdateService.repositoryUrl);
-    if (uri == null) {
-      return;
-    }
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-
-  Future<void> _copyRepositoryUrl() async {
-    await Clipboard.setData(
-      const ClipboardData(text: AppUpdateService.repositoryUrl),
-    );
-    if (!mounted) {
-      return;
-    }
-    showAppToast(
-      context,
-      message: AppLocalizations.of(context)!.copiedRepositoryAddress,
-      kind: AppToastKind.success,
-    );
-  }
-
-  Future<void> _openWarehouseRepository() async {
-    final uri = Uri.tryParse('https://github.com/Mutx163/qingyu_warehouse');
-    if (uri == null) {
-      return;
-    }
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
 }
 
 class AboutUpdateScreen extends StatefulWidget {
@@ -590,6 +455,7 @@ class AboutUpdateScreen extends StatefulWidget {
 
 class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
   final AppUpdateService _updateService = AppUpdateService();
+  final WithuAppUpdateService _withuAppUpdateService = WithuAppUpdateService();
   final AppAnalytics _analytics = AppAnalytics.instance;
   Future<AppUpdateCheckResult>? _updateFuture;
   bool _isDownloading = false;
@@ -598,13 +464,6 @@ class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
   int _downloadedBytes = 0;
   int? _downloadTotalBytes;
   AppUpdateDownloadController? _downloadController;
-
-  /// Always empty on this screen.
-  ///
-  /// Mirror speed-testing lives in [_AdvancedOptionsScreen], which keeps its
-  /// own probe state. This screen only forwards the (empty) list so the shared
-  /// builder signature stays uniform.
-  static const List<_MirrorProbeState> _mirrorProbeStates = [];
 
   @override
   void initState() {
@@ -805,31 +664,11 @@ class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
   Widget _buildStatusCard(ThemeData theme, AppUpdateCheckResult result) {
     final l10n = AppLocalizations.of(context)!;
     final release = result.latestRelease;
-    final settings = context.read<TimetableProvider>().settings;
-    final downloadChannel = AppUpdateDownloadChannelX.fromValue(
-      settings.appUpdateDownloadChannel,
-    );
-    final downloadSource = AppUpdateDownloadSourceX.fromValue(
-      settings.appUpdateDownloadSource,
-    );
-    final mirrorPreset = AppUpdateMirrorPresetX.fromValue(
-      settings.appUpdateMirrorPreset,
-    );
-    final effectiveMirrorUrlPrefix = resolveAppUpdateMirrorUrlPrefix(
-      preset: mirrorPreset,
-      customUrlPrefix: settings.appUpdateMirrorUrlPrefix,
-    );
-    final effectiveDownloadUrl = _updateService.getEffectiveDownloadUrl(
-      release: release,
-      channel: downloadChannel,
-      source: downloadSource,
-      mirrorUrlPrefix: effectiveMirrorUrlPrefix,
-    );
+    final effectiveDownloadUrl = release?.downloadUrl;
     final isAndroid = defaultTargetPlatform == TargetPlatform.android;
     final primaryAction = resolveAboutUpdatePrimaryAction(
       isAndroid: isAndroid,
       downloadUrl: effectiveDownloadUrl,
-      channel: downloadChannel,
     );
     final primaryButtonLabel = switch (primaryAction) {
       AboutUpdatePrimaryAction.openReleasePage => l10n.aboutViewReleaseAction,
@@ -920,9 +759,6 @@ class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
                       if (primaryAction ==
                           AboutUpdatePrimaryAction.openReleasePage) {
                         _openUrl(release?.releaseUrl);
-                      } else if (downloadChannel ==
-                          AppUpdateDownloadChannel.pgyer) {
-                        _openUrl(effectiveDownloadUrl);
                       } else if (effectiveDownloadUrl != null) {
                         if (_useSystemDownloader) {
                           _enqueueSystemDownload(
@@ -932,13 +768,7 @@ class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
                         } else {
                           _downloadAndInstall(
                             effectiveDownloadUrl,
-                            expectedApkSha256:
-                                release?.expectedApkSha256,
-                            fallbackUrl:
-                                downloadChannel ==
-                                    AppUpdateDownloadChannel.gitcode
-                                ? release?.downloadUrl
-                                : null,
+                            expectedApkSha256: release?.expectedApkSha256,
                           );
                         }
                       }
@@ -1051,7 +881,6 @@ class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
           updateService: _updateService,
           analytics: _analytics,
           updateFuture: _updateFuture,
-          mirrorProbeStates: _mirrorProbeStates,
           isDownloading: _isDownloading,
           useSystemDownloader: _useSystemDownloader,
           onUseSystemDownloaderChanged: (value) {
@@ -1077,175 +906,33 @@ class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
       return;
     }
     _analytics.logEventLater(name: 'update_check_requested');
-    final settings = context.read<TimetableProvider>().settings;
-    final downloadSource = AppUpdateDownloadSourceX.fromValue(
-      settings.appUpdateDownloadSource,
-    );
-    final mirrorPreset = AppUpdateMirrorPresetX.fromValue(
-      settings.appUpdateMirrorPreset,
-    );
-    final effectiveMirrorUrlPrefix = resolveAppUpdateMirrorUrlPrefix(
-      preset: mirrorPreset,
-      customUrlPrefix: settings.appUpdateMirrorUrlPrefix,
-    );
     setState(() {
-      _updateFuture = _updateService.checkForUpdates(
-        currentVersion: widget.packageInfo!.version,
-        includePrerelease: settings.appUpdateIncludePrerelease,
-        preferredSource: downloadSource,
-        mirrorUrlPrefix: effectiveMirrorUrlPrefix,
-      );
+      _updateFuture = _withuAppUpdateService
+          .checkForUpdates(currentVersion: widget.packageInfo!.version)
+          .then(
+            (result) =>
+                result ??
+                AppUpdateCheckResult(
+                  hasRelease: false,
+                  hasUpdate: false,
+                  currentVersion: widget.packageInfo!.version,
+                  message: 'withu_update_check_failed',
+                ),
+          );
     });
-  }
-
-  Future<void> _updateDownloadSource(AppUpdateDownloadSource source) async {
-    final provider = context.read<TimetableProvider>();
-    final message = await provider.updateTimetableSettings(
-      provider.settings.copyWith(appUpdateDownloadSource: source.value),
-    );
-    if (!mounted) {
-      return;
-    }
-    if (message != null) {
-      showAppToast(context, message: message);
-    } else {
-      _analytics.logEventLater(
-        name: 'update_source_changed',
-        parameters: {'source': source.value},
-      );
-    }
-  }
-
-  Future<void> _updateMirrorPreset(AppUpdateMirrorPreset preset) async {
-    final provider = context.read<TimetableProvider>();
-    final message = await provider.updateTimetableSettings(
-      provider.settings.copyWith(appUpdateMirrorPreset: preset.value),
-    );
-    if (!mounted) {
-      return;
-    }
-    if (message != null) {
-      showAppToast(context, message: message);
-      return;
-    }
-    _analytics.logEventLater(
-      name: 'update_mirror_preset_changed',
-      parameters: {'preset': preset.value},
-    );
-  }
-
-  List<MapEntry<AppUpdateMirrorPreset, String>> _buildMirrorPresetCandidates(
-    String customMirrorUrlPrefix,
-  ) {
-    final candidates = <MapEntry<AppUpdateMirrorPreset, String>>[
-      MapEntry(
-        AppUpdateMirrorPreset.ghfast,
-        resolveAppUpdateMirrorUrlPrefix(
-          preset: AppUpdateMirrorPreset.ghfast,
-          customUrlPrefix: customMirrorUrlPrefix,
-        ),
-      ),
-      MapEntry(
-        AppUpdateMirrorPreset.ghLlkk,
-        resolveAppUpdateMirrorUrlPrefix(
-          preset: AppUpdateMirrorPreset.ghLlkk,
-          customUrlPrefix: customMirrorUrlPrefix,
-        ),
-      ),
-      MapEntry(
-        AppUpdateMirrorPreset.ghProxyCom,
-        resolveAppUpdateMirrorUrlPrefix(
-          preset: AppUpdateMirrorPreset.ghProxyCom,
-          customUrlPrefix: customMirrorUrlPrefix,
-        ),
-      ),
-      MapEntry(
-        AppUpdateMirrorPreset.ghproxyNet,
-        resolveAppUpdateMirrorUrlPrefix(
-          preset: AppUpdateMirrorPreset.ghproxyNet,
-          customUrlPrefix: customMirrorUrlPrefix,
-        ),
-      ),
-    ];
-    final normalizedCustomPrefix = _normalizeMirrorUrlPrefix(
-      customMirrorUrlPrefix,
-    );
-    if (normalizedCustomPrefix != null) {
-      candidates.add(
-        MapEntry(AppUpdateMirrorPreset.custom, normalizedCustomPrefix),
-      );
-    }
-    return candidates;
   }
 
   void _showDownloadFailureSnackBar(String error) {
     final l10n = AppLocalizations.of(context)!;
     final localizedError = localizeServiceMessage(l10n, error);
-    final settings = context.read<TimetableProvider>().settings;
-    final source = AppUpdateDownloadSourceX.fromValue(
-      settings.appUpdateDownloadSource,
-    );
-
-    if (source == AppUpdateDownloadSource.original) {
-      showAppToastWithAction(
-        context,
-        message: l10n.aboutSwitchToMirrorAfterError(localizedError),
-        actionLabel: l10n.switchAction,
-        onAction: () => _updateDownloadSource(AppUpdateDownloadSource.mirror),
-        kind: AppToastKind.error,
-      );
-      return;
-    }
-
-    final currentPreset = AppUpdateMirrorPresetX.fromValue(
-      settings.appUpdateMirrorPreset,
-    );
-    final availablePresets = _buildMirrorPresetCandidates(
-      settings.appUpdateMirrorUrlPrefix,
-    ).map((item) => item.key).toList();
-    final recommendedPreset = resolveRecommendedMirrorPreset({
-      for (final item in _mirrorProbeStates) item.preset: item.result,
-    });
-    final fallbackPreset =
-        recommendedPreset != null && recommendedPreset != currentPreset
-        ? recommendedPreset
-        : resolveMirrorFallbackPreset(
-            currentPreset: currentPreset,
-            availablePresets: availablePresets,
-          );
-
-    if (fallbackPreset != null) {
-      showAppToastWithAction(
-        context,
-        message: l10n.aboutSwitchPresetAfterError(
-          localizedError,
-          appUpdateMirrorPresetLabel(l10n, fallbackPreset),
-        ),
-        actionLabel: l10n.switchAction,
-        onAction: () => _updateMirrorPreset(fallbackPreset),
-        kind: AppToastKind.error,
-      );
-      return;
-    }
-
     showAppToast(context, message: localizedError, kind: AppToastKind.error);
   }
 
   Future<void> _downloadAndInstall(
     String url, {
     String? expectedApkSha256,
-    String? fallbackUrl,
-    bool isFallbackRetry = false,
   }) async {
     final l10n = AppLocalizations.of(context)!;
-    final settings = context.read<TimetableProvider>().settings;
-    final mirrorPreset = AppUpdateMirrorPresetX.fromValue(
-      settings.appUpdateMirrorPreset,
-    );
-    final effectiveMirrorUrlPrefix = resolveAppUpdateMirrorUrlPrefix(
-      preset: mirrorPreset,
-      customUrlPrefix: settings.appUpdateMirrorUrlPrefix,
-    );
     final controller = AppUpdateDownloadController();
     _analytics.logEventLater(name: 'update_download_started');
     setState(() {
@@ -1267,7 +954,6 @@ class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
         }
       },
       controller,
-      mirrorUrlPrefix: effectiveMirrorUrlPrefix,
       expectedApkSha256: expectedApkSha256,
     );
 
@@ -1285,25 +971,6 @@ class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
       if (error == AppUpdateService.downloadCancelledMessage) {
         _analytics.logEventLater(name: 'update_download_cancelled');
         showAppToast(context, message: l10n.aboutDownloadCancelled);
-        return;
-      }
-      // GitCode 直连失败时自动回退 GitHub 原始直链重试一次。取消、不受信任
-      // 地址、无摘要拒装、安装器打开失败换源也无解，不重试。
-      final normalizedFallback = fallbackUrl?.trim() ?? '';
-      final notRetryable =
-          error.startsWith('update_download_url_untrusted') ||
-          error.startsWith('update_sha256_unverified_install_refused') ||
-          error.startsWith('update_open_installer_failed');
-      if (!isFallbackRetry &&
-          !notRetryable &&
-          normalizedFallback.isNotEmpty &&
-          normalizedFallback != url) {
-        _analytics.logEventLater(name: 'update_download_fallback_to_github');
-        await _downloadAndInstall(
-          normalizedFallback,
-          expectedApkSha256: expectedApkSha256,
-          isFallbackRetry: true,
-        );
         return;
       }
       _analytics.logEventLater(name: 'update_download_failed');
@@ -1390,21 +1057,6 @@ class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
     final hour = dateTime.hour.toString().padLeft(2, '0');
     final minute = dateTime.minute.toString().padLeft(2, '0');
     return '$year-$month-$day $hour:$minute';
-  }
-
-  String? _normalizeMirrorUrlPrefix(String input) {
-    final value = input.trim();
-    if (value.isEmpty) {
-      return null;
-    }
-
-    final uri = Uri.tryParse(value);
-    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
-      return null;
-    }
-
-    final base = value.endsWith('/') ? value : '$value/';
-    return base;
   }
 
   Widget _buildDownloadProgressBar(ThemeData theme) {
@@ -1498,7 +1150,6 @@ class _AdvancedOptionsScreen extends StatefulWidget {
   final AppUpdateService updateService;
   final AppAnalytics analytics;
   final Future<AppUpdateCheckResult>? updateFuture;
-  final List<_MirrorProbeState> mirrorProbeStates;
   final bool isDownloading;
   final bool useSystemDownloader;
   final ValueChanged<bool> onUseSystemDownloaderChanged;
@@ -1511,7 +1162,6 @@ class _AdvancedOptionsScreen extends StatefulWidget {
     required this.updateService,
     required this.analytics,
     required this.updateFuture,
-    required this.mirrorProbeStates,
     required this.isDownloading,
     required this.useSystemDownloader,
     required this.onUseSystemDownloaderChanged,
@@ -1523,38 +1173,19 @@ class _AdvancedOptionsScreen extends StatefulWidget {
 }
 
 class _AdvancedOptionsScreenState extends State<_AdvancedOptionsScreen> {
-  bool _isProbingMirrors = false;
-  List<_MirrorProbeState> _mirrorProbeStates = const [];
   late bool _useSystemDownloader;
 
   @override
   void initState() {
     super.initState();
-    _mirrorProbeStates = widget.mirrorProbeStates;
     _useSystemDownloader = widget.useSystemDownloader;
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final theme = widget.theme;
     final settings = context.select<TimetableProvider, TimetableSettings>(
       (p) => p.settings,
-    );
-    final downloadChannel = AppUpdateDownloadChannelX.fromValue(
-      settings.appUpdateDownloadChannel,
-    );
-    final downloadSource = AppUpdateDownloadSourceX.fromValue(
-      settings.appUpdateDownloadSource,
-    );
-    final mirrorPreset = AppUpdateMirrorPresetX.fromValue(
-      settings.appUpdateMirrorPreset,
-    );
-    final probeResultByPreset = {
-      for (final item in _mirrorProbeStates) item.preset: item.result,
-    };
-    final recommendedMirrorPreset = resolveRecommendedMirrorPreset(
-      probeResultByPreset,
     );
 
     return HyperosSubpage(
@@ -1562,11 +1193,7 @@ class _AdvancedOptionsScreenState extends State<_AdvancedOptionsScreen> {
       title: Text(l10n.aboutAdvancedOptionsTitle),
       child: FutureBuilder<AppUpdateCheckResult>(
         future: widget.updateFuture,
-        builder: (context, snapshot) {
-          final result = snapshot.data;
-          final release = result?.latestRelease;
-          final originalDownloadUrl = release?.downloadUrl;
-
+        builder: (context, _) {
           return HyperosListView(
             children: [
               HyperosSectionLabel(text: l10n.aboutUpdatePromptTitle),
@@ -1581,69 +1208,13 @@ class _AdvancedOptionsScreenState extends State<_AdvancedOptionsScreen> {
                 ],
               ),
               const HyperosSectionGap(),
-              _buildDownloadChannelGroup(settings),
-              const HyperosSectionGap(),
               _buildDownloadMethodGroup(),
-              const HyperosSectionGap(),
-              HyperosSectionLabel(text: l10n.aboutCheckPrereleaseTitle),
-              HyperosListGroup(
-                children: [
-                  HyperosSwitchTile(
-                    title: l10n.aboutCheckPrereleaseTitle,
-                    subtitle: l10n.aboutCheckPrereleaseSubtitle,
-                    value: settings.appUpdateIncludePrerelease,
-                    onChanged: widget.packageInfo == null
-                        ? null
-                        : _updatePrereleasePreference,
-                  ),
-                ],
-              ),
-              if (downloadChannel == AppUpdateDownloadChannel.github &&
-                  downloadSource == AppUpdateDownloadSource.mirror) ...[
-                const HyperosSectionGap(),
-                _buildMirrorPresetGroup(
-                  theme,
-                  settings: settings,
-                  mirrorPreset: mirrorPreset,
-                  recommendedPreset: recommendedMirrorPreset,
-                  originalDownloadUrl: originalDownloadUrl,
-                ),
-              ],
               const HyperosSectionGap(),
               _buildDiagnosticsCard(settings),
             ],
           );
         },
       ),
-    );
-  }
-
-  Widget _buildDownloadChannelGroup(TimetableSettings settings) {
-    final l10n = AppLocalizations.of(context)!;
-    final downloadChannel = AppUpdateDownloadChannelX.fromValue(
-      settings.appUpdateDownloadChannel,
-    );
-    const channels = AppUpdateDownloadChannel.values;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        HyperosSectionLabel(text: l10n.aboutDownloadChannelSectionTitle),
-        HyperosChoiceGroup(
-          children: [
-            for (var i = 0; i < channels.length; i++)
-              HyperosChoiceTile(
-                title: appUpdateDownloadChannelLabel(l10n, channels[i]),
-                subtitle: Text(
-                  appUpdateDownloadChannelDescription(l10n, channels[i]),
-                ),
-                selected: downloadChannel == channels[i],
-                showDivider: i < channels.length - 1,
-                onTap: () => _updateDownloadChannel(channels[i]),
-              ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -1681,140 +1252,6 @@ class _AdvancedOptionsScreenState extends State<_AdvancedOptionsScreen> {
     );
   }
 
-  Widget _buildMirrorPresetGroup(
-    ThemeData theme, {
-    required TimetableSettings settings,
-    required AppUpdateMirrorPreset mirrorPreset,
-    required AppUpdateMirrorPreset? recommendedPreset,
-    required String? originalDownloadUrl,
-  }) {
-    final l10n = AppLocalizations.of(context)!;
-    const presets = AppUpdateMirrorPreset.values;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        HyperosSectionLabel(text: l10n.aboutMirrorSectionTitle),
-        HyperosChoiceGroup(
-          children: [
-            for (var i = 0; i < presets.length; i++)
-              _buildMirrorPresetTile(
-                theme,
-                preset: presets[i],
-                currentPreset: mirrorPreset,
-                recommendedPreset: recommendedPreset,
-                settings: settings,
-                showDivider: i < presets.length - 1,
-                onTap: () => _handleMirrorPresetTap(presets[i], settings),
-              ),
-          ],
-        ),
-        const HyperosSectionGap(),
-        HyperosListGroup(
-          children: [
-            HyperosListTile(
-              icon: Icons.speed_rounded,
-              iconAccent: HyperosIconColors.blue,
-              title: _isProbingMirrors
-                  ? l10n.aboutProbingMirrors
-                  : l10n.aboutProbeMirrorsAction,
-              onTap: originalDownloadUrl == null || _isProbingMirrors
-                  ? null
-                  : () => _probeAndRecommendMirrors(
-                      originalDownloadUrl,
-                      customMirrorUrlPrefix: settings.appUpdateMirrorUrlPrefix,
-                    ),
-            ),
-            HyperosListTile(
-              icon: Icons.link_rounded,
-              iconAccent: HyperosIconColors.teal,
-              title: mirrorPreset.usesCustomUrl
-                  ? l10n.aboutEditCustomMirrorAction
-                  : l10n.aboutSetCustomMirrorAction,
-              onTap: _editMirrorUrlPrefix,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMirrorPresetTile(
-    ThemeData theme, {
-    required AppUpdateMirrorPreset preset,
-    required AppUpdateMirrorPreset currentPreset,
-    required AppUpdateMirrorPreset? recommendedPreset,
-    required TimetableSettings settings,
-    required bool showDivider,
-    required VoidCallback onTap,
-  }) {
-    final l10n = AppLocalizations.of(context)!;
-    final probeState = _mirrorProbeStates
-        .where((s) => s.preset == preset)
-        .firstOrNull;
-    final isSelected = currentPreset == preset;
-    final isRecommended =
-        recommendedPreset == preset && probeState?.result.isSuccess == true;
-    final subtitleText =
-        preset.usesCustomUrl && settings.appUpdateMirrorUrlPrefix.trim().isEmpty
-        ? l10n.aboutFillCustomMirrorFirst
-        : (preset.usesCustomUrl
-              ? resolveAppUpdateMirrorUrlPrefix(
-                  preset: preset,
-                  customUrlPrefix: settings.appUpdateMirrorUrlPrefix,
-                )
-              : appUpdateMirrorPresetDescription(l10n, preset));
-
-    return HyperosChoiceTile(
-      title: isRecommended
-          ? '${appUpdateMirrorPresetLabel(l10n, preset)} · ${l10n.aboutRecommended}'
-          : appUpdateMirrorPresetLabel(l10n, preset),
-      subtitle: Text(subtitleText),
-      selected: isSelected,
-      showDivider: showDivider,
-      trailing: probeState == null
-          ? null
-          : _buildMirrorProbeStatusChip(l10n, theme, probeState.result),
-      onTap: onTap,
-    );
-  }
-
-  Widget _buildMirrorProbeStatusChip(
-    AppLocalizations l10n,
-    ThemeData theme,
-    AppUpdateDownloadProbeResult result,
-  ) {
-    final colorScheme = theme.colorScheme;
-    final (label, background, foreground) = switch (result) {
-      AppUpdateDownloadProbeResult(isSuccess: true, :final elapsed) => (
-        '${elapsed.inMilliseconds}ms',
-        Colors.green.withValues(alpha: 0.12),
-        Colors.green,
-      ),
-      AppUpdateDownloadProbeResult(isSuccess: false) => (
-        l10n.aboutMirrorProbeFailedLabel,
-        colorScheme.errorContainer,
-        colorScheme.onErrorContainer,
-      ),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w400,
-          color: foreground,
-        ),
-      ),
-    );
-  }
-
   /// Export and clear used to sit here as separate rows, duplicating the log
   /// page's own header actions (and double-toasting on clear). One door now.
   Widget _buildDiagnosticsCard(TimetableSettings settings) {
@@ -1838,17 +1275,6 @@ class _AdvancedOptionsScreenState extends State<_AdvancedOptionsScreen> {
     );
   }
 
-  Future<void> _updateDownloadChannel(AppUpdateDownloadChannel channel) async {
-    final provider = context.read<TimetableProvider>();
-    final message = await provider.updateTimetableSettings(
-      provider.settings.copyWith(appUpdateDownloadChannel: channel.value),
-    );
-    if (!mounted) return;
-    if (message != null) {
-      showAppToast(context, message: message);
-    }
-  }
-
   Future<void> _updatePromptPreference(bool value) async {
     final provider = context.read<TimetableProvider>();
     final message = await provider.updateTimetableSettings(
@@ -1858,123 +1284,6 @@ class _AdvancedOptionsScreenState extends State<_AdvancedOptionsScreen> {
     if (message != null) {
       showAppToast(context, message: message);
     }
-  }
-
-  Future<void> _updatePrereleasePreference(bool value) async {
-    final provider = context.read<TimetableProvider>();
-    final message = await provider.updateTimetableSettings(
-      provider.settings.copyWith(appUpdateIncludePrerelease: value),
-    );
-    if (!mounted) return;
-    if (message != null) {
-      showAppToast(context, message: message);
-    }
-  }
-
-  Future<void> _handleMirrorPresetTap(
-    AppUpdateMirrorPreset preset,
-    TimetableSettings settings,
-  ) async {
-    final provider = context.read<TimetableProvider>();
-    final message = await provider.updateTimetableSettings(
-      provider.settings.copyWith(appUpdateMirrorPreset: preset.value),
-    );
-    if (!mounted) return;
-    if (message != null) {
-      showAppToast(context, message: message);
-    }
-  }
-
-  Future<void> _probeAndRecommendMirrors(
-    String originalDownloadUrl, {
-    String? customMirrorUrlPrefix,
-  }) async {
-    setState(() => _isProbingMirrors = true);
-    try {
-      final candidates = <MapEntry<AppUpdateMirrorPreset, String>>[
-        MapEntry(
-          AppUpdateMirrorPreset.ghfast,
-          resolveAppUpdateMirrorUrlPrefix(
-            preset: AppUpdateMirrorPreset.ghfast,
-            customUrlPrefix: customMirrorUrlPrefix ?? '',
-          ),
-        ),
-        MapEntry(
-          AppUpdateMirrorPreset.ghLlkk,
-          resolveAppUpdateMirrorUrlPrefix(
-            preset: AppUpdateMirrorPreset.ghLlkk,
-            customUrlPrefix: customMirrorUrlPrefix ?? '',
-          ),
-        ),
-        MapEntry(
-          AppUpdateMirrorPreset.ghProxyCom,
-          resolveAppUpdateMirrorUrlPrefix(
-            preset: AppUpdateMirrorPreset.ghProxyCom,
-            customUrlPrefix: customMirrorUrlPrefix ?? '',
-          ),
-        ),
-        MapEntry(
-          AppUpdateMirrorPreset.ghproxyNet,
-          resolveAppUpdateMirrorUrlPrefix(
-            preset: AppUpdateMirrorPreset.ghproxyNet,
-            customUrlPrefix: customMirrorUrlPrefix ?? '',
-          ),
-        ),
-      ];
-
-      final results = await Future.wait(
-        candidates.map((candidate) async {
-          final probeUrl = widget.updateService.buildDownloadUrl(
-            originalUrl: originalDownloadUrl,
-            source: AppUpdateDownloadSource.mirror,
-            mirrorUrlPrefix: candidate.value,
-          );
-          final probeResult = await widget.updateService.probeDownloadUrl(
-            probeUrl,
-          );
-          return _MirrorProbeState(
-            preset: candidate.key,
-            prefix: candidate.value,
-            result: probeResult,
-          );
-        }),
-      );
-
-      if (!mounted) return;
-      setState(() => _mirrorProbeStates = results);
-      final recommended = resolveRecommendedMirrorPreset({
-        for (final item in results) item.preset: item.result,
-      });
-      if (recommended != null) {
-        final provider = context.read<TimetableProvider>();
-        await provider.updateTimetableSettings(
-          provider.settings.copyWith(appUpdateMirrorPreset: recommended.value),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isProbingMirrors = false);
-    }
-  }
-
-  Future<void> _editMirrorUrlPrefix() async {
-    final l10n = AppLocalizations.of(context)!;
-    final settings = context.read<TimetableProvider>().settings;
-    final result = await showAppTextInputDialog(
-      context,
-      title: l10n.aboutSetMirrorSourceTitle,
-      initialValue: settings.appUpdateMirrorUrlPrefix,
-      bodyBuilder: (controller) => HyperosTextField(
-        controller: controller,
-        label: l10n.aboutMirrorPrefixLabel,
-        hint: 'https://ghfast.top/',
-        autofocus: true,
-      ),
-    );
-    if (result == null || !mounted) return;
-    final provider = context.read<TimetableProvider>();
-    await provider.updateTimetableSettings(
-      provider.settings.copyWith(appUpdateMirrorUrlPrefix: result),
-    );
   }
 }
 

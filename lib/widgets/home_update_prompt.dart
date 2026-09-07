@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_miuix/miuix.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/ui/hyperos/hyperos.dart';
-import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/services/app_update_service.dart';
 
 /// Mutable state shared by the home update prompt and the download task.
@@ -83,8 +82,6 @@ Future<void> showHomeUpdatePrompt(
   BuildContext context, {
   required AppReleaseInfo release,
   required String currentVersion,
-  required AppUpdateDownloadChannel downloadChannel,
-  required bool hasDirectDownload,
   required HomeUpdatePromptController controller,
   required Future<bool> Function() onDownload,
   required Future<void> Function() onViewRelease,
@@ -95,8 +92,6 @@ Future<void> showHomeUpdatePrompt(
     context,
     release: release,
     currentVersion: currentVersion,
-    downloadChannel: downloadChannel,
-    hasDirectDownload: hasDirectDownload,
     controller: controller,
     onDownload: onDownload,
     onViewRelease: onViewRelease,
@@ -109,8 +104,6 @@ Future<void> _showHomeUpdatePromptDialog(
   BuildContext context, {
   required AppReleaseInfo release,
   required String currentVersion,
-  required AppUpdateDownloadChannel downloadChannel,
-  required bool hasDirectDownload,
   required HomeUpdatePromptController controller,
   required Future<bool> Function() onDownload,
   required Future<void> Function() onViewRelease,
@@ -123,8 +116,6 @@ Future<void> _showHomeUpdatePromptDialog(
       return _HomeUpdatePromptDialog(
         release: release,
         currentVersion: currentVersion,
-        downloadChannel: downloadChannel,
-        hasDirectDownload: hasDirectDownload,
         controller: controller,
         onDownload: onDownload,
         onViewRelease: onViewRelease,
@@ -140,8 +131,6 @@ class _HomeUpdatePromptDialog extends StatelessWidget {
   const _HomeUpdatePromptDialog({
     required this.release,
     required this.currentVersion,
-    required this.downloadChannel,
-    required this.hasDirectDownload,
     required this.controller,
     required this.onDownload,
     required this.onViewRelease,
@@ -152,8 +141,6 @@ class _HomeUpdatePromptDialog extends StatelessWidget {
 
   final AppReleaseInfo release;
   final String currentVersion;
-  final AppUpdateDownloadChannel downloadChannel;
-  final bool hasDirectDownload;
   final HomeUpdatePromptController controller;
   final Future<bool> Function() onDownload;
   final Future<void> Function() onViewRelease;
@@ -375,11 +362,7 @@ class _HomeUpdatePromptDialog extends StatelessWidget {
     required AppLocalizations l10n,
     required MiuixTextStyles textStyles,
   }) {
-    final downloadLabel = !hasDirectDownload
-        ? l10n.aboutOpenReleasePageAction
-        : downloadChannel == AppUpdateDownloadChannel.pgyer
-        ? l10n.aboutOpenDownloadPageAction
-        : l10n.aboutDownloadNowAction;
+    final downloadLabel = l10n.aboutDownloadNowAction;
     // 左右各占一半的均衡布局：次要动作（查看发布说明）居左，
     // 主要动作（立即下载 / 打开页面）居右。
     return Row(
