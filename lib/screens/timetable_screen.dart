@@ -3156,9 +3156,14 @@ class _TimetableScreenState extends State<TimetableScreen>
               // swipe. Distance-from-nearest alone cannot distinguish the
               // outgoing edge from the incoming edge.
               final rawPage = _weekPageController.page ?? 0.0;
-              final swipeStartPage = direction >= 0
-                  ? rawPage.floorToDouble()
-                  : rawPage.ceilToDouble();
+              // Keep the gesture's actual start page. floor/ceil resets to the
+              // next swipe when a fast spring overshoots the landing page for
+              // a frame, which makes the time axis jerk at the end.
+              final swipeStartPage =
+                  _weekPagerDragStartPage ??
+                  (direction >= 0
+                      ? rawPage.floorToDouble()
+                      : rawPage.ceilToDouble());
               var swipeProgress = ((rawPage - swipeStartPage) * direction)
                   .clamp(0.0, 1.0);
               if ((rawPage - rawPage.roundToDouble()).abs() < 0.001) {
