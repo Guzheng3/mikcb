@@ -3635,18 +3635,18 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
   }
 
-  // OPPO-style card paging tuning: the outgoing card slides away while the
-  // incoming card remains screen-centered under it, then blurs in at 80%
-  // scale and expands to full size. The alpha mask compensates for PageView's
-  // fixed paint order without introducing any decorative shadow.
+  // Card paging tuning: both cards stay centered so the gesture does not read
+  // as a side-scroll. The outgoing card recedes while the incoming card rises
+  // over it from below.
   static const double _cardPagerIncomingShrink = 0.20;
-  static const double _cardPagerAppearStart = 0.50;
-  static const double _cardPagerAppearOpacity = 0.34;
-  static const double _cardPagerMaxBlurSigma = 9;
+  static const double _cardPagerOutgoingShrink = 0.18;
+  static const double _cardPagerOutgoingFade = 0.28;
+  static const double _cardPagerAppearStart = 0.18;
+  static const double _cardPagerAppearOpacity = 0.22;
+  static const double _cardPagerMaxBlurSigma = 14;
 
-  /// OPPO-style launcher card paging: the outgoing card slides away while the
-  /// neighbor waits right under it, slightly lower and dimmer, then rises
-  /// into place. The pager still owns translation, so this follows the finger.
+  /// The pager owns the gesture; each card cancels its horizontal layout
+  /// offset so cards stay centered and stack instead of sliding in from a side.
   Widget _buildPagerCardTransition({
     required PageController controller,
     required int page,
@@ -3673,32 +3673,20 @@ class _TimetableScreenState extends State<TimetableScreen>
         );
         final incomingness =
             (-signedDistance.sign * leadDirection).clamp(0.0, 1.0);
-        final direction = signedDistance.sign;
         final viewportWidth = controller.position.viewportDimension;
-        // PageView lays the neighbor one viewport away. Cancel that offset so
-        // the incoming card stays centered underneath while the active card
-        // slides away, instead of visibly entering from the side.
-        final incomingOffset = Offset(
-          signedDistance * viewportWidth,
-          0,
-        );
-        final offset = Offset.lerp(
-          Offset.zero,
-          incomingOffset,
-          incomingness,
-        )!;
         final appearProgress =
             ((depth - _cardPagerAppearStart) / (1.0 - _cardPagerAppearStart))
                 .clamp(0.0, 1.0)
                 .toDouble();
         final easedAppear = Curves.easeOutCubic.transform(appearProgress);
-        // The incoming card is already at 80% when it first becomes visible,
-        // then grows while the outgoing card finishes leaving.
-        final scale =
-            1.0 -
-            incomingness *
-                _cardPagerIncomingShrink *
-                (1.0 - easedAppear);
+        // PageView lays both cards one viewport apart. Cancel that offset so
+        // neither card visibly travels sideways; the gesture only drives the
+        // stack depth.
+        final offset = Offset(signedDistance * viewportWidth, 0);
+        final isIncoming = incomingness > 0.001;
+        final scale = isIncoming
+            ? 1.0 - _cardPagerIncomingShrink * (1.0 - easedAppear)
+            : 1.0 - _cardPagerOutgoingShrink * depth;
 
         Widget transition = Transform.translate(
           offset: offset,
@@ -3708,44 +3696,11 @@ class _TimetableScreenState extends State<TimetableScreen>
           ),
         );
 
-        if (incomingness > 0.001) {
+        if (isIncoming) {
           if (depth < _cardPagerAppearStart) {
-            // Keep the later-painted neighbor hidden until the outgoing card
-            // has passed halfway; otherwise it would overlap the edge early.
+            // Keep the later-painted card hidden until the gesture has begun.
             return Opacity(opacity: 0, child: transition);
           }
-          // A later PageView child normally paints above the outgoing card.
-          // Mask only the side currently overlapped by that card, so the
-          // centered incoming page reads as if it is underneath.
-          // After a left swipe the outgoing right edge is at `1 - depth`;
-          // after a right swipe its left edge is at `depth`.
-          final revealStop = direction < 0
-              ? (1.0 - depth).clamp(0.004, 1.0)
-              : depth.clamp(0.004, 1.0);
-          final forwardMask = direction < 0;
-          final colors = forwardMask
-              ? const [Colors.transparent, Colors.transparent, Colors.white]
-              : const [Colors.white, Colors.transparent, Colors.transparent];
-          final stops = forwardMask
-              ? [
-                  0.0,
-                  math.max(0.0, revealStop - 0.012),
-                  revealStop,
-                ]
-              : [
-                  1.0 - revealStop,
-                  math.min(1.0, 1.0 - revealStop + 0.012),
-                  1.0,
-                ];
-          transition = ShaderMask(
-            blendMode: BlendMode.dstIn,
-            shaderCallback: (bounds) =>
-                LinearGradient(colors: colors, stops: stops).createShader(
-              bounds,
-            ),
-            child: transition,
-          );
-
           final blurSigma =
               _cardPagerMaxBlurSigma * (1.0 - easedAppear).clamp(0.0, 1.0);
           if (blurSigma > 0.1) {
@@ -3762,6 +3717,11 @@ class _TimetableScreenState extends State<TimetableScreen>
             opacity: (_cardPagerAppearOpacity +
                     (1.0 - _cardPagerAppearOpacity) * easedAppear)
                 .clamp(0.0, 1.0),
+            child: transition,
+          );
+        } else {
+          transition = Opacity(
+            opacity: (1.0 - _cardPagerOutgoingFade * depth).clamp(0.0, 1.0),
             child: transition,
           );
         }

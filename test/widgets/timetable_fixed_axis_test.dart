@@ -83,4 +83,73 @@ void main() {
       expect(settledTranslation.x, closeTo(0, 0.5));
     },
   );
+
+  testWidgets(
+    'pager cards stay centered while the incoming card appears and grows',
+    (tester) async {
+      final provider = TimetableProvider(autoInitialize: false);
+      await provider.updateTimetableSettings(
+        provider.settings.copyWith(
+          homeNavigationForm: HomeNavigationForm.classic,
+          timetableAutoFitSectionHeight: true,
+          homePageWallpaperPath: '',
+        ),
+      );
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<TimetableProvider>.value(value: provider),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: Locale('zh'),
+            home: FrostedAppearanceScope(
+              appearance: FrostedAppearance.defaults,
+              child: TimetableScreen(enableProgressTimer: false),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final pageViewFinder = find.byKey(const ValueKey('week-page-view'));
+      final viewportCenter = tester.getCenter(pageViewFinder);
+      final gesture = await tester.startGesture(viewportCenter);
+      await gesture.moveBy(const Offset(-160, 0));
+      await tester.pump();
+
+      final outgoing = find.byKey(const ValueKey('week-page-1'));
+      final incoming = find.byKey(const ValueKey('week-page-2'));
+      expect(outgoing, findsOneWidget);
+      expect(incoming, findsOneWidget);
+      expect(
+        tester.getCenter(outgoing).dx,
+        closeTo(viewportCenter.dx, 1.0),
+      );
+      expect(
+        tester.getCenter(incoming).dx,
+        closeTo(viewportCenter.dx, 1.0),
+      );
+      final viewportSize = tester.getRect(pageViewFinder).size;
+      final incomingSize = tester.getRect(incoming).size;
+      expect(
+        incomingSize.width / viewportSize.width,
+        closeTo(0.80, 0.06),
+      );
+      expect(
+        incomingSize.height / viewportSize.height,
+        closeTo(0.80, 0.06),
+      );
+
+      await gesture.up();
+      for (var frame = 0; frame < 24; frame++) {
+        await tester.pump(const Duration(milliseconds: 32));
+      }
+    },
+  );
 }
