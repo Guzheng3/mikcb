@@ -392,7 +392,6 @@ class _TimetableScreenState extends State<TimetableScreen>
   int? _dayViewTransitionSourceDayOfWeek;
   double _weekSwipeDirection = 1;
   double? _weekPagerDragStartPage;
-  double _daySwipeDirection = 1;
   double _dayViewAnchorFraction = 0.5;
   bool _isDaySwipeAnimating = false;
 
@@ -3646,17 +3645,12 @@ class _TimetableScreenState extends State<TimetableScreen>
   static const double _cardPagerOutgoingShrink = 0.18;
   static const double _cardPagerOutgoingFade = 0.28;
   static const double _cardPagerAppearStart = 0.18;
-  static const double _sidePagerAppearStart = 0.1314;
-  static const double _sidePagerIncomingScale = 0.8686;
   static const double _cardPagerAppearOpacity = 0.22;
   static const double _cardPagerMaxBlurSigma = 14;
-
   /// The pager owns the gesture; each card cancels its horizontal layout
   /// offset so cards stay centered and stack instead of sliding in from a side.
   Widget _buildPagerCardTransition({
     required PageController controller,
-    double? dragStartPage,
-    double? dragDirection,
     required int page,
     required Widget child,
   }) {
@@ -3679,36 +3673,6 @@ class _TimetableScreenState extends State<TimetableScreen>
         final incomingness = (-signedDistance.sign * leadDirection).clamp(
           0.0,
           1.0,
-        final gestureDirection = dragStartPage == null
-            ? leadDirection
-            : (activePage - dragStartPage).sign.toDouble();
-        final resolvedDirection = dragDirection ?? gestureDirection;
-
-        // Forward (left-drag) uses a side slide: the outgoing page keeps its
-        // full scale and the next page stays at the tuned incoming scale.
-        final isForwardGesture = resolvedDirection > 0.001;
-        if (isForwardGesture) {
-          if (signedDistance > 0.001) {
-            // PageView already translates the outgoing page to the left.
-            return cardChild ?? child;
-          }
-          if (signedDistance < -0.001) {
-            final swipeProgress = (1.0 - depth).clamp(0.0, 1.0).toDouble();
-            final opacity =
-                ((swipeProgress - _sidePagerAppearStart) /
-                        (1.0 - _sidePagerAppearStart))
-                    .clamp(0.0, 1.0)
-                    .toDouble();
-            final incoming = Transform.scale(
-              scale: _sidePagerIncomingScale,
-              child: cardChild ?? child,
-            );
-            return opacity <= 0
-                ? Opacity(opacity: 0, child: incoming)
-                : Opacity(opacity: opacity, child: incoming);
-          }
-        }
-
         );
         final viewportWidth = controller.position.viewportDimension;
         final appearProgress =
@@ -3716,8 +3680,8 @@ class _TimetableScreenState extends State<TimetableScreen>
                 .clamp(0.0, 1.0)
                 .toDouble();
         final easedAppear = Curves.easeOutCubic.transform(appearProgress);
-        // Backward swipes keep the centered stack. PageView lays both cards one
-        // viewport apart, so cancel that offset to make them stack.
+        // PageView lays both cards one viewport apart, so cancel that offset
+        // to make both swipe directions use the centered stack.
         final offset = Offset(signedDistance * viewportWidth, 0);
         final isIncoming = incomingness > 0.001;
         final scale = isIncoming
@@ -3870,8 +3834,6 @@ class _TimetableScreenState extends State<TimetableScreen>
               itemBuilder: (context, index) {
                 final week = index + 1;
                 return _buildPagerCardTransition(
-                  dragStartPage: _weekPagerDragStartPage,
-                  dragDirection: _weekSwipeDirection,
                   controller: _weekPageController,
                   page: index,
                   child: RepaintBoundary(
@@ -4339,10 +4301,6 @@ class _TimetableScreenState extends State<TimetableScreen>
                     onNotification: (notification) {
                       if (notification.metrics.axis != Axis.horizontal) {
                         return false;
-                        if (notification.scrollDelta != 0) {
-                          _daySwipeDirection =
-                              notification.scrollDelta! > 0 ? 1 : -1;
-                        }
                       }
                       if (notification is ScrollUpdateNotification) {
                         // 拦截 update 继续冒泡：HyperosRootPage 的触边震动
@@ -4398,8 +4356,6 @@ class _TimetableScreenState extends State<TimetableScreen>
                         // 1 Hz progress heartbeat rebuilds only this page's
                         // content (ongoing badges / progress), not the State.
                         return _buildPagerCardTransition(
-                          dragStartPage: _dayPagerDragStartPage,
-                          dragDirection: _daySwipeDirection,
                           controller: controller,
                           page: page,
                           child: ValueListenableBuilder<int>(

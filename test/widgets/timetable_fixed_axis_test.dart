@@ -85,7 +85,7 @@ void main() {
   );
 
   testWidgets(
-    'forward pager keeps outgoing full scale while incoming fades in small',
+    'pager cards stack at center while swiping forward',
     (tester) async {
       final provider = TimetableProvider(autoInitialize: false);
       await provider.updateTimetableSettings(
@@ -120,7 +120,7 @@ void main() {
       final pageViewFinder = find.byKey(const ValueKey('week-page-view'));
       final viewportCenter = tester.getCenter(pageViewFinder);
       final gesture = await tester.startGesture(viewportCenter);
-      await gesture.moveBy(const Offset(-160, 0));
+      await gesture.moveBy(const Offset(-400, 0));
       await tester.pump();
 
       final outgoing = find.byKey(const ValueKey('week-page-1'));
@@ -129,16 +129,16 @@ void main() {
       expect(incoming, findsOneWidget);
       expect(
         tester.getCenter(outgoing).dx,
-        closeTo(viewportCenter.dx - 160, 1.0),
+        closeTo(viewportCenter.dx, 1.0),
       );
       expect(
         tester.getCenter(incoming).dx,
-        closeTo(viewportCenter.dx + 640, 1.0),
+        closeTo(viewportCenter.dx, 1.0),
       );
       final viewportSize = tester.getRect(pageViewFinder).size;
       final incomingSize = tester.getRect(incoming).size;
-      expect(incomingSize.width / viewportSize.width, closeTo(0.8686, 0.02));
-      expect(incomingSize.height / viewportSize.height, closeTo(0.8686, 0.02));
+      expect(incomingSize.width / viewportSize.width, lessThan(0.96));
+      expect(incomingSize.height / viewportSize.height, lessThan(0.96));
 
       await gesture.up();
       for (var frame = 0; frame < 24; frame++) {
