@@ -3646,13 +3646,11 @@ class _TimetableScreenState extends State<TimetableScreen>
   static const double _cardPagerOutgoingShrink = 0.18;
   static const double _cardPagerOutgoingFade = 0.28;
   static const double _cardPagerAppearStart = 0.18;
-  static const double _sidePagerAppearStart = 0.1314;
-  static const double _sidePagerMinScale = 0.8686;
   static const double _cardPagerAppearOpacity = 0.22;
   static const double _cardPagerMaxBlurSigma = 14;
-  static const double _sidePagerAppearStart = 0.1314;
-  static const double _sidePagerMinScale = 0.8686;
-  /// Forward swipes slide side-by-side; backward swipes stay centered stack.
+  static const double _forwardCardAppearStart = 0.1314;
+  static const double _forwardCardMinScale = 0.8686;
+  /// Forward swipes reveal a centered card; backward swipes stay stacked.
   Widget _buildPagerCardTransition({
     required PageController controller,
     double? Function()? takeDragStartPage,
@@ -3667,18 +3665,20 @@ class _TimetableScreenState extends State<TimetableScreen>
         final activePage =
             controller.hasClients && controller.position.hasContentDimensions
             ? (controller.page ?? page.toDouble())
+        final signedDistance = (activePage - page).clamp(-1.0, 1.0);
+        final depth = signedDistance.abs();
             : page.toDouble();
         // Positive = the page is left of the active page; negative = right.
         final leadDirection = _updatePagerLeadDirection(controller, activePage);
         final dragStartPage = takeDragStartPage?.call();
         final dragDirection = takeDragDirection?.call();
-        final signedDistance = (activePage - page).clamp(-1.0, 1.0);
-        final depth = signedDistance.abs();
         if (depth == 0) {
           return cardChild ?? child;
         }
 
         final incomingness = (-signedDistance.sign * leadDirection).clamp(
+        );
+        final viewportWidth = controller.position.viewportDimension;
           0.0,
           1.0,
         final gestureDirection = dragStartPage == null
@@ -3699,15 +3699,21 @@ class _TimetableScreenState extends State<TimetableScreen>
                   .clamp(0.0, 1.0)
                   .toDouble();
           final appearProgress =
-              ((dragProgress - _sidePagerAppearStart) /
-                      (1.0 - _sidePagerAppearStart))
+              ((dragProgress - _forwardCardAppearStart) /
+                      (1.0 - _forwardCardAppearStart))
                   .clamp(0.0, 1.0)
                   .toDouble();
           final scale =
-              _sidePagerMinScale + (1.0 - _sidePagerMinScale) * appearProgress;
-          Widget transition = Transform.scale(
-            scale: scale,
-            child: cardChild ?? child,
+              _forwardCardMinScale +
+              (1.0 - _forwardCardMinScale) * appearProgress;
+          // PageView puts the next card one viewport away. Cancel that offset
+          // so the card grows in place behind the outgoing page.
+          Widget transition = Transform.translate(
+            offset: Offset(signedDistance * viewportWidth, 0),
+            child: Transform.scale(
+              scale: scale,
+              child: cardChild ?? child,
+            ),
           );
           if (appearProgress <= 0) {
             return Opacity(opacity: 0, child: transition);
@@ -3733,8 +3739,6 @@ class _TimetableScreenState extends State<TimetableScreen>
           );
         }
 
-        );
-        final viewportWidth = controller.position.viewportDimension;
         final appearProgress =
             ((depth - _cardPagerAppearStart) / (1.0 - _cardPagerAppearStart))
                 .clamp(0.0, 1.0)
