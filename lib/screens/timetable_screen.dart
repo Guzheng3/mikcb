@@ -3644,24 +3644,20 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
   }
 
-  // Card paging tuning: both cards stay centered so the gesture does not read
-  // as a side-scroll. The outgoing card recedes while the incoming card rises
-  // over it from below.
-  static const double _cardPagerIncomingShrink = 0.20;
-  static const double _cardPagerOutgoingShrink = 0.18;
-  static const double _cardPagerOutgoingFade = 0.28;
-  static const double _cardPagerAppearStart = 0.18;
+  // Card paging tuning: the incoming neighbor grows in place while the active
+  // page follows the finger.
+  static const double _cardPagerAppearStart = 0.1314;
   static const double _cardPagerAppearOpacity = 0.22;
   static const double _cardPagerMaxBlurSigma = 14;
-  static const double _forwardCardAppearStart = 0.1314;
-  static const double _forwardCardMinScale = 0.8686;
-  /// Forward swipes reveal a centered card; backward swipes stay stacked.
+  static const double _cardPagerMinScale = 0.8686;
+
+  /// Only the gesture-target neighbor enters the centered card reveal.
   Widget _buildPagerCardTransition({
     required PageController controller,
-    double? Function()? takeDragStartPage,
-    double? Function()? takeDragDirection,
     required int page,
     required Widget child,
+    double? Function()? takeDragStartPage,
+    double? Function()? takeDragDirection,
   }) {
     return AnimatedBuilder(
       animation: controller,
@@ -3670,133 +3666,58 @@ class _TimetableScreenState extends State<TimetableScreen>
         final activePage =
             controller.hasClients && controller.position.hasContentDimensions
             ? (controller.page ?? page.toDouble())
-        final signedDistance = (activePage - page).clamp(-1.0, 1.0);
-        final depth = signedDistance.abs();
             : page.toDouble();
-        // Positive = the page is left of the active page; negative = right.
         final leadDirection = _updatePagerLeadDirection(controller, activePage);
         final dragStartPage = takeDragStartPage?.call();
         final dragDirection = takeDragDirection?.call();
-        if (depth == 0) {
+        if (dragStartPage == null) return cardChild ?? child;
+        final resolvedDirection = dragDirection ?? leadDirection;
+        final pageDelta = page - dragStartPage;
+        if (pageDelta.abs() > 1.5 || pageDelta * resolvedDirection <= 0) {
           return cardChild ?? child;
         }
-
-        final incomingness = (-signedDistance.sign * leadDirection).clamp(
-        );
-        final viewportWidth = controller.position.viewportDimension;
-          0.0,
-          1.0,
-        final gestureDirection = dragStartPage == null
-            ? leadDirection
-            : (page - dragStartPage).sign.toDouble();
-        final resolvedDirection = dragDirection ?? gestureDirection;
-
-        // Forward (left-drag) keeps the outgoing page at full scale and uses
-        // total drag progress, because controller.page stays negative until
-        // the swipe crosses the current page's leading edge.
-        final isForwardGesture = resolvedDirection > 0.001;
-        if (isForwardGesture && dragStartPage != null) {
-          if (page <= dragStartPage) {
-            return cardChild ?? child;
-          }
-          if (page > dragStartPage + 1) {
-            return cardChild ?? child;
-          }
-          final dragProgress =
-              ((dragStartPage - activePage) / (dragStartPage - page))
-                  .clamp(0.0, 1.0)
-                  .toDouble();
-          final appearProgress =
-              ((dragProgress - _forwardCardAppearStart) /
-                      (1.0 - _forwardCardAppearStart))
-                  .clamp(0.0, 1.0)
-                  .toDouble();
-          final scale =
-              _forwardCardMinScale +
-              (1.0 - _forwardCardMinScale) * appearProgress;
-          // PageView puts the next card one viewport away. Cancel that offset
-          // so the card grows in place behind the outgoing page.
-          Widget transition = Transform.translate(
-            offset: Offset(signedDistance * viewportWidth, 0),
-            child: Transform.scale(
-              scale: scale,
-              child: cardChild ?? child,
-            ),
-          );
-          if (appearProgress <= 0) {
-            return Opacity(opacity: 0, child: transition);
-          }
-          final blurSigma =
-              _cardPagerMaxBlurSigma * (1.0 - appearProgress).clamp(0.0, 1.0);
-          if (blurSigma > 0.1) {
-            transition = ImageFiltered(
-              imageFilter: ui.ImageFilter.blur(
-                sigmaX: blurSigma,
-                sigmaY: blurSigma,
-                tileMode: ui.TileMode.clamp,
-              ),
-              child: transition,
-            );
-          }
-          return Opacity(
-            opacity:
-                (_cardPagerAppearOpacity +
-                        (1.0 - _cardPagerAppearOpacity) * appearProgress)
-                    .clamp(0.0, 1.0),
-            child: transition,
-          );
-        }
-
-        final appearProgress =
-            ((depth - _cardPagerAppearStart) / (1.0 - _cardPagerAppearStart))
+        final dragProgress =
+            ((dragStartPage - activePage) / (dragStartPage - page))
                 .clamp(0.0, 1.0)
                 .toDouble();
-        final easedAppear = Curves.easeOutCubic.transform(appearProgress);
-        // PageView lays both cards one viewport apart, so cancel that offset
-        // to make both swipe directions use the centered stack.
-        final offset = Offset(signedDistance * viewportWidth, 0);
-        final isIncoming = incomingness > 0.001;
-        final scale = isIncoming
-            ? 1.0 - _cardPagerIncomingShrink * (1.0 - easedAppear)
-            : 1.0 - _cardPagerOutgoingShrink * depth;
-
+        final appearProgress =
+            ((dragProgress - _cardPagerAppearStart) /
+                    (1.0 - _cardPagerAppearStart))
+                .clamp(0.0, 1.0)
+                .toDouble();
+        final scale =
+            _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appearProgress;
+        // Cancel only the incoming card's PageView layout offset; the active
+        // page still follows the finger.
         Widget transition = Transform.translate(
-          offset: offset,
+          offset: Offset(
+            (activePage - page) * controller.position.viewportDimension,
+            0,
+          ),
           child: Transform.scale(scale: scale, child: cardChild ?? child),
         );
-
-        if (isIncoming) {
-          if (depth < _cardPagerAppearStart) {
-            // Keep the later-painted card hidden until the gesture has begun.
-            return Opacity(opacity: 0, child: transition);
-          }
-          final blurSigma =
-              _cardPagerMaxBlurSigma * (1.0 - easedAppear).clamp(0.0, 1.0);
-          if (blurSigma > 0.1) {
-            transition = ImageFiltered(
-              imageFilter: ui.ImageFilter.blur(
-                sigmaX: blurSigma,
-                sigmaY: blurSigma,
-                tileMode: ui.TileMode.clamp,
-              ),
-              child: transition,
-            );
-          }
-          transition = Opacity(
-            opacity:
-                (_cardPagerAppearOpacity +
-                        (1.0 - _cardPagerAppearOpacity) * easedAppear)
-                    .clamp(0.0, 1.0),
-            child: transition,
-          );
-        } else {
-          transition = Opacity(
-            opacity: (1.0 - _cardPagerOutgoingFade * depth).clamp(0.0, 1.0),
+        if (appearProgress <= 0) {
+          return Opacity(opacity: 0, child: transition);
+        }
+        final blurSigma =
+            _cardPagerMaxBlurSigma * (1.0 - appearProgress).clamp(0.0, 1.0);
+        if (blurSigma > 0.1) {
+          transition = ImageFiltered(
+            imageFilter: ui.ImageFilter.blur(
+              sigmaX: blurSigma,
+              sigmaY: blurSigma,
+              tileMode: ui.TileMode.clamp,
+            ),
             child: transition,
           );
         }
-
-        return transition;
+        return Opacity(
+          opacity:
+              (_cardPagerAppearOpacity +
+                      (1.0 - _cardPagerAppearOpacity) * appearProgress)
+                  .clamp(0.0, 1.0),
+          child: transition,
+        );
       },
     );
   }
