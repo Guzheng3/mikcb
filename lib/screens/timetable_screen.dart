@@ -269,6 +269,8 @@ class _TimetableScreenState extends State<TimetableScreen>
   late final AnimationController _coupleHeartbeatController;
   late final AnimationController _coupleBeamController;
   late final Animation<double> _coupleHeartbeatScale;
+  final Map<PageController, double> _pagerLastActivePage = {};
+  final Map<PageController, double> _pagerLeadDirection = {};
   final Map<int, ScrollController> _weekGridScrollControllers = {};
 
   /// 日视图锚点展开/收起与设置页拖动转场期间，卡片玻璃 fill 需要每帧
@@ -3633,9 +3635,15 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
   }
 
-  // Card paging keeps the native side-by-side page positions, then scales each
-  // page down as it leaves the active position. No fade or blur is applied.
-  static const double _cardPagerShrink = 0.15;
+  // Card paging tuning: both cards stay centered so the gesture does not read
+  // as a side-scroll. The outgoing card recedes while the incoming card rises
+  // over it from below.
+  static const double _cardPagerIncomingShrink = 0.20;
+  static const double _cardPagerOutgoingShrink = 0.18;
+  static const double _cardPagerOutgoingFade = 0.28;
+  static const double _cardPagerAppearStart = 0.18;
+  static const double _cardPagerAppearOpacity = 0.22;
+  static const double _cardPagerMaxBlurSigma = 14;
 
   /// The pager owns the gesture; each card cancels its horizontal layout
   /// offset so cards stay centered and stack instead of sliding in from a side.
@@ -3652,22 +3660,92 @@ class _TimetableScreenState extends State<TimetableScreen>
             controller.hasClients && controller.position.hasContentDimensions
             ? (controller.page ?? page.toDouble())
             : page.toDouble();
+        // Positive = the page is left of the active page; negative = right.
         final signedDistance = (activePage - page).clamp(-1.0, 1.0);
-        // A page after the active one starts one viewport away and becomes
-        // active as distance approaches -1; pages before it move from 0 to 1.
-        final scaleProgress = signedDistance >= 0
-            ? signedDistance
-            : 1.0 + signedDistance;
-        if (scaleProgress == 0) {
+        final depth = signedDistance.abs();
+        if (depth == 0) {
           return cardChild ?? child;
         }
 
-        return Transform.scale(
-          scale: 1.0 - _cardPagerShrink * scaleProgress,
-          child: cardChild ?? child,
+        final leadDirection = _updatePagerLeadDirection(
+          controller,
+          activePage,
         );
+        final incomingness =
+            (-signedDistance.sign * leadDirection).clamp(0.0, 1.0);
+        final viewportWidth = controller.position.viewportDimension;
+        final appearProgress =
+            ((depth - _cardPagerAppearStart) / (1.0 - _cardPagerAppearStart))
+                .clamp(0.0, 1.0)
+                .toDouble();
+        final easedAppear = Curves.easeOutCubic.transform(appearProgress);
+        // PageView lays both cards one viewport apart. Cancel that offset so
+        // neither card visibly travels sideways; the gesture only drives the
+        // stack depth.
+        final offset = Offset(signedDistance * viewportWidth, 0);
+        final isIncoming = incomingness > 0.001;
+        final scale = isIncoming
+            ? 1.0 - _cardPagerIncomingShrink * (1.0 - easedAppear)
+            : 1.0 - _cardPagerOutgoingShrink * depth;
+
+        Widget transition = Transform.translate(
+          offset: offset,
+          child: Transform.scale(
+            scale: scale,
+            child: cardChild ?? child,
+          ),
+        );
+
+        if (isIncoming) {
+          if (depth < _cardPagerAppearStart) {
+            // Keep the later-painted card hidden until the gesture has begun.
+            return Opacity(opacity: 0, child: transition);
+          }
+          final blurSigma =
+              _cardPagerMaxBlurSigma * (1.0 - easedAppear).clamp(0.0, 1.0);
+          if (blurSigma > 0.1) {
+            transition = ImageFiltered(
+              imageFilter: ui.ImageFilter.blur(
+                sigmaX: blurSigma,
+                sigmaY: blurSigma,
+                tileMode: ui.TileMode.clamp,
+              ),
+              child: transition,
+            );
+          }
+          transition = Opacity(
+            opacity: (_cardPagerAppearOpacity +
+                    (1.0 - _cardPagerAppearOpacity) * easedAppear)
+                .clamp(0.0, 1.0),
+            child: transition,
+          );
+        } else {
+          transition = Opacity(
+            opacity: (1.0 - _cardPagerOutgoingFade * depth).clamp(0.0, 1.0),
+            child: transition,
+          );
+        }
+
+        return transition;
       },
     );
+  }
+
+  double _updatePagerLeadDirection(
+    PageController controller,
+    double activePage,
+  ) {
+    final lastPage = _pagerLastActivePage[controller] ?? activePage;
+    final target = (activePage - lastPage).sign.toDouble();
+    final previous = _pagerLeadDirection[controller] ?? 0.0;
+    final direction = previous + (target - previous) * 0.55;
+    // Both adjacent page builders run in the same frame. Commit only when the
+    // rounded page changes, otherwise the second builder sees a zero delta.
+    if (activePage.roundToDouble() != lastPage.roundToDouble()) {
+      _pagerLastActivePage[controller] = activePage;
+    }
+    _pagerLeadDirection[controller] = direction;
+    return direction;
   }
 
   Widget _buildWeekPager(
