@@ -3696,10 +3696,8 @@ class _TimetableScreenState extends State<TimetableScreen>
           ),
           child: Transform.scale(scale: scale, child: cardChild ?? child),
         );
-        if (appearProgress >= 1) return transition;
-        // Use a single image filter for alpha and blur. Toggling separate
-        // Opacity / blur layers near the end can flash on Android around
-        // glass-backed course cards.
+        // Use a single image filter for alpha and blur. The completed state
+        // keeps the same wrapper so Android does not repaint as a new layer.
         final alpha =
             (_cardPagerAppearOpacity +
                     (1.0 - _cardPagerAppearOpacity) * appearProgress)

@@ -153,6 +153,10 @@ void main() {
         isEmpty,
       );
       expect(
+        find.ancestor(of: incoming, matching: find.byType(ImageFiltered)),
+        findsWidgets,
+      );
+      expect(
         tester.getRect(incoming).width / viewportSize.width,
         closeTo(1.0, 0.02),
       );
