@@ -3699,6 +3699,9 @@ class _TimetableScreenState extends State<TimetableScreen>
           if (page <= dragStartPage) {
             return cardChild ?? child;
           }
+          if (page > dragStartPage + 1) {
+            return cardChild ?? child;
+          }
           final dragProgress =
               ((dragStartPage - activePage) / (dragStartPage - page))
                   .clamp(0.0, 1.0)
