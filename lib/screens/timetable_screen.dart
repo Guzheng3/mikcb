@@ -171,7 +171,10 @@ class _SpringPageScrollPhysics extends PageScrollPhysics {
 
   @override
   _SpringPageScrollPhysics applyTo(ScrollPhysics? ancestor) {
-    return _SpringPageScrollPhysics(parent: buildParent(ancestor));
+    return _SpringPageScrollPhysics(
+      takeDragStartPage: takeDragStartPage,
+      parent: buildParent(ancestor),
+    );
   }
 
   @override
@@ -3673,7 +3676,36 @@ class _TimetableScreenState extends State<TimetableScreen>
         if (dragStartPage == null) return cardChild ?? child;
         final resolvedDirection = dragDirection ?? leadDirection;
         final pageDelta = page - dragStartPage;
-        if (pageDelta.abs() > 1.5 || pageDelta * resolvedDirection <= 0) {
+        if (pageDelta.abs() > 1.5) {
+          return cardChild ?? child;
+        }
+        // Backward paging mirrors the forward reveal: the active page recedes
+        // while the left neighbor keeps its natural PageView slide-in.
+        if (resolvedDirection < 0) {
+          if (pageDelta != 0) return cardChild ?? child;
+          final recedeProgress = (dragStartPage - activePage).clamp(0.0, 1.0);
+          final scale = 1.0 - (1.0 - _cardPagerMinScale) * recedeProgress;
+          final blurSigma = _cardPagerMaxBlurSigma * recedeProgress;
+          final identityFilter = ui.ColorFilter.mode(
+            const Color.fromARGB(255, 0, 0, 0),
+            ui.BlendMode.dstIn,
+          );
+          final filter = blurSigma > 0
+              ? ui.ImageFilter.compose(
+                  outer: identityFilter,
+                  inner: ui.ImageFilter.blur(
+                    sigmaX: blurSigma,
+                    sigmaY: blurSigma,
+                    tileMode: ui.TileMode.clamp,
+                  ),
+                )
+              : identityFilter;
+          return ImageFiltered(
+            imageFilter: filter,
+            child: Transform.scale(scale: scale, child: cardChild ?? child),
+          );
+        }
+        if (pageDelta * resolvedDirection <= 0) {
           return cardChild ?? child;
         }
         final dragProgress =
