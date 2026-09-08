@@ -3696,28 +3696,31 @@ class _TimetableScreenState extends State<TimetableScreen>
           ),
           child: Transform.scale(scale: scale, child: cardChild ?? child),
         );
-        if (appearProgress <= 0) {
-          return Opacity(opacity: 0, child: transition);
-        }
+        if (appearProgress >= 1) return transition;
+        // Use a single image filter for alpha and blur. Toggling separate
+        // Opacity / blur layers near the end can flash on Android around
+        // glass-backed course cards.
+        final alpha =
+            (_cardPagerAppearOpacity +
+                    (1.0 - _cardPagerAppearOpacity) * appearProgress)
+                .clamp(0.0, 1.0);
         final blurSigma =
             _cardPagerMaxBlurSigma * (1.0 - appearProgress).clamp(0.0, 1.0);
-        if (blurSigma > 0.1) {
-          transition = ImageFiltered(
-            imageFilter: ui.ImageFilter.blur(
-              sigmaX: blurSigma,
-              sigmaY: blurSigma,
-              tileMode: ui.TileMode.clamp,
-            ),
-            child: transition,
-          );
-        }
-        return Opacity(
-          opacity:
-              (_cardPagerAppearOpacity +
-                      (1.0 - _cardPagerAppearOpacity) * appearProgress)
-                  .clamp(0.0, 1.0),
-          child: transition,
+        final alphaFilter = ui.ColorFilter.mode(
+          Color.fromARGB((alpha * 255).round(), 0, 0, 0),
+          ui.BlendMode.dstIn,
         );
+        final filter = blurSigma > 0
+            ? ui.ImageFilter.compose(
+                outer: alphaFilter,
+                inner: ui.ImageFilter.blur(
+                  sigmaX: blurSigma,
+                  sigmaY: blurSigma,
+                  tileMode: ui.TileMode.clamp,
+                ),
+              )
+            : alphaFilter;
+        return ImageFiltered(imageFilter: filter, child: transition);
       },
     );
   }

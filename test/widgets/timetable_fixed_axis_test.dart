@@ -131,10 +131,7 @@ void main() {
         tester.getCenter(outgoing).dx,
         closeTo(viewportCenter.dx - 400, 1.0),
       );
-      expect(
-        tester.getCenter(incoming).dx,
-        closeTo(viewportCenter.dx, 1.0),
-      );
+      expect(tester.getCenter(incoming).dx, closeTo(viewportCenter.dx, 1.0));
       final viewportSize = tester.getRect(pageViewFinder).size;
       final outgoingSize = tester.getRect(outgoing).size;
       final incomingSize = tester.getRect(incoming).size;
@@ -149,6 +146,16 @@ void main() {
       for (var frame = 0; frame < 24; frame++) {
         await tester.pump(const Duration(milliseconds: 32));
       }
+      expect(
+        tester.widgetList<Opacity>(
+          find.ancestor(of: incoming, matching: find.byType(Opacity)),
+        ),
+        isEmpty,
+      );
+      expect(
+        tester.getRect(incoming).width / viewportSize.width,
+        closeTo(1.0, 0.02),
+      );
     },
   );
 }
