@@ -85,7 +85,7 @@ void main() {
   );
 
   testWidgets(
-    'pager cards stay centered while the incoming card appears and grows',
+    'forward pager keeps outgoing full scale while incoming fades in small',
     (tester) async {
       final provider = TimetableProvider(autoInitialize: false);
       await provider.updateTimetableSettings(
@@ -129,22 +129,16 @@ void main() {
       expect(incoming, findsOneWidget);
       expect(
         tester.getCenter(outgoing).dx,
-        closeTo(viewportCenter.dx, 1.0),
+        closeTo(viewportCenter.dx - 160, 1.0),
       );
       expect(
         tester.getCenter(incoming).dx,
-        closeTo(viewportCenter.dx, 1.0),
+        closeTo(viewportCenter.dx + 640, 1.0),
       );
       final viewportSize = tester.getRect(pageViewFinder).size;
       final incomingSize = tester.getRect(incoming).size;
-      expect(
-        incomingSize.width / viewportSize.width,
-        closeTo(0.80, 0.06),
-      );
-      expect(
-        incomingSize.height / viewportSize.height,
-        closeTo(0.80, 0.06),
-      );
+      expect(incomingSize.width / viewportSize.width, closeTo(0.8686, 0.02));
+      expect(incomingSize.height / viewportSize.height, closeTo(0.8686, 0.02));
 
       await gesture.up();
       for (var frame = 0; frame < 24; frame++) {
