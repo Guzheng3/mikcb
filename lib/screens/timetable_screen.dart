@@ -3679,8 +3679,9 @@ class _TimetableScreenState extends State<TimetableScreen>
         if (pageDelta.abs() > 1.5) {
           return cardChild ?? child;
         }
-        // Backward paging mirrors the forward reveal: the active page recedes
-        // while the left neighbor keeps its natural PageView slide-in.
+        // Backward paging stacks the outgoing page in place: cancel its
+        // PageView offset so it recedes below while the left neighbor slides
+        // over it with the natural PageView trajectory.
         if (resolvedDirection < 0) {
           if (pageDelta != 0) return cardChild ?? child;
           final recedeProgress = (dragStartPage - activePage).clamp(0.0, 1.0);
@@ -3702,7 +3703,13 @@ class _TimetableScreenState extends State<TimetableScreen>
               : identityFilter;
           return ImageFiltered(
             imageFilter: filter,
-            child: Transform.scale(scale: scale, child: cardChild ?? child),
+            child: Transform.translate(
+              offset: Offset(
+                (activePage - page) * controller.position.viewportDimension,
+                0,
+              ),
+              child: Transform.scale(scale: scale, child: cardChild ?? child),
+            ),
           );
         }
         if (pageDelta * resolvedDirection <= 0) {

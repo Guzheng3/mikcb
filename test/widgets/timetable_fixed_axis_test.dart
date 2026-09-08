@@ -261,10 +261,7 @@ void main() {
     final incoming = find.byKey(const ValueKey('week-page-1'));
     expect(outgoing, findsOneWidget);
     expect(incoming, findsOneWidget);
-    expect(
-      tester.getCenter(outgoing).dx,
-      closeTo(viewportCenter.dx + 200, 1.0),
-    );
+    expect(tester.getCenter(outgoing).dx, closeTo(viewportCenter.dx, 1.0));
     expect(
       tester.getCenter(incoming).dx,
       closeTo(viewportCenter.dx - 600, 1.0),
