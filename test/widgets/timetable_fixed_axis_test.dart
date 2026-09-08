@@ -85,7 +85,7 @@ void main() {
   );
 
   testWidgets(
-    'pager cards stack at center while swiping forward',
+    'forward pager keeps outgoing full scale while incoming grows beside it',
     (tester) async {
       final provider = TimetableProvider(autoInitialize: false);
       await provider.updateTimetableSettings(
@@ -129,14 +129,19 @@ void main() {
       expect(incoming, findsOneWidget);
       expect(
         tester.getCenter(outgoing).dx,
-        closeTo(viewportCenter.dx, 1.0),
+        closeTo(viewportCenter.dx - 400, 1.0),
       );
       expect(
         tester.getCenter(incoming).dx,
-        closeTo(viewportCenter.dx, 1.0),
+        closeTo(viewportCenter.dx + 400, 1.0),
       );
       final viewportSize = tester.getRect(pageViewFinder).size;
+      final outgoingSize = tester.getRect(outgoing).size;
       final incomingSize = tester.getRect(incoming).size;
+      expect(outgoingSize.width / viewportSize.width, closeTo(1.0, 0.02));
+      expect(outgoingSize.height / viewportSize.height, closeTo(1.0, 0.02));
+      expect(incomingSize.width / viewportSize.width, closeTo(0.934, 0.03));
+      expect(incomingSize.height / viewportSize.height, closeTo(0.934, 0.03));
       expect(incomingSize.width / viewportSize.width, lessThan(0.96));
       expect(incomingSize.height / viewportSize.height, lessThan(0.96));
 

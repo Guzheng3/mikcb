@@ -392,6 +392,7 @@ class _TimetableScreenState extends State<TimetableScreen>
   int? _dayViewTransitionSourceDayOfWeek;
   double _weekSwipeDirection = 1;
   double? _weekPagerDragStartPage;
+  double _daySwipeDirection = 1;
   double _dayViewAnchorFraction = 0.5;
   bool _isDaySwipeAnimating = false;
 
@@ -3645,12 +3646,17 @@ class _TimetableScreenState extends State<TimetableScreen>
   static const double _cardPagerOutgoingShrink = 0.18;
   static const double _cardPagerOutgoingFade = 0.28;
   static const double _cardPagerAppearStart = 0.18;
+  static const double _sidePagerAppearStart = 0.1314;
+  static const double _sidePagerMinScale = 0.8686;
   static const double _cardPagerAppearOpacity = 0.22;
   static const double _cardPagerMaxBlurSigma = 14;
-  /// The pager owns the gesture; each card cancels its horizontal layout
-  /// offset so cards stay centered and stack instead of sliding in from a side.
+  static const double _sidePagerAppearStart = 0.1314;
+  static const double _sidePagerMinScale = 0.8686;
+  /// Forward swipes slide side-by-side; backward swipes stay centered stack.
   Widget _buildPagerCardTransition({
     required PageController controller,
+    double? Function()? takeDragStartPage,
+    double? Function()? takeDragDirection,
     required int page,
     required Widget child,
   }) {
@@ -3664,6 +3670,8 @@ class _TimetableScreenState extends State<TimetableScreen>
             : page.toDouble();
         // Positive = the page is left of the active page; negative = right.
         final leadDirection = _updatePagerLeadDirection(controller, activePage);
+        final dragStartPage = takeDragStartPage?.call();
+        final dragDirection = takeDragDirection?.call();
         final signedDistance = (activePage - page).clamp(-1.0, 1.0);
         final depth = signedDistance.abs();
         if (depth == 0) {
@@ -3673,6 +3681,58 @@ class _TimetableScreenState extends State<TimetableScreen>
         final incomingness = (-signedDistance.sign * leadDirection).clamp(
           0.0,
           1.0,
+        final gestureDirection = dragStartPage == null
+            ? leadDirection
+            : (page - dragStartPage).sign.toDouble();
+        final resolvedDirection = dragDirection ?? gestureDirection;
+
+        // Forward (left-drag) keeps the outgoing page at full scale and uses
+        // total drag progress, because controller.page stays negative until
+        // the swipe crosses the current page's leading edge.
+        final isForwardGesture = resolvedDirection > 0.001;
+        if (isForwardGesture && dragStartPage != null) {
+          if (page <= dragStartPage) {
+            return cardChild ?? child;
+          }
+          final dragProgress =
+              ((dragStartPage - activePage) / (dragStartPage - page))
+                  .clamp(0.0, 1.0)
+                  .toDouble();
+          final appearProgress =
+              ((dragProgress - _sidePagerAppearStart) /
+                      (1.0 - _sidePagerAppearStart))
+                  .clamp(0.0, 1.0)
+                  .toDouble();
+          final scale =
+              _sidePagerMinScale + (1.0 - _sidePagerMinScale) * appearProgress;
+          Widget transition = Transform.scale(
+            scale: scale,
+            child: cardChild ?? child,
+          );
+          if (appearProgress <= 0) {
+            return Opacity(opacity: 0, child: transition);
+          }
+          final blurSigma =
+              _cardPagerMaxBlurSigma * (1.0 - appearProgress).clamp(0.0, 1.0);
+          if (blurSigma > 0.1) {
+            transition = ImageFiltered(
+              imageFilter: ui.ImageFilter.blur(
+                sigmaX: blurSigma,
+                sigmaY: blurSigma,
+                tileMode: ui.TileMode.clamp,
+              ),
+              child: transition,
+            );
+          }
+          return Opacity(
+            opacity:
+                (_cardPagerAppearOpacity +
+                        (1.0 - _cardPagerAppearOpacity) * appearProgress)
+                    .clamp(0.0, 1.0),
+            child: transition,
+          );
+        }
+
         );
         final viewportWidth = controller.position.viewportDimension;
         final appearProgress =
@@ -3834,6 +3894,8 @@ class _TimetableScreenState extends State<TimetableScreen>
               itemBuilder: (context, index) {
                 final week = index + 1;
                 return _buildPagerCardTransition(
+                  takeDragStartPage: () => _weekPagerDragStartPage,
+                  takeDragDirection: () => _weekSwipeDirection,
                   controller: _weekPageController,
                   page: index,
                   child: RepaintBoundary(
@@ -4301,6 +4363,10 @@ class _TimetableScreenState extends State<TimetableScreen>
                     onNotification: (notification) {
                       if (notification.metrics.axis != Axis.horizontal) {
                         return false;
+                        if (notification.scrollDelta != 0) {
+                          _daySwipeDirection =
+                              notification.scrollDelta! > 0 ? 1 : -1;
+                        }
                       }
                       if (notification is ScrollUpdateNotification) {
                         // 拦截 update 继续冒泡：HyperosRootPage 的触边震动
@@ -4356,6 +4422,8 @@ class _TimetableScreenState extends State<TimetableScreen>
                         // 1 Hz progress heartbeat rebuilds only this page's
                         // content (ongoing badges / progress), not the State.
                         return _buildPagerCardTransition(
+                          takeDragStartPage: () => _dayPagerDragStartPage,
+                          takeDragDirection: () => _daySwipeDirection,
                           controller: controller,
                           page: page,
                           child: ValueListenableBuilder<int>(
