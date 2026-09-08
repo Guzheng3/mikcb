@@ -178,10 +178,9 @@ void main() {
       // 时间列/网格盒本身会被 body 拉伸到满高，量不到内容底边；
       // 改量时间列的节单元格：内容底边 = 首格顶 + 各节高之和。
       final columnFinder = find.byKey(const ValueKey('timetable-time-column'));
-      final column = tester.widget<Column>(
-        find.descendant(of: columnFinder, matching: find.byType(Column)).first,
+      final sectionCells = tester.widgetList<Container>(
+        find.descendant(of: columnFinder, matching: find.byType(Container)),
       );
-      final sectionCells = column.children.whereType<Container>().toList();
       expect(sectionCells, isNotEmpty);
       // Container 的 height 参数没有公开 getter，直接量渲染矩形。
       double measureBottom(List<Rect> rects) =>
@@ -204,8 +203,14 @@ void main() {
           .toList(growable: false);
       expect(
         measureBottom(draggedRects),
-        closeTo(pagerBottom - kGlassDockPillOccupancy, 1.5),
-        reason: '上滑到底后课程内容应整体停到药丸上方、不被遮挡',
+        closeTo(measureBottom(cellRects) - kGlassDockPillOccupancy, 2.5),
+        reason: '上滑后左侧时间轴应跟随课程卡片一起移动',
+      );
+      expect(scrollView.controller, isNotNull);
+      expect(
+        scrollView.controller!.offset,
+        closeTo(kGlassDockPillOccupancy, 0.5),
+        reason: '右侧课表应滚动完整底部余量到药丸上方',
       );
     },
   );

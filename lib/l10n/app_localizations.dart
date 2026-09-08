@@ -722,6 +722,36 @@ abstract class AppLocalizations {
   /// **'立即拉取对方课表'**
   String get withuCouplePullNow;
 
+  /// No description provided for @withuCoupleCenterTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'情侣中心'**
+  String get withuCoupleCenterTitle;
+
+  /// No description provided for @withuCoupleSettings.
+  ///
+  /// In zh, this message translates to:
+  /// **'情侣课表设置'**
+  String get withuCoupleSettings;
+
+  /// No description provided for @withuCoupleSyncNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'立即同步课表'**
+  String get withuCoupleSyncNow;
+
+  /// No description provided for @withuCouplePartnerImported.
+  ///
+  /// In zh, this message translates to:
+  /// **'对方课表已导入'**
+  String get withuCouplePartnerImported;
+
+  /// No description provided for @withuCouplePartnerNotImported.
+  ///
+  /// In zh, this message translates to:
+  /// **'尚未导入对方课表'**
+  String get withuCouplePartnerNotImported;
+
   /// No description provided for @withuCoupleUploadForPartner.
   ///
   /// In zh, this message translates to:
@@ -2836,18 +2866,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'开发人员与教务导入适配者名单'**
   String get aboutContributorsSubtitle;
-
-  /// No description provided for @aboutRepositoryTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'开源仓库'**
-  String get aboutRepositoryTitle;
-
-  /// No description provided for @aboutRepositorySubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'GitHub 仓库地址、源码、Release 和反馈入口'**
-  String get aboutRepositorySubtitle;
 
   /// No description provided for @aboutOpenSourceLicensesTitle.
   ///
@@ -5163,6 +5181,24 @@ abstract class AppLocalizations {
   /// **'左右切换周次时，背景图与课表页面一起移动'**
   String get homePageBackdropFollowsWeekPagerSubtitle;
 
+  /// No description provided for @homePageBackdropTuningTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'背景调节'**
+  String get homePageBackdropTuningTitle;
+
+  /// No description provided for @homePageBackdropBlurLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'模糊强度'**
+  String get homePageBackdropBlurLabel;
+
+  /// No description provided for @homePageBackdropFrostLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'磨砂亮度'**
+  String get homePageBackdropFrostLabel;
+
   /// No description provided for @homePageBackgroundScopeTitle.
   ///
   /// In zh, this message translates to:
@@ -6495,6 +6531,18 @@ abstract class AppLocalizations {
   /// **'开启后会按当前节数自动铺满页面底部，不再保留下方空隙'**
   String get layoutAutoFitHeightSubtitle;
 
+  /// No description provided for @layoutVerticalScrollEffectTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'上下滑动动效'**
+  String get layoutVerticalScrollEffectTitle;
+
+  /// No description provided for @layoutVerticalScrollEffectSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭自动充满后可用；关闭时上下滑动保持干脆'**
+  String get layoutVerticalScrollEffectSubtitle;
+
   /// No description provided for @layoutHideWeekendsTitle.
   ///
   /// In zh, this message translates to:
@@ -6807,35 +6855,11 @@ abstract class AppLocalizations {
   /// **'李老师'**
   String get sampleTeacherLi;
 
-  /// No description provided for @aboutRepositorySheetTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'开源仓库'**
-  String get aboutRepositorySheetTitle;
-
-  /// No description provided for @aboutRepositorySheetHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'如果你想补学校教务导入适配，建议同时查看教务适配仓 qingyu_warehouse'**
-  String get aboutRepositorySheetHint;
-
-  /// No description provided for @aboutOpenGitHubAction.
-  ///
-  /// In zh, this message translates to:
-  /// **'打开 GitHub'**
-  String get aboutOpenGitHubAction;
-
   /// No description provided for @aboutOpenWarehouseRepoAction.
   ///
   /// In zh, this message translates to:
   /// **'打开教务适配仓'**
   String get aboutOpenWarehouseRepoAction;
-
-  /// No description provided for @copiedRepositoryAddress.
-  ///
-  /// In zh, this message translates to:
-  /// **'已复制仓库地址'**
-  String get copiedRepositoryAddress;
 
   /// No description provided for @copiedWarehouseRepositoryAddress.
   ///
@@ -6882,7 +6906,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutReadVersionFailedHint.
   ///
   /// In zh, this message translates to:
-  /// **'如果你当前网络访问 GitHub 不稳定，可稍后再试，或切到下面的国内下载方式后重试'**
+  /// **'暂时无法连接更新服务器，请检查网络后重试'**
   String get aboutReadVersionFailedHint;
 
   /// No description provided for @aboutViewReleaseAction.
@@ -6896,6 +6920,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'立即下载'**
   String get aboutDownloadNowAction;
+
+  /// No description provided for @aboutSkipVersionAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'跳过此版本'**
+  String get aboutSkipVersionAction;
 
   /// No description provided for @aboutOpenDownloadPageAction.
   ///
@@ -6936,7 +6966,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutUpdateAvailableHint.
   ///
   /// In zh, this message translates to:
-  /// **'你现在只需要点下面的“立即下载”即可，测速、镜像和测试版都已经收进后面的高级选项里'**
+  /// **'有新版本可用，点击下方“立即下载”即可安装'**
   String get aboutUpdateAvailableHint;
 
   /// No description provided for @aboutUpdateNoUpdateHint.
@@ -7362,7 +7392,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutMirrorUnknownSizeHint.
   ///
   /// In zh, this message translates to:
-  /// **'镜像源未返回文件总大小，先显示已下载体积'**
+  /// **'暂时无法获取更新文件总大小，先显示已下载大小'**
   String get aboutMirrorUnknownSizeHint;
 
   /// No description provided for @aboutCancelDownloadAction.
@@ -8866,7 +8896,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeWidgetTargetCoupleTimetable42.
   ///
   /// In zh, this message translates to:
-  /// **'情侣课表 4×2'**
+  /// **'情侣课表 4×3'**
   String get homeWidgetTargetCoupleTimetable42;
 
   /// No description provided for @addCourseSheetTitle.
@@ -10156,6 +10186,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'删除'**
   String get courseActionDeleteSecondary;
+
+  /// No description provided for @courseHeaderAlarmAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'闹钟'**
+  String get courseHeaderAlarmAction;
+
+  /// No description provided for @courseHeaderTaskAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'任务'**
+  String get courseHeaderTaskAction;
+
+  /// No description provided for @courseHeaderNoteAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'备注'**
+  String get courseHeaderNoteAction;
+
+  /// No description provided for @courseHeaderEditAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get courseHeaderEditAction;
 
   /// No description provided for @courseNoteSheetTitle.
   ///
@@ -12469,42 +12523,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'国内镜像'**
   String get appUpdateDownloadSourceMirror;
-
-  /// No description provided for @appUpdateDownloadChannelPgyer.
-  ///
-  /// In zh, this message translates to:
-  /// **'蒲公英下载'**
-  String get appUpdateDownloadChannelPgyer;
-
-  /// No description provided for @appUpdateDownloadChannelGithub.
-  ///
-  /// In zh, this message translates to:
-  /// **'GitHub 下载'**
-  String get appUpdateDownloadChannelGithub;
-
-  /// No description provided for @appUpdateDownloadChannelPgyerDescription.
-  ///
-  /// In zh, this message translates to:
-  /// **'国内高速下载，推荐使用'**
-  String get appUpdateDownloadChannelPgyerDescription;
-
-  /// No description provided for @appUpdateDownloadChannelGithubDescription.
-  ///
-  /// In zh, this message translates to:
-  /// **'GitHub 原生 + 国内镜像'**
-  String get appUpdateDownloadChannelGithubDescription;
-
-  /// No description provided for @appUpdateDownloadChannelGitcode.
-  ///
-  /// In zh, this message translates to:
-  /// **'GitCode 直连'**
-  String get appUpdateDownloadChannelGitcode;
-
-  /// No description provided for @appUpdateDownloadChannelGitcodeDescription.
-  ///
-  /// In zh, this message translates to:
-  /// **'GitCode 发行版直连下载，国内速度快'**
-  String get appUpdateDownloadChannelGitcodeDescription;
 
   /// No description provided for @holidayStatutoryLabel.
   ///

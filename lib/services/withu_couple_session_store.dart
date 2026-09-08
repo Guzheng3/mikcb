@@ -50,8 +50,21 @@ class WithuCoupleSession {
       other.csrfToken == csrfToken;
 
   @override
-  int get hashCode =>
-      Object.hash(username, sessionId, deviceToken, csrfToken);
+  int get hashCode => Object.hash(username, sessionId, deviceToken, csrfToken);
+}
+
+class WithuCoupleDisplayProfile {
+  final String userNickname;
+  final String partnerNickname;
+  final String? userAvatar;
+  final String? partnerAvatar;
+
+  const WithuCoupleDisplayProfile({
+    required this.userNickname,
+    required this.partnerNickname,
+    this.userAvatar,
+    this.partnerAvatar,
+  });
 }
 
 abstract class WithuCoupleSecureStorage {
@@ -88,6 +101,10 @@ class WithuCoupleSessionStore {
   static const String _sessionIdKey = 'withu_couple_phpsessid';
   static const String _deviceTokenKey = 'withu_couple_device';
   static const String _csrfTokenKey = 'withu_couple_csrf_token';
+  static const String _userNicknameKey = 'withu_couple_user_nickname';
+  static const String _partnerNicknameKey = 'withu_couple_partner_nickname';
+  static const String _userAvatarKey = 'withu_couple_user_avatar';
+  static const String _partnerAvatarKey = 'withu_couple_partner_avatar';
 
   /// 旧版本曾把登录密码一并写入安全存储。服务端登录后会下发
   /// withu_device 可信设备 Cookie，PHP 会话过期时凭它即可自动恢复会话，
@@ -105,9 +122,7 @@ class WithuCoupleSessionStore {
     final deviceToken = await _storage.read(key: _deviceTokenKey);
     final csrfToken = await _storage.read(key: _csrfTokenKey);
     await _storage.delete(key: _legacyPasswordKey);
-    if (username == null ||
-        sessionId == null ||
-        csrfToken == null) {
+    if (username == null || sessionId == null || csrfToken == null) {
       return null;
     }
     return WithuCoupleSession(
@@ -129,6 +144,47 @@ class WithuCoupleSessionStore {
     }
   }
 
+  Future<WithuCoupleDisplayProfile?> loadDisplayProfile() async {
+    final userNickname = await _storage.read(key: _userNicknameKey);
+    final partnerNickname = await _storage.read(key: _partnerNicknameKey);
+    final userAvatar = (await _storage.read(key: _userAvatarKey))?.trim();
+    final partnerAvatar = (await _storage.read(key: _partnerAvatarKey))?.trim();
+    if (userNickname == null ||
+        userNickname.trim().isEmpty ||
+        partnerNickname == null ||
+        partnerNickname.trim().isEmpty) {
+      return null;
+    }
+    return WithuCoupleDisplayProfile(
+      userNickname: userNickname.trim(),
+      partnerNickname: partnerNickname.trim(),
+      userAvatar: userAvatar?.isEmpty ?? true ? null : userAvatar,
+      partnerAvatar: partnerAvatar?.isEmpty ?? true ? null : partnerAvatar,
+    );
+  }
+
+  Future<void> saveDisplayProfile(WithuCoupleDisplayProfile profile) async {
+    final userNickname = profile.userNickname.trim();
+    final partnerNickname = profile.partnerNickname.trim();
+    if (userNickname.isEmpty || partnerNickname.isEmpty) {
+      return;
+    }
+    await _storage.write(key: _userNicknameKey, value: userNickname);
+    await _storage.write(key: _partnerNicknameKey, value: partnerNickname);
+    final userAvatar = profile.userAvatar?.trim();
+    final partnerAvatar = profile.partnerAvatar?.trim();
+    if (userAvatar == null || userAvatar.isEmpty) {
+      await _storage.delete(key: _userAvatarKey);
+    } else {
+      await _storage.write(key: _userAvatarKey, value: userAvatar);
+    }
+    if (partnerAvatar == null || partnerAvatar.isEmpty) {
+      await _storage.delete(key: _partnerAvatarKey);
+    } else {
+      await _storage.write(key: _partnerAvatarKey, value: partnerAvatar);
+    }
+  }
+
   Future<void> clear() async {
     for (final key in [
       _usernameKey,
@@ -136,6 +192,10 @@ class WithuCoupleSessionStore {
       _sessionIdKey,
       _deviceTokenKey,
       _csrfTokenKey,
+      _userNicknameKey,
+      _partnerNicknameKey,
+      _userAvatarKey,
+      _partnerAvatarKey,
     ]) {
       await _storage.delete(key: key);
     }

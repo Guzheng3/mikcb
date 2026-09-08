@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_http_client.dart';
@@ -10,7 +11,10 @@ import 'withu_couple_config.dart';
 class WithuAppUpdateService {
   static const String ignoredVersionPrefsKey =
       'withu_update_ignored_version_v1';
+  static const String _selectedBaseUrlPrefsKey =
+      'withu_update_selected_base_url_v1';
   static const Duration _defaultRequestTimeout = Duration(seconds: 4);
+  static const Duration _probeTimeout = Duration(seconds: 2);
 
   WithuAppUpdateService({
     http.Client? client,
@@ -29,13 +33,14 @@ class WithuAppUpdateService {
 
   Future<AppUpdateCheckResult?> checkForUpdates({
     required String currentVersion,
+    bool respectIgnoredVersion = true,
   }) async {
     if (currentVersion.trim().isEmpty) {
       return null;
     }
 
     try {
-      final config = await _configStore.load();
+      final config = await _resolveUpdateConfig();
       final response = await _client
           .get(config.appUpdateApiUri)
           .timeout(_requestTimeout);
@@ -63,7 +68,9 @@ class WithuAppUpdateService {
       if (release == null || !isRemoteNewer(release.version, currentVersion)) {
         return _noUpdate(currentVersion);
       }
-      if (!release.forceUpdate && await isVersionIgnored(release.version)) {
+      if (respectIgnoredVersion &&
+          !release.forceUpdate &&
+          await isVersionIgnored(release.version)) {
         return _noUpdate(currentVersion);
       }
 
@@ -75,7 +82,80 @@ class WithuAppUpdateService {
         message: 'withu_update_available',
       );
     } catch (_) {
+      await _clearSelectedBaseUrl();
       return null;
+    }
+  }
+
+  Future<WithuCoupleConfig> _resolveUpdateConfig() async {
+    final config = await _configStore.load();
+    if (!WithuCoupleConfig.isBuiltInBaseUrl(config.baseUrl)) {
+      return config;
+    }
+    final cached = await _loadSelectedBaseUrl();
+    if (cached != null && WithuCoupleConfig.isBuiltInBaseUrl(cached)) {
+      return config.copyWith(baseUrl: cached);
+    }
+    final winner = await _probeFastestBaseUrl();
+    if (winner != null) {
+      await _saveSelectedBaseUrl(winner);
+      return config.copyWith(baseUrl: winner);
+    }
+    return config;
+  }
+
+  Future<String?> _probeFastestBaseUrl() async {
+    final latencies = await Future.wait(
+      WithuCoupleConfig.builtInBaseUrls.map(_probeLatency),
+    );
+    String? best;
+    Duration? bestLatency;
+    for (var i = 0; i < WithuCoupleConfig.builtInBaseUrls.length; i++) {
+      final latency = latencies[i];
+      if (latency != null && (bestLatency == null || latency < bestLatency)) {
+        best = WithuCoupleConfig.builtInBaseUrls[i];
+        bestLatency = latency;
+      }
+    }
+    return best;
+  }
+
+  Future<Duration?> _probeLatency(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      final stopwatch = Stopwatch()..start();
+      await _client.head(uri).timeout(_probeTimeout);
+      stopwatch.stop();
+      return stopwatch.elapsed;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<String?> _loadSelectedBaseUrl() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_selectedBaseUrlPrefsKey);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _saveSelectedBaseUrl(String url) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_selectedBaseUrlPrefsKey, url);
+    } catch (_) {
+      // Selection cache is best-effort.
+    }
+  }
+
+  Future<void> _clearSelectedBaseUrl() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_selectedBaseUrlPrefsKey);
+    } catch (_) {
+      // Best-effort.
     }
   }
 
@@ -124,9 +204,11 @@ class WithuAppUpdateService {
     final uri = Uri.tryParse(downloadUrl);
     final apiUri = config.appUpdateApiUri;
     final usesLocalHost = _isLocalUpdateHost(apiUri.host);
+    final allowHttp =
+        usesLocalHost || WithuCoupleConfig.isBuiltInHost(apiUri.host);
     if (version.isEmpty ||
         uri == null ||
-        (uri.scheme != 'https' && !(usesLocalHost && uri.scheme == 'http')) ||
+        (uri.scheme != 'https' && !(allowHttp && uri.scheme == 'http')) ||
         uri.host != apiUri.host ||
         !RegExp(r'^[a-fA-F0-9]{64}$').hasMatch(sha256)) {
       return null;
@@ -146,7 +228,11 @@ class WithuAppUpdateService {
   }
 
   static bool isRemoteNewer(String remote, String current) {
-    return _compareVersions(remote, current) > 0;
+    final remoteVersion = _parseVersion(remote);
+    final currentVersion = _parseVersion(current);
+    return remoteVersion != null &&
+        currentVersion != null &&
+        remoteVersion > currentVersion;
   }
 
   static bool _isLocalUpdateHost(String host) {
@@ -154,64 +240,13 @@ class WithuAppUpdateService {
     return localHosts.contains(host.toLowerCase());
   }
 
-  static int _compareVersions(String remote, String current) {
-    final remoteVersion = _parseVersion(remote);
-    final currentVersion = _parseVersion(current);
-    final length =
-        remoteVersion.mainParts.length > currentVersion.mainParts.length
-        ? remoteVersion.mainParts.length
-        : currentVersion.mainParts.length;
-
-    for (var index = 0; index < length; index++) {
-      final remotePart = index < remoteVersion.mainParts.length
-          ? remoteVersion.mainParts[index]
-          : 0;
-      final currentPart = index < currentVersion.mainParts.length
-          ? currentVersion.mainParts[index]
-          : 0;
-      if (remotePart != currentPart) {
-        return remotePart.compareTo(currentPart);
-      }
+  static Version? _parseVersion(String raw) {
+    final normalized = raw.trim().replaceFirst(RegExp(r'^[vV]'), '');
+    try {
+      return Version.parse(normalized);
+    } on FormatException {
+      return null;
     }
-
-    final remotePre = remoteVersion.prerelease;
-    final currentPre = currentVersion.prerelease;
-    if (remotePre == null && currentPre == null) {
-      return 0;
-    }
-    if (remotePre == null) {
-      return 1;
-    }
-    if (currentPre == null) {
-      return -1;
-    }
-    return remotePre.compareTo(currentPre);
-  }
-
-  static ({List<int> mainParts, String? prerelease}) _parseVersion(String raw) {
-    final normalized = raw
-        .trim()
-        .replaceFirst(RegExp(r'^[vV]'), '')
-        .split('+')
-        .first;
-    final dashIndex = normalized.indexOf('-');
-    final mainText = dashIndex < 0
-        ? normalized
-        : normalized.substring(0, dashIndex);
-    final prerelease = dashIndex < 0
-        ? null
-        : normalized.substring(dashIndex + 1).trim();
-    final mainParts = mainText
-        .split('.')
-        .map((part) => int.tryParse(part.trim()) ?? 0)
-        .toList();
-    if (mainParts.isEmpty) {
-      mainParts.add(0);
-    }
-    return (
-      mainParts: mainParts,
-      prerelease: prerelease == null || prerelease.isEmpty ? null : prerelease,
-    );
   }
 
   void dispose() {

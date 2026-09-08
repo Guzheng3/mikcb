@@ -87,9 +87,9 @@ internal fun liveSchedulerIsLegacyHolidayFlagActive(
 
 /**
  * Same priority as Flutter [TimetableProvider.isHoliday]:
- * 1. Effective adjusted workday (makeup) â†’ not holiday (beats override)
- * 2. holidayOverrideEnabled â†’ holiday
- * 3. enableHolidayMarking off â†’ not holiday
+ * 1. Effective adjusted workday (makeup) â†?not holiday (beats override)
+ * 2. holidayOverrideEnabled â†?holiday
+ * 3. enableHolidayMarking off â†?not holiday
  * 4. Else membership in [holidayDates]
  */
 internal fun liveSchedulerIsDateHoliday(
@@ -829,8 +829,10 @@ object LiveUpdateScheduler {
     }
 
     fun handleBootReschedule(context: Context) {
-        BeforeClassQuickActionRestore.restoreOnBoot(context.applicationContext)
-        reschedule(context, allowImmediateStart = true, stopStaleSessions = true)
+        val appContext = context.applicationContext
+        BeforeClassQuickActionRestore.restoreOnBoot(appContext)
+        AppStartupCoordinator.rescheduleFallbackWorkers(appContext)
+        reschedule(appContext, allowImmediateStart = true, stopStaleSessions = true)
     }
 
     fun handleTimeReschedule(context: Context) {
@@ -1037,7 +1039,7 @@ object LiveUpdateScheduler {
     /**
      * Apply the auto quick action for a course whose lead window already
      * started ([startAt - lead, startAt)) but whose stage trigger has not
-     * fired yet â€” e.g. the exact alarm woke us at the quick-action time, or
+     * fired yet â€?e.g. the exact alarm woke us at the quick-action time, or
      * the app was opened mid-window. Dedup lives in
      * [BeforeClassQuickActionRestore.applyAutoQuickAction].
      */
@@ -2257,6 +2259,8 @@ class LiveUpdateReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         when (intent?.action) {
             Intent.ACTION_BOOT_COMPLETED,
+            "android.intent.action.QUICKBOOT_POWERON",
+            "com.htc.intent.action.QUICKBOOT_POWERON",
             Intent.ACTION_MY_PACKAGE_REPLACED ->
                 LiveUpdateScheduler.handleBootReschedule(context)
             Intent.ACTION_TIME_CHANGED,

@@ -340,6 +340,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get withuCouplePullNow => '立即拉取对方课表';
 
   @override
+  String get withuCoupleCenterTitle => '情侣中心';
+
+  @override
+  String get withuCoupleSettings => '情侣课表设置';
+
+  @override
+  String get withuCoupleSyncNow => '立即同步课表';
+
+  @override
+  String get withuCouplePartnerImported => '对方课表已导入';
+
+  @override
+  String get withuCouplePartnerNotImported => '尚未导入对方课表';
+
+  @override
   String get withuCoupleUploadForPartner => '上传我的课表';
 
   @override
@@ -1501,12 +1516,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aboutContributorsSubtitle => '开发人员与教务导入适配者名单';
-
-  @override
-  String get aboutRepositoryTitle => '开源仓库';
-
-  @override
-  String get aboutRepositorySubtitle => 'GitHub 仓库地址、源码、Release 和反馈入口';
 
   @override
   String get aboutOpenSourceLicensesTitle => '开源许可';
@@ -2784,6 +2793,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homePageBackdropFollowsWeekPagerSubtitle => '左右切换周次时，背景图与课表页面一起移动';
 
   @override
+  String get homePageBackdropTuningTitle => '背景调节';
+
+  @override
+  String get homePageBackdropBlurLabel => '模糊强度';
+
+  @override
+  String get homePageBackdropFrostLabel => '磨砂亮度';
+
+  @override
   String get homePageBackgroundScopeTitle => '背景显示区域';
 
   @override
@@ -3508,6 +3526,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layoutAutoFitHeightSubtitle => '开启后会按当前节数自动铺满页面底部，不再保留下方空隙';
 
   @override
+  String get layoutVerticalScrollEffectTitle => '上下滑动动效';
+
+  @override
+  String get layoutVerticalScrollEffectSubtitle => '关闭自动充满后可用；关闭时上下滑动保持干脆';
+
+  @override
   String get layoutHideWeekendsTitle => '隐藏周六周日';
 
   @override
@@ -3685,20 +3709,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sampleTeacherLi => '李老师';
 
   @override
-  String get aboutRepositorySheetTitle => '开源仓库';
-
-  @override
-  String get aboutRepositorySheetHint =>
-      '如果你想补学校教务导入适配，建议同时查看教务适配仓 qingyu_warehouse';
-
-  @override
-  String get aboutOpenGitHubAction => '打开 GitHub';
-
-  @override
   String get aboutOpenWarehouseRepoAction => '打开教务适配仓';
-
-  @override
-  String get copiedRepositoryAddress => '已复制仓库地址';
 
   @override
   String get copiedWarehouseRepositoryAddress => '已复制教务适配仓地址';
@@ -3722,14 +3733,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutReadVersionFailed => '暂时无法读取版本信息，请稍后重试';
 
   @override
-  String get aboutReadVersionFailedHint =>
-      '如果你当前网络访问 GitHub 不稳定，可稍后再试，或切到下面的国内下载方式后重试';
+  String get aboutReadVersionFailedHint => '暂时无法连接更新服务器，请检查网络后重试';
 
   @override
   String get aboutViewReleaseAction => '查看 Release';
 
   @override
   String get aboutDownloadNowAction => '立即下载';
+
+  @override
+  String get aboutSkipVersionAction => '跳过此版本';
 
   @override
   String get aboutOpenDownloadPageAction => '打开下载页';
@@ -3750,8 +3763,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutPrereleaseChannel => '测试版';
 
   @override
-  String get aboutUpdateAvailableHint =>
-      '你现在只需要点下面的“立即下载”即可，测速、镜像和测试版都已经收进后面的高级选项里';
+  String get aboutUpdateAvailableHint => '有新版本可用，点击下方“立即下载”即可安装';
 
   @override
   String get aboutUpdateNoUpdateHint =>
@@ -3992,7 +4004,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get aboutMirrorUnknownSizeHint => '镜像源未返回文件总大小，先显示已下载体积';
+  String get aboutMirrorUnknownSizeHint => '暂时无法获取更新文件总大小，先显示已下载大小';
 
   @override
   String get aboutCancelDownloadAction => '取消下载';
@@ -4831,7 +4843,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeWidgetTargetTodayWide42 => '今日横宽 4×2';
 
   @override
-  String get homeWidgetTargetCoupleTimetable42 => '情侣课表 4×2';
+  String get homeWidgetTargetCoupleTimetable42 => '情侣课表 4×3';
 
   @override
   String get addCourseSheetTitle => '添加内容';
@@ -5570,6 +5582,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get courseActionDeleteSecondary => '删除';
+
+  @override
+  String get courseHeaderAlarmAction => '闹钟';
+
+  @override
+  String get courseHeaderTaskAction => '任务';
+
+  @override
+  String get courseHeaderNoteAction => '备注';
+
+  @override
+  String get courseHeaderEditAction => '编辑';
 
   @override
   String get courseNoteSheetTitle => '课程备注';
@@ -6838,25 +6862,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get appUpdateDownloadSourceMirror => '国内镜像';
-
-  @override
-  String get appUpdateDownloadChannelPgyer => '蒲公英下载';
-
-  @override
-  String get appUpdateDownloadChannelGithub => 'GitHub 下载';
-
-  @override
-  String get appUpdateDownloadChannelPgyerDescription => '国内高速下载，推荐使用';
-
-  @override
-  String get appUpdateDownloadChannelGithubDescription => 'GitHub 原生 + 国内镜像';
-
-  @override
-  String get appUpdateDownloadChannelGitcode => 'GitCode 直连';
-
-  @override
-  String get appUpdateDownloadChannelGitcodeDescription =>
-      'GitCode 发行版直连下载，国内速度快';
 
   @override
   String get holidayStatutoryLabel => '法定节假日';
@@ -11350,12 +11355,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get aboutContributorsSubtitle => '開發人員與教務匯入適配者名單';
 
   @override
-  String get aboutRepositoryTitle => '開源倉庫';
-
-  @override
-  String get aboutRepositorySubtitle => 'GitHub 倉庫地址、源碼、Release 和反饋入口';
-
-  @override
   String get aboutOpenSourceLicensesTitle => '開源許可';
 
   @override
@@ -12631,6 +12630,15 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get homePageBackdropFollowsWeekPagerSubtitle => '左右切換週次時，背景圖與課表頁面一起移動';
 
   @override
+  String get homePageBackdropTuningTitle => '背景調節';
+
+  @override
+  String get homePageBackdropBlurLabel => '模糊強度';
+
+  @override
+  String get homePageBackdropFrostLabel => '磨砂亮度';
+
+  @override
   String get homePageBackgroundScopeTitle => '背景顯示區域';
 
   @override
@@ -13355,6 +13363,12 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get layoutAutoFitHeightSubtitle => '開啟後會按目前節數自動鋪滿頁面底部，不再保留下方空隙';
 
   @override
+  String get layoutVerticalScrollEffectTitle => '上下滑動動效';
+
+  @override
+  String get layoutVerticalScrollEffectSubtitle => '關閉自動充滿後可用；關閉時上下滑動保持乾脆';
+
+  @override
   String get layoutHideWeekendsTitle => '隱藏周六周日';
 
   @override
@@ -13532,20 +13546,7 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get sampleTeacherLi => '李老師';
 
   @override
-  String get aboutRepositorySheetTitle => '開源倉庫';
-
-  @override
-  String get aboutRepositorySheetHint =>
-      '如果你想補學校教務匯入適配，建議同時查看教務適配倉 qingyu_warehouse';
-
-  @override
-  String get aboutOpenGitHubAction => '打開 GitHub';
-
-  @override
   String get aboutOpenWarehouseRepoAction => '打開教務適配倉';
-
-  @override
-  String get copiedRepositoryAddress => '已複制倉庫地址';
 
   @override
   String get copiedWarehouseRepositoryAddress => '已複制教務適配倉地址';
@@ -13569,14 +13570,16 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get aboutReadVersionFailed => '暫時無法讀取版本資訊，請稍後重試';
 
   @override
-  String get aboutReadVersionFailedHint =>
-      '如果你目前網路訪問 GitHub 不穩定，可稍後再試，或切到下面的國內下載方式後重試';
+  String get aboutReadVersionFailedHint => '暫時無法連接更新伺服器，請檢查網絡後重試';
 
   @override
   String get aboutViewReleaseAction => '查看 Release';
 
   @override
   String get aboutDownloadNowAction => '立即下載';
+
+  @override
+  String get aboutSkipVersionAction => '跳過此版本';
 
   @override
   String get aboutOpenDownloadPageAction => '打開下載頁';
@@ -13597,8 +13600,7 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get aboutPrereleaseChannel => '測試版';
 
   @override
-  String get aboutUpdateAvailableHint =>
-      '你現在只需要點下面的“立即下載”即可，測速、鏡像和測試版都已經收進後面的高級選項裡';
+  String get aboutUpdateAvailableHint => '有新版本可用，點擊下方「立即下載」即可安裝';
 
   @override
   String get aboutUpdateNoUpdateHint =>
@@ -13838,7 +13840,7 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   }
 
   @override
-  String get aboutMirrorUnknownSizeHint => '鏡像源未返回文件總大小，先顯示已下載體積';
+  String get aboutMirrorUnknownSizeHint => '暫時無法取得更新文件總大小，先顯示已下載大小';
 
   @override
   String get aboutCancelDownloadAction => '取消下載';
@@ -14677,7 +14679,7 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get homeWidgetTargetTodayWide42 => '今日橫寬 4×2';
 
   @override
-  String get homeWidgetTargetCoupleTimetable42 => '情侶課表 4×2';
+  String get homeWidgetTargetCoupleTimetable42 => '情侶課表 4×3';
 
   @override
   String get addCourseSheetTitle => '新增內容';
@@ -15416,6 +15418,18 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get courseActionDeleteSecondary => '刪除';
+
+  @override
+  String get courseHeaderAlarmAction => '鬧鐘';
+
+  @override
+  String get courseHeaderTaskAction => '任務';
+
+  @override
+  String get courseHeaderNoteAction => '備註';
+
+  @override
+  String get courseHeaderEditAction => '編輯';
 
   @override
   String get courseNoteSheetTitle => '課程備註';
@@ -16684,25 +16698,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get appUpdateDownloadSourceMirror => '國內镜像';
-
-  @override
-  String get appUpdateDownloadChannelPgyer => '蒲公英下載';
-
-  @override
-  String get appUpdateDownloadChannelGithub => 'GitHub 下載';
-
-  @override
-  String get appUpdateDownloadChannelPgyerDescription => '國內高速下載，推薦使用';
-
-  @override
-  String get appUpdateDownloadChannelGithubDescription => 'GitHub 原生 + 國內镜像';
-
-  @override
-  String get appUpdateDownloadChannelGitcode => 'GitCode 直連';
-
-  @override
-  String get appUpdateDownloadChannelGitcodeDescription =>
-      'GitCode 發行版直連下載，國內速度快';
 
   @override
   String get holidayStatutoryLabel => '法定假日';
@@ -21235,12 +21230,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get aboutContributorsSubtitle => '開發人員與教務匯入適配者名單';
 
   @override
-  String get aboutRepositoryTitle => '開源倉庫';
-
-  @override
-  String get aboutRepositorySubtitle => 'GitHub 倉庫地址、源碼、Release 和反饋入口';
-
-  @override
   String get aboutOpenSourceLicensesTitle => '開源許可';
 
   @override
@@ -22516,6 +22505,15 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get homePageBackdropFollowsWeekPagerSubtitle => '左右切換週次時，背景圖與課表頁面一起移動';
 
   @override
+  String get homePageBackdropTuningTitle => '背景調節';
+
+  @override
+  String get homePageBackdropBlurLabel => '模糊強度';
+
+  @override
+  String get homePageBackdropFrostLabel => '磨砂亮度';
+
+  @override
   String get homePageBackgroundScopeTitle => '背景顯示區域';
 
   @override
@@ -23240,6 +23238,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get layoutAutoFitHeightSubtitle => '開啟後会按目前節數自動铺满頁面底部，不再保留下方空隙';
 
   @override
+  String get layoutVerticalScrollEffectTitle => '上下滑動動效';
+
+  @override
+  String get layoutVerticalScrollEffectSubtitle => '關閉自動充满後可用；關閉時上下滑動保持乾脆';
+
+  @override
   String get layoutHideWeekendsTitle => '隱藏周六周日';
 
   @override
@@ -23417,20 +23421,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get sampleTeacherLi => '李老師';
 
   @override
-  String get aboutRepositorySheetTitle => '開源倉庫';
-
-  @override
-  String get aboutRepositorySheetHint =>
-      '如果你想补学校教務匯入適配，建議同時查看教務適配倉 qingyu_warehouse';
-
-  @override
-  String get aboutOpenGitHubAction => '打開 GitHub';
-
-  @override
   String get aboutOpenWarehouseRepoAction => '打開教務適配倉';
-
-  @override
-  String get copiedRepositoryAddress => '已複制倉庫地址';
 
   @override
   String get copiedWarehouseRepositoryAddress => '已複制教務適配倉地址';
@@ -23454,14 +23445,16 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get aboutReadVersionFailed => '暫時無法讀取版本資訊，请稍後重試';
 
   @override
-  String get aboutReadVersionFailedHint =>
-      '如果你目前網路访問 GitHub 不穩定，可稍後再試，或切到下面的國內下載方式後重試';
+  String get aboutReadVersionFailedHint => '暫時無法連線更新伺服器，請檢查網路後重試';
 
   @override
   String get aboutViewReleaseAction => '查看 Release';
 
   @override
   String get aboutDownloadNowAction => '立即下載';
+
+  @override
+  String get aboutSkipVersionAction => '跳過此版本';
 
   @override
   String get aboutOpenDownloadPageAction => '打開下載頁';
@@ -23482,8 +23475,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get aboutPrereleaseChannel => '測試版';
 
   @override
-  String get aboutUpdateAvailableHint =>
-      '你现在只需要點下面的“立即下載”即可，測速、鏡像和測試版都已经收進後面的高級选項裡';
+  String get aboutUpdateAvailableHint => '有新版本可用，點擊下方「立即下載」即可安裝';
 
   @override
   String get aboutUpdateNoUpdateHint =>
@@ -23723,7 +23715,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String get aboutMirrorUnknownSizeHint => '鏡像源未返回文件总大小，先顯示已下載體积';
+  String get aboutMirrorUnknownSizeHint => '暫時無法取得更新檔案總大小，先顯示已下載大小';
 
   @override
   String get aboutCancelDownloadAction => '取消下載';
@@ -24562,7 +24554,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get homeWidgetTargetTodayWide42 => '今日橫寬 4×2';
 
   @override
-  String get homeWidgetTargetCoupleTimetable42 => '情侶課表 4×2';
+  String get homeWidgetTargetCoupleTimetable42 => '情侶課表 4×3';
 
   @override
   String get addCourseSheetTitle => '新增內容';
@@ -25301,6 +25293,18 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get courseActionDeleteSecondary => '刪除';
+
+  @override
+  String get courseHeaderAlarmAction => '鬧鐘';
+
+  @override
+  String get courseHeaderTaskAction => '任務';
+
+  @override
+  String get courseHeaderNoteAction => '備註';
+
+  @override
+  String get courseHeaderEditAction => '編輯';
 
   @override
   String get courseNoteSheetTitle => '課程備註';
@@ -26569,25 +26573,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get appUpdateDownloadSourceMirror => '国内镜像';
-
-  @override
-  String get appUpdateDownloadChannelPgyer => '蒲公英下载';
-
-  @override
-  String get appUpdateDownloadChannelGithub => 'GitHub 下载';
-
-  @override
-  String get appUpdateDownloadChannelPgyerDescription => '国内高速下载，推荐使用';
-
-  @override
-  String get appUpdateDownloadChannelGithubDescription => 'GitHub 原生 + 国内镜像';
-
-  @override
-  String get appUpdateDownloadChannelGitcode => 'GitCode 直連';
-
-  @override
-  String get appUpdateDownloadChannelGitcodeDescription =>
-      'GitCode 發行版直連下載，國內速度快';
 
   @override
   String get holidayStatutoryLabel => '法定假日';

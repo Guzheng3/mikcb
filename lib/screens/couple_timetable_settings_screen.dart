@@ -97,14 +97,17 @@ class _CoupleTimetableSettingsScreenState
                 subtitle: l10n.coupleTimetableSwitchSubtitle,
                 value: provider.settings.coupleTimetableOverlayEnabled,
                 onChanged: (value) {
-                  provider.updateSettings(
-                    provider.settings.copyWith(
-                      coupleTimetableOverlayEnabled: value,
-                    ),
-                  );
-                  if (!value) {
-                    unawaited(_leavePartnerTimetableIfActive(provider));
-                  }
+                  unawaited(() async {
+                    await provider.updateSettings(
+                      provider.settings.copyWith(
+                        coupleTimetableOverlayEnabled: value,
+                      ),
+                    );
+                    if (!value) {
+                      await _leavePartnerTimetableIfActive(provider);
+                    }
+                    await provider.syncCoupleTimetableWidgetSnapshot();
+                  }());
                 },
               ),
             ),

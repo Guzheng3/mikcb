@@ -6,8 +6,10 @@ import 'dart:ui'
     as ui
     show
         Image,
+        ImageFilter,
         ImmutableBuffer,
         PlatformDispatcher,
+        TileMode,
         instantiateImageCodecFromBuffer;
 
 import 'package:flutter/material.dart';
@@ -338,16 +340,59 @@ Widget? homePageBackdropImageWidget({required TimetableSettings settings}) {
   if (provider == null) {
     return null;
   }
+  final blurSigma = settings.homePageBackdropBlurSigma
+      .clamp(0.0, 24.0)
+      .toDouble();
+  final frostAlpha = settings.homePageBackdropFrostAlpha
+      .clamp(0.0, 0.75)
+      .toDouble();
+
   // 横向壁纸在 cover 下水平溢出，用用户拖选的对齐值决定显示哪一段。
   final alignX = settings.homePageWallpaperAlignX.clamp(-1.0, 1.0);
   final alignY = settings.homePageWallpaperAlignY.clamp(-1.0, 1.0);
-  return Image(
+  Widget image = Image(
     key: ValueKey(path),
     image: provider,
     fit: BoxFit.cover,
     gaplessPlayback: true,
     alignment: Alignment(alignX.toDouble(), alignY.toDouble()),
+    // A slow cold-start can release home before the wallpaper codec finishes.
+    // Keep the startup-splash colour under the image until its first frame;
+    // otherwise the transparent page shell exposes the black route backdrop.
+    frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+      if (frame != null || wasSynchronouslyLoaded) {
+        return child;
+      }
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return ColoredBox(
+        color: isDark ? const Color(0xFF121212) : Colors.white,
+        child: child,
+      );
+    },
   );
+
+  if (blurSigma > 0) {
+    image = ImageFiltered(
+      imageFilter: ui.ImageFilter.blur(
+        sigmaX: blurSigma,
+        sigmaY: blurSigma,
+        tileMode: ui.TileMode.clamp,
+      ),
+      child: image,
+    );
+  }
+
+  if (frostAlpha > 0) {
+    image = Stack(
+      fit: StackFit.expand,
+      children: [
+        image,
+        ColoredBox(color: Colors.white.withValues(alpha: frostAlpha)),
+      ],
+    );
+  }
+
+  return image;
 }
 
 /// Title row height under the status bar on the home timetable header.

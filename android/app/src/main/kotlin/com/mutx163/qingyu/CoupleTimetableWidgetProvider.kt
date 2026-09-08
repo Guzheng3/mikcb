@@ -32,6 +32,7 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
     ) {
         val views = RemoteViews(context.packageName, R.layout.widget_couple_timetable)
         val snapshot = CoupleTimetableStore.readSnapshot(context)
+        val status = snapshot?.status ?: CoupleWidgetStatus.COUPLE_MODE_OFF
 
         val leftColor = snapshot?.leftColorHex
             ?.let(::parseColorOrNull)
@@ -40,29 +41,41 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
             ?.let(::parseColorOrNull)
             ?: rightAccentColor(context)
 
-        snapshot?.myName?.let { name ->
-            CoupleTimetableRenderSupport.createNameBitmap(context, name, leftColor)
-        }?.let { views.setImageViewBitmap(R.id.widget_couple_left_name, it) }
-        snapshot?.partnerName?.let { name ->
-            CoupleTimetableRenderSupport.createNameBitmap(context, name, rightColor)
-        }?.let { views.setImageViewBitmap(R.id.widget_couple_right_name, it) }
+        val leftName = snapshot?.myName?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?: CoupleTimetableStore.DEFAULT_MY_NAME
+        val rightName = snapshot?.partnerName?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?: CoupleTimetableStore.DEFAULT_PARTNER_NAME
+        CoupleTimetableRenderSupport.createNameBitmap(context, leftName, leftColor)?.let {
+            views.setImageViewBitmap(R.id.widget_couple_left_name, it)
+        }
+        CoupleTimetableRenderSupport.createNameBitmap(context, rightName, rightColor)?.let {
+            views.setImageViewBitmap(R.id.widget_couple_right_name, it)
+        }
         views.setInt(R.id.widget_couple_heart, "setColorFilter", rightColor)
 
         bindColumn(
             context,
+            appWidgetManager,
             views,
             appWidgetId,
             isLeft = true,
             courses = snapshot?.mine,
+            oppositeCourses = snapshot?.partner,
             accentColor = leftColor,
+            status = status,
         )
         bindColumn(
             context,
+            appWidgetManager,
             views,
             appWidgetId,
             isLeft = false,
             courses = snapshot?.partner,
+            oppositeCourses = snapshot?.mine,
             accentColor = rightColor,
+            status = status,
         )
 
         // 整卡可点、左右分流：列容器（含列表下方的空白区）与名字区各自
@@ -103,11 +116,14 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
 
     private fun bindColumn(
         context: Context,
+        appWidgetManager: AppWidgetManager,
         views: RemoteViews,
         appWidgetId: Int,
         isLeft: Boolean,
         courses: CoupleWidgetDayCourses?,
+        oppositeCourses: CoupleWidgetDayCourses?,
         accentColor: Int,
+        status: CoupleWidgetStatus,
     ) {
         val listId = if (isLeft) {
             R.id.widget_couple_left_list
@@ -125,24 +141,50 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
             R.id.widget_couple_right_footer
         }
         val sidePrefix = if (isLeft) "left" else "right"
-        val display = if (courses == null) {
-            CoupleWidgetDisplay(
-                items = emptyList(),
-                footerText = context.getString(R.string.widget_couple_no_course_tomorrow)
-            )
-        } else {
-            CoupleTimetableDisplayBuilder.build(context, courses)
-        }
+        val display = CoupleTimetableDisplayBuilder.build(
+            context,
+            courses ?: CoupleWidgetDayCourses(emptyList(), emptyList()),
+            status = status,
+        )
 
-        views.setTextViewText(footerId, display.footerText)
+        if (status == CoupleWidgetStatus.OK) {
+            views.setTextViewText(footerId, display.footerText)
+        }
+        display.emptyText?.let { views.setTextViewText(emptyId, it) }
         if (display.items.isEmpty()) {
             views.setViewVisibility(listId, View.GONE)
             views.setViewVisibility(emptyId, View.VISIBLE)
+            if (status == CoupleWidgetStatus.OK) {
+                views.setTextViewText(footerId, display.footerText)
+                views.setViewVisibility(footerId, View.VISIBLE)
+                val oppositeDisplay = CoupleTimetableDisplayBuilder.build(
+                    context,
+                    oppositeCourses ?: CoupleWidgetDayCourses(emptyList(), emptyList()),
+                    status = status,
+                )
+                val sizing = CoupleTimetableSizingSupport.calculateSynced(
+                    context,
+                    appWidgetManager,
+                    appWidgetId,
+                    display,
+                    oppositeDisplay,
+                )
+                val emptyRowHeightPx = sizing.courseRowHeightPx.takeIf { it > 0f }
+                    ?: context.resources.displayMetrics.density * 52f
+                CoupleTimetableSizingSupport.applyRowHeight(
+                    views,
+                    emptyId,
+                    emptyRowHeightPx,
+                )
+            } else {
+                views.setViewVisibility(footerId, View.GONE)
+            }
             return
         }
 
         views.setViewVisibility(listId, View.VISIBLE)
         views.setViewVisibility(emptyId, View.GONE)
+        views.setViewVisibility(footerId, View.VISIBLE)
         val serviceIntent = Intent(context, CoupleTimetableViewsService::class.java).apply {
             putExtra(EXTRA_APP_WIDGET_ID, appWidgetId)
             putExtra(EXTRA_IS_LEFT, isLeft)
@@ -150,6 +192,7 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
             data = Uri.parse("qingyu://couple-widget/$appWidgetId/$sidePrefix")
         }
         views.setRemoteAdapter(listId, serviceIntent)
+        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, listId)
         // 行点击走模板 + 逐项 fill intent（见 CoupleTimetableViewsFactory），
         // 否则 ListView 会吞掉整块区域的点击。模板必须是 MUTABLE：系统要把
         // 各行的 fill intent 合并进 PendingIntent，IMMUTABLE 会让部分启动器

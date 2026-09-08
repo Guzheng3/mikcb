@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
+import 'package:university_timetable/providers/withu_couple_session_provider.dart';
 import 'package:university_timetable/ui/hyperos/hyperos.dart';
 import 'package:university_timetable/utils/hex_color.dart';
 
@@ -18,6 +22,12 @@ String homeMenuEntryCategoryLabel(
   HomeMenuEntryCategory.preferences => l10n.homeMenuCategoryPreferences,
   HomeMenuEntryCategory.about => l10n.homeMenuCategoryAbout,
 };
+
+/// Matches the compact HyperOS-style menu width measured on common phones.
+const double _homeTopMenuWidth = 131.4;
+
+/// 131.4 physical px on the common 3x phone; the avatar row stays at 56dp.
+const double _homeTopMenuRowHeight = 43.8;
 
 /// 一个可放入首页右上角八宫格的入口：应用内任意二级页面或功能。
 ///
@@ -58,8 +68,8 @@ Future<void> pushHomeMenuPage(BuildContext context, Widget page) {
 /// popup — the same chrome as every other anchored popup in the app: spring
 /// reveal, glass surface, tap-outside to dismiss.
 ///
-/// Rows are plain text only, matching the MIUI/HyperOS top-right menu
-/// convention (icons are reserved for in-page actions, not overflow menus).
+/// Rows are plain text, except the logged-in withU couple action, which shows
+/// the web-style paired avatars in the leading row.
 ///
 /// [entries] 与八宫格共享同一份自定义排列（`resolveHomeGridMenuEntries`
 /// 的结果）；相邻条目分类变化时插入 8dp 分组间隔，自定义排列后分组
@@ -76,22 +86,173 @@ Future<String?> showHomeTopMenuSheet(
 }) {
   final l10n = AppLocalizations.of(context)!;
   final position = hyperosPopupPositionBelow(context, anchorKey);
+  final coupleLoginLeading = _withuCoupleLoginLeading(context);
 
   return showHyperosListPopup<String>(
     context: context,
     position: position,
     foregroundColor: foregroundColor,
+    fixedWidth: _homeTopMenuWidth,
+    centerLabels: true,
+    showDividers: true,
     items: [
       for (var index = 0; index < entries.length; index++)
-        HyperosPopupMenuItem<String>(
-          label: entries[index].title(l10n),
-          value: entries[index].id,
-          gapBefore:
-              index > 0 &&
-              entries[index].category != entries[index - 1].category,
-        ),
+        () {
+          final isAvatarRow =
+              entries[index].id == 'withuCoupleLogin' &&
+              coupleLoginLeading != null;
+          return HyperosPopupMenuItem<String>(
+            label: isAvatarRow ? '' : entries[index].title(l10n),
+            leading: entries[index].id == 'withuCoupleLogin'
+                ? coupleLoginLeading
+                : null,
+            value: entries[index].id,
+            rowHeight: isAvatarRow ? null : _homeTopMenuRowHeight,
+            gapBefore: false,
+          );
+        }(),
     ],
   );
+}
+
+const Key _withuCoupleMenuAvatarKey = ValueKey(
+  'withu_couple_login_menu_avatar',
+);
+
+Widget? _withuCoupleLoginLeading(BuildContext context) {
+  final session = context.read<WithuCoupleSessionProvider?>();
+  if (session?.isLoggedIn != true) {
+    return null;
+  }
+  return WithuCoupleAvatarGroup(
+    userAvatarPath: session!.userAvatarPath,
+    partnerAvatarPath: session.partnerAvatarPath,
+  );
+}
+
+class WithuCoupleAvatarGroup extends StatelessWidget {
+  const WithuCoupleAvatarGroup({
+    super.key,
+    required this.userAvatarPath,
+    required this.partnerAvatarPath,
+  });
+
+  final String? userAvatarPath;
+  final String? partnerAvatarPath;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: _withuCoupleMenuAvatarKey,
+      height: 44,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: SizedBox(
+        width: 62,
+        height: 36,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              right: 0,
+              child: _WithuCoupleAvatarImage(path: partnerAvatarPath),
+            ),
+            Positioned(
+              left: 0,
+              child: _WithuCoupleAvatarImage(path: userAvatarPath),
+            ),
+            Positioned(
+              left: 25,
+              top: 12,
+              child: Container(
+                width: 12,
+                height: 12,
+                padding: const EdgeInsets.all(2),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x33F59E0B),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFFFF94AA), Color(0xFFEA3A5D)],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WithuCoupleAvatarImage extends StatelessWidget {
+  const _WithuCoupleAvatarImage({required this.path});
+
+  final String? path;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x1A000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(2),
+        child: ClipOval(child: _image),
+      ),
+    );
+  }
+
+  Widget get _image {
+    const fallback = _WithuCoupleAvatarFallback();
+    final localPath = path;
+    if (localPath == null || localPath.isEmpty) {
+      return fallback;
+    }
+    return Image.file(
+      File(localPath),
+      width: 32,
+      height: 32,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => fallback,
+    );
+  }
+}
+
+class _WithuCoupleAvatarFallback extends StatelessWidget {
+  const _WithuCoupleAvatarFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(
+      color: Color(0xFFF3C1D3),
+      child: Icon(Icons.person_outline_rounded, size: 18, color: Colors.white),
+    );
+  }
 }
 
 double _maxMenuTitleHeight({

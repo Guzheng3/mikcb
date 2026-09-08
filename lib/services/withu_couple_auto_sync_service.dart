@@ -14,15 +14,18 @@ class WithuCoupleAutoSyncService {
     required WithuCoupleTimetableService timetableService,
     this.debounceDelay = const Duration(seconds: 3),
     this.pullOnBind = true,
+    this.pullInterval = const Duration(seconds: 30),
     // ignore: prefer_initializing_formals
   }) : _timetableService = timetableService;
 
   final WithuCoupleTimetableService _timetableService;
   final Duration debounceDelay;
   final bool pullOnBind;
+  final Duration pullInterval;
 
   TimetableProvider? _provider;
   Timer? _debounceTimer;
+  Timer? _pullTimer;
   String? _lastTimetableHash;
   String? _lastSettingsHash;
   bool _isSyncing = false;
@@ -38,6 +41,11 @@ class WithuCoupleAutoSyncService {
     _lastTimetableHash = _timetableHash(provider);
     _lastSettingsHash = _settingsHash(provider);
     provider.addListener(_handleProviderChanged);
+
+    _pullTimer?.cancel();
+    _pullTimer = Timer.periodic(pullInterval, (_) {
+      unawaited(pullPartnerChanges());
+    });
 
     if (pullOnBind) {
       unawaited(_pullPartnerOnBind(provider));
@@ -93,9 +101,37 @@ class WithuCoupleAutoSyncService {
     }
   }
 
+  Future<void> handleAppResumed() {
+    return pullPartnerChanges();
+  }
+
+  Future<void> pullPartnerChanges() async {
+    final provider = _provider;
+    if (provider == null || _isSyncing) {
+      return;
+    }
+    if (!await _hasSavedSession()) {
+      return;
+    }
+
+    _isSyncing = true;
+    try {
+      final result = await _timetableService.pullPartnerTimetable(
+        provider: provider,
+      );
+      if (result.status == WithuCouplePullStatus.failed) {
+        _logSyncError('withu_auto_partner_pull_failed', result.errorCode ?? '');
+      }
+    } finally {
+      _isSyncing = false;
+    }
+  }
+
   void dispose() {
     _debounceTimer?.cancel();
     _debounceTimer = null;
+    _pullTimer?.cancel();
+    _pullTimer = null;
     _provider?.removeListener(_handleProviderChanged);
     _provider = null;
   }
@@ -134,20 +170,24 @@ class WithuCoupleAutoSyncService {
   }
 
   String _timetableHash(TimetableProvider provider) {
+    final myProfile = provider.myTimetableProfile;
+    if (myProfile == null) {
+      return '';
+    }
     final payload = {
-      'profileName': provider.activeProfile?.name,
-      'courses': provider.courses.map((course) => course.toJson()).toList(),
-      'scheduleItems': provider.scheduleItems
+      'profileName': myProfile.name,
+      'courses': myProfile.courses.map((course) => course.toJson()).toList(),
+      'scheduleItems': myProfile.scheduleItems
           .map((item) => item.toJson())
           .toList(),
-      'currentWeek': provider.currentWeek,
+      'currentWeek': myProfile.currentWeek,
       'settings': {
-        'sections': provider.settings.sections
+        'sections': myProfile.settings.sections
             .map((section) => section.toJson())
             .toList(),
-        'activeTimeSchemeId': provider.settings.activeTimeSchemeId,
-        'semesterWeekCount': provider.settings.semesterWeekCount,
-        'semesterStartDate': provider.settings.semesterStartDate,
+        'activeTimeSchemeId': myProfile.settings.activeTimeSchemeId,
+        'semesterWeekCount': myProfile.settings.semesterWeekCount,
+        'semesterStartDate': myProfile.settings.semesterStartDate,
       },
       'timeSchemes': provider.timeSchemes
           .map((scheme) => scheme.toJson())

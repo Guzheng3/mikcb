@@ -10,6 +10,8 @@ class HomeWidgetRefreshReceiver : BroadcastReceiver() {
         when (intent.action) {
             AppWidgetManager.ACTION_APPWIDGET_UPDATE,
             Intent.ACTION_BOOT_COMPLETED,
+            "android.intent.action.QUICKBOOT_POWERON",
+            "com.htc.intent.action.QUICKBOOT_POWERON",
             Intent.ACTION_MY_PACKAGE_REPLACED,
             Intent.ACTION_TIME_CHANGED,
             Intent.ACTION_TIMEZONE_CHANGED -> {
@@ -19,8 +21,8 @@ class HomeWidgetRefreshReceiver : BroadcastReceiver() {
                 TodayWidgetSupport.updateAll(context)
                 StatsWidgetSupport.updateAll(context)
                 HomeWidgetStorage.rescheduleRefresh(context)
+                AppStartupCoordinator.rescheduleFallbackWorkers(context)
             }
         }
     }
 }
-

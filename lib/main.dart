@@ -650,6 +650,7 @@ class _AppEntryScreenState extends State<AppEntryScreen>
     if (!mounted) {
       return;
     }
+    unawaited(_withuAutoSyncService.handleAppResumed());
     await context.read<TimetableProvider>().handleAppResumed();
   }
 
@@ -719,6 +720,14 @@ class _AppEntryScreenState extends State<AppEntryScreen>
             await launchUrl(uri, mode: LaunchMode.externalApplication);
           }
         },
+        onSkipVersion: () async {
+          if (release.forceUpdate) {
+            return;
+          }
+          await _withuAppUpdateService.ignoreNonForcedVersion(
+            release.version,
+          );
+        },
         onCancelDownload: () {
           _withuUpdateDownloadController?.cancel();
           promptController.finishInAppDownload(success: false, cancelled: true);
@@ -732,10 +741,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
           );
         },
       );
-
-      if (mounted && !release.forceUpdate) {
-        await _withuAppUpdateService.ignoreNonForcedVersion(release.version);
-      }
     } finally {
       if (identical(_withuUpdateDownloadController, downloadController)) {
         _withuUpdateDownloadController = null;
@@ -777,9 +782,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
 
     final cancelled = error == AppUpdateService.downloadCancelledMessage;
     promptController.finishInAppDownload(success: false, cancelled: cancelled);
-    if (!cancelled && !release.forceUpdate) {
-      await _withuAppUpdateService.ignoreNonForcedVersion(release.version);
-    }
     return true;
   }
 

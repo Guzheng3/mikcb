@@ -359,6 +359,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get withuCouplePullNow => 'Pull partner timetable';
 
   @override
+  String get withuCoupleCenterTitle => '情侣中心';
+
+  @override
+  String get withuCoupleSettings => '情侣课表设置';
+
+  @override
+  String get withuCoupleSyncNow => '立即同步课表';
+
+  @override
+  String get withuCouplePartnerImported => '对方课表已导入';
+
+  @override
+  String get withuCouplePartnerNotImported => '尚未导入对方课表';
+
+  @override
   String get withuCoupleUploadForPartner => 'Upload my timetable';
 
   @override
@@ -1589,13 +1604,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aboutContributorsSubtitle =>
       'Developers and academic system adapter contributors';
-
-  @override
-  String get aboutRepositoryTitle => 'Open Source Repositories';
-
-  @override
-  String get aboutRepositorySubtitle =>
-      'GitHub source, releases, and feedback entry';
 
   @override
   String get aboutOpenSourceLicensesTitle => 'Open Source Licenses';
@@ -2957,6 +2965,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'When swiping between weeks, the background image moves with the timetable page';
 
   @override
+  String get homePageBackdropTuningTitle => 'Background tuning';
+
+  @override
+  String get homePageBackdropBlurLabel => 'Blur intensity';
+
+  @override
+  String get homePageBackdropFrostLabel => 'Frost brightness';
+
+  @override
   String get homePageBackgroundScopeTitle => 'Background display area';
 
   @override
@@ -3738,6 +3755,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'When enabled, the page automatically fills to the bottom based on the current section count instead of leaving blank space below';
 
   @override
+  String get layoutVerticalScrollEffectTitle => 'Vertical scroll effect';
+
+  @override
+  String get layoutVerticalScrollEffectSubtitle =>
+      'Available when auto fill is off; off keeps vertical scrolling crisp';
+
+  @override
   String get layoutHideWeekendsTitle => 'Hide weekends';
 
   @override
@@ -3931,20 +3955,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sampleTeacherLi => 'Prof. Li';
 
   @override
-  String get aboutRepositorySheetTitle => 'Open-source repositories';
-
-  @override
-  String get aboutRepositorySheetHint =>
-      'If you want to add academic-system adapters for more schools, you should also check the qingyu_warehouse repository';
-
-  @override
-  String get aboutOpenGitHubAction => 'Open GitHub';
-
-  @override
   String get aboutOpenWarehouseRepoAction => 'Open adapter repository';
-
-  @override
-  String get copiedRepositoryAddress => 'Repository address copied';
 
   @override
   String get copiedWarehouseRepositoryAddress =>
@@ -3972,13 +3983,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutReadVersionFailedHint =>
-      'If GitHub access is unstable on your network, try again later or switch to the domestic download route below';
+      'The update server could not be reached. Check your network connection and try again.';
 
   @override
   String get aboutViewReleaseAction => 'View Release';
 
   @override
   String get aboutDownloadNowAction => 'Download now';
+
+  @override
+  String get aboutSkipVersionAction => 'Skip this version';
 
   @override
   String get aboutOpenDownloadPageAction => 'Open download page';
@@ -4000,7 +4014,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutUpdateAvailableHint =>
-      'You can simply tap \"Download now\" below. Speed test, mirrors, and prerelease options have been moved into Advanced Options';
+      'A newer timetable version is available. Tap \"Download now\" to install it.';
 
   @override
   String get aboutUpdateNoUpdateHint =>
@@ -4260,7 +4274,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutMirrorUnknownSizeHint =>
-      'The mirror did not return a total file size yet, so only the downloaded size is shown for now';
+      'The update file size is not available yet. Downloaded size is shown instead.';
 
   @override
   String get aboutCancelDownloadAction => 'Cancel download';
@@ -5137,7 +5151,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeWidgetTargetTodayWide42 => 'Today wide 4×2';
 
   @override
-  String get homeWidgetTargetCoupleTimetable42 => 'Couple timetable 4×2';
+  String get homeWidgetTargetCoupleTimetable42 => 'Couple timetable 4×3';
 
   @override
   String get addCourseSheetTitle => 'Add Content';
@@ -5893,6 +5907,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get courseActionDeleteSecondary => 'Delete';
+
+  @override
+  String get courseHeaderAlarmAction => 'Alarm';
+
+  @override
+  String get courseHeaderTaskAction => 'Task';
+
+  @override
+  String get courseHeaderNoteAction => 'Note';
+
+  @override
+  String get courseHeaderEditAction => 'Edit';
 
   @override
   String get courseNoteSheetTitle => 'Course Notes';
@@ -7209,26 +7235,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appUpdateDownloadSourceMirror => 'Mirror';
-
-  @override
-  String get appUpdateDownloadChannelPgyer => 'Pgyer download';
-
-  @override
-  String get appUpdateDownloadChannelGithub => 'GitHub download';
-
-  @override
-  String get appUpdateDownloadChannelPgyerDescription =>
-      'Fast download in China, recommended';
-
-  @override
-  String get appUpdateDownloadChannelGithubDescription => 'GitHub plus mirrors';
-
-  @override
-  String get appUpdateDownloadChannelGitcode => 'GitCode direct';
-
-  @override
-  String get appUpdateDownloadChannelGitcodeDescription =>
-      'Download straight from GitCode releases, fast in China';
 
   @override
   String get holidayStatutoryLabel => 'Public holiday';

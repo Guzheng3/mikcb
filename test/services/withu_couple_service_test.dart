@@ -6,14 +6,17 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:university_timetable/models/course.dart';
+import 'package:university_timetable/models/couple_timetable_history.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/providers/timetable_provider.dart';
 import 'package:university_timetable/services/data_transfer_service.dart';
+import 'package:university_timetable/services/partner_timetable_service.dart';
 import 'package:university_timetable/services/withu_couple_auth_service.dart';
 import 'package:university_timetable/services/withu_couple_config.dart';
 import 'package:university_timetable/services/withu_couple_session_store.dart';
 import 'package:university_timetable/services/withu_couple_timetable_service.dart';
 import 'package:university_timetable/services/withu_couple_auto_sync_service.dart';
+import 'package:university_timetable/services/storage_service.dart';
 
 class _FakeClient extends http.BaseClient {
   final Map<String, http.Response> responses;
@@ -61,6 +64,8 @@ class _MemorySecureStorage implements WithuCoupleSecureStorage {
 }
 
 const _loginUrl = 'https://withu.example.com/api/timetable.php?action=login';
+const _bootstrapUrl =
+    'https://withu.example.com/api/timetable.php?action=bootstrap';
 const _partnerUrl =
     'https://withu.example.com/api/timetable.php?action=partner';
 const _saveUrl = 'https://withu.example.com/api/timetable.php?action=save';
@@ -79,7 +84,12 @@ http.Response _jsonResponse(
   );
 }
 
-http.Response _loginResponse() {
+http.Response _loginResponse({
+  Map<String, String> headers = const {
+    'set-cookie':
+        'PHPSESSID=session-id; Path=/; HttpOnly, withu_device=device-token; Path=/',
+  },
+}) {
   return _jsonResponse(
     {
       'success': true,
@@ -141,6 +151,45 @@ http.Response _partnerResponse(String content, String contentHash) {
   });
 }
 
+http.Response _bootstrapResponse(
+  String? myContent,
+  String? partnerContent, {
+  String? partnerContentHash,
+  DateTime? serverTime,
+  DateTime? updatedAt,
+}) {
+  return _jsonResponse({
+    'success': true,
+    'logged_in': true,
+    'user': {
+      'id': 1,
+      'username': 'alice',
+      'nickname': 'Alice',
+      'role': 'couple',
+    },
+    'partner': {
+      'id': 2,
+      'username': 'bob',
+      'nickname': 'Bob',
+      'role': 'couple',
+    },
+    if (serverTime != null) 'server_time': serverTime.toIso8601String(),
+    if (myContent != null)
+      'timetable': {
+        'content': jsonDecode(myContent),
+        'content_hash': sha256.convert(utf8.encode(myContent)).toString(),
+        if (updatedAt != null) 'updated_at': updatedAt.toIso8601String(),
+      },
+    if (partnerContent != null)
+      'partner_timetable': {
+        'content': jsonDecode(partnerContent),
+        'content_hash':
+            partnerContentHash ??
+            sha256.convert(utf8.encode(partnerContent)).toString(),
+      },
+  });
+}
+
 Future<WithuCoupleAuthService> _connectedAuthService(
   _FakeClient client,
   _MemorySecureStorage storage,
@@ -174,6 +223,7 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    StorageService().resetForTesting();
   });
 
   test('normalizes withU server URLs', () {
@@ -218,7 +268,40 @@ void main() {
       'session-id',
       'device-token',
       'csrf-token',
+      'Alice',
+      'Bob',
     });
+  });
+
+  test('login parses folded Set-Cookie headers containing commas', () async {
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(
+        headers: {
+          'set-cookie':
+              'PHPSESSID=session-id; '
+              'Expires=Wed, 21 Oct 2015 07:28:00 GMT; Path=/; HttpOnly, '
+              'withu_device=device-token; '
+              'Expires=Wed, 21 Oct 2015 07:28:00 GMT; Path=/',
+        },
+      ),
+    });
+
+    await WithuCoupleAuthService(
+      client: client,
+      sessionStore: WithuCoupleSessionStore(storage: storage),
+    ).connect(
+      baseUrl: 'https://withu.example.com',
+      username: 'alice',
+      password: 'password',
+    );
+
+    final session = await WithuCoupleSessionStore(storage: storage).load();
+
+    expect(
+      session?.cookieHeader,
+      'PHPSESSID=session-id; withu_device=device-token',
+    );
   });
 
   test('load wipes the legacy stored password from secure storage', () async {
@@ -302,11 +385,29 @@ void main() {
     expect(provider.partnerProfile?.courses.single.startSection, 1);
     expect(provider.partnerProfile?.courses.single.endSection, 2);
   });
+  test('pull reports unchanged when no partner is linked', () async {
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _partnerUrl: _jsonResponse({'success': true, 'partner': null}),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+
+    final result = await service.pullPartnerTimetable(provider: _provider());
+
+    expect(result.status, WithuCouplePullStatus.unchanged);
+    expect(result.errorCode, isNull);
+  });
+
   test('pull reports missing partner timetable content', () async {
     final storage = _MemorySecureStorage();
     final client = _FakeClient({
       _loginUrl: _loginResponse(),
-      _partnerUrl: _jsonResponse({'success': true}),
+      _partnerUrl: _jsonResponse({
+        'success': true,
+        'partner': {'id': 2, 'username': 'bob'},
+      }),
     });
     final auth = await _connectedAuthService(client, storage);
     final service = WithuCoupleTimetableService(authService: auth);
@@ -315,6 +416,29 @@ void main() {
 
     expect(result.status, WithuCouplePullStatus.failed);
     expect(result.errorCode, 'withu_partner_timetable_missing');
+  });
+
+  test('clears the stored session after an authenticated 401', () async {
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _partnerUrl: _partnerResponse(
+        _backupJson('course-1'),
+        sha256.convert(utf8.encode(_backupJson('course-1'))).toString(),
+      ),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    client.responses[_partnerUrl] = _jsonResponse({
+      'success': false,
+    }, statusCode: 401);
+    final service = WithuCoupleTimetableService(authService: auth);
+
+    final result = await service.pullPartnerTimetable(provider: _provider());
+
+    expect(result.status, WithuCouplePullStatus.failed);
+    expect(result.errorCode, 'withu_session_expired');
+    expect(await auth.loadSession(), isNull);
+    expect(storage.values, isEmpty);
   });
 
   test('preserves the partner package validation error code', () async {
@@ -370,6 +494,7 @@ void main() {
     'auto sync uploads timetable changes without uploading settings',
     () async {
       final storage = _MemorySecureStorage();
+      await StorageService().setMigratedAppLogsDefault(true);
       final client = _FakeClient({
         _loginUrl: _loginResponse(),
         _saveUrl: _jsonResponse({'success': true}),
@@ -419,6 +544,7 @@ void main() {
 
   test('auto sync uploads timetable metadata changes', () async {
     final storage = _MemorySecureStorage();
+    await StorageService().setMigratedAppLogsDefault(true);
     final client = _FakeClient({
       _loginUrl: _loginResponse(),
       _saveUrl: _jsonResponse({'success': true}),
@@ -483,7 +609,7 @@ void main() {
       final body = jsonDecode(saveRequest.body) as Map<String, dynamic>;
       final content = body['content'] as Map<String, dynamic>;
       final settings = content['settings'] as Map<String, dynamic>;
-      expect(settings['homePageWallpaperPath'], isNull);
+      expect(settings['homePageWallpaperPath'], defaultHomePageWallpaperPath);
       expect(settings['sections'], isNotEmpty);
       expect(
         settings['semesterWeekCount'],
@@ -500,6 +626,7 @@ void main() {
       final storage = _MemorySecureStorage();
       final client = _FakeClient({
         _loginUrl: _loginResponse(),
+        _bootstrapUrl: _bootstrapResponse(content, content),
         _saveUrl: _jsonResponse({'success': true}),
         _partnerUrl: _partnerResponse(content, contentHash),
       });
@@ -509,7 +636,7 @@ void main() {
 
       final result = await service.syncAfterLogin(provider: provider);
 
-      expect(result.status, WithuCouplePullStatus.updated);
+      expect(result.status, WithuCouplePullStatus.imported);
       final saveRequest = client.requests.singleWhere(
         (request) => request.url.queryParameters['action'] == 'save',
       );
@@ -522,6 +649,221 @@ void main() {
       );
       expect(provider.hasPartnerBinding, isTrue);
       expect(provider.partnerProfile?.name, 'Bob');
+    },
+  );
+
+  test('sync after login restores my timetable from cloud', () async {
+    final myContent = _backupJson('cloud-course');
+    final partnerContent = _backupJson('partner-course');
+    final partnerHash = sha256.convert(utf8.encode(partnerContent)).toString();
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _bootstrapUrl: _bootstrapResponse(myContent, partnerContent),
+      _saveUrl: _jsonResponse({'success': true}),
+      _partnerUrl: _partnerResponse(partnerContent, partnerHash),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+    final provider = _provider();
+
+    final result = await service.syncAfterLogin(provider: provider);
+
+    expect(result.status, WithuCouplePullStatus.imported);
+    final myCourse = provider.myTimetableProfile?.courses.single;
+    expect(myCourse?.id, 'cloud-course');
+    expect(myCourse?.name, 'Math');
+    expect(provider.hasPartnerBinding, isTrue);
+    expect(provider.partnerProfile?.name, 'Bob');
+
+    final actionOrder = client.requests
+        .map((request) => request.url.queryParameters['action'])
+        .toList();
+    expect(actionOrder, ['login', 'bootstrap', 'save', 'partner']);
+  });
+
+  test('sync after login keeps a newer local timetable', () async {
+    final now = DateTime.now();
+    final cloudContent = _backupJson('cloud-course');
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _saveUrl: _jsonResponse({'success': true}),
+      _bootstrapUrl: _bootstrapResponse(
+        cloudContent,
+        null,
+        serverTime: now,
+        updatedAt: now.subtract(const Duration(hours: 2)),
+      ),
+      _partnerUrl: _jsonResponse({'success': true, 'partner': null}),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+    final provider = _provider();
+    await provider.initialize();
+    await provider.addCourse(
+      Course(
+        id: 'local-course',
+        name: 'Math',
+        teacher: 'Teacher',
+        location: 'A101',
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        startTime: '08:00',
+        endTime: '09:40',
+      ),
+    );
+    await service.uploadMyTimetableForPartner(provider: provider);
+    await provider.addCourse(
+      Course(
+        id: 'newer-local-course',
+        name: 'Physics',
+        teacher: 'Teacher',
+        location: 'B201',
+        dayOfWeek: 2,
+        startSection: 3,
+        endSection: 4,
+        startTime: '10:00',
+        endTime: '11:40',
+      ),
+    );
+    final result = await service.syncAfterLogin(provider: provider);
+
+    expect(result.status, WithuCouplePullStatus.unchanged);
+    expect(provider.myTimetableProfile?.courses.map((course) => course.id), [
+      'local-course',
+      'newer-local-course',
+    ]);
+  });
+
+  test('cloud restore snapshots the prior my timetable', () async {
+    final cloudContent = _backupJson('cloud-course');
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _bootstrapUrl: _bootstrapResponse(cloudContent, null),
+      _saveUrl: _jsonResponse({'success': true}),
+      _partnerUrl: _jsonResponse({'success': true, 'partner': null}),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+    final provider = _provider();
+    await provider.initialize();
+    await provider.updateSettings(
+      provider.settings.copyWith(semesterStartDate: DateTime(2026, 9, 7)),
+    );
+    await provider.addCourse(
+      Course(
+        id: 'local-course',
+        name: 'Math',
+        teacher: 'Teacher',
+        location: 'A101',
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        startTime: '08:00',
+        endTime: '09:40',
+      ),
+    );
+
+    final result = await service.syncAfterLogin(provider: provider);
+    final history = await provider.coupleTimetableHistoryEntriesFor(
+      CoupleTimetableRole.mine,
+    );
+
+    expect(result.status, WithuCouplePullStatus.unchanged);
+    expect(provider.myTimetableProfile?.courses.single.id, 'cloud-course');
+    expect(history.single.courseCount, 1);
+    final snapshotCourses = history.single.snapshot['courses'] as List<Object?>;
+    final snapshotCourse = snapshotCourses.single as Map<String, Object?>;
+    expect(snapshotCourse['id'], 'local-course');
+  });
+
+  test('auto sync pulls partner timetable changes', () async {
+    final content = _backupJson('course-1');
+    final contentHash = sha256.convert(utf8.encode(content)).toString();
+    final updatedContent = _backupJson('course-2');
+    final updatedHash = sha256.convert(utf8.encode(updatedContent)).toString();
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _partnerUrl: _partnerResponse(content, contentHash),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+    final autoSync = WithuCoupleAutoSyncService(
+      timetableService: service,
+      debounceDelay: Duration.zero,
+      pullOnBind: false,
+    );
+    final provider = _provider();
+    await provider.initialize();
+    autoSync.bind(provider);
+    addTearDown(autoSync.dispose);
+
+    await autoSync.pullPartnerChanges();
+    expect(provider.partnerProfile?.courses.single.id, 'course-1');
+
+    client.responses[_partnerUrl] = _partnerResponse(
+      updatedContent,
+      updatedHash,
+    );
+    await autoSync.pullPartnerChanges();
+    expect(provider.partnerProfile?.courses.single.id, 'course-2');
+
+    expect(
+      client.requests.where(
+        (request) => request.url.queryParameters['action'] == 'partner',
+      ),
+      hasLength(2),
+    );
+    expect(
+      client.requests.where(
+        (request) => request.url.queryParameters['action'] == 'save',
+      ),
+      isEmpty,
+    );
+  });
+
+  test(
+    'auto sync does not upload after switching to the partner profile',
+    () async {
+      final content = _backupJson('course-1');
+      final contentHash = sha256.convert(utf8.encode(content)).toString();
+      final storage = _MemorySecureStorage();
+      final client = _FakeClient({
+        _loginUrl: _loginResponse(),
+        _partnerUrl: _partnerResponse(content, contentHash),
+        _saveUrl: _jsonResponse({'success': true}),
+        _saveSettingsUrl: _jsonResponse({'success': true}),
+      });
+      final auth = await _connectedAuthService(client, storage);
+      final service = WithuCoupleTimetableService(authService: auth);
+      final autoSync = WithuCoupleAutoSyncService(
+        timetableService: service,
+        debounceDelay: Duration.zero,
+        pullOnBind: false,
+      );
+      final provider = _provider();
+      await provider.initialize();
+      await service.pullPartnerTimetable(provider: provider, force: true);
+      autoSync.bind(provider);
+      addTearDown(autoSync.dispose);
+
+      await provider.switchProfile(PartnerTimetableService.partnerProfileId);
+      await _flushAutoSync();
+
+      expect(
+        provider.activeProfileId,
+        PartnerTimetableService.partnerProfileId,
+      );
+      expect(
+        client.requests.where(
+          (request) => request.url.queryParameters['action'] == 'save',
+        ),
+        isEmpty,
+      );
     },
   );
 
@@ -605,7 +947,6 @@ void main() {
     final autoSync = WithuCoupleAutoSyncService(
       timetableService: WithuCoupleTimetableService(authService: auth),
       debounceDelay: Duration.zero,
-      pullOnBind: true,
     );
     final provider = _provider();
     await provider.initialize();

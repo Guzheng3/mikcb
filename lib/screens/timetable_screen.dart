@@ -53,7 +53,6 @@ import '../widgets/week_selector_picker_sheet.dart';
 import 'add_course_screen.dart';
 import 'add_exam_screen.dart';
 import 'add_schedule_item_screen.dart';
-import 'add_task_screen.dart';
 import 'course_import_screen.dart';
 import 'timetable_profiles_screen.dart';
 
@@ -104,9 +103,12 @@ class _DayViewBlankTapProbe {
 /// override would never be reached. The snap behaviour itself still comes
 /// from [_SpringPageScrollPhysics], so page targeting and rescue behavior are
 /// unchanged.
+typedef _PagerDragStartPageReader = double? Function();
+
 class _DayPagerFlickRescuePhysics extends _SpringPageScrollPhysics {
   const _DayPagerFlickRescuePhysics({
     required this.takeRescueVelocity,
+    super.takeDragStartPage,
     super.parent,
   });
 
@@ -117,6 +119,7 @@ class _DayPagerFlickRescuePhysics extends _SpringPageScrollPhysics {
   _DayPagerFlickRescuePhysics applyTo(ScrollPhysics? ancestor) {
     return _DayPagerFlickRescuePhysics(
       takeRescueVelocity: takeRescueVelocity,
+      takeDragStartPage: takeDragStartPage,
       parent: buildParent(ancestor),
     );
   }
@@ -149,7 +152,14 @@ class _DayPagerFlickRescuePhysics extends _SpringPageScrollPhysics {
 /// the app's critically damped MIUI spring, which carries pointer velocity
 /// into the settle instead of restarting on a fixed-duration curve.
 class _SpringPageScrollPhysics extends PageScrollPhysics {
-  const _SpringPageScrollPhysics({super.parent});
+  const _SpringPageScrollPhysics({super.parent, this.takeDragStartPage});
+
+  /// A short drag commits to the neighbor page. The standard 50% threshold
+  /// makes the timetable feel inert because most swipes end with very low
+  /// pointer velocity after decelerating through the course grid.
+  static const double dragSnapFraction = 0.16;
+
+  final _PagerDragStartPageReader? takeDragStartPage;
 
   static SpringDescription get _spring => SpringDescription.withDampingRatio(
     mass: 1,
@@ -184,6 +194,19 @@ class _SpringPageScrollPhysics extends PageScrollPhysics {
       page -= 0.5;
     } else if (velocity > tolerance.velocity) {
       page += 0.5;
+    } else {
+      final startPage = takeDragStartPage?.call();
+      if (startPage == null) {
+        page = page.roundToDouble();
+      } else {
+        final dragDelta = page - startPage;
+        if (dragDelta.abs() >= 0.5) {
+          // A long zero-velocity drag still follows standard paging.
+          page = page.roundToDouble();
+        } else if (dragDelta.abs() >= dragSnapFraction) {
+          page = startPage + dragDelta.sign;
+        }
+      }
     }
 
     final target = page.roundToDouble() * pageUnit;
@@ -207,7 +230,21 @@ class _TimetableScreenState extends State<TimetableScreen>
   static const double _homeTitleHorizontalNudge = 4;
   static const Duration _weekSlideDuration = Duration(milliseconds: 280);
   static const Duration _dayExpandDuration = Duration(milliseconds: 360);
+  static const Duration _dayCollapseDuration = Duration(milliseconds: 240);
   static const double _dayViewCardRadius = 20;
+  static const Duration _coupleHeartbeatDuration = Duration(milliseconds: 1154);
+  static const Duration _coupleBeamDuration = Duration(milliseconds: 3000);
+  static const double _coupleLineWidth = 24;
+
+  /// 52 bpm: two visual beats per cycle, matching the CSS heartbeat curve.
+  static final Animatable<double> _coupleHeartbeatScaleTween =
+      TweenSequence<double>([
+        TweenSequenceItem(tween: Tween(begin: 1, end: 1.3), weight: 14),
+        TweenSequenceItem(tween: Tween(begin: 1.3, end: 1), weight: 14),
+        TweenSequenceItem(tween: Tween(begin: 1, end: 1.3), weight: 14),
+        TweenSequenceItem(tween: Tween(begin: 1.3, end: 1), weight: 28),
+        TweenSequenceItem(tween: ConstantTween(1), weight: 30),
+      ]);
 
   /// 玻璃坞药丸占用高度：药丸 56 + 底部安全 6（药丸顶到屏幕底的距离）。
   static const double _glassDockPillOccupancy = 62;
@@ -229,6 +266,12 @@ class _TimetableScreenState extends State<TimetableScreen>
 
   late final PageController _weekPageController;
   late final AnimationController _dayViewExpandController;
+  late final AnimationController _coupleHeartbeatController;
+  late final AnimationController _coupleBeamController;
+  late final Animation<double> _coupleHeartbeatScale;
+  final Map<PageController, double> _pagerLastActivePage = {};
+  final Map<PageController, double> _pagerLeadDirection = {};
+  final Map<int, ScrollController> _weekGridScrollControllers = {};
 
   /// 日视图锚点展开/收起与设置页拖动转场期间，卡片玻璃 fill 需要每帧
   /// 重采样（壁纸屏幕固定、卡片移动），否则纹理停留在旧位置：
@@ -297,15 +340,20 @@ class _TimetableScreenState extends State<TimetableScreen>
   final Map<int, _DayPagerFlickProbe> _dayPagerFlickProbes =
       <int, _DayPagerFlickProbe>{};
 
-  /// Blank-area tap probes for the day-pager underlay. These raw listeners do
+  /// Blank-area tap probes for the day-pager overlay. These raw listeners do
   /// not join the gesture arena, so horizontal page swipes still win normally.
   final Map<int, _DayViewBlankTapProbe> _dayViewBlankTapProbes =
       <int, _DayViewBlankTapProbe>{};
+
+  /// Pointer ids currently over an interactive day-view target (course card,
+  /// summary action, etc.). The overlay skips blank-dismiss for these pointers.
+  final Set<int> _dayViewInteractivePointerIds = <int>{};
 
   /// Pending scroll-space rescue velocity, armed on pointer-up and consumed
   /// once by [_dayPagerPhysics] within the same event dispatch.
   double _dayPagerRescueVelocityX = 0;
   DateTime? _dayPagerRescueArmedAt;
+  double? _dayPagerDragStartPage;
 
   /// 单次手势只允许一次日切换点击震感的闩锁。onPageChanged 在滑过每个页
   /// 中点时都会触发：快速甩动一次跨两页、或甩动后弹簧回弹再越过中点，
@@ -315,6 +363,12 @@ class _TimetableScreenState extends State<TimetableScreen>
   late final _DayPagerFlickRescuePhysics _dayPagerPhysics =
       _DayPagerFlickRescuePhysics(
         takeRescueVelocity: _takeDayPagerRescueVelocity,
+        takeDragStartPage: () => _dayPagerDragStartPage,
+        parent: const ClampingScrollPhysics(),
+      );
+  late final _SpringPageScrollPhysics _weekPagerPhysics =
+      _SpringPageScrollPhysics(
+        takeDragStartPage: () => _weekPagerDragStartPage,
         parent: const ClampingScrollPhysics(),
       );
 
@@ -333,6 +387,8 @@ class _TimetableScreenState extends State<TimetableScreen>
   int? _selectedWeekForDayView;
   int? _dayViewTransitionSourceWeek;
   int? _dayViewTransitionSourceDayOfWeek;
+  double _weekSwipeDirection = 1;
+  double? _weekPagerDragStartPage;
   double _dayViewAnchorFraction = 0.5;
   bool _isDaySwipeAnimating = false;
 
@@ -391,6 +447,10 @@ class _TimetableScreenState extends State<TimetableScreen>
     return parseHexColorOrFallback(hexColor, fallback: fallback);
   }
 
+  ScrollController _getWeekGridScrollController(int week) {
+    return _weekGridScrollControllers.putIfAbsent(week, ScrollController.new);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -408,7 +468,19 @@ class _TimetableScreenState extends State<TimetableScreen>
     _dayViewExpandController = AnimationController(
       vsync: this,
       duration: _dayExpandDuration,
+      reverseDuration: _dayCollapseDuration,
     );
+    _coupleHeartbeatController = AnimationController(
+      vsync: this,
+      duration: _coupleHeartbeatDuration,
+    )..repeat();
+    _coupleHeartbeatScale = _coupleHeartbeatController.drive(
+      _coupleHeartbeatScaleTween.chain(CurveTween(curve: Curves.easeInOut)),
+    );
+    _coupleBeamController = AnimationController(
+      vsync: this,
+      duration: _coupleBeamDuration,
+    )..repeat();
     // 日视图锚点展开/收起期间，卡片玻璃 fill 必须每帧重采样壁纸
     // （否则纹理停在旧屏幕位置，卡片呈现半边模糊半边透明）。
     _glassDockCardRepaint = _dayViewExpandController;
@@ -440,7 +512,13 @@ class _TimetableScreenState extends State<TimetableScreen>
     _homePullQuickImportCancel?.call();
     _homePullSettleSpring?.dispose();
     _weekPageController.dispose();
+    for (final controller in _weekGridScrollControllers.values) {
+      controller.dispose();
+    }
+    _weekGridScrollControllers.clear();
     _dayViewExpandController.dispose();
+    _coupleHeartbeatController.dispose();
+    _coupleBeamController.dispose();
     _visibleWeekListenable.dispose();
     _dayAgendaProgressTimer?.cancel();
     _dayAgendaProgressTick.dispose();
@@ -560,11 +638,8 @@ class _TimetableScreenState extends State<TimetableScreen>
             ? homePageChromeMutedForeground(chromeForeground)
             : foruiTheme.colors.mutedForeground;
 
-        final coupleLoggedOutLoginTitle =
-            provider.settings.coupleTimetableOverlayEnabled &&
-            !provider.hasPartnerBinding &&
-            !(context.watch<WithuCoupleSessionProvider?>()?.isLoggedIn ??
-                false);
+        final coupleHeaderTitle =
+            provider.settings.coupleTimetableOverlayEnabled;
         final homeTitle = _buildHomeTitle(
           provider,
           foreground: chromeForeground,
@@ -656,12 +731,8 @@ class _TimetableScreenState extends State<TimetableScreen>
                 systemOverlayStyle: HyperosColors.systemOverlayForBackground(
                   systemOverlayBackground,
                 ),
-                title: coupleLoggedOutLoginTitle
-                    ? const SizedBox.shrink()
-                    : homeTitle,
-                fullWidthCenterChild: coupleLoggedOutLoginTitle
-                    ? homeTitle
-                    : null,
+                title: coupleHeaderTitle ? const SizedBox.shrink() : homeTitle,
+                fullWidthCenterChild: coupleHeaderTitle ? homeTitle : null,
                 suffixes: [
                   KeyedSubtree(
                     key: _topMenuButtonKey,
@@ -995,7 +1066,27 @@ class _TimetableScreenState extends State<TimetableScreen>
     required TimetableSettings settings,
     bool animate = true,
   }) async {
-    final normalizedWeek = _clampWeek(week, settings.semesterWeekCount);
+    final provider = context.read<TimetableProvider>();
+    var normalizedWeek = _clampWeek(week, settings.semesterWeekCount);
+    // A week swipe may still be settling when the dock is tapped. Open the
+    // day view on the page the week pager is actually showing and start its
+    // commit now; otherwise closing later lets the stale provider week pull
+    // the pager back to week 1.
+    if (!_isDayView) {
+      final settledWeek = _resolveSettledWeek(
+        provider,
+        fallbackWeek: normalizedWeek,
+      );
+      if (settledWeek != normalizedWeek) {
+        _finalizeWeekPageSettled(provider, fallbackWeek: settledWeek);
+        normalizedWeek = settledWeek;
+        if (_weekPageController.hasClients &&
+            _weekPageController.page != settledWeek - 1) {
+          _lastObservedWeekPage = settledWeek - 1;
+          _weekPageController.jumpToPage(settledWeek - 1);
+        }
+      }
+    }
     final isSameSelection =
         _isDayView &&
         _selectedWeekForDayView == normalizedWeek &&
@@ -1536,6 +1627,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     _weekdayBarDragScale = _visibleDayNumbers(settings).length.toDouble();
     // 星期栏刮擦也是一次手势：整段拖动只保留一次日切换点击震感。
     _daySwipeHapticFired = false;
+    _dayPagerDragStartPage = controller.page?.roundToDouble();
     _weekdayBarDrag = controller.position.drag(details, () {
       _weekdayBarDrag = null;
     });
@@ -1581,6 +1673,13 @@ class _TimetableScreenState extends State<TimetableScreen>
     final drag = _weekdayBarDrag;
     _weekdayBarDrag = null;
     drag?.cancel();
+  }
+
+  double? _pagerDragStartPageFromMetrics(ScrollMetrics metrics) {
+    final pageUnit = metrics is PageMetrics
+        ? math.max(1, metrics.viewportDimension * metrics.viewportFraction)
+        : math.max(1, metrics.viewportDimension);
+    return pageUnit <= 0 ? null : metrics.pixels / pageUnit;
   }
 
   /// One-shot read of the armed rescue velocity for [_dayPagerPhysics].
@@ -1927,16 +2026,16 @@ class _TimetableScreenState extends State<TimetableScreen>
     required Color mutedForeground,
   }) {
     final session = context.watch<WithuCoupleSessionProvider?>();
-    if (provider.hasPartnerBinding &&
-        provider.settings.coupleTimetableOverlayEnabled) {
-      return _buildCoupleTitleSwitcher(
-        provider,
-        foreground: foreground,
-        mutedForeground: mutedForeground,
-      );
-    }
-    if (provider.settings.coupleTimetableOverlayEnabled &&
-        !(session?.isLoggedIn ?? false)) {
+    if (provider.settings.coupleTimetableOverlayEnabled) {
+      if (provider.hasPartnerBinding ||
+          (session?.isLoggedIn ?? false) ||
+          (session?.hasStoredSession ?? false)) {
+        return _buildCoupleTitleSwitcher(
+          provider,
+          foreground: foreground,
+          mutedForeground: mutedForeground,
+        );
+      }
       return _buildLoggedOutCoupleLoginTitle(
         provider,
         session: session,
@@ -2017,23 +2116,47 @@ class _TimetableScreenState extends State<TimetableScreen>
       child: Semantics(
         label: '$myName / $herName',
         button: true,
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
+        child: SizedBox(
+          width: double.infinity,
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            // Equal-width halves anchor the heart exactly on the full-title
+            // centerline, even when the two nickname widths differ.
             children: [
-              _buildCoupleNicknameBlock(
-                name: myName,
-                selected: !isHerActive,
-                foreground: foreground,
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: _buildCoupleNicknameBlock(
+                          name: myName,
+                          selected: !isHerActive,
+                          foreground: foreground,
+                        ),
+                      ),
+                    ),
+                    _buildCoupleGradientLine(foreground, flowToRight: true),
+                  ],
+                ),
               ),
-              _buildCoupleGradientLine(foreground),
               _buildCoupleHeartSlot(session),
-              _buildCoupleGradientLine(foreground),
-              _buildCoupleNicknameBlock(
-                name: herName,
-                selected: isHerActive,
-                foreground: foreground,
+              Expanded(
+                child: Row(
+                  children: [
+                    _buildCoupleGradientLine(foreground, flowToRight: false),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: _buildCoupleNicknameBlock(
+                          name: herName,
+                          selected: isHerActive,
+                          foreground: foreground,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -2065,7 +2188,7 @@ class _TimetableScreenState extends State<TimetableScreen>
               fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
               color: selected
                   ? HyperosIconColors.red
-                  : foreground.withValues(alpha: 0.55),
+                  : Colors.white,
             ),
           ),
           const SizedBox(height: 2),
@@ -2084,12 +2207,108 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  Widget _buildCoupleGradientLine(Color foreground) {
-    return Container(
-      width: 14,
-      height: 1.2,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      color: foreground.withValues(alpha: 0.35),
+  Widget _buildCoupleGradientLine(
+    Color foreground, {
+    required bool flowToRight,
+  }) {
+    if (MediaQuery.disableAnimationsOf(context)) {
+      return Container(
+        width: _coupleLineWidth,
+        height: 1.2,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        color: foreground.withValues(alpha: 0.35),
+      );
+    }
+
+    return AnimatedBuilder(
+      animation: _coupleHeartbeatController,
+      builder: (context, _) {
+        final pulsePhase = (_coupleBeamController.value + 0.64) % 1;
+        final travel = pulsePhase * 2 - 1;
+        final offset = (flowToRight ? travel : -travel) * _coupleLineWidth;
+
+        return SizedBox(
+          width: _coupleLineWidth,
+          height: 2,
+          child: Stack(
+            alignment: AlignmentDirectional.center,
+            children: [
+              Container(
+                width: double.infinity,
+                height: 1.2,
+                color: foreground.withValues(alpha: 0.24),
+              ),
+              ClipRect(
+                child: SizedBox.expand(
+                  child: Transform.translate(
+                    offset: Offset(offset, 0),
+                    child: Align(
+                      alignment: flowToRight
+                          ? Alignment.centerLeft
+                          : Alignment.centerRight,
+                      child: Container(
+                        width: 10,
+                        height: 1.2,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(1),
+                          gradient: LinearGradient(
+                            begin: flowToRight
+                                ? Alignment.centerLeft
+                                : Alignment.centerRight,
+                            end: flowToRight
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            colors: [
+                              HyperosIconColors.red.withValues(alpha: 0),
+                              HyperosIconColors.red.withValues(alpha: 0.95),
+                              foreground.withValues(alpha: 0.35),
+                              HyperosIconColors.red.withValues(alpha: 0),
+                            ],
+                            stops: const [0, 0.5, 0.75, 1],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: HyperosIconColors.red.withValues(
+                                alpha: 0.28,
+                              ),
+                              blurRadius: 3,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCoupleHeartbeatIcon() {
+    if (MediaQuery.disableAnimationsOf(context)) {
+      return const Icon(
+        Icons.favorite_rounded,
+        size: 16,
+        color: HyperosIconColors.red,
+      );
+    }
+
+    return AnimatedBuilder(
+      animation: _coupleBeamController,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _coupleHeartbeatScale.value,
+          child: child,
+        );
+      },
+      child: const Icon(
+        Icons.favorite_rounded,
+        size: 16,
+        color: HyperosIconColors.red,
+      ),
     );
   }
 
@@ -2097,12 +2316,9 @@ class _TimetableScreenState extends State<TimetableScreen>
   /// WithU 登录弹窗（原「未登录 · 点击登录」提示的登录入口保留于此，
   /// 不再整块霸占标题区，情侣标题的切换功能始终可用）。
   Widget _buildCoupleHeartSlot(WithuCoupleSessionProvider? session) {
-    if (session?.isLoggedIn ?? false) {
-      return const Icon(
-        Icons.favorite_rounded,
-        size: 16,
-        color: HyperosIconColors.red,
-      );
+    if ((session?.isLoggedIn ?? false) ||
+        (session?.hasStoredSession ?? false)) {
+      return _buildCoupleHeartbeatIcon();
     }
     return GestureDetector(
       key: const ValueKey('withu_couple_login_chip'),
@@ -2310,14 +2526,11 @@ class _TimetableScreenState extends State<TimetableScreen>
                   child: Padding(
                     // 时间列偏窄，略向右让周次与节次数字视觉中心对齐。
                     padding: const EdgeInsets.fromLTRB(8, 2, 2, 2),
-                    child: Text(
-                      l10n.currentWeekCompact(rowWeek),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: weekLabelColor,
-                      ),
+                    child: _buildFlippingWeekLabel(
+                      week: rowWeek,
+                      maxWeek: settings.semesterWeekCount,
+                      label: l10n.currentWeekCompact(rowWeek),
+                      color: weekLabelColor,
                     ),
                   ),
                 ),
@@ -2491,93 +2704,173 @@ class _TimetableScreenState extends State<TimetableScreen>
       );
     }
 
-    // Current pager page as a continuous double (day view only).
-    double dayViewPagerPage() {
-      final controller = _dayViewPageController;
-      if (controller == null) {
-        return 0;
-      }
-      if (!controller.hasClients) {
-        return controller.initialPage.toDouble();
-      }
-      return controller.page ?? controller.initialPage.toDouble();
+    return AnimatedBuilder(
+      animation: _weekPageController,
+      child: Container(
+        height: _weekDayHeaderHeight,
+        padding: EdgeInsets.zero,
+        decoration: hideBottomBorder
+            ? null
+            : BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: subtleBorder, width: dividerWidth),
+                ),
+              ),
+        child: _isDayView && _dayViewPageController != null
+            ? AnimatedBuilder(
+                animation: _dayViewPageController!,
+                builder: (context, _) {
+                  // The row stays anchored. The selection indicator still
+                  // tracks the day pager; cross-week labels flip in place
+                  // rather than dragging the complete bar across the screen.
+                  final preview = _dayHeaderPreview.value;
+                  final selectedWeek =
+                      preview?.$1 ?? _selectedWeekForDayView ?? week;
+                  return fullWeekRowFor(selectedWeek, showExtras: true);
+                },
+              )
+            : fullWeekRowFor(week, showExtras: true),
+      ),
+      builder: (context, header) {
+        final horizontalPosition = Scrollable.maybeOf(
+          context,
+          axis: Axis.horizontal,
+        )?.position;
+        final pageDelta =
+            horizontalPosition != null &&
+                horizontalPosition.hasContentDimensions &&
+                horizontalPosition.viewportDimension > 0
+            ? (horizontalPosition.pixels /
+                      horizontalPosition.viewportDimension) -
+                  (week - 1)
+            : 0.0;
+        // The page still slides underneath, but the visible weekday bar is
+        // counter-translated every frame, so the chrome reads as fixed.
+        return Transform.translate(
+          offset: Offset(
+            -pageDelta.clamp(-1.0, 1.0).toDouble() *
+                (horizontalPosition?.viewportDimension ?? 0),
+            0,
+          ),
+          child: header,
+        );
+      },
+    );
+  }
+
+  Widget _buildFlippingWeekLabel({
+    required int week,
+    required int maxWeek,
+    required String label,
+    required Color color,
+  }) {
+    final labelStyle = TextStyle(
+      fontSize: 10,
+      fontWeight: FontWeight.w800,
+      color: color,
+    );
+    final numberMatch = RegExp(r'\d+').firstMatch(label);
+    if (numberMatch == null) {
+      return Text(label, textAlign: TextAlign.center, style: labelStyle);
     }
 
-    return Container(
-      height: _weekDayHeaderHeight,
-      padding: EdgeInsets.zero,
-      decoration: hideBottomBorder
-          ? null
-          : BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: subtleBorder, width: dividerWidth),
-              ),
-            ),
-      child: _isDayView && _dayViewPageController != null
-          ? AnimatedBuilder(
-              animation: _dayViewPageController!,
-              builder: (context, _) {
-                // The whole bar (week label + day row + indicator) is one row
-                // per week. Within a week it stays put (the indicator follows
-                // the pager); only during the cross-week transition does the
-                // outgoing week slide out and the next week slide in — glued
-                // to the pager's position, like the week view's per-page
-                // header moving under the finger.
-                final rawPage = dayViewPagerPage();
-                final count = visibleDays.length;
-                final totalWeeks = settings.semesterWeekCount;
-                final weekIndex = (rawPage / count).floor().clamp(
-                  0,
-                  totalWeeks - 1,
+    final prefix = label.substring(0, numberMatch.start);
+    final suffix = label.substring(numberMatch.end);
+    final numberText = numberMatch.group(0)!;
+    final scaledFontSize = MediaQuery.textScalerOf(context).scale(10);
+    final numberWidth = (scaledFontSize * 1.45).clamp(12.0, 28.0).toDouble();
+
+    Widget buildNumber(String value) {
+      return Text(
+        value,
+        key: ValueKey('timetable-week-number-$value'),
+        textAlign: TextAlign.center,
+        style: labelStyle,
+      );
+    }
+
+    Widget buildCompactLabel(List<Widget> children) {
+      return FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(mainAxisSize: MainAxisSize.min, children: children),
+      );
+    }
+
+    final staticNumberLabel = buildCompactLabel([
+      if (prefix.isNotEmpty) Text(prefix, style: labelStyle),
+      SizedBox(width: numberWidth, child: buildNumber(numberText)),
+      if (suffix.isNotEmpty) Text(suffix, style: labelStyle),
+    ]);
+    if (MediaQuery.disableAnimationsOf(context)) {
+      return staticNumberLabel;
+    }
+
+    return buildCompactLabel([
+      if (prefix.isNotEmpty) Text(prefix, style: labelStyle),
+      SizedBox(
+        width: numberWidth,
+        child: AnimatedBuilder(
+          animation: _weekPageController,
+          builder: (context, _) {
+            final hasClients = _weekPageController.hasClients;
+            final rawPage = hasClients
+                ? (_weekPageController.page ??
+                      _weekPageController.initialPage.toDouble())
+                : _weekPageController.initialPage.toDouble();
+            final settledWeek = (rawPage.roundToDouble().round() + 1).clamp(
+              1,
+              maxWeek,
+            );
+            if (!hasClients ||
+                rawPage < 0 ||
+                rawPage > maxWeek - 1 ||
+                (rawPage - rawPage.roundToDouble()).abs() < 0.001) {
+              return buildNumber('$settledWeek');
+            }
+
+            final lowerPage = rawPage.floorToDouble();
+            final upperPage = (lowerPage + 1).clamp(
+              0.0,
+              (maxWeek - 1).toDouble(),
+            );
+            final progress = (rawPage - lowerPage).clamp(0.0, 1.0);
+            final movingForward = _weekSwipeDirection >= 0;
+            final leavingWeek =
+                ((movingForward ? lowerPage : upperPage).round() + 1).clamp(
+                  1,
+                  maxWeek,
                 );
-                final inWeekPos = rawPage - weekIndex * count;
-                final isCrossing = inWeekPos >= count - 1;
-                final progress = isCrossing
-                    ? (inWeekPos - (count - 1)).clamp(0.0, 1.0)
-                    : 0.0;
-                final weekRow = weekIndex + 1;
-                final nextWeek = weekRow + 1;
-                final extrasOnOutgoing = !isCrossing || progress < 0.5;
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    final barWidth = constraints.maxWidth;
-                    return ClipRect(
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          if (isCrossing)
-                            Transform.translate(
-                              offset: Offset(-progress * barWidth, 0),
-                              child: SizedBox(
-                                width: barWidth,
-                                child: fullWeekRowFor(
-                                  weekRow,
-                                  showExtras: extrasOnOutgoing,
-                                ),
-                              ),
-                            ),
-                          if (isCrossing)
-                            Transform.translate(
-                              offset: Offset((1 - progress) * barWidth, 0),
-                              child: SizedBox(
-                                width: barWidth,
-                                child: fullWeekRowFor(
-                                  nextWeek,
-                                  showExtras: !extrasOnOutgoing,
-                                ),
-                              ),
-                            ),
-                          if (!isCrossing)
-                            fullWeekRowFor(weekRow, showExtras: true),
-                        ],
-                      ),
-                    );
-                  },
+            final arrivingWeek =
+                ((movingForward ? upperPage : lowerPage).round() + 1).clamp(
+                  1,
+                  maxWeek,
                 );
-              },
-            )
-          : fullWeekRowFor(week, showExtras: true),
-    );
+            if (leavingWeek == arrivingWeek) {
+              return buildNumber('$settledWeek');
+            }
+
+            final leavingOpacity = (movingForward ? 1 - progress : progress)
+                .clamp(0.0, 1.0);
+            final arrivingOpacity = (movingForward ? progress : 1 - progress)
+                .clamp(0.0, 1.0);
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                Opacity(
+                  opacity: leavingOpacity,
+                  child: buildNumber('$leavingWeek'),
+                ),
+                Opacity(
+                  opacity: arrivingOpacity,
+                  child: buildNumber('$arrivingWeek'),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+      if (suffix.isNotEmpty) Text(suffix, style: labelStyle),
+    ]);
   }
 
   Widget _buildWeekdaySelectionIndicator({
@@ -2712,8 +3005,9 @@ class _TimetableScreenState extends State<TimetableScreen>
     TimetableSettings settings,
     double availableWidth,
     int week,
-    double sectionHeight,
-  ) {
+    double sectionHeight, {
+    required ScrollController weekGridScrollController,
+  }) {
     final visibleDays = _visibleDayNumbers(settings);
     final timeColumnWidth = _resolveTimeColumnWidth(settings);
     final cardInset = _resolveCourseCardInset(settings);
@@ -2725,59 +3019,183 @@ class _TimetableScreenState extends State<TimetableScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            key: const ValueKey('timetable-time-column'),
             width: timeColumnWidth,
-            // Chrome blur is painted by HomePageContinuousChromeFrostedOverlay.
-            child: Column(
-              children: List.generate(settings.sectionCount, (index) {
-                final section = settings.sections[index];
-                return Container(
-                  height: sectionHeight,
-                  alignment: Alignment.center,
-                  child: _buildSectionTimeCell(index + 1, section, settings),
-                );
-              }),
-            ),
+            // Keep the lane transparent while cards slide above it. The
+            // visible axis is hoisted into the week-pager Stack.
           ),
-          _wrapCourseGridSurfaceHost(
-            settings: settings,
-            child: Row(
-              children: visibleDays.asMap().entries.map((entry) {
-                final dayIndex = entry.key;
-                final dayOfWeek = entry.value;
-                final dayCourses = _getCoursesForDay(
-                  provider.courses,
-                  week,
-                  dayOfWeek,
-                  settings,
-                );
-                final displayItems = _buildHomeDayDisplayItems(
-                  provider: provider,
+          Expanded(
+            child: homePageBackgroundLayer(
+              visual: resolveHomePageRegionBackground(
+                settings: settings,
+                isDark: Theme.of(context).brightness == Brightness.dark,
+                darkFallback: Theme.of(context).colorScheme.surface,
+                region: HomePageBackgroundScope.timetable,
+              ),
+              child: RepaintBoundary(
+                child: _wrapCourseGridSurfaceHost(
                   settings: settings,
-                  week: week,
-                  dayOfWeek: dayOfWeek,
-                  myCourses: dayCourses,
-                );
-                return SizedBox(
-                  width: dayWidth,
-                  child: _buildDayColumn(
-                    week,
-                    dayOfWeek,
-                    displayItems,
-                    settings,
-                    settings.showConflictBadgeOnTimetable,
-                    sectionHeight,
-                    cardInset,
-                    provider,
-                    dayIndex: dayIndex,
-                    dayCount: visibleDays.length,
+                  child: Row(
+                    children: visibleDays.asMap().entries.map((entry) {
+                      final dayIndex = entry.key;
+                      final dayOfWeek = entry.value;
+                      final dayCourses = _getCoursesForDay(
+                        provider.courses,
+                        week,
+                        dayOfWeek,
+                        settings,
+                      );
+                      final displayItems = _buildHomeDayDisplayItems(
+                        provider: provider,
+                        settings: settings,
+                        week: week,
+                        dayOfWeek: dayOfWeek,
+                        myCourses: dayCourses,
+                      );
+                      return SizedBox(
+                        width: dayWidth,
+                        child: _buildDayColumn(
+                          week,
+                          dayOfWeek,
+                          displayItems,
+                          settings,
+                          settings.showConflictBadgeOnTimetable,
+                          sectionHeight,
+                          cardInset,
+                          provider,
+                          dayIndex: dayIndex,
+                          dayCount: visibleDays.length,
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              }).toList(),
+                ),
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFixedTimeColumn(
+    TimetableSettings settings,
+    double sectionHeight, {
+    required double followOffset,
+    double horizontalOffset = 0,
+    double scale = 1,
+    double opacity = 1,
+  }) {
+    return Transform.translate(
+      key: const ValueKey('timetable-time-column-motion'),
+      offset: Offset(horizontalOffset, followOffset),
+      child: Transform.scale(
+        scale: scale,
+        child: Opacity(
+          opacity: opacity.clamp(0.0, 1.0),
+          child: Column(
+            key: const ValueKey('timetable-time-column'),
+            children: List.generate(settings.sectionCount, (index) {
+              final section = settings.sections[index];
+              return Container(
+                height: sectionHeight,
+                alignment: Alignment.center,
+                child: _buildSectionTimeCell(index + 1, section, settings),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFollowingTimeColumn({
+    required TimetableSettings settings,
+    required double sectionHeight,
+    required int maxWeek,
+  }) {
+    return AnimatedBuilder(
+      animation: _weekPageController,
+      builder: (context, _) {
+        final hasHorizontalPage =
+            _weekPageController.hasClients &&
+            _weekPageController.position.hasContentDimensions;
+        final page = hasHorizontalPage
+            ? (_weekPageController.page ?? _lastObservedWeekPage ?? 0)
+            : (_lastObservedWeekPage ?? 0).toDouble();
+        final week = _clampWeek(page.round() + 1, maxWeek);
+        final weekGridScrollController = _getWeekGridScrollController(week);
+        return AnimatedBuilder(
+          animation: weekGridScrollController,
+          builder: (context, _) {
+            final offset =
+                weekGridScrollController.hasClients &&
+                    weekGridScrollController.positions.length == 1
+                ? weekGridScrollController.positions.single.pixels
+                : 0.0;
+            final animationsDisabled = MediaQuery.disableAnimationsOf(context);
+            // Week-swipe motion is handled below; vertical grid scrolling
+            // keeps the axis parked in place.
+            const followFactor = 0.0;
+            var horizontalOffset = 0.0;
+            var motionScale = 1.0;
+            var motionOpacity = 1.0;
+            if (!animationsDisabled && hasHorizontalPage) {
+              // ScrollUpdate gives the intended direction even after PageView
+              // crosses the halfway page-change threshold.
+              final direction = _weekSwipeDirection;
+              final exitDistance = _resolveTimeColumnWidth(settings) + 64;
+              const exitWindow = 0.20;
+              const enterStart = 0.28;
+              final viewportDimension =
+                  _weekPageController.position.viewportDimension;
+              // Convert the raw pager position into 0..1 progress for this
+              // swipe. Distance-from-nearest alone cannot distinguish the
+              // outgoing edge from the incoming edge.
+              final rawPage = _weekPageController.page ?? 0.0;
+              final swipeStartPage = direction >= 0
+                  ? rawPage.floorToDouble()
+                  : rawPage.ceilToDouble();
+              var swipeProgress = ((rawPage - swipeStartPage) * direction)
+                  .clamp(0.0, 1.0);
+              if ((rawPage - rawPage.roundToDouble()).abs() < 0.001) {
+                swipeProgress = 1.0;
+              }
+              if (swipeProgress <= exitWindow) {
+                // Leave in the swipe direction: left swipe exits left,
+                // right swipe exits right.
+                final progress = Curves.easeOutCubic.transform(
+                  (swipeProgress / exitWindow).clamp(0.0, 1.0),
+                );
+                horizontalOffset = -direction * exitDistance * progress;
+                motionOpacity = 1.0 - progress;
+                motionScale = 1.0 - 0.06 * progress;
+              } else if (swipeProgress >= 1.0 - enterStart) {
+                // The incoming page still has `(1 - swipeProgress) *
+                // viewportDimension` to travel. Give the axis the same travel,
+                // so its inner edge stays glued to the incoming course grid.
+                horizontalOffset =
+                    direction * (1.0 - swipeProgress) * viewportDimension;
+                motionOpacity =
+                    ((swipeProgress - (1.0 - enterStart)) / enterStart).clamp(
+                      0.0,
+                      1.0,
+                    );
+                motionScale = 0.94 + 0.06 * motionOpacity;
+              } else {
+                motionOpacity = 0.0;
+              }
+            }
+            return _buildFixedTimeColumn(
+              settings,
+              sectionHeight,
+              followOffset: -offset * followFactor,
+              horizontalOffset: horizontalOffset,
+              scale: motionScale,
+              opacity: motionOpacity,
+            );
+          },
+        );
+      },
     );
   }
 
@@ -2818,9 +3236,9 @@ class _TimetableScreenState extends State<TimetableScreen>
 
     // Auto-fit week grid has no vertical Scrollable; use a vertical-only drag
     // that does not claim the arena until the gesture is clearly vertical.
-    if (settings.timetableAutoFitSectionHeight && !_isDayView) {
+    if (settings.timetableAutoFitSectionHeight) {
       surface = _HomePullVerticalDragDetector(
-        enabled: !_isHomePullQuickImportRunning,
+        enabled: !_isDayView && !_isHomePullQuickImportRunning,
         onPullUpdate: _updateHomePullDragDistance,
         onPullEnd: _finishHomePullDrag,
         onPullCancel: _cancelHomePullDrag,
@@ -3217,6 +3635,159 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
   }
 
+  // OPPO-style card paging tuning: the outgoing card slides away while the
+  // incoming card remains screen-centered under it, then blurs in at 80%
+  // scale and expands to full size. The alpha mask compensates for PageView's
+  // fixed paint order without introducing any decorative shadow.
+  static const double _cardPagerIncomingShrink = 0.20;
+  static const double _cardPagerAppearStart = 0.50;
+  static const double _cardPagerAppearOpacity = 0.34;
+  static const double _cardPagerMaxBlurSigma = 9;
+
+  /// OPPO-style launcher card paging: the outgoing card slides away while the
+  /// neighbor waits right under it, slightly lower and dimmer, then rises
+  /// into place. The pager still owns translation, so this follows the finger.
+  Widget _buildPagerCardTransition({
+    required PageController controller,
+    required int page,
+    required Widget child,
+  }) {
+    return AnimatedBuilder(
+      animation: controller,
+      child: child,
+      builder: (context, cardChild) {
+        final activePage =
+            controller.hasClients && controller.position.hasContentDimensions
+            ? (controller.page ?? page.toDouble())
+            : page.toDouble();
+        // Positive = the page is left of the active page; negative = right.
+        final signedDistance = (activePage - page).clamp(-1.0, 1.0);
+        final depth = signedDistance.abs();
+        if (depth == 0) {
+          return cardChild ?? child;
+        }
+
+        final leadDirection = _updatePagerLeadDirection(
+          controller,
+          activePage,
+        );
+        final incomingness =
+            (-signedDistance.sign * leadDirection).clamp(0.0, 1.0);
+        final direction = signedDistance.sign;
+        final viewportWidth = controller.position.viewportDimension;
+        // PageView lays the neighbor one viewport away. Cancel that offset so
+        // the incoming card stays centered underneath while the active card
+        // slides away, instead of visibly entering from the side.
+        final incomingOffset = Offset(
+          signedDistance * viewportWidth,
+          0,
+        );
+        final offset = Offset.lerp(
+          Offset.zero,
+          incomingOffset,
+          incomingness,
+        )!;
+        final appearProgress =
+            ((depth - _cardPagerAppearStart) / (1.0 - _cardPagerAppearStart))
+                .clamp(0.0, 1.0)
+                .toDouble();
+        final easedAppear = Curves.easeOutCubic.transform(appearProgress);
+        // The incoming card is already at 80% when it first becomes visible,
+        // then grows while the outgoing card finishes leaving.
+        final scale =
+            1.0 -
+            incomingness *
+                _cardPagerIncomingShrink *
+                (1.0 - easedAppear);
+
+        Widget transition = Transform.translate(
+          offset: offset,
+          child: Transform.scale(
+            scale: scale,
+            child: cardChild ?? child,
+          ),
+        );
+
+        if (incomingness > 0.001) {
+          if (depth < _cardPagerAppearStart) {
+            // Keep the later-painted neighbor hidden until the outgoing card
+            // has passed halfway; otherwise it would overlap the edge early.
+            return Opacity(opacity: 0, child: transition);
+          }
+          // A later PageView child normally paints above the outgoing card.
+          // Mask only the side currently overlapped by that card, so the
+          // centered incoming page reads as if it is underneath.
+          // After a left swipe the outgoing right edge is at `1 - depth`;
+          // after a right swipe its left edge is at `depth`.
+          final revealStop = direction < 0
+              ? (1.0 - depth).clamp(0.004, 1.0)
+              : depth.clamp(0.004, 1.0);
+          final forwardMask = direction < 0;
+          final colors = forwardMask
+              ? const [Colors.transparent, Colors.transparent, Colors.white]
+              : const [Colors.white, Colors.transparent, Colors.transparent];
+          final stops = forwardMask
+              ? [
+                  0.0,
+                  math.max(0.0, revealStop - 0.012),
+                  revealStop,
+                ]
+              : [
+                  1.0 - revealStop,
+                  math.min(1.0, 1.0 - revealStop + 0.012),
+                  1.0,
+                ];
+          transition = ShaderMask(
+            blendMode: BlendMode.dstIn,
+            shaderCallback: (bounds) =>
+                LinearGradient(colors: colors, stops: stops).createShader(
+              bounds,
+            ),
+            child: transition,
+          );
+
+          final blurSigma =
+              _cardPagerMaxBlurSigma * (1.0 - easedAppear).clamp(0.0, 1.0);
+          if (blurSigma > 0.1) {
+            transition = ImageFiltered(
+              imageFilter: ui.ImageFilter.blur(
+                sigmaX: blurSigma,
+                sigmaY: blurSigma,
+                tileMode: ui.TileMode.clamp,
+              ),
+              child: transition,
+            );
+          }
+          transition = Opacity(
+            opacity: (_cardPagerAppearOpacity +
+                    (1.0 - _cardPagerAppearOpacity) * easedAppear)
+                .clamp(0.0, 1.0),
+            child: transition,
+          );
+        }
+
+        return transition;
+      },
+    );
+  }
+
+  double _updatePagerLeadDirection(
+    PageController controller,
+    double activePage,
+  ) {
+    final lastPage = _pagerLastActivePage[controller] ?? activePage;
+    final target = (activePage - lastPage).sign.toDouble();
+    final previous = _pagerLeadDirection[controller] ?? 0.0;
+    final direction = previous + (target - previous) * 0.55;
+    // Both adjacent page builders run in the same frame. Commit only when the
+    // rounded page changes, otherwise the second builder sees a zero delta.
+    if (activePage.roundToDouble() != lastPage.roundToDouble()) {
+      _pagerLastActivePage[controller] = activePage;
+    }
+    _pagerLeadDirection[controller] = direction;
+    return direction;
+  }
+
   Widget _buildWeekPager(
     TimetableProvider provider,
     TimetableSettings settings,
@@ -3224,53 +3795,113 @@ class _TimetableScreenState extends State<TimetableScreen>
     double availableHeight,
   ) {
     final visibleDayViewWeek = _visibleDayViewWeek;
+    final timeColumnWidth = _resolveTimeColumnWidth(settings);
+    final chromeGridClearance =
+        hasHomePageBackdropImage(settings) &&
+            settings.homePageWeekdayBarBlurEnabled
+        ? homePageFrostedRegionSeamOverlap
+        : 0.0;
+    final timeColumnTop = _weekDayHeaderHeight + chromeGridClearance;
+    final timeColumnHeight = (availableHeight - timeColumnTop).clamp(
+      0.0,
+      double.infinity,
+    );
+    final fixedTimeColumnSectionHeight =
+        settings.timetableAutoFitSectionHeight && settings.sectionCount > 0
+        ? timeColumnHeight / settings.sectionCount
+        : settings.sectionHeight;
 
     return Stack(
       fit: StackFit.expand,
       children: [
+        Positioned(
+          left: 0,
+          top: timeColumnTop,
+          width: timeColumnWidth,
+          height: timeColumnHeight,
+          child: Offstage(
+            offstage: _shouldShowDayViewOverlay,
+            child: IgnorePointer(
+              child: ClipRect(
+                child: OverflowBox(
+                  minHeight: 0,
+                  maxHeight: double.infinity,
+                  alignment: Alignment.topCenter,
+                  child: _buildFollowingTimeColumn(
+                    settings: settings,
+                    sectionHeight: fixedTimeColumnSectionHeight,
+                    maxWeek: settings.semesterWeekCount,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
         NotificationListener<ScrollNotification>(
           onNotification: (notification) {
             if (notification.metrics.axis == Axis.horizontal) {
+              if (notification is ScrollStartNotification &&
+                  notification.dragDetails != null) {
+                _weekPagerDragStartPage = _pagerDragStartPageFromMetrics(
+                  notification.metrics,
+                );
+              }
+              if (notification is ScrollUpdateNotification &&
+                  notification.scrollDelta != 0) {
+                _weekSwipeDirection = notification.scrollDelta! > 0 ? 1 : -1;
+              }
               if (notification is ScrollEndNotification) {
                 _finalizeWeekPageSettled(provider);
               }
             }
             return false;
           },
-          child: PageView.builder(
-            controller: _weekPageController,
-            itemCount: settings.semesterWeekCount,
-            allowImplicitScrolling: true,
-            physics: _isDayView
-                ? const NeverScrollableScrollPhysics()
-                : const _SpringPageScrollPhysics(
-                    parent: ClampingScrollPhysics(),
+          child: IgnorePointer(
+            ignoring: _isDayView,
+            child: PageView.builder(
+              key: const ValueKey('week-page-view'),
+              controller: _weekPageController,
+              itemCount: settings.semesterWeekCount,
+              allowImplicitScrolling: true,
+              physics: _weekPagerPhysics,
+              // The custom physics owns page snapping. Leaving this enabled
+              // would wrap default PageScrollPhysics outside it and hide the
+              // spring settle.
+              pageSnapping: false,
+              onPageChanged: (page) =>
+                  _handleWeekPageChanged(page, settings.semesterWeekCount),
+              itemBuilder: (context, index) {
+                final week = index + 1;
+                return _buildPagerCardTransition(
+                  controller: _weekPageController,
+                  page: index,
+                  child: RepaintBoundary(
+                    // Lets card glass fills align to the wallpaper instance that
+                    // slides with this page (see PreblurredWallpaperAlignedFill).
+                    child: PreblurredWallpaperPage(
+                      pageIndex: index,
+                      child: _buildWeekPage(
+                        provider,
+                        settings,
+                        availableWidth,
+                        availableHeight,
+                        week,
+                      ),
+                    ),
                   ),
-            // The custom physics owns page snapping. Leaving this enabled
-            // would wrap default PageScrollPhysics outside it and hide the
-            // spring settle.
-            pageSnapping: false,
-            onPageChanged: (page) =>
-                _handleWeekPageChanged(page, settings.semesterWeekCount),
-            itemBuilder: (context, index) {
-              final week = index + 1;
-              return RepaintBoundary(
-                // Lets card glass fills align to the wallpaper instance that
-                // slides with this page (see PreblurredWallpaperAlignedFill).
-                child: PreblurredWallpaperPage(
-                  pageIndex: index,
-                  child: _buildWeekPage(
-                    provider,
-                    settings,
-                    availableWidth,
-                    availableHeight,
-                    week,
-                  ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
+        if (!_shouldShowDayViewOverlay)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: _weekDayHeaderHeight,
+            child: _buildFixedWeekHeader(provider, settings, timeColumnWidth),
+          ),
         if (_shouldShowDayViewOverlay && visibleDayViewWeek != null)
           Positioned.fill(
             child: Column(
@@ -3319,6 +3950,44 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
+  Widget _buildFixedWeekHeader(
+    TimetableProvider provider,
+    TimetableSettings settings,
+    double timeColumnWidth,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hasBackdrop = hasHomePageBackdropImage(settings);
+    final weekdayChromeBlurEnabled =
+        hasBackdrop && settings.homePageWeekdayBarBlurEnabled;
+    final pageChromeFallback = Theme.of(context).colorScheme.surface;
+    final weekdayShowsBackdrop = homePageRegionShowsBackdrop(
+      settings,
+      HomePageBackgroundScope.weekdayBar,
+    );
+
+    return ValueListenableBuilder<int>(
+      valueListenable: _visibleWeekListenable,
+      builder: (context, visibleWeek, _) {
+        return homePageBackgroundLayer(
+          visual: homePageRegionChromeVisual(
+            settings: settings,
+            isDark: isDark,
+            darkFallback: pageChromeFallback,
+            region: HomePageBackgroundScope.weekdayBar,
+            chromeBlurEnabled: weekdayChromeBlurEnabled,
+          ),
+          child: _buildWeekDayHeader(
+            provider,
+            visibleWeek,
+            settings,
+            timeColumnWidth,
+            hideBottomBorder: weekdayShowsBackdrop || weekdayChromeBlurEnabled,
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildWeekPage(
     TimetableProvider provider,
     TimetableSettings settings,
@@ -3326,7 +3995,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     double availableHeight,
     int week,
   ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasBackdrop = hasHomePageBackdropImage(settings);
     // Day view keeps the same weekday chrome as the week view: the panel below
     // now shows the wallpaper, so an opaque non-blurred bar would read as a
@@ -3354,61 +4022,24 @@ class _TimetableScreenState extends State<TimetableScreen>
       availableWidth,
       week,
       sectionHeight,
-    );
-    final weekdayShowsBackdrop = homePageRegionShowsBackdrop(
-      settings,
-      HomePageBackgroundScope.weekdayBar,
-    );
-    final timeColumnWidth = _resolveTimeColumnWidth(settings);
-    final pageChromeFallback = Theme.of(context).colorScheme.surface;
-    // Keep the week slot at a fixed height while the day overlay owns the
-    // visible header, avoiding duplicate weekday bars during the transition.
-    final weekdayHeader = SizedBox(
-      height: _weekDayHeaderHeight,
-      child: _shouldShowDayViewOverlay
-          ? const SizedBox.shrink()
-          : homePageBackgroundLayer(
-              visual: homePageRegionChromeVisual(
-                settings: settings,
-                isDark: isDark,
-                darkFallback: pageChromeFallback,
-                region: HomePageBackgroundScope.weekdayBar,
-                chromeBlurEnabled: weekdayChromeBlurEnabled,
-              ),
-              child: _buildWeekDayHeader(
-                provider,
-                week,
-                settings,
-                timeColumnWidth,
-                hideBottomBorder:
-                    weekdayShowsBackdrop || weekdayChromeBlurEnabled,
-              ),
-            ),
+      weekGridScrollController: _getWeekGridScrollController(week),
     );
 
     return KeyedSubtree(
       key: ValueKey('week-page-$week'),
       child: Column(
         children: [
-          weekdayHeader,
+          const SizedBox(height: _weekDayHeaderHeight),
           // Original chrome↔grid clearance (same token as frosted seam overlap).
           // Keeps gaussian cards from sitting flush on the first course row.
           if (weekdayChromeBlurEnabled)
             const SizedBox(height: homePageFrostedRegionSeamOverlap),
           Expanded(
-            child: homePageBackgroundLayer(
-              visual: resolveHomePageRegionBackground(
-                settings: settings,
-                isDark: isDark,
-                darkFallback: Theme.of(context).colorScheme.surface,
-                region: HomePageBackgroundScope.timetable,
-              ),
-              child: _buildWeekPageBody(
-                provider: provider,
-                settings: settings,
-                week: week,
-                grid: grid,
-              ),
+            child: _buildWeekPageBody(
+              provider: provider,
+              settings: settings,
+              week: week,
+              grid: grid,
             ),
           ),
         ],
@@ -3428,27 +4059,50 @@ class _TimetableScreenState extends State<TimetableScreen>
     // 适应在此统一（自适应网格同样可滚）。经典形态无坞（余量为 0），
     // 保持原样：自适应恰满视口不滚，非自适应维持原滚动结构。
     final weekGridScrollRelief = _glassDockContentScrollInset(settings);
+    final weekGridController = _getWeekGridScrollController(week);
+    // Auto-fill is an exact-height layout: keep it still. The optional effect
+    // only applies when the non-auto-fit layout actually has scroll room.
+    final verticalEffectEnabled =
+        settings.timetableVerticalScrollEffectEnabled &&
+        !settings.timetableAutoFitSectionHeight;
     final Widget weekGrid;
     if (weekGridScrollRelief > 0) {
       weekGrid = SingleChildScrollView(
         key: PageStorageKey<String>('week-scroll-$week'),
+        controller: weekGridController,
         // Explicit clamp: do not inherit HyperOS rubber-band here.
-        physics: const ClampingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
+        physics: verticalEffectEnabled
+            ? const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              )
+            : const ClampingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
         child: Padding(
           padding: EdgeInsets.only(bottom: weekGridScrollRelief),
           child: grid,
         ),
       );
     } else if (settings.timetableAutoFitSectionHeight) {
-      weekGrid = grid;
+      // Classic auto-fit fills the viewport exactly, so vertical motion is
+      // disabled instead of using bounce overscroll as a pseudo effect.
+      weekGrid = SingleChildScrollView(
+        key: PageStorageKey<String>('week-scroll-$week'),
+        controller: weekGridController,
+        physics: const NeverScrollableScrollPhysics(),
+        child: grid,
+      );
     } else {
       weekGrid = SingleChildScrollView(
         key: PageStorageKey<String>('week-scroll-$week'),
-        physics: const ClampingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
+        controller: weekGridController,
+        physics: verticalEffectEnabled
+            ? const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              )
+            : const ClampingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
         child: grid,
       );
     }
@@ -3495,18 +4149,15 @@ class _TimetableScreenState extends State<TimetableScreen>
       animation: _dayViewExpandController,
       child: panel,
       builder: (context, child) {
-        final progress = Curves.easeInOutCubicEmphasized.transform(
-          _dayViewExpandController.value,
-        );
+        final curve = _dayViewExpandController.status == AnimationStatus.reverse
+            ? Curves.easeInOutCubic
+            : Curves.easeInOutCubicEmphasized;
+        final progress = curve.transform(_dayViewExpandController.value);
+        final scale = 0.94 + (0.06 * progress);
         final widthFactor = 0.18 + (0.82 * progress);
         final heightFactor = math.max(0.04, progress);
         final translateY = (1 - progress) * -24;
         final borderRadius = BorderRadius.circular(28 * (1 - progress));
-        final borderColor = Color.lerp(
-          colorScheme.outlineVariant,
-          Colors.transparent,
-          progress,
-        )!;
         final shadowAlpha =
             (theme.brightness == Brightness.dark ? 0.08 : 0.06) *
             (1 - progress);
@@ -3526,21 +4177,23 @@ class _TimetableScreenState extends State<TimetableScreen>
                 heightFactor: heightFactor,
                 child: Transform.translate(
                   offset: Offset(0, translateY),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      border: Border.all(color: borderColor),
-                      boxShadow: [
-                        BoxShadow(
-                          color: colorScheme.shadow.withValues(
-                            alpha: shadowAlpha,
+                  child: Transform.scale(
+                    scale: scale,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        boxShadow: [
+                          BoxShadow(
+                            color: colorScheme.shadow.withValues(
+                              alpha: shadowAlpha,
+                            ),
+                            blurRadius: 28 * (1 - progress),
+                            offset: Offset(0, 12 * (1 - progress)),
                           ),
-                          blurRadius: 28 * (1 - progress),
-                          offset: Offset(0, 12 * (1 - progress)),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: child,
                     ),
-                    child: child,
                   ),
                 ),
               ),
@@ -3695,7 +4348,11 @@ class _TimetableScreenState extends State<TimetableScreen>
                         // 双震动。日切换反馈已在页中点给过，这里就地消费。
                         return true;
                       }
-                      if (notification is ScrollStartNotification) {
+                      if (notification is ScrollStartNotification &&
+                          notification.dragDetails != null) {
+                        _dayPagerDragStartPage = _pagerDragStartPageFromMetrics(
+                          notification.metrics,
+                        );
                         if (kDebugMode) {
                           final metrics = notification.metrics;
                           final page = metrics.viewportDimension == 0
@@ -3737,12 +4394,17 @@ class _TimetableScreenState extends State<TimetableScreen>
                       itemBuilder: (context, page) {
                         // 1 Hz progress heartbeat rebuilds only this page's
                         // content (ongoing badges / progress), not the State.
-                        return ValueListenableBuilder<int>(
-                          valueListenable: _dayAgendaProgressTick,
-                          builder: (context, _, _) => _buildDayViewPageContent(
-                            provider: provider,
-                            settings: settings,
-                            page: page,
+                        return _buildPagerCardTransition(
+                          controller: controller,
+                          page: page,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: _dayAgendaProgressTick,
+                            builder: (context, _, _) =>
+                                _buildDayViewPageContent(
+                                  provider: provider,
+                                  settings: settings,
+                                  page: page,
+                                ),
                           ),
                         );
                       },
@@ -3843,41 +4505,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     return Stack(
       fit: StackFit.expand,
       children: [
-        Listener(
-          key: const ValueKey('day-view-blank-tap-dismiss'),
-          behavior: HitTestBehavior.translucent,
-          onPointerDown: (event) {
-            _dayViewBlankTapProbes[event.pointer] = _DayViewBlankTapProbe(
-              event.timeStamp,
-              event.position,
-            );
-          },
-          onPointerMove: (event) {
-            final probe = _dayViewBlankTapProbes[event.pointer];
-            if (probe == null) {
-              return;
-            }
-            if ((event.position - probe.downPosition).distance > kTouchSlop) {
-              _dayViewBlankTapProbes.remove(event.pointer);
-            }
-          },
-          onPointerUp: (event) {
-            final probe = _dayViewBlankTapProbes.remove(event.pointer);
-            if (probe == null) {
-              return;
-            }
-            final delta = event.position - probe.downPosition;
-            final pressDuration = event.timeStamp - probe.downTime;
-            if (delta.distance <= kTouchSlop &&
-                pressDuration <= const Duration(milliseconds: 600)) {
-              unawaited(_closeDayView(settings));
-            }
-          },
-          onPointerCancel: (event) {
-            _dayViewBlankTapProbes.remove(event.pointer);
-          },
-          child: const SizedBox.expand(),
-        ),
         Column(
           key: ValueKey('day-content-${target.week}-${target.dayOfWeek}'),
           children: [
@@ -3909,6 +4536,45 @@ class _TimetableScreenState extends State<TimetableScreen>
               ),
             ),
           ],
+        ),
+        Listener(
+          key: const ValueKey('day-view-blank-tap-dismiss'),
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (event) {
+            _dayViewBlankTapProbes[event.pointer] = _DayViewBlankTapProbe(
+              event.timeStamp,
+              event.position,
+            );
+          },
+          onPointerMove: (event) {
+            final probe = _dayViewBlankTapProbes[event.pointer];
+            if (probe == null) {
+              return;
+            }
+            if ((event.position - probe.downPosition).distance > kTouchSlop) {
+              _dayViewBlankTapProbes.remove(event.pointer);
+            }
+          },
+          onPointerUp: (event) {
+            final probe = _dayViewBlankTapProbes.remove(event.pointer);
+            if (probe == null) {
+              return;
+            }
+            if (_dayViewInteractivePointerIds.remove(event.pointer)) {
+              return;
+            }
+            final delta = event.position - probe.downPosition;
+            final pressDuration = event.timeStamp - probe.downTime;
+            if (delta.distance <= kTouchSlop &&
+                pressDuration <= const Duration(milliseconds: 600)) {
+              unawaited(_closeDayView(settings));
+            }
+          },
+          onPointerCancel: (event) {
+            _dayViewBlankTapProbes.remove(event.pointer);
+            _dayViewInteractivePointerIds.remove(event.pointer);
+          },
+          child: const SizedBox.expand(),
         ),
       ],
     );
@@ -4193,41 +4859,48 @@ class _TimetableScreenState extends State<TimetableScreen>
                           ),
                         )
                       else if (_canNavigateDayViewToToday(settings))
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            key: const ValueKey('back-to-today-button'),
-                            onTap: () async {
-                              await _navigateDayViewToToday(provider);
-                            },
-                            borderRadius: BorderRadius.circular(999),
-                            child: Ink(
-                              decoration: BoxDecoration(
-                                color: colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(8, 4, 10, 4),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      backToTodayIcon,
-                                      size: 14,
-                                      color: colorScheme.onPrimaryContainer,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      l10n.backToTodayAction,
-                                      style: foruiTheme.typography.body.xs
-                                          .copyWith(
-                                            color:
-                                                colorScheme.onPrimaryContainer,
-                                            fontWeight: FontWeight.w600,
-                                            height: 1.1,
-                                          ),
-                                    ),
-                                  ],
+                        _dayViewInteractiveListener(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              key: const ValueKey('back-to-today-button'),
+                              onTap: () async {
+                                await _navigateDayViewToToday(provider);
+                              },
+                              borderRadius: BorderRadius.circular(999),
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    8,
+                                    4,
+                                    10,
+                                    4,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        backToTodayIcon,
+                                        size: 14,
+                                        color: colorScheme.onPrimaryContainer,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        l10n.backToTodayAction,
+                                        style: foruiTheme.typography.body.xs
+                                            .copyWith(
+                                              color: colorScheme
+                                                  .onPrimaryContainer,
+                                              fontWeight: FontWeight.w600,
+                                              height: 1.1,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -4254,17 +4927,19 @@ class _TimetableScreenState extends State<TimetableScreen>
                     ],
                   ),
                 ),
-                IconButton(
-                  key: const ValueKey('back-to-week-view-button'),
-                  onPressed: () => _closeDayView(settings),
-                  icon: const Icon(Icons.close_rounded, size: 18),
-                  tooltip: l10n.backToWeekViewAction,
-                  style: IconButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.all(6),
-                    minimumSize: const Size(32, 32),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    foregroundColor: summaryMutedInk,
+                _dayViewInteractiveListener(
+                  child: IconButton(
+                    key: const ValueKey('back-to-week-view-button'),
+                    onPressed: () => _closeDayView(settings),
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    tooltip: l10n.backToWeekViewAction,
+                    style: IconButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.all(6),
+                      minimumSize: const Size(32, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      foregroundColor: summaryMutedInk,
+                    ),
                   ),
                 ),
               ],
@@ -4473,6 +5148,16 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
+  Widget _dayViewInteractiveListener({required Widget child}) {
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (event) {
+        _dayViewInteractivePointerIds.add(event.pointer);
+      },
+      child: child,
+    );
+  }
+
   Widget _buildExpandedDayColumnView({
     required Key key,
     required TimetableProvider provider,
@@ -4631,176 +5316,182 @@ class _TimetableScreenState extends State<TimetableScreen>
     required TimetableSettings settings,
     required _DayAgendaItem item,
   }) {
+    final Widget entry;
     if (item.isExam) {
       if (logDayViewBuilds) {
         debugPrint('[DayView] build agenda entry: exam id=${item.exam?.id}');
       }
-      return _buildExamAgendaEntry(
+      entry = _buildExamAgendaEntry(
         item.exam!,
         provider: context.read<TimetableProvider>(),
       );
-    }
-    if (item.isScheduleItem) {
+    } else if (item.isScheduleItem) {
       if (logDayViewBuilds) {
         debugPrint(
           '[DayView] build agenda entry: schedule id=${item.scheduleItem?.id}',
         );
       }
-      return _buildScheduleAgendaEntry(item, settings: settings);
-    }
-
-    final courseItem = item.courseItem!;
-    if (logDayViewBuilds) {
-      debugPrint(
-        '[DayView] build agenda entry: course id=${courseItem.course.id} '
-        'name=${courseItem.course.name}',
+      entry = _buildScheduleAgendaEntry(item, settings: settings);
+    } else {
+      final courseItem = item.courseItem!;
+      if (logDayViewBuilds) {
+        debugPrint(
+          '[DayView] build agenda entry: course id=${courseItem.course.id} '
+          'name=${courseItem.course.name}',
+        );
+      }
+      final theme = Theme.of(context);
+      final colorScheme = theme.colorScheme;
+      final l10n = AppLocalizations.of(context)!;
+      final colorHex = _resolveDisplayCourseColor(
+        courseItem,
+        settings: settings,
       );
-    }
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-    final colorHex = _resolveDisplayCourseColor(courseItem, settings: settings);
-    final resolvedColor = _colorFromHex(
-      colorHex ?? courseItem.course.color,
-      Colors.blue,
-    );
-    final palette = _resolveDayAgendaPalette(
-      resolvedColor,
-      foregroundHex: courseItem.course.textColor,
-      settings: settings,
-    );
-    final onCardColor = palette.foregroundColor;
-    final statusBadges = <Widget>[
-      if (courseItem.isCurrentCourse)
-        _buildDayAgendaStatusBadge(
-          text: l10n.ongoingCourseBadge,
-          textColor: onCardColor,
-          backgroundColor: Colors.white.withValues(alpha: 0.18),
-        ),
-      if (courseItem.isConflicting && settings.showConflictBadgeOnTimetable)
-        _buildDayAgendaStatusBadge(
-          text: l10n.conflictLabel,
-          textColor: Colors.white,
-          backgroundColor: colorScheme.error,
-        ),
-      if (!courseItem.isCurrentWeekCourse)
-        _buildDayAgendaStatusBadge(
-          text: l10n.nonCurrentWeekLabel,
-          textColor: onCardColor,
-          backgroundColor: Colors.white.withValues(alpha: 0.14),
-        ),
-      if (courseItem.course.isSuspendedInWeek(week))
-        _buildDayAgendaStatusBadge(
-          text: l10n.suspendedBadgeLabel,
-          textColor: Colors.white,
-          backgroundColor: Colors.red.shade700,
-        ),
-      if (courseItem.course.hasHomeworkInWeek(week))
-        _buildDayAgendaHomeworkDot(),
-    ];
-    final cardDecoration = BoxDecoration(
-      color: palette.baseColor,
-      borderRadius: BorderRadius.circular(_dayViewCardRadius),
-      border: courseItem.isConflicting
-          ? Border.all(
-              color: colorScheme.error.withValues(alpha: 0.30),
-              width: 1.4,
-            )
-          : null,
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          palette.baseColor,
-          if (courseItem.isConflicting)
-            Color.lerp(palette.fillColor, colorScheme.error, 0.12) ??
-                palette.fillColor
-          else
-            palette.fillColor,
-        ],
-      ),
-      boxShadow: [
-        BoxShadow(
-          color:
-              (courseItem.isConflicting ? colorScheme.error : palette.fillColor)
-                  .withValues(alpha: courseItem.isConflicting ? 0.20 : 0.18),
-          blurRadius: courseItem.isConflicting ? 18 : 16,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    );
-    final progressInfo = courseItem.isCurrentCourse
-        ? _resolveDayAgendaProgressInfo(courseItem.course, palette: palette)
-        : null;
-
-    final isSuspended = courseItem.course.isSuspendedInWeek(week);
-    // Keep frost readable; only a light dim for suspended / conflict states.
-    final effectiveOpacity = isSuspended ? 0.84 : courseItem.opacity;
-
-    Future<void> openCourseNotes() {
-      return showCourseNoteSheet(
-        context,
-        course: courseItem.course,
-        week: week,
+      final resolvedColor = _colorFromHex(
+        colorHex ?? courseItem.course.color,
+        Colors.blue,
       );
-    }
-
-    // Released behaviour: tap expands the card into the editor via a container
-    // transform. Dimming stays on opacityScale (not an Opacity wrapper) so
-    // glass surfaces can still sample the backdrop.
-    return OpenContainer<void>(
-      key: ValueKey('day-view-edit-card-${courseItem.course.id}'),
-      tappable: false,
-      transitionType: ContainerTransitionType.fadeThrough,
-      transitionDuration: const Duration(milliseconds: 420),
-      openColor: theme.scaffoldBackgroundColor,
-      closedColor: Colors.transparent,
-      closedElevation: 0,
-      openElevation: 0,
-      closedShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(_dayViewCardRadius),
-      ),
-      openShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-      ),
-      openBuilder: (context, _) => ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: AddCourseScreen(
-          courseGroup: context.read<TimetableProvider>().courseGroupForCourse(
-            courseItem.course,
+      final palette = _resolveDayAgendaPalette(
+        resolvedColor,
+        foregroundHex: courseItem.course.textColor,
+        settings: settings,
+      );
+      final onCardColor = palette.foregroundColor;
+      final statusBadges = <Widget>[
+        if (courseItem.isCurrentCourse)
+          _buildDayAgendaStatusBadge(
+            text: l10n.ongoingCourseBadge,
+            textColor: onCardColor,
+            backgroundColor: Colors.white.withValues(alpha: 0.18),
           ),
-          initialCourse: courseItem.course,
-        ),
-      ),
-      closedBuilder: (context, openContainer) {
-        final content = progressInfo != null
-            ? _buildCurrentDayAgendaCard(
-                item: courseItem,
-                week: week,
-                settings: settings,
-                progressInfo: progressInfo,
-                l10n: l10n,
-                colorScheme: colorScheme,
-                ink: palette.foregroundColor,
-                openContainer: openContainer,
-                onOpenNotes: openCourseNotes,
-                opacityScale: effectiveOpacity,
+        if (courseItem.isConflicting && settings.showConflictBadgeOnTimetable)
+          _buildDayAgendaStatusBadge(
+            text: l10n.conflictLabel,
+            textColor: Colors.white,
+            backgroundColor: colorScheme.error,
+          ),
+        if (!courseItem.isCurrentWeekCourse)
+          _buildDayAgendaStatusBadge(
+            text: l10n.nonCurrentWeekLabel,
+            textColor: onCardColor,
+            backgroundColor: Colors.white.withValues(alpha: 0.14),
+          ),
+        if (courseItem.course.isSuspendedInWeek(week))
+          _buildDayAgendaStatusBadge(
+            text: l10n.suspendedBadgeLabel,
+            textColor: Colors.white,
+            backgroundColor: Colors.red.shade700,
+          ),
+        if (courseItem.course.hasHomeworkInWeek(week))
+          _buildDayAgendaHomeworkDot(),
+      ];
+      final cardDecoration = BoxDecoration(
+        color: palette.baseColor,
+        borderRadius: BorderRadius.circular(_dayViewCardRadius),
+        border: courseItem.isConflicting
+            ? Border.all(
+                color: colorScheme.error.withValues(alpha: 0.30),
+                width: 1.4,
               )
-            : _buildDefaultDayAgendaCard(
-                item: courseItem,
-                week: week,
-                settings: settings,
-                l10n: l10n,
-                palette: palette,
-                statusBadges: statusBadges,
-                cardDecoration: cardDecoration,
-                openContainer: openContainer,
-                onOpenNotes: openCourseNotes,
-                opacityScale: effectiveOpacity,
-              );
-        return Material(color: Colors.transparent, child: content);
-      },
-    );
+            : null,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            palette.baseColor,
+            if (courseItem.isConflicting)
+              Color.lerp(palette.fillColor, colorScheme.error, 0.12) ??
+                  palette.fillColor
+            else
+              palette.fillColor,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color:
+                (courseItem.isConflicting
+                        ? colorScheme.error
+                        : palette.fillColor)
+                    .withValues(alpha: courseItem.isConflicting ? 0.20 : 0.18),
+            blurRadius: courseItem.isConflicting ? 18 : 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      );
+      final progressInfo = courseItem.isCurrentCourse
+          ? _resolveDayAgendaProgressInfo(courseItem.course, palette: palette)
+          : null;
+
+      final isSuspended = courseItem.course.isSuspendedInWeek(week);
+      // Keep frost readable; only a light dim for suspended / conflict states.
+      final effectiveOpacity = isSuspended ? 0.84 : courseItem.opacity;
+
+      Future<void> openCourseNotes() {
+        return showCourseNoteSheet(
+          context,
+          course: courseItem.course,
+          week: week,
+        );
+      }
+
+      // Released behaviour: tap expands the card into the editor via a container
+      // transform. Dimming stays on opacityScale (not an Opacity wrapper) so
+      // glass surfaces can still sample the backdrop.
+      entry = OpenContainer<void>(
+        key: ValueKey('day-view-edit-card-${courseItem.course.id}'),
+        tappable: false,
+        transitionType: ContainerTransitionType.fadeThrough,
+        transitionDuration: const Duration(milliseconds: 420),
+        openColor: theme.scaffoldBackgroundColor,
+        closedColor: Colors.transparent,
+        closedElevation: 0,
+        openElevation: 0,
+        closedShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(_dayViewCardRadius),
+        ),
+        openShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+        ),
+        openBuilder: (context, _) => ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: AddCourseScreen(
+            courseGroup: context.read<TimetableProvider>().courseGroupForCourse(
+              courseItem.course,
+            ),
+            initialCourse: courseItem.course,
+          ),
+        ),
+        closedBuilder: (context, openContainer) {
+          final content = progressInfo != null
+              ? _buildCurrentDayAgendaCard(
+                  item: courseItem,
+                  week: week,
+                  settings: settings,
+                  progressInfo: progressInfo,
+                  l10n: l10n,
+                  colorScheme: colorScheme,
+                  ink: palette.foregroundColor,
+                  openContainer: openContainer,
+                  onOpenNotes: openCourseNotes,
+                  opacityScale: effectiveOpacity,
+                )
+              : _buildDefaultDayAgendaCard(
+                  item: courseItem,
+                  week: week,
+                  settings: settings,
+                  l10n: l10n,
+                  palette: palette,
+                  statusBadges: statusBadges,
+                  cardDecoration: cardDecoration,
+                  openContainer: openContainer,
+                  onOpenNotes: openCourseNotes,
+                  opacityScale: effectiveOpacity,
+                );
+          return Material(color: Colors.transparent, child: content);
+        },
+      );
+    }
+    return _dayViewInteractiveListener(child: entry);
   }
 
   Widget _buildDefaultDayAgendaCard({
@@ -7261,37 +7952,64 @@ class _TimetableScreenState extends State<TimetableScreen>
       week,
       displayItem: displayItem,
     );
-    await showCourseActionSheet(
+    final result = await showCourseActionSheet(
       context,
       previewItems: previewItems,
       week: week,
       onEdit: _editCourse,
-      onReschedule: (target) => _showRescheduleSheet(target, sourceWeek: week),
-      onDelete: (target) => _showDeleteCourseOptions(target, week),
-      onSuspend: (target) => _showSuspendSheet(target, week),
-      onAddTask: (target) => _openTaskFromCourse(target, week),
       // 单节课提醒依赖原生精确闹钟调度，其他平台不显示入口。
       onSetAlarm: (!kIsWeb && Platform.isAndroid)
           ? (target) => _openClassReminderSheet(target, week)
           : null,
     );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (result != null) {
+      await _handleCourseActionResult(result, week);
+    }
   }
 
-  Future<void> _openTaskFromCourse(Course course, int week) async {
-    final provider = context.read<TimetableProvider>();
-    final existing = provider
-        .getTasksForCourse(course.id)
-        .where((task) => task.sourceWeek == null || task.sourceWeek == week)
-        .firstOrNull;
-    await Navigator.of(context).push<bool>(
-      HyperosPageRoute<bool>(
-        builder: (_) => AddTaskScreen(
-          task: existing,
-          initialCourse: course,
-          initialWeek: week,
-        ),
-      ),
-    );
+  Future<void> _handleCourseActionResult(
+    CourseActionSheetResult result,
+    int week,
+  ) async {
+    switch (result) {
+      case CourseActionSheetResult reschedule
+          when reschedule.rescheduleDraft != null:
+        await _applyRescheduleDraft(
+          reschedule.course,
+          sourceWeek: week,
+          draft: reschedule.rescheduleDraft!,
+        );
+      case CourseActionSheetResult deleteResult
+          when deleteResult.deleteMode != null:
+        switch (deleteResult.deleteMode!) {
+          case CourseDeleteMode.course:
+            await _confirmDeleteCourse(deleteResult.course);
+          case CourseDeleteMode.occurrence:
+            await _confirmDeleteOccurrence(deleteResult.course, week);
+        }
+      case CourseActionSheetResult suspendResult
+          when suspendResult.suspendMode != null:
+        final provider = context.read<TimetableProvider>();
+        final course = suspendResult.course;
+        switch (suspendResult.suspendMode!) {
+          case CourseSuspendMode.thisWeek:
+            await provider.toggleCourseSuspension(course.id, week);
+          case CourseSuspendMode.allWeeks:
+            final hasAnySuspended = course.suspendedWeeks?.isNotEmpty ?? false;
+            if (hasAnySuspended) {
+              await provider.unsuspendAllWeeks(course.id);
+            } else {
+              await provider.suspendAllWeeks(course.id);
+            }
+        }
+      default:
+        break;
+    }
   }
 
   /// 单节课提醒：打开提醒设置弹层（快捷提前量 / 自定义时间 / 取消）。
@@ -7340,53 +8058,6 @@ class _TimetableScreenState extends State<TimetableScreen>
       return left.id.compareTo(right.id);
     });
     return conflicts;
-  }
-
-  Future<void> _showDeleteCourseOptions(Course course, int week) async {
-    final canDeleteOccurrence = course.isInWeek(week);
-    final selected = await showCourseDeleteModeSheet(
-      context,
-      canDeleteOccurrence: canDeleteOccurrence,
-      week: week,
-    );
-
-    if (!mounted || selected == null) {
-      return;
-    }
-
-    switch (selected) {
-      case CourseDeleteMode.course:
-        await _confirmDeleteCourse(course);
-      case CourseDeleteMode.occurrence:
-        await _confirmDeleteOccurrence(course, week);
-    }
-  }
-
-  Future<void> _showSuspendSheet(Course course, int week) async {
-    final provider = context.read<TimetableProvider>();
-    final isSuspended = course.isSuspendedInWeek(week);
-    final hasAnySuspended = course.suspendedWeeks?.isNotEmpty ?? false;
-
-    final selected = await showCourseSuspendModeSheet(
-      context,
-      isSuspendedThisWeek: isSuspended,
-      hasAnySuspended: hasAnySuspended,
-    );
-
-    if (!mounted || selected == null) {
-      return;
-    }
-
-    switch (selected) {
-      case CourseSuspendMode.thisWeek:
-        await provider.toggleCourseSuspension(course.id, week);
-      case CourseSuspendMode.allWeeks:
-        if (hasAnySuspended) {
-          await provider.unsuspendAllWeeks(course.id);
-        } else {
-          await provider.suspendAllWeeks(course.id);
-        }
-    }
   }
 
   Future<void> _confirmDeleteCourse(Course course) async {
@@ -7470,30 +8141,13 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
   }
 
-  Future<void> _showRescheduleSheet(
+  Future<void> _applyRescheduleDraft(
     Course course, {
     required int sourceWeek,
+    required CourseRescheduleDraft draft,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final provider = context.read<TimetableProvider>();
-    final settings = provider.settings;
-    final weekdayLabels = _weekdayLabels(context);
-    final scheme = provider.resolveCourseTimeScheme(course);
-    final sectionTimes = scheme?.sections ?? settings.sections;
-
-    final draft = await showCourseRescheduleSheet(
-      context,
-      course: course,
-      sourceWeek: sourceWeek,
-      settings: settings,
-      weekDays: weekdayLabels,
-      sectionTimes: sectionTimes,
-      locationSuggestions: provider.uniqueLocations,
-    );
-
-    if (draft == null) {
-      return;
-    }
 
     try {
       final changed = await provider.rescheduleCourseOccurrence(
@@ -7661,10 +8315,13 @@ class _TimetableScreenState extends State<TimetableScreen>
     final headerUsesFrostedChrome =
         hasBackdrop &&
         (headerShowsBackdrop || settings.homePageHeaderBlurEnabled);
-    final menuForeground = _resolveHomeChromeForeground(
-      headerShowsWallpaper: headerUsesFrostedChrome,
-      themeForeground: context.theme.colors.foreground,
-    );
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final menuForeground = isDarkMode
+        ? _resolveHomeChromeForeground(
+            headerShowsWallpaper: headerUsesFrostedChrome,
+            themeForeground: context.theme.colors.foreground,
+          )
+        : Colors.black;
 
     // 菜单形态由设置分流：「八宫格」是 v2.0.5.5 已发布版本的底部弹层，
     // 「列表」是当前的锚定弹窗。两种形态共享同一份自定义排列

@@ -10,13 +10,14 @@ void main() {
     expect(settings.timetableShowNonCurrentWeekCourses, isFalse);
     expect(settings.showConflictBadgeOnTimetable, isTrue);
     expect(settings.timetableConflictCourseOpacity, 0.70);
+    expect(settings.timetableVerticalScrollEffectEnabled, isFalse);
     expect(settings.liveHidePrefixText, isTrue);
     expect(settings.courseCardShowName, isTrue);
     expect(settings.courseCardShowTeacher, isTrue);
     expect(settings.courseCardShowLocation, isTrue);
     expect(settings.courseCardShowTime, isFalse);
     expect(settings.courseCardShowTimeLabels, isTrue);
-    expect(settings.courseCardShowWeeks, isFalse);
+    expect(settings.courseCardShowWeeks, isTrue);
     expect(settings.courseCardShowDescription, isFalse);
     expect(settings.timetableAutoFitSectionHeight, isTrue);
     expect(settings.widgetBackgroundStyle, WidgetBackgroundStyle.solid);
@@ -37,7 +38,7 @@ void main() {
       SectionTimeDisplayMode.startAndEnd,
     );
     expect(settings.timetableHideWeekends, isFalse);
-    expect(settings.enableHaptics, isTrue);
+    expect(settings.enableHaptics, isFalse);
     expect(
       settings.liveDuringClassTimeDisplayMode,
       LiveDuringClassTimeDisplayMode.nearest,
@@ -97,13 +98,14 @@ void main() {
     expect(restored.timetableShowNonCurrentWeekCourses, isFalse);
     expect(restored.showConflictBadgeOnTimetable, isTrue);
     expect(restored.timetableConflictCourseOpacity, 0.70);
+    expect(restored.timetableVerticalScrollEffectEnabled, isFalse);
     expect(restored.liveHidePrefixText, isTrue);
     expect(restored.courseCardShowName, isTrue);
     expect(restored.courseCardShowTeacher, isTrue);
     expect(restored.courseCardShowLocation, isTrue);
     expect(restored.courseCardShowTime, isFalse);
     expect(restored.courseCardShowTimeLabels, isTrue);
-    expect(restored.courseCardShowWeeks, isFalse);
+    expect(restored.courseCardShowWeeks, isTrue);
     expect(restored.courseCardShowDescription, isFalse);
     expect(restored.timetableAutoFitSectionHeight, isTrue);
     expect(restored.widgetBackgroundStyle, WidgetBackgroundStyle.solid);
@@ -124,7 +126,7 @@ void main() {
       SectionTimeDisplayMode.startAndEnd,
     );
     expect(restored.timetableHideWeekends, isFalse);
-    expect(restored.enableHaptics, isTrue);
+    expect(restored.enableHaptics, isFalse);
     expect(
       restored.liveDuringClassTimeDisplayMode,
       LiveDuringClassTimeDisplayMode.nearest,
@@ -846,10 +848,16 @@ void main() {
   });
 
   test('home page background settings roundtrip in json', () {
+    final defaults = TimetableSettings.defaults();
+    expect(defaults.homePageBackdropBlurSigma, 13);
+    expect(defaults.homePageBackdropFrostAlpha, 0.05);
+
     final settings = TimetableSettings.defaults().copyWith(
       homePageBackgroundFill: HomePageBackgroundFill.image,
       homePageBackgroundImagePath: '/tmp/home_bg.png',
       homePageWallpaperPath: '/tmp/wallpaper.png',
+      homePageBackdropBlurSigma: 12,
+      homePageBackdropFrostAlpha: 0.4,
       homePageBackgroundScope:
           HomePageBackgroundScope.timetable | HomePageBackgroundScope.header,
     );
@@ -858,6 +866,8 @@ void main() {
     expect(restored.homePageBackgroundFill, HomePageBackgroundFill.image);
     expect(restored.homePageBackgroundImagePath, '/tmp/home_bg.png');
     expect(restored.homePageWallpaperPath, '/tmp/wallpaper.png');
+    expect(restored.homePageBackdropBlurSigma, 12.0);
+    expect(restored.homePageBackdropFrostAlpha, 0.4);
     expect(
       HomePageBackgroundScope.includes(
         restored.homePageBackgroundScope,

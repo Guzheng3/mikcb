@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_couple_timetable_name">カップル時間割 4×2</string>
+    <string name="widget_couple_timetable_name">カップル時間割 4×3</string>
     <string name="widget_couple_tomorrow_count">明日 %1$d コマ</string>
+    <string name="widget_couple_today_remaining">今日 残り%1$d/%2$dコマ</string>
     <string name="widget_couple_no_course_tomorrow">明日は授業なし</string>
+    <string name="widget_couple_today_ended">🌙 今日の授業は終了しました</string>
+    <string name="widget_couple_weekend_no_course">🍵 週末・今日は授業なし</string>
+    <string name="widget_couple_no_course_today">🍵 今日は授業なし</string>
+    <string name="widget_couple_mode_off">カップルモードがオフのため、利用できません</string>
+    <string name="widget_couple_not_logged_in">ログインしてご利用ください</string>
     <string name="widget_today_compact_name">今日の授業メイン 2×2</string>
     <string name="widget_today_mini_list_name">今日の授業ミニリスト 2×2</string>
     <string name="widget_today_medium_name">今日の授業概要 2×4</string>

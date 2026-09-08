@@ -345,6 +345,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get withuCouplePullNow => '相手の時間割を今すぐ取得';
 
   @override
+  String get withuCoupleCenterTitle => '情侣中心';
+
+  @override
+  String get withuCoupleSettings => '情侣课表设置';
+
+  @override
+  String get withuCoupleSyncNow => '立即同步课表';
+
+  @override
+  String get withuCouplePartnerImported => '对方课表已导入';
+
+  @override
+  String get withuCouplePartnerNotImported => '尚未导入对方课表';
+
+  @override
   String get withuCoupleUploadForPartner => '自分の時間割をアップロード';
 
   @override
@@ -1525,12 +1540,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aboutContributorsSubtitle => '開発者と教務インポート適応者の一覧';
-
-  @override
-  String get aboutRepositoryTitle => 'オープンソースリポジトリ';
-
-  @override
-  String get aboutRepositorySubtitle => 'GitHubリポジトリ、ソース、Releaseとフィードバック';
 
   @override
   String get aboutOpenSourceLicensesTitle => 'オープンソースライセンス';
@@ -2833,6 +2842,15 @@ class AppLocalizationsJa extends AppLocalizations {
       '左右で週を切り替えるとき、背景画像が時間割ページと一緒に移動します';
 
   @override
+  String get homePageBackdropTuningTitle => '背景の調整';
+
+  @override
+  String get homePageBackdropBlurLabel => 'ぼかしの強さ';
+
+  @override
+  String get homePageBackdropFrostLabel => 'すりガラスの明るさ';
+
+  @override
   String get homePageBackgroundScopeTitle => '背景の表示領域';
 
   @override
@@ -3580,6 +3598,13 @@ class AppLocalizationsJa extends AppLocalizations {
       'オンにすると現在の時限数に応じてページ下部まで自動フィット，下部の余白を保持しない';
 
   @override
+  String get layoutVerticalScrollEffectTitle => '縦スクロール効果';
+
+  @override
+  String get layoutVerticalScrollEffectSubtitle =>
+      '自動フィットがオフのときに利用可能。オフで縦スクロールをすっきり動かす';
+
+  @override
   String get layoutHideWeekendsTitle => '土日を非表示';
 
   @override
@@ -3763,20 +3788,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sampleTeacherLi => '李先生';
 
   @override
-  String get aboutRepositorySheetTitle => 'オープンソースリポジトリ';
-
-  @override
-  String get aboutRepositorySheetHint =>
-      '学校の教務インポート適応を補充したい場合、教務適応倉庫qingyu_warehouseも確認推奨';
-
-  @override
-  String get aboutOpenGitHubAction => 'GitHubを開く';
-
-  @override
   String get aboutOpenWarehouseRepoAction => '教務適応倉庫を開く';
-
-  @override
-  String get copiedRepositoryAddress => 'リポジトリアドレスをコピーしました';
 
   @override
   String get copiedWarehouseRepositoryAddress => '教務適応倉庫アドレスをコピーしました';
@@ -3801,13 +3813,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aboutReadVersionFailedHint =>
-      '現在のネットワークでGitHubへのアクセスが不安定な場合、後でもう一度お試しいただくか、下の国内ダウンロード方式に切替えてから再試行';
+      '更新サーバーに接続できません。ネットワークを確認してから再試行してください。';
 
   @override
   String get aboutViewReleaseAction => 'Releaseを確認';
 
   @override
   String get aboutDownloadNowAction => '今すぐダウンロード';
+
+  @override
+  String get aboutSkipVersionAction => 'このバージョンをスキップ';
 
   @override
   String get aboutOpenDownloadPageAction => 'ダウンロードページを開く';
@@ -3829,7 +3844,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aboutUpdateAvailableHint =>
-      '下の「今すぐダウンロード」をタップするだけ，速度テスト、ミラーとテスト版は後方の高度なオプションに収納済み';
+      '新しいバージョンがあります。下の「今すぐダウンロード」をタップしてインストールできます。';
 
   @override
   String get aboutUpdateNoUpdateHint =>
@@ -4080,7 +4095,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aboutMirrorUnknownSizeHint =>
-      'ミラーソースがファイル総サイズを返さないため、ダウンロード済みサイズを先に表示';
+      '更新ファイルの総サイズをまだ取得できないため、ダウンロード済みサイズを表示しています。';
 
   @override
   String get aboutCancelDownloadAction => 'ダウンロードをキャンセル';
@@ -4924,7 +4939,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeWidgetTargetTodayWide42 => '今日ワイド 4×2';
 
   @override
-  String get homeWidgetTargetCoupleTimetable42 => 'カップル時間割 4×2';
+  String get homeWidgetTargetCoupleTimetable42 => 'カップル時間割 4×3';
 
   @override
   String get addCourseSheetTitle => 'コンテンツ追加';
@@ -5665,6 +5680,18 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get courseActionDeleteSecondary => '削除';
+
+  @override
+  String get courseHeaderAlarmAction => '通知';
+
+  @override
+  String get courseHeaderTaskAction => '課題';
+
+  @override
+  String get courseHeaderNoteAction => 'メモ';
+
+  @override
+  String get courseHeaderEditAction => '編集';
 
   @override
   String get courseNoteSheetTitle => '授業メモ';
@@ -6944,26 +6971,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get appUpdateDownloadSourceMirror => 'Mirror';
-
-  @override
-  String get appUpdateDownloadChannelPgyer => 'Pgyer download';
-
-  @override
-  String get appUpdateDownloadChannelGithub => 'GitHub download';
-
-  @override
-  String get appUpdateDownloadChannelPgyerDescription =>
-      'Fast download in China, recommended';
-
-  @override
-  String get appUpdateDownloadChannelGithubDescription => 'GitHub plus mirrors';
-
-  @override
-  String get appUpdateDownloadChannelGitcode => 'GitCode ダウンロード';
-
-  @override
-  String get appUpdateDownloadChannelGitcodeDescription =>
-      'GitCodeリリースから直接ダウンロード（中国国内で高速）';
 
   @override
   String get holidayStatutoryLabel => '祝日';

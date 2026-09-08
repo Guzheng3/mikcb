@@ -399,9 +399,7 @@ class TimetableProvider with ChangeNotifier {
       if (_globalSettings == null) {
         return;
       }
-      final previousBackdropPath = resolveHomePageBackdropImagePath(
-        settings,
-      );
+      final previousBackdropPath = resolveHomePageBackdropImagePath(settings);
       _globalSettings = null;
       hyperosSetEdgeHapticsEnabled(settings.enableHaptics);
       await _profileRepository.clearGlobalTimetableSettings();
@@ -409,8 +407,7 @@ class TimetableProvider with ChangeNotifier {
       _lastLiveSnapshotSignature = null;
       _currentLiveCourseId = null;
       notifyListeners();
-      if (resolveHomePageBackdropImagePath(settings) !=
-          previousBackdropPath) {
+      if (resolveHomePageBackdropImagePath(settings) != previousBackdropPath) {
         await precacheHomePageBackdropImage(settings);
       }
       unawaited(_syncLiveScheduleSnapshot());
@@ -636,7 +633,8 @@ class TimetableProvider with ChangeNotifier {
        _withuSessionStore =
            withuSessionStore ?? const WithuCoupleSessionStore(),
        _coupleHistoryService =
-           coupleTimetableHistoryService ?? const CoupleTimetableHistoryService() {
+           coupleTimetableHistoryService ??
+           const CoupleTimetableHistoryService() {
     _holidayService.onRemoteHolidayDataUpdated = (_) {
       unawaited(_loadHolidayData());
     };
@@ -759,6 +757,28 @@ class TimetableProvider with ChangeNotifier {
     );
   }
 
+  /// Older partner sync cleared the default wallpaper instead of resetting it,
+  /// so imported settings looked like an explicit blank-background override.
+  Future<void> _repairLegacyPartnerWallpaper(
+    List<TimetableProfile> profiles,
+  ) async {
+    final index = profiles.indexWhere((profile) => profile.isPartnerImported);
+    if (index < 0) {
+      return;
+    }
+    final profile = profiles[index];
+    if (profile.settings.homePageWallpaperPath != null ||
+        profile.settingsOverrideKeys.contains('homePageWallpaperPath')) {
+      return;
+    }
+    profiles[index] = profile.copyWith(
+      settings: profile.settings.copyWith(
+        homePageWallpaperPath: defaultHomePageWallpaperPath,
+      ),
+    );
+    await _profileRepository.saveProfiles(profiles);
+  }
+
   Future<void> _init() async {
     await _storageService.init();
 
@@ -766,6 +786,7 @@ class TimetableProvider with ChangeNotifier {
     // under the same profiles write chain — load sequentially to avoid
     // re-entrant wait deadlocks under Future.wait.
     final profiles = await _profileRepository.loadProfiles();
+    await _repairLegacyPartnerWallpaper(profiles);
     final timeSchemes = await _profileRepository.getTimeSchemes();
     final locationTimeGroups = await _profileRepository.getLocationTimeGroups();
     final scheduleDateRules = await _profileRepository.getScheduleDateRules();
@@ -1105,7 +1126,8 @@ class TimetableProvider with ChangeNotifier {
     final merged = <String, dynamic>{};
     globalJson.forEach((key, globalValue) {
       final ownValue = ownJson[key];
-      final isOwn = _profileOwnedSettingKeys.contains(key) ||
+      final isOwn =
+          _profileOwnedSettingKeys.contains(key) ||
           _settingsOverrideKeys.contains(key) ||
           !_jsonEquals(ownValue, defaultsJson[key]);
       merged[key] = isOwn ? ownValue : globalValue;
@@ -3889,7 +3911,9 @@ class TimetableProvider with ChangeNotifier {
       });
     }
 
-    final previousBackdropPath = resolveHomePageBackdropImagePath(this.settings);
+    final previousBackdropPath = resolveHomePageBackdropImagePath(
+      this.settings,
+    );
     final semesterStartChanged =
         settings.semesterStartDate != _settings.semesterStartDate;
     // 换学期（开学日变更）时，把旧学期的当前课表快照进「我的历史课表」
@@ -3916,7 +3940,8 @@ class TimetableProvider with ChangeNotifier {
     unawaited(_syncNativeRuntimePreferences());
     _lastLiveSnapshotSignature = null;
     _currentLiveCourseId = null;
-    if (resolveHomePageBackdropImagePath(this.settings) != previousBackdropPath) {
+    if (resolveHomePageBackdropImagePath(this.settings) !=
+        previousBackdropPath) {
       await precacheHomePageBackdropImage(this.settings);
     }
     notifyListeners();
@@ -3983,6 +4008,10 @@ class TimetableProvider with ChangeNotifier {
 
   Future<String?> importFullAppDataBackup(String content) =>
       _timetableImportFullAppDataBackup(this, content);
+
+  /// Replaces the local "mine" profile from a single-profile cloud package.
+  Future<bool> restoreMyTimetable(String content) =>
+      _timetableRestoreMyTimetableFromCloud(this, content);
 
   Future<void> syncCurrentWeekWithSemesterStart() =>
       _runMutation(_syncCurrentWeekWithSemesterStartImpl);
@@ -4646,16 +4675,12 @@ class TimetableProvider with ChangeNotifier {
   /// 期由服务层 upsert 去重（同一学期的课表只显示一个）。方法体先同步读
   /// 状态再异步落盘，调用点（换学期/覆盖导入）不受后续赋值影响；快照失
   /// 败不阻断主流程。
-  Future<void> _captureSemesterHistorySnapshot(
-    CoupleTimetableRole role,
-  ) async {
+  Future<void> _captureSemesterHistorySnapshot(CoupleTimetableRole role) async {
     try {
       final isMine = role == CoupleTimetableRole.mine;
-      final profile = isMine ? activeProfile : partnerProfile;
-      final anchor = isMine
-          ? _settings.semesterStartDate
-          : profile?.settings.semesterStartDate;
-      final courses = isMine ? _courses : (profile?.courses ?? const <Course>[]);
+      final profile = isMine ? myTimetableProfile : partnerProfile;
+      final anchor = profile?.settings.semesterStartDate;
+      final courses = profile?.courses ?? const <Course>[];
       if (profile == null || anchor == null || courses.isEmpty) {
         return;
       }
@@ -4664,7 +4689,7 @@ class TimetableProvider with ChangeNotifier {
         semesterAnchor: anchor,
         name: profile.name,
         courseJsonList: courses.map((course) => course.toJson()).toList(),
-        currentWeek: isMine ? _currentWeek : profile.currentWeek,
+        currentWeek: profile.currentWeek,
       );
     } catch (_) {
       // 历史快照失败不影响导入/设置主流程。

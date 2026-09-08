@@ -63,6 +63,7 @@
         <domain includeSubdomains="false">jwxt.hnvcc.edu.cn</domain>
         <domain includeSubdomains="false">jwgl.huayu.edu.cn</domain>
         <domain includeSubdomains="false">mhub.hust.edu.cn</domain>
+        <domain includeSubdomains="true">mtc.edu.cn</domain>
         <domain includeSubdomains="false">211.82.176.48</domain>
         <domain includeSubdomains="false">jw.imut.edu.cn</domain>
         <domain includeSubdomains="false">jwstudent.lnu.edu.cn</domain>

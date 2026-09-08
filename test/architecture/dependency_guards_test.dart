@@ -51,11 +51,13 @@ void main() {
     // +147——换学期/覆盖导入前的学期快照捕获、restoreCoupleTimetableHistory
     // 恢复入口与历史读取转发、服务注入参数，属正当功能增长；拆分归阶段 3
     // 重构，按测试约定同步基线。
+    // 4620→4804: withU couple bidirectional sync +184—provider only adds
+    // restoreMyTimetable forwarding; the main flow lives in the part files.
     // 4608→4620: TA 课表可切换（移除情侣叠加视图 follow-up）+12——
     // switchProfile 解除 TA 禁令、activeProfile 回退改写、新增
     // myTimetableProfile（情侣快照/导出/上传固定指向我的课表），
     // 属正当功能增长，按测试约定同步基线。
-    const baselineLines = 4620;
+    const baselineLines = 4804;
     final lines = providerFile.readAsLinesSync().length;
     expect(
       lines,

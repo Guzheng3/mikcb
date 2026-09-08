@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
+import 'package:university_timetable/providers/withu_couple_session_provider.dart';
 import 'package:university_timetable/widgets/home_menu_route_catalog.dart';
 import 'package:university_timetable/providers/timetable_provider.dart';
 import 'package:university_timetable/screens/withu_couple_login_screen.dart';
@@ -9,6 +12,7 @@ import 'package:university_timetable/services/memory_stats_service.dart';
 import 'package:university_timetable/widgets/course_recolor_sheet.dart';
 import 'package:university_timetable/widgets/home_top_menu.dart';
 import 'package:university_timetable/widgets/profile_quick_switch_sheet.dart';
+import 'package:university_timetable/widgets/withu_couple_center_sheet.dart';
 
 export 'home_top_menu.dart'
     show HomeMenuEntry, HomeMenuEntryCategory, homeMenuEntryCategoryLabel;
@@ -31,13 +35,24 @@ final HomeMenuEntry coupleLoginHomeMenuEntry = HomeMenuEntry(
   title: (l10n) => l10n.withuCoupleLoginMenuTitle,
   icon: Icons.login_rounded,
   category: HomeMenuEntryCategory.features,
-  open: (context) {
+  open: (context) async {
     final provider = context.read<TimetableProvider>();
-    return showWithuCoupleLoginSheet(
+    final sessionProvider = context.read<WithuCoupleSessionProvider>();
+    if (sessionProvider.isLoggedIn || sessionProvider.hasStoredSession) {
+      await showWithuCoupleCenterSheet(
+        context: context,
+        sessionProvider: sessionProvider,
+        timetableProvider: provider,
+      );
+      return;
+    }
+    final connected = await showWithuCoupleLoginSheet(
       context: context,
-      onPullPartner: (service) =>
-          service.syncAfterLogin(provider: provider),
+      onPullPartner: (service) => service.syncAfterLogin(provider: provider),
     );
+    if (connected == true) {
+      unawaited(sessionProvider.restoreSession());
+    }
   },
 );
 

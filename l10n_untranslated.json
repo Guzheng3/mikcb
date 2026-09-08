@@ -1,1 +1,41 @@
-{}
+{
+  "en": [
+    "withuCoupleCenterTitle",
+    "withuCoupleSettings",
+    "withuCoupleSyncNow",
+    "withuCouplePartnerImported",
+    "withuCouplePartnerNotImported"
+  ],
+
+  "ja": [
+    "withuCoupleCenterTitle",
+    "withuCoupleSettings",
+    "withuCoupleSyncNow",
+    "withuCouplePartnerImported",
+    "withuCouplePartnerNotImported"
+  ],
+
+  "ko": [
+    "withuCoupleCenterTitle",
+    "withuCoupleSettings",
+    "withuCoupleSyncNow",
+    "withuCouplePartnerImported",
+    "withuCouplePartnerNotImported"
+  ],
+
+  "zh_HK": [
+    "withuCoupleCenterTitle",
+    "withuCoupleSettings",
+    "withuCoupleSyncNow",
+    "withuCouplePartnerImported",
+    "withuCouplePartnerNotImported"
+  ],
+
+  "zh_TW": [
+    "withuCoupleCenterTitle",
+    "withuCoupleSettings",
+    "withuCoupleSyncNow",
+    "withuCouplePartnerImported",
+    "withuCouplePartnerNotImported"
+  ]
+}

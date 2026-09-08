@@ -348,6 +348,7 @@ class HyperosSwitchTile extends StatelessWidget {
     this.subtitle,
     required this.value,
     required this.onChanged,
+    this.enabled = true,
     this.iconAccent,
   });
 
@@ -356,6 +357,7 @@ class HyperosSwitchTile extends StatelessWidget {
   final String? subtitle;
   final bool value;
   final ValueChanged<bool>? onChanged;
+  final bool enabled;
   final Color? iconAccent;
 
   void _toggle() {
@@ -366,14 +368,14 @@ class HyperosSwitchTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final cardColor = HyperosColors.card(context);
     final highlightColor = HyperosColors.rowHighlight(context);
-    final enabled = onChanged != null;
+    final isRowEnabled = enabled && onChanged != null;
     final primaryText = HyperosColors.primaryText(context);
     final titleStyle = HyperosTypography.listTitle(context).copyWith(
-      color: enabled ? primaryText : primaryText.withValues(alpha: 0.45),
+      color: isRowEnabled ? primaryText : primaryText.withValues(alpha: 0.45),
     );
     final secondaryText = HyperosColors.secondaryText(context);
     final subtitleStyle = HyperosTypography.listDetail(context).copyWith(
-      color: enabled ? secondaryText : secondaryText.withValues(alpha: 0.45),
+      color: isRowEnabled ? secondaryText : secondaryText.withValues(alpha: 0.45),
     );
 
     final rowHeight = subtitle != null
@@ -422,7 +424,7 @@ class HyperosSwitchTile extends StatelessWidget {
     );
 
     return HyperosPressableRow(
-      onTap: enabled ? _toggle : null,
+      onTap: isRowEnabled ? _toggle : null,
       backgroundColor: cardColor,
       highlightColor: highlightColor,
       child: row,

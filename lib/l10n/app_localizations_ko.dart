@@ -343,6 +343,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get withuCouplePullNow => '상대방 시간표 즉시 가져오기';
 
   @override
+  String get withuCoupleCenterTitle => '情侣中心';
+
+  @override
+  String get withuCoupleSettings => '情侣课表设置';
+
+  @override
+  String get withuCoupleSyncNow => '立即同步课表';
+
+  @override
+  String get withuCouplePartnerImported => '对方课表已导入';
+
+  @override
+  String get withuCouplePartnerNotImported => '尚未导入对方课表';
+
+  @override
   String get withuCoupleUploadForPartner => '내 시간표 업로드';
 
   @override
@@ -1535,12 +1550,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aboutContributorsSubtitle => '개발자 및 교무 가져오기 적응자 목록';
-
-  @override
-  String get aboutRepositoryTitle => '오픈소스 저장소';
-
-  @override
-  String get aboutRepositorySubtitle => 'GitHub 저장소, 소스, Release 및 피드백';
 
   @override
   String get aboutOpenSourceLicensesTitle => '오픈소스 라이선스';
@@ -2850,6 +2859,15 @@ class AppLocalizationsKo extends AppLocalizations {
       '좌우로 주차를 전환할 때 배경 이미지가 시간표 페이지와 함께 움직입니다';
 
   @override
+  String get homePageBackdropTuningTitle => '배경 조정';
+
+  @override
+  String get homePageBackdropBlurLabel => '흐림 강도';
+
+  @override
+  String get homePageBackdropFrostLabel => '서리 밝기';
+
+  @override
   String get homePageBackgroundScopeTitle => '배경 표시 영역';
 
   @override
@@ -3605,6 +3623,13 @@ class AppLocalizationsKo extends AppLocalizations {
       '켜면 현재 교시 수에 따라 페이지 하단까지 자동 맞춤됩니다. 아래 여백을 유지하지 않습니다';
 
   @override
+  String get layoutVerticalScrollEffectTitle => '세로 스크롤 효과';
+
+  @override
+  String get layoutVerticalScrollEffectSubtitle =>
+      '자동 맞춤이 꺼져 있을 때 사용할 수 있어요. 꺼지면 세로 스크롤이 더 깔끔해요';
+
+  @override
   String get layoutHideWeekendsTitle => '토요일과 일요일 숨기기';
 
   @override
@@ -3789,20 +3814,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sampleTeacherLi => '이 선생님';
 
   @override
-  String get aboutRepositorySheetTitle => '오픈소스 저장소';
-
-  @override
-  String get aboutRepositorySheetHint =>
-      '학교 교무 가져오기 적응을 보충하려면, 교무 적응 저장소 qingyu_warehouse도 함께 확인하는 것을 권장합니다';
-
-  @override
-  String get aboutOpenGitHubAction => 'GitHub 열기';
-
-  @override
   String get aboutOpenWarehouseRepoAction => '교무 적응 저장소 열기';
-
-  @override
-  String get copiedRepositoryAddress => '저장소 주소를 복사했습니다';
 
   @override
   String get copiedWarehouseRepositoryAddress => '교무 적응 저장소 주소를 복사했습니다';
@@ -3827,13 +3839,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aboutReadVersionFailedHint =>
-      '현재 네트워크에서 GitHub 접속이 불안정하면 나중에 다시 시도하거나, 아래의 국내 다운로드 방식으로 전환한 뒤 재시도하세요';
+      '업데이트 서버에 연결할 수 없습니다. 네트워크 연결을 확인한 후 다시 시도하세요.';
 
   @override
   String get aboutViewReleaseAction => 'Release 보기';
 
   @override
   String get aboutDownloadNowAction => '지금 다운로드';
+
+  @override
+  String get aboutSkipVersionAction => '이 버전 건너뛰기';
 
   @override
   String get aboutOpenDownloadPageAction => '다운로드 페이지 열기';
@@ -3855,7 +3870,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aboutUpdateAvailableHint =>
-      '지금은 아래의 \'지금 다운로드\'를 탭하기만 하면 됩니다. 속도 측정, 미러, 시험판은 뒤의 고급 옵션에 정리되어 있습니다';
+      '새 버전을 사용할 수 있습니다. 아래의 \'지금 다운로드\'를 눌러 설치하세요.';
 
   @override
   String get aboutUpdateNoUpdateHint =>
@@ -4108,7 +4123,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aboutMirrorUnknownSizeHint =>
-      '미러 소스가 파일 총 크기를 반환하지 않아 다운로드된 크기를 먼저 표시합니다';
+      '아직 업데이트 파일의 전체 크기를 가져올 수 없어 다운로드된 크기를 먼저 표시합니다.';
 
   @override
   String get aboutCancelDownloadAction => '다운로드 취소';
@@ -4956,7 +4971,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeWidgetTargetTodayWide42 => '오늘 와이드 4×2';
 
   @override
-  String get homeWidgetTargetCoupleTimetable42 => '커플 시간표 4×2';
+  String get homeWidgetTargetCoupleTimetable42 => '커플 시간표 4×3';
 
   @override
   String get addCourseSheetTitle => '콘텐츠 추가';
@@ -5699,6 +5714,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get courseActionDeleteSecondary => '삭제';
+
+  @override
+  String get courseHeaderAlarmAction => '알람';
+
+  @override
+  String get courseHeaderTaskAction => '과제';
+
+  @override
+  String get courseHeaderNoteAction => '메모';
+
+  @override
+  String get courseHeaderEditAction => '편집';
 
   @override
   String get courseNoteSheetTitle => '수업 메모';
@@ -6988,26 +7015,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get appUpdateDownloadSourceMirror => 'Mirror';
-
-  @override
-  String get appUpdateDownloadChannelPgyer => 'Pgyer download';
-
-  @override
-  String get appUpdateDownloadChannelGithub => 'GitHub download';
-
-  @override
-  String get appUpdateDownloadChannelPgyerDescription =>
-      'Fast download in China, recommended';
-
-  @override
-  String get appUpdateDownloadChannelGithubDescription => 'GitHub plus mirrors';
-
-  @override
-  String get appUpdateDownloadChannelGitcode => 'GitCode 다운로드';
-
-  @override
-  String get appUpdateDownloadChannelGitcodeDescription =>
-      'GitCode 릴리스에서 직접 다운로드, 중국에서 빠름';
 
   @override
   String get holidayStatutoryLabel => '공휴일';

@@ -16,7 +16,9 @@ class HyperosPopupMenuItem<T> {
     this.enabled = true,
     this.icon,
     this.iconColor,
+    this.leading,
     this.trailing,
+    this.rowHeight,
     this.gapBefore = false,
   });
 
@@ -31,8 +33,14 @@ class HyperosPopupMenuItem<T> {
   /// Optional tint for [icon]; defaults to the label color.
   final Color? iconColor;
 
+  /// Optional custom leading widget; only rendered when [label] is empty.
+  final Widget? leading;
+
   /// Optional trailing widget (e.g. a dot badge) rendered at the row end.
   final Widget? trailing;
+
+  /// Overrides the standard 56dp row height; null uses the Miuix minimum.
+  final double? rowHeight;
 
   /// Adds an 8dp gap above this row to group menu items (Miuix gap grouping).
   final bool gapBefore;
@@ -62,6 +70,25 @@ Future<T?> showHyperosListPopup<T>({
   required List<HyperosPopupMenuItem<T>> items,
   Color? foregroundColor,
 
+  /// When set, makes the popup use this fraction of the screen width instead
+  /// of its intrinsic Miuix width. The home top-right menu uses two thirds.
+  double? widthFactor,
+
+  /// When true, shrink-wraps the popup to the widest item instead of using the
+  /// Miuix default width. This keeps text-only overflow cards compact.
+  bool intrinsicWidth = false,
+
+  /// Fixes the popup width in logical pixels, overriding both intrinsic and
+  /// screen-fraction sizing.
+  double? fixedWidth,
+
+  /// Centers the row label inside the popup instead of the Miuix default
+  /// leading alignment.
+  bool centerLabels = false,
+
+  /// Draws a barely-visible hairline between adjacent rows.
+  bool showDividers = false,
+
   /// Use a solid opaque surface instead of sampled glass. Glass popups read
   /// as black when hovering an Android platform view (WebView), because the
   /// backdrop capture cannot include the platform view's texture.
@@ -84,6 +111,11 @@ Future<T?> showHyperosListPopup<T>({
           position: position,
           items: items,
           foregroundColor: foregroundColor,
+          widthFactor: widthFactor,
+          intrinsicWidth: intrinsicWidth,
+          fixedWidth: fixedWidth,
+          centerLabels: centerLabels,
+          showDividers: showDividers,
           opaqueSurface: opaqueSurface,
         ),
       );
@@ -96,6 +128,11 @@ class _HyperosListPopupBody<T> extends StatefulWidget {
     required this.position,
     required this.items,
     this.foregroundColor,
+    this.widthFactor,
+    this.intrinsicWidth = false,
+    this.fixedWidth,
+    this.centerLabels = false,
+    this.showDividers = false,
     this.opaqueSurface = false,
   });
 
@@ -105,6 +142,22 @@ class _HyperosListPopupBody<T> extends StatefulWidget {
   /// Overrides the row label/icon color (e.g. wallpaper-aware chrome ink on
   /// the home screen); falls back to [HyperosColors.onSurface].
   final Color? foregroundColor;
+
+  /// Fraction of the screen width to use for the popup, or null for the
+  /// default intrinsic Miuix width.
+  final double? widthFactor;
+
+  /// Whether to shrink-wrap to item content instead of the default Miuix width.
+  final bool intrinsicWidth;
+
+  /// Exact popup width in logical pixels, if set.
+  final double? fixedWidth;
+
+  /// Whether to center row labels.
+  final bool centerLabels;
+
+  /// Whether to draw a faint hairline between rows.
+  final bool showDividers;
 
   /// Solid surface instead of sampled glass (see [showHyperosListPopup]).
   final bool opaqueSurface;
@@ -202,7 +255,7 @@ class _HyperosListPopupBodyState<T> extends State<_HyperosListPopupBody<T>>
       0,
       (height, item) =>
           height +
-          HyperosMiuixBasicComponent.minHeight +
+          (item.rowHeight ?? HyperosMiuixBasicComponent.minHeight) +
           (item.gapBefore ? _listPopupGroupGap : 0),
     );
     final safeTop = MediaQuery.paddingOf(context).top + margin;
@@ -275,10 +328,25 @@ class _HyperosListPopupBodyState<T> extends State<_HyperosListPopupBody<T>>
                 builder: (context, _) {
                   final fraction = _fraction.value.clamp(0.0, 1.0);
                   final scale = 0.15 + 0.85 * fraction;
+                  final popupMinWidth =
+                      widget.fixedWidth ??
+                      (widget.widthFactor == null
+                          ? (widget.intrinsicWidth ? 0.0 : 200.0)
+                          : screen.width * widget.widthFactor!);
+                  final popupMaxWidth =
+                      widget.fixedWidth ??
+                      (widget.widthFactor == null
+                          ? (widget.intrinsicWidth
+                                ? screen.width - margin * 2
+                                : (screen.width - margin * 2).clamp(
+                                    200.0,
+                                    364.0,
+                                  ))
+                          : screen.width * widget.widthFactor!);
                   final Widget panelChild = ConstrainedBox(
                     constraints: BoxConstraints(
-                      minWidth: 200,
-                      maxWidth: (screen.width - margin * 2).clamp(200.0, 364.0),
+                      minWidth: popupMinWidth,
+                      maxWidth: popupMaxWidth,
                       maxHeight: maxHeight,
                     ),
                     child: SingleChildScrollView(
@@ -291,6 +359,10 @@ class _HyperosListPopupBodyState<T> extends State<_HyperosListPopupBody<T>>
                               _ListPopupTile(
                                 item: widget.items[i],
                                 foregroundColor: widget.foregroundColor,
+                                centerLabel: widget.centerLabels,
+                                showDivider:
+                                    widget.showDividers &&
+                                    i < widget.items.length - 1,
                                 // Selecting an item pops the popup immediately
                                 // so the destination page can start its
                                 // transition right away; the exit animation
@@ -299,8 +371,8 @@ class _HyperosListPopupBodyState<T> extends State<_HyperosListPopupBody<T>>
                                 // fade-out.)
                                 onTap: widget.items[i].enabled
                                     ? () => Navigator.of(
-                                            context,
-                                          ).pop(widget.items[i].value)
+                                        context,
+                                      ).pop(widget.items[i].value)
                                     : null,
                               ),
                           ],
@@ -342,11 +414,15 @@ class _ListPopupTile extends StatelessWidget {
   const _ListPopupTile({
     required this.item,
     this.foregroundColor,
+    this.centerLabel = false,
+    this.showDivider = false,
     this.onTap,
   });
 
   final HyperosPopupMenuItem<dynamic> item;
   final Color? foregroundColor;
+  final bool centerLabel;
+  final bool showDivider;
   final VoidCallback? onTap;
 
   @override
@@ -365,13 +441,18 @@ class _ListPopupTile extends StatelessWidget {
     final highlightColor = isDark
         ? Colors.white.withValues(alpha: 0.12)
         : Colors.black.withValues(alpha: 0.08);
+    final leading = item.leading;
+    final rowHeight = item.rowHeight ?? HyperosMiuixBasicComponent.minHeight;
+    final dividerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.04);
 
     final row = HyperosPressableRow(
       onTap: onTap,
       backgroundColor: Colors.transparent,
       highlightColor: highlightColor,
       child: SizedBox(
-        height: HyperosMiuixBasicComponent.minHeight,
+        height: rowHeight,
         child: Padding(
           padding: const EdgeInsetsDirectional.only(
             start: HyperosMiuixDropdown.insideHorizontalPadding,
@@ -387,17 +468,23 @@ class _ListPopupTile extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
               ],
-              Expanded(
-                child: Text(
-                  item.label,
-                  style: TextStyle(
-                    fontSize: HyperosMiuixTypography.body1,
-                    color: color,
+              if (item.label.isEmpty && leading != null)
+                Expanded(child: Center(child: leading))
+              else
+                Expanded(
+                  child: Text(
+                    item.label,
+                    style: TextStyle(
+                      fontSize: HyperosMiuixTypography.body1,
+                      height: 1.314,
+                      letterSpacing: 1.5201314,
+                      color: color,
+                    ),
+                    textAlign: centerLabel ? TextAlign.center : null,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
               if (item.trailing != null) ...[
                 const SizedBox(width: 12),
                 item.trailing!,
@@ -407,9 +494,27 @@ class _ListPopupTile extends StatelessWidget {
         ),
       ),
     );
+    final content = Stack(
+      children: [
+        row,
+        if (showDivider)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              child: Container(
+                key: const ValueKey('hyperos_list_popup_divider'),
+                height: 1 / MediaQuery.devicePixelRatioOf(context),
+                color: dividerColor,
+              ),
+            ),
+          ),
+      ],
+    );
     return item.gapBefore
-        ? Padding(padding: const EdgeInsets.only(top: 8), child: row)
-        : row;
+        ? Padding(padding: const EdgeInsets.only(top: 8), child: content)
+        : content;
   }
 }
 

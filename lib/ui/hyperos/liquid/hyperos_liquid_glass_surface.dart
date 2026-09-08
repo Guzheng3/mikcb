@@ -206,6 +206,41 @@ class HyperosLiquidGlassSurface extends StatefulWidget {
 }
 
 class _HyperosLiquidGlassSurfaceState extends State<HyperosLiquidGlassSurface> {
+  Animation<double>? _routeAnimation;
+  bool _routeTransitionActive = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final animation = ModalRoute.of<dynamic>(context)?.animation;
+    if (!identical(animation, _routeAnimation)) {
+      _routeAnimation?.removeStatusListener(_onRouteStatusChanged);
+      _routeAnimation = animation;
+      _routeAnimation?.addStatusListener(_onRouteStatusChanged);
+    }
+    _updateRouteTransition();
+  }
+
+  @override
+  void dispose() {
+    _routeAnimation?.removeStatusListener(_onRouteStatusChanged);
+    _routeAnimation = null;
+    super.dispose();
+  }
+
+  void _onRouteStatusChanged(AnimationStatus status) {
+    _updateRouteTransition();
+  }
+
+  void _updateRouteTransition() {
+    final status = _routeAnimation?.status;
+    final active = status == AnimationStatus.forward ||
+        status == AnimationStatus.reverse;
+    if (active != _routeTransitionActive) {
+      setState(() => _routeTransitionActive = active);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final role = widget.role;
@@ -259,7 +294,8 @@ class _HyperosLiquidGlassSurfaceState extends State<HyperosLiquidGlassSurface> {
         resolvedLayerMode == HyperosLiquidGlassLayerMode.sharedLayer;
     final useMinimal =
         resolvedLayerMode == HyperosLiquidGlassLayerMode.fake ||
-        !HyperosLiquidGlassSurface.supportsRealRefraction;
+        !HyperosLiquidGlassSurface.supportsRealRefraction ||
+        _routeTransitionActive;
 
     return AdaptiveGlass(
       shape: shape,

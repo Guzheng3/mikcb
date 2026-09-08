@@ -7,14 +7,35 @@ import '../models/course.dart';
 import '../models/timetable_settings.dart';
 import '../domain/couple_timetable_logic.dart';
 import '../providers/timetable_provider.dart';
+import '../ui/hyperos/hyperos_motion.dart';
 import '../utils/hex_color.dart';
 import '../ui/hyperos/hyperos.dart';
+import 'class_reminder_sheet.dart';
+import 'course_followup_sheets.dart';
 import 'course_note_sheet.dart';
+import 'course_action_sheet_reveal.dart';
 
 typedef CourseActionHandler = void Function(Course course);
-
-/// Fired when the user asks to arm the system-clock alarm for this course.
 typedef CourseAlarmHandler = Future<void> Function(Course course);
+
+class CourseActionSheetResult {
+  const CourseActionSheetResult.reschedule(this.course, this.rescheduleDraft)
+    : deleteMode = null,
+      suspendMode = null;
+
+  const CourseActionSheetResult.delete(this.course, this.deleteMode)
+    : rescheduleDraft = null,
+      suspendMode = null;
+
+  const CourseActionSheetResult.suspend(this.course, this.suspendMode)
+    : rescheduleDraft = null,
+      deleteMode = null;
+
+  final Course course;
+  final CourseRescheduleDraft? rescheduleDraft;
+  final CourseDeleteMode? deleteMode;
+  final CourseSuspendMode? suspendMode;
+}
 
 class CourseActionPreviewItem {
   const CourseActionPreviewItem({
@@ -37,27 +58,19 @@ class CourseActionPreviewItem {
 }
 
 /// Shows the home timetable course action sheet with Forui styling.
-Future<void> showCourseActionSheet(
+Future<CourseActionSheetResult?> showCourseActionSheet(
   BuildContext context, {
   required List<CourseActionPreviewItem> previewItems,
   required int week,
   required CourseActionHandler onEdit,
-  required CourseActionHandler onReschedule,
-  required CourseActionHandler onDelete,
-  required CourseActionHandler onSuspend,
-  required CourseActionHandler onAddTask,
   CourseAlarmHandler? onSetAlarm,
 }) {
-  return showHomeHyperosSheet<void>(
+  return showHomeHyperosSheet<CourseActionSheetResult>(
     context: context,
     builder: (sheetContext) => CourseActionSheetBody(
       previewItems: previewItems,
       week: week,
       onEdit: onEdit,
-      onReschedule: onReschedule,
-      onDelete: onDelete,
-      onSuspend: onSuspend,
-      onAddTask: onAddTask,
       onSetAlarm: onSetAlarm,
     ),
   );
@@ -69,20 +82,12 @@ class CourseActionSheetBody extends StatefulWidget {
     required this.previewItems,
     required this.week,
     required this.onEdit,
-    required this.onReschedule,
-    required this.onDelete,
-    required this.onSuspend,
-    required this.onAddTask,
     this.onSetAlarm,
   });
 
   final List<CourseActionPreviewItem> previewItems;
   final int week;
   final CourseActionHandler onEdit;
-  final CourseActionHandler onReschedule;
-  final CourseActionHandler onDelete;
-  final CourseActionHandler onSuspend;
-  final CourseActionHandler onAddTask;
   final CourseAlarmHandler? onSetAlarm;
 
   @override
@@ -91,6 +96,7 @@ class CourseActionSheetBody extends StatefulWidget {
 
 class _CourseActionSheetBodyState extends State<CourseActionSheetBody> {
   final _scrollController = ScrollController();
+  _CourseActionSheetView _view = _CourseActionSheetView.main;
   int _selectedIndex = 0;
   bool _relatedExpanded = false;
 
@@ -117,62 +123,197 @@ class _CourseActionSheetBodyState extends State<CourseActionSheetBody> {
     }
   }
 
+  void _switchView(_CourseActionSheetView view) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+    setState(() => _view = view);
+  }
+
+  void _completeWith(CourseActionSheetResult result) {
+    Navigator.of(context).pop(result);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final selectedItem = widget.previewItems[_selectedIndex];
-    final otherIndexes = <int>[
-      for (var index = 0; index < widget.previewItems.length; index++)
-        if (index != _selectedIndex) index,
-    ];
-
     final maxHeight = MediaQuery.sizeOf(context).height * 0.88;
 
-    return HyperosSheetFrame(
-      maxHeight: maxHeight,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: constraints.maxHeight),
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _CourseActionSheetContent(
-                    key: ValueKey(
-                      'course-action-selected-${selectedItem.course.id}',
-                    ),
-                    previewItem: selectedItem,
-                    week: widget.week,
-                    onEdit: widget.onEdit,
-                    onReschedule: widget.onReschedule,
-                    onDelete: widget.onDelete,
-                    onSuspend: widget.onSuspend,
-                    onAddTask: widget.onAddTask,
-                    onSetAlarm: widget.onSetAlarm,
-                  ),
-                  if (otherIndexes.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    _RelatedCoursesPanel(
-                      previewItems: widget.previewItems,
-                      otherIndexes: otherIndexes,
-                      week: widget.week,
-                      expanded: _relatedExpanded,
-                      onToggleExpanded: () {
-                        setState(() => _relatedExpanded = !_relatedExpanded);
-                      },
-                      onSelect: _selectCourse,
-                    ),
-                  ],
-                ],
-              ),
+    return AnimatedSize(
+      duration: HyperosMotionScope.of(context).scaledDuration(280),
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.bottomCenter,
+      child: HyperosSheetFrame(
+        maxHeight: maxHeight,
+        child: AnimatedSwitcher(
+          duration: HyperosMotionScope.of(context).scaledDuration(280),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, animation) => FadeTransition(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: const Interval(0, 0.55, curve: Curves.easeOut),
+              reverseCurve: const Interval(0.45, 1, curve: Curves.easeIn),
             ),
-          );
-        },
+            child: child,
+          ),
+          child: KeyedSubtree(
+            key: ValueKey('course-action-view-${_view.name}'),
+            child: _buildView(),
+          ),
+        ),
       ),
     );
   }
+
+  Widget _buildView() {
+    final selectedItem = widget.previewItems[_selectedIndex];
+    final provider = context.watch<TimetableProvider>();
+    switch (_view) {
+      case _CourseActionSheetView.main:
+        final otherIndexes = <int>[
+          for (var index = 0; index < widget.previewItems.length; index++)
+            if (index != _selectedIndex) index,
+        ];
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.88,
+          ),
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _CourseActionSheetContent(
+                  key: ValueKey(
+                    'course-action-selected-${selectedItem.course.id}',
+                  ),
+                  previewItem: selectedItem,
+                  week: widget.week,
+                  onEdit: widget.onEdit,
+                  onOpenView: _switchView,
+                  onSetAlarm: widget.onSetAlarm,
+                ),
+                if (otherIndexes.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _RelatedCoursesPanel(
+                    previewItems: widget.previewItems,
+                    otherIndexes: otherIndexes,
+                    week: widget.week,
+                    expanded: _relatedExpanded,
+                    onToggleExpanded: () {
+                      setState(() => _relatedExpanded = !_relatedExpanded);
+                    },
+                    onSelect: _selectCourse,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      case _CourseActionSheetView.alarm:
+        return ClassReminderSheetBody(
+          course: selectedItem.course,
+          week: widget.week,
+          embedded: true,
+          onBack: () => _switchView(_CourseActionSheetView.main),
+        );
+      case _CourseActionSheetView.task:
+        final existingTask = provider
+            .getTasksForCourse(selectedItem.course.id)
+            .where(
+              (task) =>
+                  task.sourceWeek == null || task.sourceWeek == widget.week,
+            )
+            .firstOrNull;
+        return CourseTaskSheetBody(
+          course: selectedItem.course,
+          week: widget.week,
+          task: existingTask,
+          embedded: true,
+          onCancel: () => _switchView(_CourseActionSheetView.main),
+          onCompleted: () => _switchView(_CourseActionSheetView.main),
+        );
+      case _CourseActionSheetView.note:
+        return CourseNoteSheetBody(
+          course: selectedItem.course,
+          week: widget.week,
+          readOnly: selectedItem.isReadOnly,
+          embedded: true,
+          onCancel: () => _switchView(_CourseActionSheetView.main),
+          onSaved: () => _switchView(_CourseActionSheetView.main),
+        );
+      case _CourseActionSheetView.reschedule:
+        final l10n = AppLocalizations.of(context)!;
+        return CourseRescheduleSheetBody(
+          course: selectedItem.course,
+          sourceWeek: widget.week,
+          settings: provider.settings,
+          weekDays: [
+            l10n.weekdayMon,
+            l10n.weekdayTue,
+            l10n.weekdayWed,
+            l10n.weekdayThu,
+            l10n.weekdayFri,
+            l10n.weekdaySat,
+            l10n.weekdaySun,
+          ],
+          sectionTimes:
+              provider.resolveCourseTimeScheme(selectedItem.course)?.sections ??
+              provider.settings.sections,
+          locationSuggestions: provider.uniqueLocations,
+          embedded: true,
+          onCancel: () => _switchView(_CourseActionSheetView.main),
+          onConfirmed: (draft) => _completeWith(
+            CourseActionSheetResult.reschedule(selectedItem.course, draft),
+          ),
+        );
+      case _CourseActionSheetView.delete:
+        return CourseDeleteModeSheetBody(
+          canDeleteOccurrence: selectedItem.course.isInWeek(widget.week),
+          week: widget.week,
+          embedded: true,
+          onResult: (mode) {
+            if (mode == null) {
+              _switchView(_CourseActionSheetView.main);
+              return;
+            }
+            _completeWith(
+              CourseActionSheetResult.delete(selectedItem.course, mode),
+            );
+          },
+        );
+      case _CourseActionSheetView.suspend:
+        return CourseSuspendModeSheetBody(
+          isSuspendedThisWeek: selectedItem.course.isSuspendedInWeek(
+            widget.week,
+          ),
+          hasAnySuspended:
+              selectedItem.course.suspendedWeeks?.isNotEmpty ?? false,
+          embedded: true,
+          onResult: (mode) {
+            if (mode == null) {
+              _switchView(_CourseActionSheetView.main);
+              return;
+            }
+            _completeWith(
+              CourseActionSheetResult.suspend(selectedItem.course, mode),
+            );
+          },
+        );
+    }
+  }
+}
+
+enum _CourseActionSheetView {
+  main,
+  alarm,
+  task,
+  note,
+  reschedule,
+  delete,
+  suspend,
 }
 
 class _RelatedCoursesPanel extends StatelessWidget {
@@ -236,57 +377,61 @@ class _RelatedCoursesPanel extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        HyperosFrostedSurface(
-          borderRadius: BorderRadius.circular(HyperosTokens.controlRadius),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onToggleExpanded,
-              borderRadius: BorderRadius.circular(HyperosTokens.controlRadius),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                child: Row(
-                  children: [
-                    Container(
-                      width: HyperosTokens.iconBadgeSize,
-                      height: HyperosTokens.iconBadgeSize,
-                      decoration: BoxDecoration(
-                        color: accent.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(
-                          HyperosTokens.iconBadgeRadius,
+        CourseDetailReveal(
+          child: HyperosFrostedSurface(
+            borderRadius: BorderRadius.circular(HyperosTokens.controlRadius),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onToggleExpanded,
+                borderRadius: BorderRadius.circular(
+                  HyperosTokens.controlRadius,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: HyperosTokens.iconBadgeSize,
+                        height: HyperosTokens.iconBadgeSize,
+                        decoration: BoxDecoration(
+                          color: accent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(
+                            HyperosTokens.iconBadgeRadius,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(panelIcon, size: 17, color: accent),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: typo.sm.copyWith(height: 1.25),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle,
+                              style: muted.copyWith(height: 1.3),
+                              maxLines: expanded ? 2 : 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
-                      alignment: Alignment.center,
-                      child: Icon(panelIcon, size: 17, color: accent),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: typo.sm.copyWith(height: 1.25),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            subtitle,
-                            style: muted.copyWith(height: 1.3),
-                            maxLines: expanded ? 2 : 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                      const SizedBox(width: 6),
+                      Icon(
+                        expanded ? Icons.expand_less : Icons.expand_more,
+                        size: 20,
+                        color: colors.mutedForeground,
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Icon(
-                      expanded ? Icons.expand_less : Icons.expand_more,
-                      size: 20,
-                      color: colors.mutedForeground,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -300,10 +445,13 @@ class _RelatedCoursesPanel extends StatelessWidget {
             itemIndex++
           ) ...[
             if (itemIndex > 0) const SizedBox(height: 8),
-            _RelatedCourseCompactRow(
-              previewItem: previewItems[otherIndexes[itemIndex]],
-              week: week,
-              onTap: () => onSelect(otherIndexes[itemIndex]),
+            CourseDetailReveal(
+              index: itemIndex + 1,
+              child: _RelatedCourseCompactRow(
+                previewItem: previewItems[otherIndexes[itemIndex]],
+                week: week,
+                onTap: () => onSelect(otherIndexes[itemIndex]),
+              ),
             ),
           ],
         ],
@@ -477,20 +625,14 @@ class _CourseActionSheetContent extends StatelessWidget {
     required this.previewItem,
     required this.week,
     required this.onEdit,
-    required this.onReschedule,
-    required this.onDelete,
-    required this.onSuspend,
-    required this.onAddTask,
+    required this.onOpenView,
     this.onSetAlarm,
   });
 
   final CourseActionPreviewItem previewItem;
   final int week;
   final CourseActionHandler onEdit;
-  final CourseActionHandler onReschedule;
-  final CourseActionHandler onDelete;
-  final CourseActionHandler onSuspend;
-  final CourseActionHandler onAddTask;
+  final ValueChanged<_CourseActionSheetView> onOpenView;
   final CourseAlarmHandler? onSetAlarm;
 
   Course get course => previewItem.course;
@@ -498,16 +640,6 @@ class _CourseActionSheetContent extends StatelessWidget {
   void _closeSheetThen(BuildContext context, VoidCallback action) {
     Navigator.of(context).pop();
     action();
-  }
-
-  void _closeSheetThenAfterDismiss(BuildContext context, VoidCallback action) {
-    final navigator = Navigator.of(context);
-    navigator.pop();
-    Future<void>.delayed(const Duration(milliseconds: 280), () {
-      if (navigator.context.mounted) {
-        action();
-      }
-    });
   }
 
   @override
@@ -539,16 +671,8 @@ class _CourseActionSheetContent extends StatelessWidget {
         : l10n.courseNatureRequired;
     final teacher = course.teacher.trim();
     final location = course.location.trim();
-    final description = course.description?.trim();
-    // Course intro is shared [description]; fall back to legacy per-entry note.
-    final legacyNote = course.note?.trim();
-    final courseIntroText = (description != null && description.isNotEmpty)
-        ? description
-        : ((legacyNote != null && legacyNote.isNotEmpty) ? legacyNote : null);
-    final sessionNote = course.sessionNoteForWeek(week);
-    final sessionNoteText = sessionNote?.trimmedText;
-    final hasHomework = sessionNote?.hasHomework == true;
-    final headerDetail = courseIntroText ?? course.weekDescription(l10n);
+    final headerDetail = course.weekDescription(l10n);
+    final headerWeekDetail = '${l10n.weekLabel(week)} · $headerDetail';
     final sectionTitle =
         '${_weekdayLabel(l10n, course.dayOfWeek)} · ${l10n.sectionRangeLabel(course.startSection, course.endSection)}';
     final timeSubtitle = _formatTimeTileSubtitle(
@@ -557,270 +681,251 @@ class _CourseActionSheetContent extends StatelessWidget {
       week: week,
       settings: provider.settings,
     );
-    final teacherSubtitle = courseIntroText != null
-        ? course.weekDescription(l10n)
-        : (course.shortName?.trim().isNotEmpty == true
-              ? l10n.shortNamePrefix(course.shortName!.trim())
-              : course.weekDescription(l10n));
-    final locationSubtitle =
-        course.shortName?.trim().isNotEmpty == true && courseIntroText != null
-        ? l10n.shortNamePrefix(course.shortName!.trim())
-        : course.weekDescription(l10n);
+    final shortName = course.shortName?.trim();
+    final shortNameSubtitle = shortName?.isNotEmpty == true
+        ? l10n.shortNamePrefix(shortName!)
+        : null;
     final canReschedule = !previewItem.isReadOnly && course.isInWeek(week);
     final isSuspended = course.isSuspendedInWeek(week);
-    final muted = typo.xs2.copyWith(color: colors.mutedForeground);
     final headerIcon = previewItem.coupleKind == CoupleCourseKind.together
         ? Icons.favorite_rounded
         : previewItem.isPartnerCourse
         ? Icons.person_outline_rounded
         : Icons.menu_book_rounded;
-    final noteTitle = _resolveNoteTileTitle(
-      l10n: l10n,
-      wholeNote: courseIntroText,
-      sessionNoteText: sessionNoteText,
-      hasHomework: hasHomework,
-    );
-    final noteSubtitle = _resolveNoteTileSubtitle(
-      l10n: l10n,
-      wholeNote: courseIntroText,
-      sessionNoteText: sessionNoteText,
-      hasHomework: hasHomework,
-    );
-    final linkedTask = provider
-        .getTasksForCourse(course.id)
-        .where((task) => task.sourceWeek == null || task.sourceWeek == week)
-        .firstOrNull;
-    final linkedTaskTitle = linkedTask == null
-        ? l10n.taskAddFromCourse
-        : (linkedTask.title.trim().isEmpty
-              ? l10n.taskHomeworkDefaultTitle
-              : linkedTask.title.trim());
-    final linkedTaskSubtitle = linkedTask == null
-        ? l10n.taskListTitle
-        : linkedTask.isCompleted
-        ? l10n.taskCompletedSection
-        : l10n.taskListTitle;
+    final canEdit = !previewItem.isReadOnly;
+    final showAlarm =
+        canEdit &&
+        onSetAlarm != null &&
+        _isAlarmAvailable(
+          settings: provider.settings,
+          week: week,
+          course: course,
+          provider: provider,
+        );
+    final headerActions = <_CourseHeaderAction>[
+      if (canEdit)
+        _CourseHeaderAction(
+          icon: Icons.edit_outlined,
+          label: l10n.courseHeaderEditAction,
+          tooltip: l10n.courseActionEditPrimary,
+          onPressed: () => _closeSheetThen(context, () => onEdit(course)),
+        ),
+    ];
+    final bottomActions = <_CourseHeaderAction>[
+      if (showAlarm)
+        _CourseHeaderAction(
+          icon: Icons.alarm_outlined,
+          label: l10n.courseHeaderAlarmAction,
+          onPressed: () => onOpenView(_CourseActionSheetView.alarm),
+        ),
+      if (canEdit)
+        _CourseHeaderAction(
+          icon: Icons.assignment_outlined,
+          label: l10n.courseHeaderTaskAction,
+          onPressed: () => onOpenView(_CourseActionSheetView.task),
+        ),
+      _CourseHeaderAction(
+        icon: Icons.sticky_note_2_outlined,
+        label: l10n.courseHeaderNoteAction,
+        onPressed: () => onOpenView(_CourseActionSheetView.note),
+      ),
+      _CourseHeaderAction(
+        icon: Icons.event_repeat_outlined,
+        label: l10n.courseActionRescheduleSecondary,
+        onPressed: canReschedule
+            ? () => onOpenView(_CourseActionSheetView.reschedule)
+            : null,
+      ),
+      _CourseHeaderAction(
+        icon: isSuspended
+            ? Icons.play_circle_outline_rounded
+            : Icons.pause_circle_outline_rounded,
+        label: isSuspended
+            ? l10n.courseActionUnsuspend
+            : l10n.courseActionSuspendSecondary,
+        onPressed: () => onOpenView(_CourseActionSheetView.suspend),
+      ),
+      _CourseHeaderAction(
+        icon: Icons.delete_outline_rounded,
+        label: l10n.courseActionDeleteSecondary,
+        destructive: true,
+        onPressed: () => onOpenView(_CourseActionSheetView.delete),
+      ),
+    ];
+    final bottomActionRows = [
+      bottomActions.take(3).toList(),
+      bottomActions.skip(3).toList(),
+    ];
 
     return Column(
       key: ValueKey('course-action-content-${course.id}'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: courseColor.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              alignment: Alignment.center,
-              child: Icon(headerIcon, color: courseColor, size: 24),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 6,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(course.name, style: typo.sm.copyWith(height: 1.2)),
-                      if (!previewItem.isPartnerCourse)
-                        Text(natureLabel, style: muted),
-                      if (previewItem.isConflict)
-                        Text(
-                          l10n.conflictLabel,
-                          style: typo.xs2.copyWith(color: colors.destructive),
-                        ),
-                      if (coupleBadge != null)
-                        Text(
-                          coupleBadge,
-                          style: typo.xs2.copyWith(color: courseColor),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${l10n.weekLabel(week)} · $headerDetail',
-                    style: muted.copyWith(height: 1.4),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        _CourseDetailTile(
-          icon: Icons.schedule_outlined,
-          title: sectionTitle,
-          subtitle: timeSubtitle,
-          trailing: Text('${course.startTime}-${course.endTime}', style: muted),
-        ),
-        const SizedBox(height: 8),
-        _CourseDetailTile(
-          icon: Icons.person_outline_rounded,
-          title: teacher.isNotEmpty ? teacher : l10n.unknownTeacher,
-          subtitle: teacherSubtitle,
-        ),
-        const SizedBox(height: 8),
-        _CourseDetailTile(
-          icon: Icons.location_on_outlined,
-          title: location.isNotEmpty ? location : l10n.unknownLocation,
-          subtitle: locationSubtitle,
-        ),
-        const SizedBox(height: 8),
-        _CourseDetailTile(
-          icon: Icons.sticky_note_2_outlined,
-          title: noteTitle,
-          subtitle: noteSubtitle,
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
+        CourseDetailReveal(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (hasHomework) ...[
-                Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: colors.primary.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: colors.primary.withValues(alpha: 0.35),
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.assignment_outlined,
-                    size: 11,
-                    color: colors.primary,
-                  ),
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: courseColor.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                const SizedBox(width: 6),
-              ],
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 20,
-                color: colors.mutedForeground,
+                alignment: Alignment.center,
+                child: Icon(headerIcon, color: courseColor, size: 24),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text.rich(
+                      TextSpan(
+                        text: course.name,
+                        style: typo.sm.copyWith(height: 1.2),
+                        children: [
+                          if (!previewItem.isPartnerCourse)
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.aboveBaseline,
+                              baseline: TextBaseline.alphabetic,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 3),
+                                child: Text(
+                                  natureLabel,
+                                  style: typo.xs2.copyWith(
+                                    color: colors.mutedForeground,
+                                    height: 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 5.2),
+                    Text(
+                      headerWeekDetail,
+                      style: typo.xs2.copyWith(
+                        color: colors.mutedForeground,
+                        height: 1.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (previewItem.isConflict || coupleBadge != null) ...[
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          if (previewItem.isConflict)
+                            Text(
+                              l10n.conflictLabel,
+                              style: typo.xs2.copyWith(
+                                color: colors.destructive,
+                              ),
+                            ),
+                          if (coupleBadge != null)
+                            Text(
+                              coupleBadge,
+                              style: typo.xs2.copyWith(color: courseColor),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (headerActions.isNotEmpty) ...[
+                const SizedBox(width: 4),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < headerActions.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 2),
+                      _CourseHeaderActionButton(action: headerActions[i]),
+                    ],
+                  ],
+                ),
+              ],
             ],
           ),
-          onTap: () {
-            // Only one sheet at a time: close the action sheet, then open notes.
-            final hostNavigator = Navigator.of(context);
-            final courseSnapshot = course;
-            final weekSnapshot = week;
-            final isReadOnly = previewItem.isReadOnly;
-            hostNavigator.pop();
-            // Wait for the action sheet dismiss animation so the two never stack.
-            Future<void>.delayed(const Duration(milliseconds: 280), () {
-              final hostContext = hostNavigator.context;
-              if (!hostContext.mounted) {
-                return;
-              }
-              showCourseNoteSheet(
-                hostContext,
-                course: courseSnapshot,
-                week: weekSnapshot,
-                readOnly: isReadOnly,
-              );
-            });
-          },
         ),
-        if (!previewItem.isReadOnly) ...[
-          const SizedBox(height: 8),
-          _CourseDetailTile(
-            icon: Icons.assignment_outlined,
-            title: linkedTaskTitle,
-            subtitle: linkedTaskSubtitle,
-            trailing: const Icon(Icons.chevron_right_rounded, size: 20),
-            onTap: () =>
-                _closeSheetThenAfterDismiss(context, () => onAddTask(course)),
-          ),
-          if (onSetAlarm != null &&
-              _isAlarmAvailable(
-                settings: provider.settings,
-                week: week,
-                course: course,
-                provider: provider,
-              )) ...[
-            const SizedBox(height: 8),
-            _CourseDetailTile(
-              icon: Icons.alarm_outlined,
-              title: l10n.classAlarmActionLabel,
-              trailing: const Icon(Icons.chevron_right_rounded, size: 20),
-              onTap: () =>
-                  _closeSheetThenAfterDismiss(context, () => onSetAlarm!(course)),
+        const SizedBox(height: 14),
+        CourseDetailReveal(
+          index: 1,
+          child: _CourseDetailTile(
+            icon: Icons.schedule_outlined,
+            title: timeSubtitle,
+            subtitle: sectionTitle,
+            trailing: Text(
+              '${course.startTime}-${course.endTime}',
+              style: typo.sm.copyWith(color: colors.foreground, height: 1.2),
             ),
-          ],
-        ],
-        const SizedBox(height: 12),
-        _CourseDetailTile(
-          icon: Icons.info_outline_rounded,
-          titleWidget: Expanded(
-            child: previewItem.isReadOnly
-                ? Text(
-                    l10n.courseActionPartnerReadOnlyNotice,
-                    style: typo.xs2.copyWith(
-                      color: colors.mutedForeground,
-                      height: 1.45,
-                    ),
-                  )
-                : _CourseActionNoticeText(week: week),
+          ),
+        ),
+        const SizedBox(height: 8),
+        CourseDetailReveal(
+          index: 2,
+          child: _CourseDetailTile(
+            icon: Icons.person_outline_rounded,
+            title: teacher.isNotEmpty ? teacher : l10n.unknownTeacher,
+            subtitle: shortNameSubtitle,
+          ),
+        ),
+        const SizedBox(height: 8),
+        CourseDetailReveal(
+          index: 3,
+          child: _CourseDetailTile(
+            icon: Icons.location_on_outlined,
+            iconColor: courseColor,
+            title: location.isNotEmpty ? location : l10n.unknownLocation,
+            subtitle: shortNameSubtitle,
           ),
         ),
         if (!previewItem.isReadOnly) ...[
           const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            child: HyperosButton(
-              label: l10n.courseActionEditPrimary,
-              expand: true,
-              onPressed: () => _closeSheetThen(context, () => onEdit(course)),
+          CourseDetailReveal(
+            index: 4,
+            child: Column(
+              children: [
+                for (
+                  var rowIndex = 0;
+                  rowIndex < bottomActionRows.length;
+                  rowIndex++
+                ) ...[
+                  if (rowIndex > 0) const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      for (
+                        var i = 0;
+                        i < bottomActionRows[rowIndex].length;
+                        i++
+                      ) ...[
+                        if (i > 0) const SizedBox(width: 4),
+                        Expanded(
+                          child: HyperosFrostedSheetButton(
+                            key: ValueKey(
+                              'course-action-$rowIndex-${bottomActionRows[rowIndex][i].label}-${course.id}',
+                            ),
+                            icon: bottomActionRows[rowIndex][i].icon,
+                            label: bottomActionRows[rowIndex][i].label,
+                            variant: bottomActionRows[rowIndex][i].destructive
+                                ? HyperosFrostedSheetButtonVariant.destructive
+                                : HyperosFrostedSheetButtonVariant.neutral,
+                            dense: true,
+                            expand: true,
+                            onPressed: bottomActionRows[rowIndex][i].onPressed,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ],
             ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: HyperosFrostedSheetButton(
-                  key: ValueKey('course-action-reschedule-${course.id}'),
-                  label: l10n.courseActionRescheduleSecondary,
-                  expand: true,
-                  onPressed: canReschedule
-                      ? () =>
-                            _closeSheetThen(context, () => onReschedule(course))
-                      : null,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: HyperosFrostedSheetButton(
-                  key: ValueKey('course-action-suspend-${course.id}'),
-                  label: isSuspended
-                      ? l10n.courseActionUnsuspend
-                      : l10n.courseActionSuspendSecondary,
-                  expand: true,
-                  onPressed: () =>
-                      _closeSheetThen(context, () => onSuspend(course)),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: HyperosFrostedSheetButton(
-                  key: ValueKey('course-action-delete-${course.id}'),
-                  label: l10n.courseActionDeleteSecondary,
-                  variant: HyperosFrostedSheetButtonVariant.destructive,
-                  expand: true,
-                  onPressed: () =>
-                      _closeSheetThen(context, () => onDelete(course)),
-                ),
-              ),
-            ],
           ),
         ],
       ],
@@ -828,43 +933,61 @@ class _CourseActionSheetContent extends StatelessWidget {
   }
 }
 
-String _resolveNoteTileTitle({
-  required AppLocalizations l10n,
-  required String? wholeNote,
-  required String? sessionNoteText,
-  required bool hasHomework,
-}) {
-  if (sessionNoteText != null && sessionNoteText.isNotEmpty) {
-    return sessionNoteText;
-  }
-  if (hasHomework) {
-    return l10n.courseNoteHomeworkMarked;
-  }
-  if (wholeNote != null && wholeNote.isNotEmpty) {
-    return wholeNote;
-  }
-  return l10n.courseNoteAction;
+class _CourseHeaderAction {
+  const _CourseHeaderAction({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.tooltip,
+    this.destructive = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+  final String? tooltip;
+  final bool destructive;
 }
 
-String _resolveNoteTileSubtitle({
-  required AppLocalizations l10n,
-  required String? wholeNote,
-  required String? sessionNoteText,
-  required bool hasHomework,
-}) {
-  final hasSession =
-      hasHomework || (sessionNoteText != null && sessionNoteText.isNotEmpty);
-  final hasWhole = wholeNote != null && wholeNote.isNotEmpty;
-  if (hasSession && hasWhole) {
-    return l10n.courseNoteTileSubtitleBoth;
+class _CourseHeaderActionButton extends StatelessWidget {
+  const _CourseHeaderActionButton({required this.action});
+
+  final _CourseHeaderAction action;
+
+  @override
+  Widget build(BuildContext context) {
+    final typo = context.theme.typography.body;
+    final colors = context.theme.colors;
+    final button = Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: action.onPressed,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(action.icon, size: 19, color: colors.foreground),
+              const SizedBox(height: 2),
+              Text(
+                action.label,
+                textAlign: TextAlign.center,
+                style: typo.xs2.copyWith(
+                  color: colors.mutedForeground,
+                  height: 1,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return Tooltip(message: action.tooltip ?? action.label, child: button);
   }
-  if (hasSession) {
-    return l10n.courseNoteTileSubtitleSession;
-  }
-  if (hasWhole) {
-    return l10n.courseNoteTileSubtitleWhole;
-  }
-  return l10n.courseNoteTileSubtitleEmpty;
 }
 
 class _CourseDetailTile extends StatelessWidget {
@@ -872,17 +995,15 @@ class _CourseDetailTile extends StatelessWidget {
     required this.icon,
     this.title,
     this.subtitle,
-    this.titleWidget,
     this.trailing,
-    this.onTap,
+    this.iconColor,
   });
 
   final IconData icon;
   final String? title;
   final String? subtitle;
-  final Widget? titleWidget;
   final Widget? trailing;
-  final VoidCallback? onTap;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -890,93 +1011,47 @@ class _CourseDetailTile extends StatelessWidget {
     final colors = context.theme.colors;
 
     final content = Padding(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: colors.mutedForeground),
+          Icon(icon, size: 18, color: iconColor ?? colors.mutedForeground),
           const SizedBox(width: 10),
-          if (titleWidget != null)
-            titleWidget!
-          else
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title!,
+                  style: typo.sm.copyWith(height: 1.25),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (subtitle != null && subtitle!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
                   Text(
-                    title!,
-                    style: typo.sm.copyWith(height: 1.25),
-                    maxLines: 2,
+                    subtitle!,
+                    style: typo.xs2.copyWith(
+                      color: colors.mutedForeground,
+                      height: 1.3,
+                    ),
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (subtitle != null && subtitle!.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle!,
-                      style: typo.xs2.copyWith(
-                        color: colors.mutedForeground,
-                        height: 1.3,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
                 ],
-              ),
+              ],
             ),
+          ),
           if (trailing != null) ...[const SizedBox(width: 8), trailing!],
         ],
       ),
     );
 
-    return HyperosFrostedSurface(
-      borderRadius: BorderRadius.circular(HyperosTokens.controlRadius),
-      child: onTap == null
-          ? content
-          : Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: onTap,
-                borderRadius: BorderRadius.circular(
-                  HyperosTokens.controlRadius,
-                ),
-                child: content,
-              ),
-            ),
-    );
-  }
-}
-
-class _CourseActionNoticeText extends StatelessWidget {
-  const _CourseActionNoticeText({required this.week});
-
-  final int week;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final typo = context.theme.typography.body;
-    final colors = context.theme.colors;
-    final notice = l10n.courseActionSheetNotice(week);
-    final weekToken = week.toString();
-    final weekIndex = notice.indexOf(weekToken);
-    if (weekIndex == -1) {
-      return Text(
-        notice,
-        style: typo.xs2.copyWith(color: colors.mutedForeground, height: 1.45),
-      );
-    }
-
-    return Text.rich(
-      TextSpan(
-        style: typo.xs2.copyWith(color: colors.mutedForeground, height: 1.45),
-        children: [
-          TextSpan(text: notice.substring(0, weekIndex)),
-          TextSpan(
-            text: weekToken,
-            style: TextStyle(color: colors.foreground),
-          ),
-          TextSpan(text: notice.substring(weekIndex + weekToken.length)),
-        ],
+    return SizedBox(
+      height: 52,
+      child: HyperosFrostedSurface(
+        borderRadius: BorderRadius.circular(HyperosTokens.controlRadius),
+        child: content,
       ),
     );
   }
@@ -998,11 +1073,6 @@ String _formatTimeTileSubtitle(
   }
 
   parts.add(l10n.weekLabel(week));
-  if (course.isOddWeek) {
-    parts.add(l10n.courseActionOddWeekShort);
-  } else if (course.isEvenWeek) {
-    parts.add(l10n.courseActionEvenWeekShort);
-  }
 
   return parts.join(' ');
 }

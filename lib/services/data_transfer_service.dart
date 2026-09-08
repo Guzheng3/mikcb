@@ -174,7 +174,7 @@ class DataTransferService {
       activeTimeSchemeId: settings.activeTimeSchemeId,
       semesterWeekCount: settings.semesterWeekCount,
       semesterStartDate: settings.semesterStartDate,
-      clearHomePageWallpaperPath: true,
+      homePageWallpaperPath: defaultHomePageWallpaperPath,
       clearHomePageBackgroundImagePath: true,
     );
   }

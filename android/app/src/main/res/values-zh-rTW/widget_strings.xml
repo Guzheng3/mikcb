@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_couple_timetable_name">情侶課表 4×2</string>
+    <string name="widget_couple_timetable_name">情侶課表 4×3</string>
     <string name="widget_couple_tomorrow_count">明日共 %1$d 節</string>
+    <string name="widget_couple_today_remaining">今日課程 還剩%1$d/%2$d節</string>
     <string name="widget_couple_no_course_tomorrow">明日無課</string>
+    <string name="widget_couple_today_ended">🌙 今日課程已結束</string>
+    <string name="widget_couple_weekend_no_course">🍵 週末 · 今天沒有課程</string>
+    <string name="widget_couple_no_course_today">🍵 今天沒有課程</string>
+    <string name="widget_couple_mode_off">未開情侶模式，暫不可使用</string>
+    <string name="widget_couple_not_logged_in">未登入，請登入後使用</string>
     <string name="widget_today_compact_name">今日課程主卡 2×2</string>
     <string name="widget_today_mini_list_name">今日課程迷你列表 2×2</string>
     <string name="widget_today_medium_name">今日課程概覽 2×4</string>

@@ -23,7 +23,7 @@ Future<void> showClassReminderSheet(
 }) {
   return showHomeHyperosSheet<void>(
     context: context,
-    builder: (_) => _ClassReminderSheetBody(course: course, week: week),
+    builder: (_) => ClassReminderSheetBody(course: course, week: week),
   );
 }
 
@@ -33,7 +33,11 @@ String _formatMinuteOfDay(int minutes) {
   return '$hour:$minute';
 }
 
-DateTime? _occurrenceDateFor(TimetableSettings settings, int week, int dayOfWeek) {
+DateTime? _occurrenceDateFor(
+  TimetableSettings settings,
+  int week,
+  int dayOfWeek,
+) {
   final semesterStart = settings.semesterStartDate;
   if (semesterStart == null) return null;
   final normalizedStart = DateTime(
@@ -51,17 +55,24 @@ String _weeksSummary(Course course) {
   return '${weeks.take(8).join(', ')}…';
 }
 
-class _ClassReminderSheetBody extends StatefulWidget {
-  const _ClassReminderSheetBody({required this.course, required this.week});
+class ClassReminderSheetBody extends StatefulWidget {
+  const ClassReminderSheetBody({
+    required this.course,
+    required this.week,
+    this.embedded = false,
+    this.onBack,
+  });
 
   final Course course;
   final int week;
+  final bool embedded;
+  final VoidCallback? onBack;
 
   @override
-  State<_ClassReminderSheetBody> createState() => _ClassReminderSheetBodyState();
+  State<ClassReminderSheetBody> createState() => _ClassReminderSheetBodyState();
 }
 
-class _ClassReminderSheetBodyState extends State<_ClassReminderSheetBody> {
+class _ClassReminderSheetBodyState extends State<ClassReminderSheetBody> {
   bool _working = false;
 
   void _toast(String message, {AppToastKind kind = AppToastKind.info}) {
@@ -77,12 +88,16 @@ class _ClassReminderSheetBodyState extends State<_ClassReminderSheetBody> {
       final startText = provider.resolvedCourseStartTime(course);
       if (!mounted) return;
       if (startText == null) {
-        _toast(AppLocalizations.of(context)!.classAlarmInvalidTimeToast,
-            kind: AppToastKind.warning);
+        _toast(
+          AppLocalizations.of(context)!.classAlarmInvalidTimeToast,
+          kind: AppToastKind.warning,
+        );
         return;
       }
       final settings = provider.settings;
-      final lead = SystemAlarmLogic.clampLeadMinutes(settings.classAlarmLeadMinutes);
+      final lead = SystemAlarmLogic.clampLeadMinutes(
+        settings.classAlarmLeadMinutes,
+      );
       final label = course.shortName?.trim().isNotEmpty == true
           ? course.shortName!.trim()
           : course.name.trim();
@@ -99,13 +114,17 @@ class _ClassReminderSheetBodyState extends State<_ClassReminderSheetBody> {
           hour: minuteOfDay ~/ 60,
           minute: minuteOfDay % 60,
           label: '轻屿 · $label',
-          repeatDays: plan?.repeatDays ?? [SystemAlarmLogic.calendarWeekday(course.dayOfWeek)],
+          repeatDays:
+              plan?.repeatDays ??
+              [SystemAlarmLogic.calendarWeekday(course.dayOfWeek)],
           skipUi: settings.classAlarmSkipUi,
         );
       } else {
         if (plan == null) {
-          _toast(AppLocalizations.of(context)!.classAlarmInvalidTimeToast,
-              kind: AppToastKind.warning);
+          _toast(
+            AppLocalizations.of(context)!.classAlarmInvalidTimeToast,
+            kind: AppToastKind.warning,
+          );
           return;
         }
         finalPlan = plan;
@@ -119,10 +138,14 @@ class _ClassReminderSheetBodyState extends State<_ClassReminderSheetBody> {
         AppLocalizations.of(context)!,
         ringDayIso == 0 ? course.dayOfWeek : ringDayIso,
       );
-      final timeText = _formatMinuteOfDay(finalPlan.hour * 60 + finalPlan.minute);
+      final timeText = _formatMinuteOfDay(
+        finalPlan.hour * 60 + finalPlan.minute,
+      );
       final weeksText = _weeksSummary(course);
       final startMinutes = SystemAlarmLogic.parseClockMinutes(startText);
-      final computedLead = startMinutes == null ? lead : (startMinutes - minuteOfDay).clamp(0, 120);
+      final computedLead = startMinutes == null
+          ? lead
+          : (startMinutes - minuteOfDay).clamp(0, 120);
       final effectiveLead = minuteOfDay < 0 ? lead : computedLead;
 
       // 先收起当前 sheet，再在宿主上下文弹确认，避免 sheet 盖 dialog 的双层叠加。
@@ -132,14 +155,19 @@ class _ClassReminderSheetBodyState extends State<_ClassReminderSheetBody> {
       navigator.pop();
       await Future<void>.delayed(const Duration(milliseconds: 280));
       if (!hostContext.mounted) return;
-      final messageStyle = HyperosTypography.listDetail(hostContext).copyWith(
-        color: HyperosColors.primaryText(hostContext),
-      );
+      final messageStyle = HyperosTypography.listDetail(
+        hostContext,
+      ).copyWith(color: HyperosColors.primaryText(hostContext));
       final confirmed = await showAppConfirmDialogWithBody(
         hostContext,
         title: l10n.classAlarmCourseConfirmTitle,
         body: Text(
-          l10n.classAlarmCourseConfirmMessage(weekdayLabel, timeText, effectiveLead, weeksText),
+          l10n.classAlarmCourseConfirmMessage(
+            weekdayLabel,
+            timeText,
+            effectiveLead,
+            weeksText,
+          ),
           textAlign: TextAlign.center,
           style: messageStyle,
         ),
@@ -149,13 +177,20 @@ class _ClassReminderSheetBodyState extends State<_ClassReminderSheetBody> {
       final result = await SystemAlarmService.addAlarm(finalPlan);
       if (!hostContext.mounted) return;
       if (result.launched) {
-        showAppToast(hostContext, message: AppLocalizations.of(hostContext)!.classAlarmAddedToast,
-            kind: AppToastKind.success);
+        showAppToast(
+          hostContext,
+          message: AppLocalizations.of(hostContext)!.classAlarmAddedToast,
+          kind: AppToastKind.success,
+        );
       } else {
         // PlatformException.message 是英文调试文案，不直接展示给用户。
-        showAppToast(hostContext,
-            message: AppLocalizations.of(hostContext)!.classAlarmLaunchFailedToast,
-            kind: AppToastKind.error);
+        showAppToast(
+          hostContext,
+          message: AppLocalizations.of(
+            hostContext,
+          )!.classAlarmLaunchFailedToast,
+          kind: AppToastKind.error,
+        );
       }
     } finally {
       if (mounted) _working = false;
@@ -194,7 +229,8 @@ class _ClassReminderSheetBodyState extends State<_ClassReminderSheetBody> {
     }
   }
 
-  String _weekdayLabel(AppLocalizations l10n, int dayOfWeek) => switch (dayOfWeek) {
+  String _weekdayLabel(AppLocalizations l10n, int dayOfWeek) =>
+      switch (dayOfWeek) {
         1 => l10n.weekdayMon,
         2 => l10n.weekdayTue,
         3 => l10n.weekdayWed,
@@ -211,10 +247,18 @@ class _ClassReminderSheetBodyState extends State<_ClassReminderSheetBody> {
     final typo = context.theme.typography.body;
     final provider = context.watch<TimetableProvider>();
     final settings = provider.settings;
-    final lead = SystemAlarmLogic.clampLeadMinutes(settings.classAlarmLeadMinutes);
+    final lead = SystemAlarmLogic.clampLeadMinutes(
+      settings.classAlarmLeadMinutes,
+    );
     final startText = provider.resolvedCourseStartTime(widget.course);
-    final startMinutes = startText == null ? null : SystemAlarmLogic.parseClockMinutes(startText);
-    final date = _occurrenceDateFor(settings, widget.week, widget.course.dayOfWeek);
+    final startMinutes = startText == null
+        ? null
+        : SystemAlarmLogic.parseClockMinutes(startText);
+    final date = _occurrenceDateFor(
+      settings,
+      widget.week,
+      widget.course.dayOfWeek,
+    );
     final existing = date == null
         ? null
         : provider.classReminderFor(
@@ -227,101 +271,120 @@ class _ClassReminderSheetBodyState extends State<_ClassReminderSheetBody> {
       _weekdayLabel(l10n, widget.course.dayOfWeek),
       if (startMinutes != null) _formatMinuteOfDay(startMinutes),
     ];
-    return HyperosSheet(
-      title: l10n.classAlarmActionLabel,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    final content = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (widget.embedded) ...[
           Text(
-            infoParts.join(' · '),
-            style: typo.xs2.copyWith(color: colors.foreground),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            l10n.classAlarmActionLabel,
+            style: typo.sm.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 12),
-          if (existing != null) ...[
-            HyperosFrostedSurface(
-              borderRadius: BorderRadius.circular(HyperosTokens.controlRadius),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                child: Row(
-                  children: [
-                    Icon(Icons.alarm_on_rounded, size: 18, color: colors.primary),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        l10n.classAlarmExistingLabel(
-                          _formatMinuteOfDay(existing.minuteOfDay),
-                        ),
-                        style: typo.sm.copyWith(height: 1.25),
+        ],
+        Text(
+          infoParts.join(' · '),
+          style: typo.xs2.copyWith(color: colors.foreground),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 12),
+        if (existing != null) ...[
+          HyperosFrostedSurface(
+            borderRadius: BorderRadius.circular(HyperosTokens.controlRadius),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              child: Row(
+                children: [
+                  Icon(Icons.alarm_on_rounded, size: 18, color: colors.primary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.classAlarmExistingLabel(
+                        _formatMinuteOfDay(existing.minuteOfDay),
                       ),
+                      style: typo.sm.copyWith(height: 1.25),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-          ],
-          HyperosFrostedSheetButton(
-            label: l10n.classAlarmQuickOption(lead),
-            expand: true,
-            onPressed: startMinutes == null
-                ? null
-                : () => _addSystemAlarm(startMinutes - lead),
           ),
           const SizedBox(height: 8),
-          HyperosFrostedSheetButton(
-            label: l10n.classAlarmCustomOption,
-            expand: true,
-            onPressed: startMinutes == null
-                ? null
-                : () async {
-                    final picked = await showMiuixTimePickerSheet(
-                      context,
-                      initialTime: TimeOfDay(
-                        hour: startMinutes ~/ 60,
-                        minute: startMinutes % 60,
-                      ),
-                      title: l10n.selectTimeTitle,
-                    );
-                    if (picked == null || !mounted) return;
-                    await _addSystemAlarm(picked.hour * 60 + picked.minute);
-                  },
-          ),
-          const SizedBox(height: 8),
-          HyperosFrostedSheetButton(
-            label: l10n.classAlarmOpenClock,
-            expand: true,
-            onPressed: () async {
-              if (_working) return;
-              _working = true;
-              final navigator = Navigator.of(context);
-              try {
-                final ok = await SystemAlarmService.openSystemAlarms();
-                if (!mounted) return;
-                if (!ok) {
-                  _toast(l10n.classAlarmLaunchFailedToast, kind: AppToastKind.error);
-                } else {
-                  navigator.pop();
-                }
-              } finally {
-                if (mounted) _working = false;
-              }
-            },
-          ),
-          if (existing != null) ...[
-            const SizedBox(height: 8),
-            HyperosFrostedSheetButton(
-              label: l10n.cancelAction,
-              expand: true,
-              variant: HyperosFrostedSheetButtonVariant.destructive,
-              onPressed: _removeLegacyReminder,
-            ),
-          ],
-          const SizedBox(height: 6),
         ],
-      ),
+        HyperosFrostedSheetButton(
+          label: l10n.classAlarmQuickOption(lead),
+          expand: true,
+          onPressed: startMinutes == null
+              ? null
+              : () => _addSystemAlarm(startMinutes - lead),
+        ),
+        const SizedBox(height: 8),
+        HyperosFrostedSheetButton(
+          label: l10n.classAlarmCustomOption,
+          expand: true,
+          onPressed: startMinutes == null
+              ? null
+              : () async {
+                  final picked = await showMiuixTimePickerSheet(
+                    context,
+                    initialTime: TimeOfDay(
+                      hour: startMinutes ~/ 60,
+                      minute: startMinutes % 60,
+                    ),
+                    title: l10n.selectTimeTitle,
+                  );
+                  if (picked == null || !mounted) return;
+                  await _addSystemAlarm(picked.hour * 60 + picked.minute);
+                },
+        ),
+        const SizedBox(height: 8),
+        HyperosFrostedSheetButton(
+          label: l10n.classAlarmOpenClock,
+          expand: true,
+          onPressed: () async {
+            if (_working) return;
+            _working = true;
+            final navigator = Navigator.of(context);
+            try {
+              final ok = await SystemAlarmService.openSystemAlarms();
+              if (!mounted) return;
+              if (!ok) {
+                _toast(
+                  l10n.classAlarmLaunchFailedToast,
+                  kind: AppToastKind.error,
+                );
+              } else {
+                navigator.pop();
+              }
+            } finally {
+              if (mounted) _working = false;
+            }
+          },
+        ),
+        if (existing != null) ...[
+          const SizedBox(height: 8),
+          HyperosFrostedSheetButton(
+            label: l10n.cancelAction,
+            expand: true,
+            variant: HyperosFrostedSheetButtonVariant.destructive,
+            onPressed: _removeLegacyReminder,
+          ),
+        ],
+        const SizedBox(height: 8),
+        HyperosFrostedSheetButton(
+          label: l10n.cancelAction,
+          expand: true,
+          onPressed: widget.onBack,
+        ),
+        const SizedBox(height: 6),
+      ],
     );
+
+    if (widget.embedded) {
+      return content;
+    }
+
+    return HyperosSheet(title: l10n.classAlarmActionLabel, child: content);
   }
 }

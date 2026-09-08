@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="180dp"
+    android:height="5dp"
+    android:viewportWidth="180"
+    android:viewportHeight="5">
+    <path
+        android:fillColor="@color/widget_couple_divider"
+        android:pathData="M0,5 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 a4.5,3 0 0 1 9,0 H0 Z" />
+</vector>

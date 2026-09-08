@@ -349,10 +349,14 @@ Future<String?> _timetableImportFullAppDataBackup(
       await host._profileRepository.saveLocationTimeGroups(
         host._locationTimeGroups,
       );
-      await host._profileRepository.saveScheduleDateRules(host._scheduleDateRules);
+      await host._profileRepository.saveScheduleDateRules(
+        host._scheduleDateRules,
+      );
       await host._profileRepository.saveProfiles(host._profiles);
       if (host._activeProfileId != null) {
-        await host._profileRepository.setActiveProfileId(host._activeProfileId!);
+        await host._profileRepository.setActiveProfileId(
+          host._activeProfileId!,
+        );
       }
 
       host._applyProfileState(
@@ -381,5 +385,95 @@ Future<String?> _timetableImportFullAppDataBackup(
     } catch (_) {
       return 'import_file_unrecognized';
     }
+  });
+}
+
+Future<bool> _timetableRestoreMyTimetableFromCloud(
+  TimetableProvider host,
+  String content,
+) {
+  return host._runMutation(() async {
+    await host.initialize();
+    await host._captureSemesterHistorySnapshot(CoupleTimetableRole.mine);
+    if (host._dataTransferService.isFullBackupJson(content)) {
+      throw const FormatException('my_restore_requires_single_profile');
+    }
+
+    final backup = host._dataTransferService.parsePartnerTimetableJson(content);
+    final mine = host.myTimetableProfile;
+    if (mine == null) {
+      return false;
+    }
+
+    // Cloud packages intentionally omit personal display settings. Restore
+    // only the timetable-critical settings and keep the local personal ones.
+    final syncedSettings = mine.settings.copyWith(
+      sections: List<SectionTime>.from(backup.settings.sections),
+      activeTimeSchemeId: backup.settings.activeTimeSchemeId,
+      semesterWeekCount: backup.settings.semesterWeekCount,
+      semesterStartDate: backup.settings.semesterStartDate,
+    );
+    final resolvedSettings = await host._resolveSettingsAgainstTimeSchemes(
+      syncedSettings,
+      fallbackName: '${mine.name} 时间',
+    );
+    final courses = host._syncCoursesWithEffectiveTimeSchemes(
+      List<Course>.from(backup.courses),
+      settings: resolvedSettings,
+    );
+    final courseIds = courses.map((course) => course.id).toSet();
+    final tasks = backup.tasks
+        .where(
+          (task) => task.courseId == null || courseIds.contains(task.courseId),
+        )
+        .toList();
+
+    final nextProfile = mine.copyWith(
+      courses: courses,
+      tasks: tasks,
+      scheduleItems: List<ScheduleItem>.from(backup.scheduleItems),
+      exams: List<Exam>.from(backup.exams),
+      settings: resolvedSettings,
+      currentWeek: clampCurrentWeekToSettings(
+        backup.currentWeek,
+        resolvedSettings,
+      ),
+    );
+
+    if (backup.timeSchemes.isNotEmpty) {
+      host._timeSchemes = List<TimeScheme>.from(backup.timeSchemes);
+      await host._persistTimeSchemes();
+    }
+    if (backup.scheduleDateRules.isNotEmpty) {
+      host._scheduleDateRules = List<ScheduleDateRule>.from(
+        backup.scheduleDateRules,
+      );
+      await host._profileRepository.saveScheduleDateRules(
+        host._scheduleDateRules,
+      );
+    }
+    if (backup.locationTimeGroups.isNotEmpty) {
+      host._locationTimeGroups = List<LocationTimeGroup>.from(
+        backup.locationTimeGroups,
+      );
+      await host._persistLocationTimeGroups();
+    }
+
+    final index = host._profiles.indexWhere((profile) => profile.id == mine.id);
+    if (index == -1) {
+      return false;
+    }
+    host._profiles[index] = nextProfile;
+    await host._profileRepository.saveProfiles(host._profiles);
+
+    if (host._activeProfileId == mine.id) {
+      host._applyProfileState(nextProfile);
+      host._currentLiveCourseId = null;
+      host._notifyStateChanged();
+      unawaited(host._syncExamReminders());
+    }
+    await host._updateLiveActivity();
+    await host._syncHomeWidgetSnapshot();
+    return true;
   });
 }

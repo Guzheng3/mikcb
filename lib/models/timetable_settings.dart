@@ -1229,6 +1229,7 @@ class TimetableSettings {
   final bool coupleTimetableOverlayEnabled;
   final SectionTimeDisplayMode timetableSectionTimeDisplayMode;
   final bool timetableHideWeekends;
+  final bool timetableVerticalScrollEffectEnabled;
   final bool enableHaptics;
   final double pageTransitionSpeed;
 
@@ -1306,6 +1307,12 @@ class TimetableSettings {
   /// 壁纸在页面内的垂直对齐（-1 靠上 … 0 居中 … 1 靠下），用于长图壁纸
   /// 拖动选择显示区域；cover 下高度未溢出时该值不产生位移。
   final double homePageWallpaperAlignY;
+
+  /// 底层壁纸的高斯模糊强度；0 表示保持原图。
+  final double homePageBackdropBlurSigma;
+
+  /// 底层壁纸的白色磨砂层透明度；0 表示不提亮。
+  final double homePageBackdropFrostAlpha;
   final int homePageBackgroundScope;
   final bool timetableUseUnifiedCardColor;
   final String timetableUnifiedCardColor;
@@ -1397,7 +1404,7 @@ class TimetableSettings {
     this.courseCardShowLocation = true,
     this.courseCardShowTime = false,
     this.courseCardShowTimeLabels = true,
-    this.courseCardShowWeeks = false,
+    this.courseCardShowWeeks = true,
     this.courseCardShowDescription = false,
     this.courseCardVerticalAlign = CourseCardVerticalAlign.center,
     this.courseCardHorizontalAlign = CourseCardHorizontalAlign.center,
@@ -1436,7 +1443,8 @@ class TimetableSettings {
     this.coupleTimetableOverlayEnabled = true,
     this.timetableSectionTimeDisplayMode = SectionTimeDisplayMode.startAndEnd,
     this.timetableHideWeekends = false,
-    this.enableHaptics = true,
+    this.timetableVerticalScrollEffectEnabled = false,
+    this.enableHaptics = false,
     this.pageTransitionSpeed = defaultPageTransitionSpeed,
     this.homePullQuickImportEnabled = false,
     this.liveShowCourseName = true,
@@ -1509,6 +1517,8 @@ class TimetableSettings {
     this.homePageWallpaperPath = defaultHomePageWallpaperPath,
     this.homePageWallpaperAlignX = 0,
     this.homePageWallpaperAlignY = 0,
+    this.homePageBackdropBlurSigma = 13,
+    this.homePageBackdropFrostAlpha = 0.05,
     this.homePageBackgroundScope = HomePageBackgroundScope.defaultValue,
     this.timetableUseUnifiedCardColor = false,
     this.timetableUnifiedCardColor = '#2563EB',
@@ -1633,6 +1643,8 @@ class TimetableSettings {
       'coupleTimetableOverlayEnabled': coupleTimetableOverlayEnabled,
       'timetableSectionTimeDisplayMode': timetableSectionTimeDisplayMode.value,
       'timetableHideWeekends': timetableHideWeekends,
+      'timetableVerticalScrollEffectEnabled':
+          timetableVerticalScrollEffectEnabled,
       'enableHaptics': enableHaptics,
       'pageTransitionSpeed': pageTransitionSpeed,
       'homePullQuickImportEnabled': homePullQuickImportEnabled,
@@ -1717,6 +1729,8 @@ class TimetableSettings {
       'homePageWallpaperPath': homePageWallpaperPath,
       'homePageWallpaperAlignX': homePageWallpaperAlignX,
       'homePageWallpaperAlignY': homePageWallpaperAlignY,
+      'homePageBackdropBlurSigma': homePageBackdropBlurSigma,
+      'homePageBackdropFrostAlpha': homePageBackdropFrostAlpha,
       'homePageBackgroundScope': homePageBackgroundScope,
       'timetableUseUnifiedCardColor': timetableUseUnifiedCardColor,
       'timetableUnifiedCardColor': timetableUnifiedCardColor,
@@ -1842,7 +1856,7 @@ class TimetableSettings {
       courseCardShowTime: json['courseCardShowTime'] as bool? ?? false,
       courseCardShowTimeLabels:
           json['courseCardShowTimeLabels'] as bool? ?? true,
-      courseCardShowWeeks: json['courseCardShowWeeks'] as bool? ?? false,
+      courseCardShowWeeks: json['courseCardShowWeeks'] as bool? ?? true,
       courseCardShowDescription:
           json['courseCardShowDescription'] as bool? ?? false,
       courseCardVerticalAlign: CourseCardVerticalAlignX.fromValue(
@@ -1936,7 +1950,9 @@ class TimetableSettings {
         json['timetableSectionTimeDisplayMode'] as String?,
       ),
       timetableHideWeekends: json['timetableHideWeekends'] as bool? ?? false,
-      enableHaptics: json['enableHaptics'] as bool? ?? true,
+      timetableVerticalScrollEffectEnabled:
+          json['timetableVerticalScrollEffectEnabled'] as bool? ?? false,
+      enableHaptics: json['enableHaptics'] as bool? ?? false,
       pageTransitionSpeed:
           ((json['pageTransitionSpeed'] as num?)?.toDouble() ??
                   defaultPageTransitionSpeed)
@@ -2108,6 +2124,10 @@ class TimetableSettings {
           (json['homePageWallpaperAlignX'] as num?)?.toDouble() ?? 0,
       homePageWallpaperAlignY:
           (json['homePageWallpaperAlignY'] as num?)?.toDouble() ?? 0,
+      homePageBackdropBlurSigma:
+          (json['homePageBackdropBlurSigma'] as num?)?.toDouble() ?? 13,
+      homePageBackdropFrostAlpha:
+          (json['homePageBackdropFrostAlpha'] as num?)?.toDouble() ?? 0.05,
       homePageBackgroundScope:
           (json['homePageBackgroundScope'] as num?)?.toInt() ??
           HomePageBackgroundScope.defaultValue,
@@ -2301,6 +2321,7 @@ class TimetableSettings {
     bool? coupleTimetableOverlayEnabled,
     SectionTimeDisplayMode? timetableSectionTimeDisplayMode,
     bool? timetableHideWeekends,
+    bool? timetableVerticalScrollEffectEnabled,
     bool? enableHaptics,
     double? pageTransitionSpeed,
     bool? homePullQuickImportEnabled,
@@ -2374,6 +2395,8 @@ class TimetableSettings {
     bool clearHomePageWallpaperPath = false,
     double? homePageWallpaperAlignX,
     double? homePageWallpaperAlignY,
+    double? homePageBackdropBlurSigma,
+    double? homePageBackdropFrostAlpha,
     int? homePageBackgroundScope,
     bool? timetableUseUnifiedCardColor,
     String? timetableUnifiedCardColor,
@@ -2533,6 +2556,9 @@ class TimetableSettings {
           this.timetableSectionTimeDisplayMode,
       timetableHideWeekends:
           timetableHideWeekends ?? this.timetableHideWeekends,
+      timetableVerticalScrollEffectEnabled:
+          timetableVerticalScrollEffectEnabled ??
+          this.timetableVerticalScrollEffectEnabled,
       enableHaptics: enableHaptics ?? this.enableHaptics,
       pageTransitionSpeed: (pageTransitionSpeed ?? this.pageTransitionSpeed)
           .clamp(minPageTransitionSpeed, maxPageTransitionSpeed),
@@ -2684,6 +2710,10 @@ class TimetableSettings {
           homePageWallpaperAlignX ?? this.homePageWallpaperAlignX,
       homePageWallpaperAlignY:
           homePageWallpaperAlignY ?? this.homePageWallpaperAlignY,
+      homePageBackdropBlurSigma:
+          homePageBackdropBlurSigma ?? this.homePageBackdropBlurSigma,
+      homePageBackdropFrostAlpha:
+          homePageBackdropFrostAlpha ?? this.homePageBackdropFrostAlpha,
       homePageBackgroundScope:
           homePageBackgroundScope ?? this.homePageBackgroundScope,
       timetableUseUnifiedCardColor:

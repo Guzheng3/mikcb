@@ -87,7 +87,9 @@ Map<String, String> _seededSessionValues() => {
 void _seedInitializedPrefs() {
   final now = DateTime(2026, 4, 12);
   // These tests cover the classic profile switcher.
-  final settings = TimetableSettings.defaults();
+  final settings = TimetableSettings.defaults().copyWith(
+    coupleTimetableOverlayEnabled: false,
+  );
   final profile = TimetableProfile(
     id: 'profile-1',
     name: '默认课表',
@@ -202,6 +204,44 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('默认课表'), findsOneWidget);
+  });
+
+  testWidgets('logged-in couple session shows nickname heart nickname title', (
+    tester,
+  ) async {
+    final provider = await createInitializedTestProvider(tester);
+    await runRealAsync(tester, () async {
+      await provider.updateTimetableSettings(
+        provider.settings.copyWith(coupleTimetableOverlayEnabled: true),
+      );
+    });
+    final sessionProvider = createLoggedInTestSession();
+    await runRealAsync(tester, sessionProvider.restoreSession);
+    expect(sessionProvider.isLoggedIn, isTrue);
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: provider,
+        child: TestApp(
+          sessionProvider: sessionProvider,
+          home: const TimetableScreen(enableProgressTimer: false),
+        ),
+      ),
+    );
+    await _pumpTimetableFrame(tester);
+
+    expect(
+      find.byKey(const ValueKey('profile_switcher_trigger')),
+      findsOneWidget,
+    );
+    final screenWidth =
+        tester.view.physicalSize.width / tester.view.devicePixelRatio;
+    final heartCenter = tester.getCenter(find.byIcon(Icons.favorite_rounded));
+    expect(heartCenter.dx, closeTo(screenWidth / 2, 0.5));
+    expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
+    expect(find.text('小明'), findsOneWidget);
+    expect(find.text('小红'), findsOneWidget);
+    expect(find.byKey(const ValueKey('withu_couple_login_chip')), findsNothing);
   });
 
   testWidgets('home overflow menu omits timetable management entry', (

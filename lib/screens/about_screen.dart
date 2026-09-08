@@ -907,8 +907,11 @@ class _AboutUpdateScreenState extends State<AboutUpdateScreen> {
     }
     _analytics.logEventLater(name: 'update_check_requested');
     setState(() {
-      _updateFuture = _withuAppUpdateService
-          .checkForUpdates(currentVersion: widget.packageInfo!.version)
+    _updateFuture = _withuAppUpdateService
+        .checkForUpdates(
+          currentVersion: widget.packageInfo!.version,
+          respectIgnoredVersion: false,
+        )
           .then(
             (result) =>
                 result ??

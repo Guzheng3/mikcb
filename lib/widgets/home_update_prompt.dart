@@ -85,6 +85,7 @@ Future<void> showHomeUpdatePrompt(
   required HomeUpdatePromptController controller,
   required Future<bool> Function() onDownload,
   required Future<void> Function() onViewRelease,
+  required Future<void> Function() onSkipVersion,
   required VoidCallback onCancelDownload,
   required Future<bool> Function() onResumeDownload,
 }) {
@@ -95,6 +96,7 @@ Future<void> showHomeUpdatePrompt(
     controller: controller,
     onDownload: onDownload,
     onViewRelease: onViewRelease,
+    onSkipVersion: onSkipVersion,
     onCancelDownload: onCancelDownload,
     onResumeDownload: onResumeDownload,
   );
@@ -107,6 +109,7 @@ Future<void> _showHomeUpdatePromptDialog(
   required HomeUpdatePromptController controller,
   required Future<bool> Function() onDownload,
   required Future<void> Function() onViewRelease,
+  required Future<void> Function() onSkipVersion,
   required VoidCallback onCancelDownload,
   required Future<bool> Function() onResumeDownload,
 }) async {
@@ -116,11 +119,12 @@ Future<void> _showHomeUpdatePromptDialog(
       return _HomeUpdatePromptDialog(
         release: release,
         currentVersion: currentVersion,
-        controller: controller,
-        onDownload: onDownload,
-        onViewRelease: onViewRelease,
-        onCancelDownload: onCancelDownload,
-        onResumeDownload: onResumeDownload,
+    controller: controller,
+    onDownload: onDownload,
+    onViewRelease: onViewRelease,
+    onSkipVersion: onSkipVersion,
+    onCancelDownload: onCancelDownload,
+    onResumeDownload: onResumeDownload,
         onDismiss: () => Navigator.of(sheetContext).pop(),
       );
     },
@@ -134,6 +138,7 @@ class _HomeUpdatePromptDialog extends StatelessWidget {
     required this.controller,
     required this.onDownload,
     required this.onViewRelease,
+    required this.onSkipVersion,
     required this.onCancelDownload,
     required this.onResumeDownload,
     required this.onDismiss,
@@ -144,6 +149,7 @@ class _HomeUpdatePromptDialog extends StatelessWidget {
   final HomeUpdatePromptController controller;
   final Future<bool> Function() onDownload;
   final Future<void> Function() onViewRelease;
+  final Future<void> Function() onSkipVersion;
   final VoidCallback onCancelDownload;
   final Future<bool> Function() onResumeDownload;
   final VoidCallback onDismiss;
@@ -336,8 +342,19 @@ class _HomeUpdatePromptDialog extends StatelessWidget {
                     ),
                   ],
                 ),
-              ] else
+              ] else ...[
                 _buildActions(l10n: l10n, textStyles: textStyles),
+                if (!release.forceUpdate) ...[
+                  const SizedBox(height: 4),
+                  MiuixTextButton(
+                    l10n.aboutSkipVersionAction,
+                    onPressed: () async {
+                      onDismiss();
+                      await onSkipVersion();
+                    },
+                  ),
+                ],
+              ],
             ],
           ),
         );

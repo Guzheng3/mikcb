@@ -83,6 +83,14 @@ class WithuCoupleAuthService {
     return _cachedSession ??= await _sessionStore.load();
   }
 
+  Future<WithuCoupleDisplayProfile?> loadDisplayProfile() {
+    return _sessionStore.loadDisplayProfile();
+  }
+
+  Future<void> saveDisplayProfile(WithuCoupleDisplayProfile profile) {
+    return _sessionStore.saveDisplayProfile(profile);
+  }
+
   Future<WithuCoupleLoginResult> connect({
     required String baseUrl,
     required String username,
@@ -132,6 +140,14 @@ class WithuCoupleAuthService {
     final partner = rawPartner is Map
         ? WithuCoupleUser.fromJson(Map<String, dynamic>.from(rawPartner))
         : null;
+    await _sessionStore.saveDisplayProfile(
+      WithuCoupleDisplayProfile(
+        userNickname: user.displayName,
+        partnerNickname: partner?.displayName ?? '',
+        userAvatar: user.avatar,
+        partnerAvatar: partner?.avatar,
+      ),
+    );
     return WithuCoupleLoginResult(
       session: session,
       user: user,
@@ -227,8 +243,16 @@ class WithuCoupleAuthService {
     }
 
     if (response.statusCode != 200) {
+      final errorCode = _statusCode(
+        response.statusCode,
+        action: _queryAction(uri),
+      );
+      if (session != null && errorCode == 'withu_session_expired') {
+        await _sessionStore.clear();
+        _cachedSession = null;
+      }
       throw WithuCoupleApiException(
-        _statusCode(response.statusCode, action: _queryAction(uri)),
+        errorCode,
         serverMessage: payload['message'] as String?,
       );
     }
@@ -294,20 +318,16 @@ class WithuCoupleAuthService {
   }
 
   String? _cookieValue(http.Response response, String name) {
-    String? raw;
-    for (final entry in response.headers.entries) {
-      if (entry.key.toLowerCase() == 'set-cookie') {
-        raw = entry.value;
-        break;
+    for (final raw
+        in response.headersSplitValues['set-cookie'] ?? const <String>[]) {
+      final match = RegExp(
+        '^\\s*${RegExp.escape(name)}=([^;]+)',
+        caseSensitive: false,
+      ).firstMatch(raw);
+      if (match != null) {
+        return match.group(1)?.trim();
       }
     }
-    if (raw == null || raw.isEmpty) {
-      return null;
-    }
-    final match = RegExp(
-      '(?:^|[,;]\\s*)$name=([^;]+)',
-      caseSensitive: false,
-    ).firstMatch(raw);
-    return match?.group(1)?.trim();
+    return null;
   }
 }

@@ -32,11 +32,17 @@ class CourseNoteSheetBody extends StatefulWidget {
     required this.course,
     required this.week,
     this.readOnly = false,
+    this.embedded = false,
+    this.onCancel,
+    this.onSaved,
   });
 
   final Course course;
   final int week;
   final bool readOnly;
+  final bool embedded;
+  final VoidCallback? onCancel;
+  final VoidCallback? onSaved;
 
   @override
   State<CourseNoteSheetBody> createState() => _CourseNoteSheetBodyState();
@@ -172,7 +178,12 @@ class _CourseNoteSheetBodyState extends State<CourseNoteSheetBody>
       if (!mounted) {
         return;
       }
-      Navigator.of(context).pop(true);
+      final callback = widget.onSaved;
+      if (callback == null) {
+        Navigator.of(context).pop(true);
+        return;
+      }
+      callback();
     } catch (_) {
       if (!mounted) {
         return;
@@ -200,161 +211,165 @@ class _CourseNoteSheetBodyState extends State<CourseNoteSheetBody>
         '${widget.course.name} · ${l10n.weekLabel(widget.week)} · '
         '${l10n.sectionRangeLabel(widget.course.startSection, widget.course.endSection)}';
 
-    return HyperosSheetFrame(
-      maxHeight: maxHeight,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: EdgeInsets.fromLTRB(0, 0, 0, 16 + mediaQuery.padding.bottom),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    final content = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.sticky_note_2_outlined,
+                color: colors.primary,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.courseNoteSheetTitle,
+                    style: typo.sm.copyWith(height: 1.2),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: muted,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        _buildSectionLabel(
+          context,
+          label: l10n.courseNoteSessionLabel,
+          hint: l10n.courseNoteSessionHint(widget.week),
+        ),
+        const SizedBox(height: 8),
+        HyperosFrostedSurface(
+          borderRadius: BorderRadius.circular(HyperosTokens.controlRadius),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: Row(
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: colors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.sticky_note_2_outlined,
-                    color: colors.primary,
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        l10n.courseNoteSheetTitle,
-                        style: typo.sm.copyWith(height: 1.2),
+                        l10n.courseNoteHasHomeworkTitle,
+                        style: typo.sm.copyWith(height: 1.25),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: muted,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      const SizedBox(height: 2),
+                      Text(l10n.courseNoteHasHomeworkSubtitle, style: muted),
                     ],
                   ),
                 ),
+                const SizedBox(width: 10),
+                HyperosSwitch(
+                  value: _hasHomework,
+                  onChanged: widget.readOnly
+                      ? null
+                      : (value) => setState(() => _hasHomework = value),
+                ),
               ],
             ),
-            const SizedBox(height: 16),
-            _buildSectionLabel(
-              context,
-              label: l10n.courseNoteWholeCourseLabel,
-              hint: l10n.courseNoteWholeCourseHint,
-            ),
-            const SizedBox(height: 8),
-            KeyedSubtree(
-              key: _courseFieldKey,
-              child: HyperosTextField(
-                controller: _courseNoteController,
-                focusNode: _courseNoteFocusNode,
-                hint: l10n.courseNoteWholeCoursePlaceholder,
-                enabled: !widget.readOnly,
-                maxLines: 4,
-                minLines: 2,
-                keyboardType: TextInputType.multiline,
-                textInputAction: TextInputAction.newline,
-              ),
-            ),
-            const SizedBox(height: 18),
-            _buildSectionLabel(
-              context,
-              label: l10n.courseNoteSessionLabel,
-              hint: l10n.courseNoteSessionHint(widget.week),
-            ),
-            const SizedBox(height: 8),
-            HyperosFrostedSurface(
-              borderRadius: BorderRadius.circular(HyperosTokens.controlRadius),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.courseNoteHasHomeworkTitle,
-                            style: typo.sm.copyWith(height: 1.25),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            l10n.courseNoteHasHomeworkSubtitle,
-                            style: muted,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    HyperosSwitch(
-                      value: _hasHomework,
-                      onChanged: widget.readOnly
-                          ? null
-                          : (value) => setState(() => _hasHomework = value),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            KeyedSubtree(
-              key: _sessionFieldKey,
-              child: HyperosTextField(
-                controller: _sessionNoteController,
-                focusNode: _sessionNoteFocusNode,
-                hint: l10n.courseNoteSessionPlaceholder,
-                enabled: !widget.readOnly,
-                maxLines: 4,
-                minLines: 2,
-                keyboardType: TextInputType.multiline,
-                textInputAction: TextInputAction.newline,
-              ),
-            ),
-            if (widget.readOnly) ...[
-              const SizedBox(height: 12),
-              Text(l10n.courseNoteReadOnlyNotice, style: muted),
-            ],
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: HyperosButton(
-                    label: l10n.cancelAction,
-                    variant: HyperosButtonVariant.secondary,
-                    expand: true,
-                    onPressed: _isSaving
-                        ? null
-                        : () => Navigator.of(context).pop(false),
-                  ),
-                ),
-                if (!widget.readOnly) ...[
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: HyperosButton(
-                      label: l10n.courseNoteSaveAction,
-                      expand: true,
-                      onPressed: _isSaving ? null : _save,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ],
+          ),
         ),
-      ),
+        const SizedBox(height: 8),
+        KeyedSubtree(
+          key: _sessionFieldKey,
+          child: HyperosTextField(
+            controller: _sessionNoteController,
+            focusNode: _sessionNoteFocusNode,
+            hint: l10n.courseNoteSessionPlaceholder,
+            enabled: !widget.readOnly,
+            maxLines: 4,
+            minLines: 2,
+            keyboardType: TextInputType.multiline,
+            textInputAction: TextInputAction.newline,
+          ),
+        ),
+        if (widget.readOnly) ...[
+          const SizedBox(height: 12),
+          Text(l10n.courseNoteReadOnlyNotice, style: muted),
+        ],
+        const SizedBox(height: 16),
+        if (!widget.embedded) _buildActions(context),
+      ],
+    );
+
+    final scrollContent = SingleChildScrollView(
+      controller: _scrollController,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      padding: EdgeInsets.fromLTRB(0, 0, 0, 16 + mediaQuery.padding.bottom),
+      child: content,
+    );
+
+    if (widget.embedded) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(child: scrollContent),
+          const SizedBox(height: 12),
+          _buildActions(context),
+        ],
+      );
+    }
+
+    return HyperosSheetFrame(
+      maxHeight: maxHeight,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: scrollContent,
+    );
+  }
+
+  Widget _buildActions(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      children: [
+        Expanded(
+          child: HyperosButton(
+            label: l10n.cancelAction,
+            variant: HyperosButtonVariant.secondary,
+            expand: true,
+            onPressed: _isSaving
+                ? null
+                : () {
+                    final callback = widget.onCancel;
+                    if (callback != null) {
+                      callback();
+                      return;
+                    }
+                    Navigator.of(context).pop(false);
+                  },
+          ),
+        ),
+        if (!widget.readOnly) ...[
+          const SizedBox(width: 12),
+          Expanded(
+            child: HyperosButton(
+              label: l10n.courseNoteSaveAction,
+              expand: true,
+              onPressed: _isSaving ? null : _save,
+            ),
+          ),
+        ],
+      ],
     );
   }
 

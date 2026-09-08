@@ -906,46 +906,63 @@ Future<void> _liveSyncHomeWidgetSnapshot(TimetableProvider host) async {
   ]);
 }
 
-Future<CoupleTimetableWidgetSnapshot?> _liveBuildCoupleWidgetSnapshot(
+Future<CoupleTimetableWidgetSnapshot> _liveBuildCoupleWidgetSnapshot(
   TimetableProvider host,
 ) async {
+  if (!host.settings.coupleTimetableOverlayEnabled) {
+    return CoupleTimetableWidgetSnapshot.unavailable(
+      CoupleTimetableWidgetStatus.coupleModeOff,
+    );
+  }
+
   WithuCoupleSession? session;
   try {
     session = await host._withuSessionStore.load();
   } catch (_) {
-    return null;
+    return CoupleTimetableWidgetSnapshot.unavailable(
+      CoupleTimetableWidgetStatus.notLoggedIn,
+    );
   }
   final binding = host.partnerBinding;
   final partnerProfile = host.partnerProfile;
   final myProfile = host.myTimetableProfile;
-  if (session == null ||
-      !session.isUsable ||
-      binding == null ||
-      partnerProfile == null ||
-      myProfile == null) {
-    return null;
+  final displayProfile = await host._withuSessionStore.loadDisplayProfile();
+  if (session == null || !session.isUsable) {
+    return CoupleTimetableWidgetSnapshot.unavailable(
+      CoupleTimetableWidgetStatus.notLoggedIn,
+    );
+  }
+  if (binding == null || partnerProfile == null || myProfile == null) {
+    return CoupleTimetableWidgetSnapshot.unavailable(
+      CoupleTimetableWidgetStatus.coupleModeOff,
+    );
   }
 
-  final myName = session.username.trim().isNotEmpty
-      ? session.username.trim()
-      : myProfile.name.trim();
-  final partnerName = binding.partnerName.trim().isNotEmpty
-      ? binding.partnerName.trim()
-      : partnerProfile.name.trim();
+  final myName = displayProfile?.userNickname.trim().isNotEmpty == true
+      ? displayProfile!.userNickname.trim()
+      : (session.username.trim().isNotEmpty
+            ? session.username.trim()
+            : myProfile.name.trim());
+  final partnerName = displayProfile?.partnerNickname.trim().isNotEmpty == true
+      ? displayProfile!.partnerNickname.trim()
+      : (binding.partnerName.trim().isNotEmpty
+            ? binding.partnerName.trim()
+            : partnerProfile.name.trim());
   if (myName.isEmpty || partnerName.isEmpty) {
-    return null;
+    return CoupleTimetableWidgetSnapshot.unavailable(
+      CoupleTimetableWidgetStatus.coupleModeOff,
+    );
   }
 
   final now = DateTime.now();
   final tomorrow = now.add(const Duration(days: 1));
   // 「我的课表」周次按我自己的开学时间对齐：当前课表切到 TA 后，不能拿
   // TA 的学期起点来算我的周次（双方卡片左栏仍须是我的课）。
-  int myCalendarWeekFor(DateTime date) =>
-      WeekCalculator.calendarWeekForDate(
-        date,
-        semesterStart: myProfile.settings.semesterStartDate,
-        fallback: myProfile.currentWeek,
-      );
+  int myCalendarWeekFor(DateTime date) => WeekCalculator.calendarWeekForDate(
+    date,
+    semesterStart: myProfile.settings.semesterStartDate,
+    fallback: myProfile.currentWeek,
+  );
   List<Course> myCoursesFor(DateTime date) =>
       myProfile.courses
           .where(
@@ -960,6 +977,7 @@ Future<CoupleTimetableWidgetSnapshot?> _liveBuildCoupleWidgetSnapshot(
     partnerName: partnerName,
     leftColorHex: binding.mineColorHex,
     rightColorHex: binding.partnerColorHex,
+    status: CoupleTimetableWidgetStatus.ok,
     generatedAtMillis: now.millisecondsSinceEpoch,
     mine: CoupleTimetableWidgetDayCourses(
       today: _liveBuildCoupleCoursesForDate(
@@ -1070,10 +1088,6 @@ List<CoupleTimetableWidgetCourse> _liveBuildCoupleCoursesForDate(
 
 Future<void> _liveSyncCoupleWidgetSnapshot(TimetableProvider host) async {
   final snapshot = await _liveBuildCoupleWidgetSnapshot(host);
-  if (snapshot == null) {
-    await CoupleTimetableWidgetService.clearSnapshot();
-    return;
-  }
   await CoupleTimetableWidgetService.syncSnapshot(snapshot);
 }
 

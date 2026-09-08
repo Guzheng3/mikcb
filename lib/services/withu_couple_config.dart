@@ -5,16 +5,40 @@ import 'package:shared_preferences/shared_preferences.dart';
 class WithuCoupleConfig {
   static const String prefsKey = 'withu_couple_config_v1';
   static const String defaultBaseUrl = 'https://gzr.xjy.xn--6qq986b3xl/';
+  static const List<String> builtInBaseUrls = [
+    'https://gzr.xjy.xn--6qq986b3xl/',
+    'http://withu.qinghan.vip/',
+  ];
 
   final String baseUrl;
   final DateTime? lastPulledAt;
   final String? lastRemoteContentHash;
+  final String? lastMyTimetableHash;
+  final DateTime? lastMyTimetableSyncedAt;
 
   const WithuCoupleConfig({
     this.baseUrl = defaultBaseUrl,
     this.lastPulledAt,
     this.lastRemoteContentHash,
+    this.lastMyTimetableHash,
+    this.lastMyTimetableSyncedAt,
   });
+
+  static bool isBuiltInHost(String host) {
+    final normalized = host.trim().toLowerCase();
+    return builtInBaseUrls.any((url) {
+      final uri = Uri.tryParse(url);
+      return uri != null && uri.host.toLowerCase() == normalized;
+    });
+  }
+
+  static bool isBuiltInBaseUrl(String url) {
+    try {
+      return isBuiltInHost(Uri.parse(url.trim()).host);
+    } catch (_) {
+      return false;
+    }
+  }
 
   Uri get apiUri {
     final value = baseUrl.trim();
@@ -80,8 +104,12 @@ class WithuCoupleConfig {
     String? baseUrl,
     DateTime? lastPulledAt,
     String? lastRemoteContentHash,
+    String? lastMyTimetableHash,
+    DateTime? lastMyTimetableSyncedAt,
     bool clearLastPulledAt = false,
     bool clearLastRemoteContentHash = false,
+    bool clearLastMyTimetableHash = false,
+    bool clearLastMyTimetableSyncedAt = false,
   }) {
     return WithuCoupleConfig(
       baseUrl: baseUrl ?? this.baseUrl,
@@ -91,6 +119,12 @@ class WithuCoupleConfig {
       lastRemoteContentHash: clearLastRemoteContentHash
           ? null
           : (lastRemoteContentHash ?? this.lastRemoteContentHash),
+      lastMyTimetableHash: clearLastMyTimetableHash
+          ? null
+          : (lastMyTimetableHash ?? this.lastMyTimetableHash),
+      lastMyTimetableSyncedAt: clearLastMyTimetableSyncedAt
+          ? null
+          : (lastMyTimetableSyncedAt ?? this.lastMyTimetableSyncedAt),
     );
   }
 
@@ -98,6 +132,8 @@ class WithuCoupleConfig {
     'baseUrl': baseUrl,
     'lastPulledAt': lastPulledAt?.toIso8601String(),
     'lastRemoteContentHash': lastRemoteContentHash,
+    'lastMyTimetableHash': lastMyTimetableHash,
+    'lastMyTimetableSyncedAt': lastMyTimetableSyncedAt?.toIso8601String(),
   };
 
   factory WithuCoupleConfig.fromJson(Map<String, dynamic> json) {
@@ -105,6 +141,10 @@ class WithuCoupleConfig {
       baseUrl: json['baseUrl'] as String? ?? defaultBaseUrl,
       lastPulledAt: DateTime.tryParse(json['lastPulledAt'] as String? ?? ''),
       lastRemoteContentHash: json['lastRemoteContentHash'] as String?,
+      lastMyTimetableHash: json['lastMyTimetableHash'] as String?,
+      lastMyTimetableSyncedAt: DateTime.tryParse(
+        json['lastMyTimetableSyncedAt'] as String? ?? '',
+      ),
     );
   }
 }

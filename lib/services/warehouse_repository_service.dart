@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 
 import '../l10n/service_message_localizer.dart';
@@ -9,6 +10,22 @@ import '../models/warehouse_repository_models.dart';
 import '../models/timetable_settings.dart';
 import '../utils/async_utils.dart';
 import 'app_http_client.dart';
+
+typedef WarehouseAssetLoader = Future<List<int>> Function(String assetPath);
+
+class _BuiltInWarehouseAdapter {
+  final WarehouseSchoolEntry school;
+  final String adapterId;
+  final String adapterIndexAssetPath;
+  final String scriptAssetPath;
+
+  const _BuiltInWarehouseAdapter({
+    required this.school,
+    required this.adapterId,
+    required this.adapterIndexAssetPath,
+    required this.scriptAssetPath,
+  });
+}
 
 class WarehouseFetchOptions {
   final AppUpdateDownloadSource downloadSource;
@@ -35,10 +52,54 @@ class WarehouseFetchOptions {
 }
 
 class WarehouseRepositoryService {
-  final http.Client _client;
+  static const String builtInSchoolId = 'SCUEC';
+  static const WarehouseSchoolEntry builtInSchoolEntry = WarehouseSchoolEntry(
+    id: builtInSchoolId,
+    name: '中南民族大学',
+    initial: 'Z',
+    resourceFolder: builtInSchoolId,
+  );
+  static const WarehouseSchoolEntry mysySchoolEntry = WarehouseSchoolEntry(
+    id: 'MYSY',
+    name: '绵阳师范学院',
+    initial: 'M',
+    resourceFolder: 'MYSY',
+  );
+  static const List<WarehouseSchoolEntry> builtInSchoolEntries = [
+    builtInSchoolEntry,
+    mysySchoolEntry,
+  ];
+  static const String _builtInRootIndexAssetPath =
+      'assets/warehouse/root_index.yaml';
+  static const Map<String, _BuiltInWarehouseAdapter> _builtInWarehouseAdapters =
+      {
+        'SCUEC': _BuiltInWarehouseAdapter(
+          school: builtInSchoolEntry,
+          adapterId: 'SCUEC',
+          adapterIndexAssetPath: 'assets/warehouse/SCUEC/adapters.yaml',
+          scriptAssetPath: 'assets/warehouse/SCUEC/scuec.js',
+        ),
+        'MYSY': _BuiltInWarehouseAdapter(
+          school: mysySchoolEntry,
+          adapterId: 'MYSY',
+          adapterIndexAssetPath: 'assets/warehouse/MYSY/adapters.yaml',
+          scriptAssetPath: 'assets/warehouse/MYSY/mysy.js',
+        ),
+      };
 
-  WarehouseRepositoryService({http.Client? client})
-    : _client = client ?? createAppHttpClient();
+  final http.Client _client;
+  final WarehouseAssetLoader _assetLoader;
+
+  WarehouseRepositoryService({
+    http.Client? client,
+    WarehouseAssetLoader? assetLoader,
+  }) : _client = client ?? createAppHttpClient(),
+       _assetLoader = assetLoader ?? _loadBundledAsset;
+
+  static Future<List<int>> _loadBundledAsset(String assetPath) async {
+    final data = await rootBundle.load(assetPath);
+    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  }
 
   static void _log(String message) {
     appDebugLog('WarehouseService', '${formatLogTimestamp()} $message');
@@ -49,31 +110,18 @@ class WarehouseRepositoryService {
     WarehouseFetchOptions? options,
   }) async {
     _log('获取学校列表...');
-    final content = await _fetchText(
-      source.buildRawFileUri('index/root_index.yaml'),
-      options: options,
-    );
-    final maps = _parseYamlListMaps(content, topLevelKey: 'schools');
-    final schools = maps
-        .map(
-          (item) => WarehouseSchoolEntry(
-            id: item['id'] ?? '',
-            name: item['name'] ?? '',
-            initial: item['initial'] ?? '',
-            resourceFolder: item['resource_folder'] ?? '',
-          ),
-        )
-        .where(
-          (item) =>
-              item.id.isNotEmpty &&
-              item.name.isNotEmpty &&
-              item.resourceFolder.isNotEmpty,
-        )
-        .toList(growable: false);
-    if (schools.isEmpty) {
-      throw const WarehouseRepositoryException('warehouse_no_schools_index');
+    try {
+      final content = await _fetchText(
+        source.buildRawFileUri('index/root_index.yaml'),
+        options: options,
+      );
+      return _withBuiltInSchools(_parseRootIndex(content));
+    } on WarehouseRepositoryException catch (error) {
+      _log('remote root index unavailable: ${error.message}');
+      return _withBuiltInSchools(
+        _parseRootIndex(await _loadAssetText(_builtInRootIndexAssetPath)),
+      );
     }
-    return WarehouseRootIndex(schools: schools);
   }
 
   Future<WarehouseAdaptersIndex> fetchAdaptersIndex(
@@ -82,37 +130,21 @@ class WarehouseRepositoryService {
     WarehouseFetchOptions? options,
   }) async {
     _log('获取 ${school.name} 适配器列表...');
-    final path = 'resources/${school.resourceFolder}/adapters.yaml';
-    final content = await _fetchText(
-      source.buildRawFileUri(path),
-      options: options,
-    );
-    final maps = _parseYamlListMaps(content, topLevelKey: 'adapters');
-    final adapters = maps
-      .map(
-        (item) => WarehouseAdapterEntry(
-          adapterId: item['adapter_id'] ?? '',
-          adapterName: item['adapter_name'] ?? '',
-          category: item['category'] ?? '',
-          assetJsPath: item['asset_js_path'] ?? '',
-          importUrl: item['import_url'] ?? '',
-          maintainer: item['maintainer'] ?? '',
-          description: item['description'] ?? '',
-          sha256: item['sha256'] ?? '',
-        ),
-      )
-      .where(
-        (item) => item.adapterId.isNotEmpty && item.assetJsPath.isNotEmpty,
-      )
-      .toList(growable: false);
-    if (adapters.isEmpty) {
-      throw WarehouseRepositoryException(
-        encodeServiceMessage('warehouse_no_adapters', {
-          'schoolName': school.name,
-        }),
+    final builtInAdapter = _builtInAdapterForSchool(school);
+    if (builtInAdapter != null) {
+      _log('${school.name} uses bundled adapter index');
+      return _parseAdaptersIndex(
+        await _loadAssetText(builtInAdapter.adapterIndexAssetPath),
+        schoolName: school.name,
       );
     }
-    return WarehouseAdaptersIndex(adapters: adapters);
+    final content = await _fetchText(
+      source.buildRawFileUri(
+        'resources/${school.resourceFolder}/adapters.yaml',
+      ),
+      options: options,
+    );
+    return _parseAdaptersIndex(content, schoolName: school.name);
   }
 
   Future<String> fetchAdapterScript(
@@ -122,7 +154,58 @@ class WarehouseRepositoryService {
     WarehouseFetchOptions? options,
   }) async {
     final path = 'resources/${school.resourceFolder}/${adapter.assetJsPath}';
-    final bytes = await _fetchBytes(source.buildRawFileUri(path), options: options);
+    final builtInAdapter = _builtInAdapterForSchool(school);
+    final bytes =
+        builtInAdapter != null && _isBuiltInAdapter(builtInAdapter, adapter)
+        ? await _assetLoader(builtInAdapter.scriptAssetPath)
+        : await _fetchBytes(source.buildRawFileUri(path), options: options);
+    return _decodeAdapterScript(bytes, adapter);
+  }
+
+  WarehouseRootIndex _withBuiltInSchools(WarehouseRootIndex index) {
+    final schoolIds = index.schools
+        .map((school) => school.id.toUpperCase())
+        .toSet();
+    final missingSchools = builtInSchoolEntries
+        .where((school) => !schoolIds.contains(school.id.toUpperCase()))
+        .toList(growable: false);
+    if (missingSchools.isEmpty) {
+      return index;
+    }
+    return WarehouseRootIndex(schools: [...index.schools, ...missingSchools]);
+  }
+
+  _BuiltInWarehouseAdapter? _builtInAdapterForSchool(
+    WarehouseSchoolEntry school,
+  ) {
+    final byId = _builtInWarehouseAdapters[school.id.toUpperCase()];
+    if (byId != null) {
+      return byId;
+    }
+    final resourceFolder = school.resourceFolder.toUpperCase();
+    for (final adapter in _builtInWarehouseAdapters.values) {
+      if (adapter.school.resourceFolder.toUpperCase() == resourceFolder) {
+        return adapter;
+      }
+    }
+    return null;
+  }
+
+  bool _isBuiltInAdapter(
+    _BuiltInWarehouseAdapter builtInAdapter,
+    WarehouseAdapterEntry adapter,
+  ) {
+    final scriptFileName = builtInAdapter.scriptAssetPath.split('/').last;
+    return adapter.adapterId.toUpperCase() ==
+            builtInAdapter.adapterId.toUpperCase() &&
+        adapter.assetJsPath.toLowerCase() == scriptFileName.toLowerCase();
+  }
+
+  Future<String> _loadAssetText(String assetPath) async {
+    return utf8.decode(await _assetLoader(assetPath));
+  }
+
+  String _decodeAdapterScript(List<int> bytes, WarehouseAdapterEntry adapter) {
     // Integrity gate: when the index declares a SHA-256 for the script, the
     // fetched bytes must match before the script is ever handed to WebView.
     // This closes the mirror-fallback / custom-prefix supply chain where a
@@ -228,6 +311,58 @@ class WarehouseRepositoryService {
     );
     return urls.map(Uri.parse).toList();
   }
+}
+
+WarehouseRootIndex _parseRootIndex(String content) {
+  final maps = _parseYamlListMaps(content, topLevelKey: 'schools');
+  final schools = maps
+      .map(
+        (item) => WarehouseSchoolEntry(
+          id: item['id'] ?? '',
+          name: item['name'] ?? '',
+          initial: item['initial'] ?? '',
+          resourceFolder: item['resource_folder'] ?? '',
+        ),
+      )
+      .where(
+        (item) =>
+            item.id.isNotEmpty &&
+            item.name.isNotEmpty &&
+            item.resourceFolder.isNotEmpty,
+      )
+      .toList(growable: false);
+  if (schools.isEmpty) {
+    throw const WarehouseRepositoryException('warehouse_no_schools_index');
+  }
+  return WarehouseRootIndex(schools: schools);
+}
+
+WarehouseAdaptersIndex _parseAdaptersIndex(
+  String content, {
+  required String schoolName,
+}) {
+  final maps = _parseYamlListMaps(content, topLevelKey: 'adapters');
+  final adapters = maps
+      .map(
+        (item) => WarehouseAdapterEntry(
+          adapterId: item['adapter_id'] ?? '',
+          adapterName: item['adapter_name'] ?? '',
+          category: item['category'] ?? '',
+          assetJsPath: item['asset_js_path'] ?? '',
+          importUrl: item['import_url'] ?? '',
+          maintainer: item['maintainer'] ?? '',
+          description: item['description'] ?? '',
+          sha256: item['sha256'] ?? '',
+        ),
+      )
+      .where((item) => item.adapterId.isNotEmpty && item.assetJsPath.isNotEmpty)
+      .toList(growable: false);
+  if (adapters.isEmpty) {
+    throw WarehouseRepositoryException(
+      encodeServiceMessage('warehouse_no_adapters', {'schoolName': schoolName}),
+    );
+  }
+  return WarehouseAdaptersIndex(adapters: adapters);
 }
 
 List<Map<String, String>> _parseYamlListMaps(

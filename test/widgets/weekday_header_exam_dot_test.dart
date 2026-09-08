@@ -111,6 +111,9 @@ void main() {
           updatedAt: DateTime(2026, 4, 12),
         ),
       );
+      // The fixed header shows only the visible week. Keep this test on
+      // week 1, where the seeded exam intentionally lands on Monday.
+      await provider.setCurrentWeek(1);
     });
 
     await tester.pumpWidget(
@@ -123,7 +126,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(tester.takeException(), isNull);
-    expect(find.byKey(const ValueKey('weekday-header-1-1')), findsOneWidget);
-    expect(find.byKey(const ValueKey('weekday-exam-dot')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('weekday-header-1-1'), skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('weekday-exam-dot'), skipOffstage: false),
+      findsOneWidget,
+    );
   });
 }

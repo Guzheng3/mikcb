@@ -276,6 +276,8 @@ class WeeklyReportReceiver : BroadcastReceiver() {
             WeeklyReportScheduler.ACTION_FIRE ->
                 WeeklyReportScheduler.handleFire(context, intent)
             Intent.ACTION_BOOT_COMPLETED,
+            "android.intent.action.QUICKBOOT_POWERON",
+            "com.htc.intent.action.QUICKBOOT_POWERON",
             Intent.ACTION_MY_PACKAGE_REPLACED,
             Intent.ACTION_TIME_CHANGED,
             Intent.ACTION_TIMEZONE_CHANGED,

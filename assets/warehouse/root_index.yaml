@@ -1,0 +1,12 @@
+# assets/warehouse/root_index.yaml
+# Local fallback entries for bundled warehouse adapters.
+schools:
+  - id: "SCUEC"
+    name: "中南民族大学"
+    initial: "Z"
+    resource_folder: "SCUEC"
+
+  - id: "MYSY"
+    name: "绵阳师范学院"
+    initial: "M"
+    resource_folder: "MYSY"

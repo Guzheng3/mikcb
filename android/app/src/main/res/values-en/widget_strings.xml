@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_couple_timetable_name">Couple timetable 4×2</string>
+    <string name="widget_couple_timetable_name">Couple timetable 4×3</string>
     <string name="widget_couple_tomorrow_count">%1$d classes tomorrow</string>
+    <string name="widget_couple_today_remaining">Today %1$d/%2$d classes remaining</string>
     <string name="widget_couple_no_course_tomorrow">No classes tomorrow</string>
+    <string name="widget_couple_today_ended">🌙 Today\'s classes have ended</string>
+    <string name="widget_couple_weekend_no_course">🍵 Weekend · No classes today</string>
+    <string name="widget_couple_no_course_today">🍵 No classes today</string>
+    <string name="widget_couple_mode_off">Couple mode is off</string>
+    <string name="widget_couple_not_logged_in">Please log in to use</string>
     <string name="widget_today_compact_name">Today main card 2×2</string>
     <string name="widget_today_mini_list_name">Today mini list 2×2</string>
     <string name="widget_today_medium_name">Today overview 2×4</string>

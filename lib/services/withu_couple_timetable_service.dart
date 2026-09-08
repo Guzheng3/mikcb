@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
+import '../models/timetable_profile.dart';
 import '../providers/timetable_provider.dart';
 import 'data_transfer_service.dart';
 import 'withu_couple_auth_service.dart';
@@ -44,6 +45,8 @@ class WithuCoupleTimetableService {
       config.copyWith(
         clearLastPulledAt: true,
         clearLastRemoteContentHash: true,
+        clearLastMyTimetableHash: true,
+        clearLastMyTimetableSyncedAt: true,
       ),
     );
   }
@@ -62,6 +65,11 @@ class WithuCoupleTimetableService {
 
     try {
       final payload = await _authService.getJson('partner');
+      if (payload['partner'] == null) {
+        return const WithuCouplePullResult(
+          status: WithuCouplePullStatus.unchanged,
+        );
+      }
       final rawPartnerTimetable = payload['partner_timetable'];
       if (rawPartnerTimetable is! Map ||
           rawPartnerTimetable['content'] is! Map) {
@@ -132,9 +140,92 @@ class WithuCoupleTimetableService {
     }
   }
 
+  Future<WithuCouplePullResult> pullMyTimetable({
+    required TimetableProvider provider,
+  }) async {
+    if (await _authService.loadSession() == null) {
+      return const WithuCouplePullResult(
+        status: WithuCouplePullStatus.failed,
+        errorCode: 'withu_couple_not_connected',
+      );
+    }
+
+    try {
+      final payload = await _authService.getJson('bootstrap');
+      final rawMyTimetable = payload['timetable'];
+      if (rawMyTimetable is! Map || rawMyTimetable['content'] is! Map) {
+        return const WithuCouplePullResult(
+          status: WithuCouplePullStatus.unchanged,
+        );
+      }
+
+      final cloudContent = rawMyTimetable['content'];
+      final cloudContentJson = jsonEncode(cloudContent);
+      if (_dataTransferService.isFullBackupJson(cloudContentJson)) {
+        return const WithuCouplePullResult(
+          status: WithuCouplePullStatus.failed,
+          errorCode: 'withu_my_timetable_requires_single_profile',
+        );
+      }
+
+      final localPackage = await _buildMyTimetablePackage(provider);
+      final localContent = localPackage?.content;
+      final localHash = localContent == null
+          ? null
+          : sha256.convert(utf8.encode(localContent)).toString();
+      final config = await loadConfig();
+      final localChanged =
+          localHash == null || localHash != config.lastMyTimetableHash;
+      final localIsNewer =
+          localChanged &&
+          !_cloudIsNewerThanLocal(config: config, payload: payload);
+      if (localContent != null &&
+          _jsonEquals(jsonDecode(localContent), cloudContent)) {
+        return const WithuCouplePullResult(
+          status: WithuCouplePullStatus.unchanged,
+        );
+      }
+      if (localIsNewer) {
+        return const WithuCouplePullResult(
+          status: WithuCouplePullStatus.unchanged,
+        );
+      }
+
+      final restored = await provider.restoreMyTimetable(cloudContentJson);
+      if (restored) {
+        await _rememberSyncedMyTimetable(provider: provider);
+      }
+      return WithuCouplePullResult(
+        status: restored
+            ? WithuCouplePullStatus.updated
+            : WithuCouplePullStatus.unchanged,
+      );
+    } on FormatException catch (error) {
+      return WithuCouplePullResult(
+        status: WithuCouplePullStatus.failed,
+        errorCode: _errorCode(error),
+      );
+    } on WithuCoupleApiException catch (error) {
+      return WithuCouplePullResult(
+        status: WithuCouplePullStatus.failed,
+        errorCode: error.code,
+      );
+    } catch (_) {
+      return const WithuCouplePullResult(
+        status: WithuCouplePullStatus.failed,
+        errorCode: 'withu_request_failed',
+      );
+    }
+  }
+
   Future<WithuCouplePullResult> syncAfterLogin({
     required TimetableProvider provider,
   }) async {
+    final pullMyResult = await pullMyTimetable(provider: provider);
+    if (pullMyResult.status == WithuCouplePullStatus.failed) {
+      return pullMyResult;
+    }
+
     final uploadError = await uploadMyTimetableForPartner(provider: provider);
     final pullResult = await pullPartnerTimetable(
       provider: provider,
@@ -182,6 +273,7 @@ class WithuCoupleTimetableService {
         return 'withu_invalid_response';
       }
       await _authService.postJson('save', {'content': decodedContent});
+      await _rememberSyncedMyTimetable(content: content);
       return null;
     } on WithuCoupleApiException catch (error) {
       return error.code;
@@ -217,5 +309,115 @@ class WithuCoupleTimetableService {
   String _errorCode(FormatException error) {
     final message = error.message.trim();
     return message.isEmpty ? 'withu_invalid_response' : message;
+  }
+
+  Future<({String content, TimetableProfile profile})?>
+  _buildMyTimetablePackage(
+    TimetableProvider provider, {
+    String? packageId,
+  }) async {
+    await provider.initialize();
+    // Conflict checks and uploads always target "mine", even while the UI
+    // is showing the partner timetable.
+    final myProfile = provider.myTimetableProfile;
+    if (myProfile == null) {
+      return null;
+    }
+    final content = _dataTransferService.buildBackupJson(
+      profileName: myProfile.name,
+      courses: myProfile.courses,
+      scheduleItems: myProfile.scheduleItems,
+      settings: _dataTransferService.sanitizeSettingsForPartnerSync(
+        myProfile.settings,
+      ),
+      currentWeek: myProfile.currentWeek,
+      timeSchemes: provider.timeSchemes,
+      scheduleDateRules: provider.scheduleDateRules,
+      locationTimeGroups: provider.locationTimeGroups,
+      packageId: packageId,
+    );
+    return (content: content, profile: myProfile);
+  }
+
+  Future<void> _rememberSyncedMyTimetable({
+    TimetableProvider? provider,
+    String? content,
+  }) async {
+    final syncedContent =
+        content ??
+        (provider == null ? null : await _buildMyTimetablePackage(provider))
+            ?.content;
+    if (syncedContent == null) {
+      return;
+    }
+    final config = await _configStore.load();
+    await _configStore.save(
+      config.copyWith(
+        lastMyTimetableHash: sha256
+            .convert(utf8.encode(syncedContent))
+            .toString(),
+        lastMyTimetableSyncedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  bool _cloudIsNewerThanLocal({
+    required WithuCoupleConfig config,
+    required Map<String, dynamic> payload,
+  }) {
+    final syncedAt = config.lastMyTimetableSyncedAt;
+    if (syncedAt == null) {
+      return true;
+    }
+
+    final rawTimetable = payload['timetable'];
+    if (rawTimetable is! Map) {
+      return true;
+    }
+    final serverTime = _parseServerTime(
+      rawTimetable['server_time'] as String? ??
+          payload['server_time'] as String?,
+    );
+    final updatedAt = _parseServerTime(rawTimetable['updated_at'] as String?);
+    if (serverTime == null || updatedAt == null) {
+      return true;
+    }
+
+    final cloudAge = serverTime.difference(updatedAt);
+    final localAge = DateTime.now().difference(syncedAt);
+    return cloudAge < localAge;
+  }
+
+  DateTime? _parseServerTime(String? value) {
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+    return DateTime.tryParse(value.replaceFirst(' ', 'T'));
+  }
+
+  bool _jsonEquals(Object? a, Object? b) {
+    if (a is Map && b is Map) {
+      if (a.length != b.length) {
+        return false;
+      }
+      for (final key in a.keys) {
+        if (!b.containsKey(key) || !_jsonEquals(a[key], b[key])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (a is List && b is List) {
+      if (a.length != b.length) {
+        return false;
+      }
+      for (var index = 0; index < a.length; index++) {
+        if (!_jsonEquals(a[index], b[index])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return a == b;
   }
 }

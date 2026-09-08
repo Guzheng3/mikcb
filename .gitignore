@@ -164,3 +164,9 @@ AGENTS.md
 
 # Kotlin ���ع�������
 /android/.kotlin/
+
+# Root-level QA captures and UI dumps
+/*.png
+/*.jpg
+/*.jpeg
+/*.xml

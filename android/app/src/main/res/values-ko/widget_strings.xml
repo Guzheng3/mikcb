@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_couple_timetable_name">커플 시간표 4×2</string>
+    <string name="widget_couple_timetable_name">커플 시간표 4×3</string>
     <string name="widget_couple_tomorrow_count">내일 %1$d교시</string>
+    <string name="widget_couple_today_remaining">오늘 남은 %1$d/%2$d교시</string>
     <string name="widget_couple_no_course_tomorrow">내일 수업 없음</string>
+    <string name="widget_couple_today_ended">🌙 오늘 수업이 모두 끝났습니다</string>
+    <string name="widget_couple_weekend_no_course">🍵 주말 · 오늘은 수업이 없어요</string>
+    <string name="widget_couple_no_course_today">🍵 오늘은 수업이 없어요</string>
+    <string name="widget_couple_mode_off">커플 모드가 꺼져 있어요</string>
+    <string name="widget_couple_not_logged_in">로그인 후 이용해 주세요</string>
     <string name="widget_today_compact_name">오늘 수업 메인 2×2</string>
     <string name="widget_today_mini_list_name">오늘 수업 미니 목록 2×2</string>
     <string name="widget_today_medium_name">오늘 수업 개요 2×4</string>

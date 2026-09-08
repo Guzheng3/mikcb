@@ -124,6 +124,22 @@ class _TimetablePageSettingsScreenState
             },
           ),
           HyperosSwitchTile(
+            title: l10n.layoutVerticalScrollEffectTitle,
+            subtitle: l10n.layoutVerticalScrollEffectSubtitle,
+            value:
+                _draft.timetableVerticalScrollEffectEnabled &&
+                !_draft.timetableAutoFitSectionHeight,
+            onChanged: _draft.timetableAutoFitSectionHeight
+                ? null
+                : (value) {
+                    _updateDraft(
+                      _draft.copyWith(
+                        timetableVerticalScrollEffectEnabled: value,
+                      ),
+                    );
+                  },
+          ),
+          HyperosSwitchTile(
             title: l10n.layoutHideWeekendsTitle,
             value: _draft.timetableHideWeekends,
             onChanged: (value) {
@@ -283,6 +299,39 @@ class _TimetablePageSettingsScreenState
                     ),
                   );
                 },
+              ),
+              HyperosSliderTile(
+                title: l10n.homePageBackdropBlurLabel,
+                value: _draft.homePageBackdropBlurSigma,
+                max: 24,
+                divisions: 24,
+                valueLabel: _draft.homePageBackdropBlurSigma
+                    .round()
+                    .toString(),
+                enabled: resolveHomePageBackdropImagePath(_draft) != null,
+                onChanged:
+                    resolveHomePageBackdropImagePath(_draft) == null
+                    ? null
+                    : (value) => _updateDraft(
+                        _draft.copyWith(homePageBackdropBlurSigma: value),
+                        debounce: true,
+                      ),
+              ),
+              HyperosSliderTile(
+                title: l10n.homePageBackdropFrostLabel,
+                value: _draft.homePageBackdropFrostAlpha,
+                max: 0.75,
+                divisions: 15,
+                valueLabel:
+                    '${(_draft.homePageBackdropFrostAlpha * 100).round()}%',
+                enabled: resolveHomePageBackdropImagePath(_draft) != null,
+                onChanged:
+                    resolveHomePageBackdropImagePath(_draft) == null
+                    ? null
+                    : (value) => _updateDraft(
+                        _draft.copyWith(homePageBackdropFrostAlpha: value),
+                        debounce: true,
+                      ),
               ),
               HyperosSwitchTile(
                 title: l10n.homePageBackdropFollowsWeekPagerTitle,

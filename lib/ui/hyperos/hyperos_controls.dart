@@ -783,6 +783,7 @@ enum HyperosFrostedSheetButtonVariant { neutral, destructive }
 class HyperosFrostedSheetButton extends StatelessWidget {
   const HyperosFrostedSheetButton({
     super.key,
+    this.icon,
     required this.label,
     required this.onPressed,
     this.expand = false,
@@ -791,6 +792,7 @@ class HyperosFrostedSheetButton extends StatelessWidget {
     this.variant = HyperosFrostedSheetButtonVariant.neutral,
   });
 
+  final IconData? icon;
   final String label;
   final VoidCallback? onPressed;
   final bool expand;
@@ -805,7 +807,8 @@ class HyperosFrostedSheetButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isDestructive = variant == HyperosFrostedSheetButtonVariant.destructive;
+    final isDestructive =
+        variant == HyperosFrostedSheetButtonVariant.destructive;
     final Color fg;
     final Color? tint;
     if (isDestructive) {
@@ -829,7 +832,7 @@ class HyperosFrostedSheetButton extends StatelessWidget {
         ? HyperosMiuixTypography.footnote1
         : HyperosMiuixTypography.button;
 
-    final labelChild = dense
+    final labelChild = dense || icon != null
         ? FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
@@ -852,6 +855,17 @@ class HyperosFrostedSheetButton extends StatelessWidget {
               color: fg,
               fontWeight: FontWeight.w400,
             ),
+          );
+
+    final buttonChild = icon == null
+        ? labelChild
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 19, color: fg),
+              const SizedBox(height: 3),
+              labelChild,
+            ],
           );
 
     final button = HyperosFrostedSurface(
@@ -883,7 +897,7 @@ class HyperosFrostedSheetButton extends StatelessWidget {
                 padding: dense
                     ? const EdgeInsets.symmetric(horizontal: 8, vertical: 8)
                     : HyperosMiuixButton.insideMargin,
-                child: Center(child: labelChild),
+                child: Center(child: buttonChild),
               ),
             ),
           ),

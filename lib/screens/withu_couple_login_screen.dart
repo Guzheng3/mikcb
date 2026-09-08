@@ -77,10 +77,13 @@ class _WithuCoupleLoginSheetState extends State<WithuCoupleLoginSheet> {
 
   Future<void> _loadSavedConfig() async {
     final config = await _authService.loadConfig();
-    if (!mounted || _baseUrlController.text.trim().isNotEmpty) {
+    if (!mounted ||
+        _baseUrlController.text.trim() != WithuCoupleConfig.defaultBaseUrl) {
       return;
     }
-    _baseUrlController.text = config.baseUrl;
+    _baseUrlController.text = config.baseUrl.isEmpty
+        ? WithuCoupleConfig.defaultBaseUrl
+        : config.baseUrl;
   }
 
   Future<void> _submit() async {
@@ -129,6 +132,9 @@ class _WithuCoupleLoginSheetState extends State<WithuCoupleLoginSheet> {
             ? AppToastKind.error
             : AppToastKind.success,
       );
+      if (result.status == WithuCouplePullStatus.failed) {
+        return;
+      }
       Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) {
@@ -174,7 +180,7 @@ class _WithuCoupleLoginSheetState extends State<WithuCoupleLoginSheet> {
             HyperosTextField(
               controller: _baseUrlController,
               label: l10n.withuCoupleServerLabel,
-              hint: 'https://withu.example.com',
+              hint: WithuCoupleConfig.defaultBaseUrl,
               keyboardType: TextInputType.url,
               textInputAction: TextInputAction.next,
             ),

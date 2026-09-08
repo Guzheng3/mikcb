@@ -10,4 +10,5 @@
     android:paddingBottom="5dp"
     android:text="@string/widget_today_ended_short"
     android:textColor="@color/widget_couple_text_hint"
-    android:textSize="11sp" />
+    android:textSize="14sp"
+    android:textStyle="bold" />

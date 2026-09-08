@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 
 import '../models/course.dart';
+import '../models/course_task.dart';
 import '../models/timetable_settings.dart';
+import '../providers/timetable_provider.dart';
+import '../utils/app_toast.dart';
 import 'course_field_picker_sheet.dart';
+import 'miuix_date_picker_sheet.dart';
 import '../ui/hyperos/hyperos.dart';
 
 enum CourseDeleteMode { course, occurrence }
@@ -33,7 +40,7 @@ Future<CourseDeleteMode?> showCourseDeleteModeSheet(
 }) {
   return showHomeHyperosSheet<CourseDeleteMode>(
     context: context,
-    builder: (sheetContext) => _CourseDeleteModeSheetBody(
+    builder: (sheetContext) => CourseDeleteModeSheetBody(
       canDeleteOccurrence: canDeleteOccurrence,
       week: week,
     ),
@@ -47,7 +54,7 @@ Future<CourseSuspendMode?> showCourseSuspendModeSheet(
 }) {
   return showHomeHyperosSheet<CourseSuspendMode>(
     context: context,
-    builder: (sheetContext) => _CourseSuspendModeSheetBody(
+    builder: (sheetContext) => CourseSuspendModeSheetBody(
       isSuspendedThisWeek: isSuspendedThisWeek,
       hasAnySuspended: hasAnySuspended,
     ),
@@ -65,7 +72,7 @@ Future<CourseRescheduleDraft?> showCourseRescheduleSheet(
 }) {
   return showHomeHyperosSheet<CourseRescheduleDraft>(
     context: context,
-    builder: (sheetContext) => _CourseRescheduleSheetBody(
+    builder: (sheetContext) => CourseRescheduleSheetBody(
       course: course,
       sourceWeek: sourceWeek,
       settings: settings,
@@ -74,6 +81,19 @@ Future<CourseRescheduleDraft?> showCourseRescheduleSheet(
       locationSuggestions: locationSuggestions,
     ),
   );
+}
+
+Future<bool> showCourseTaskSheet(
+  BuildContext context, {
+  required Course course,
+  required int week,
+  CourseTask? task,
+}) {
+  return showHomeHyperosSheet<bool>(
+    context: context,
+    builder: (sheetContext) =>
+        CourseTaskSheetBody(course: course, week: week, task: task),
+  ).then((value) => value ?? false);
 }
 
 Future<bool> showDeleteCourseConfirmDialog(
@@ -96,113 +116,139 @@ Future<bool> showDeleteOccurrenceConfirmDialog(
   return showDeleteCourseConfirmDialog(context, title: title, message: message);
 }
 
-class _CourseDeleteModeSheetBody extends StatelessWidget {
-  const _CourseDeleteModeSheetBody({
+class CourseDeleteModeSheetBody extends StatelessWidget {
+  const CourseDeleteModeSheetBody({
     required this.canDeleteOccurrence,
     required this.week,
+    this.embedded = false,
+    this.onResult,
   });
 
   final bool canDeleteOccurrence;
   final int week;
+  final bool embedded;
+  final ValueChanged<CourseDeleteMode?>? onResult;
+
+  void _finish(BuildContext context, [CourseDeleteMode? mode]) {
+    final callback = onResult;
+    if (callback == null) {
+      Navigator.of(context).pop(mode);
+      return;
+    }
+    callback(mode);
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.theme.colors;
 
-    return _FollowupSheetContainer(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _FollowupSheetHeader(
-            icon: Icons.delete_outline_rounded,
-            iconColor: colors.destructive,
-            title: l10n.deleteModeTitle,
-            subtitle: l10n.deleteModeSubtitle,
-          ),
-          const SizedBox(height: 14),
-          _FollowupOptionTile(
-            icon: Icons.delete_sweep_outlined,
-            title: l10n.deleteCourseAction,
-            onTap: () => Navigator.of(context).pop(CourseDeleteMode.course),
-          ),
-          const SizedBox(height: 8),
-          _FollowupOptionTile(
-            icon: Icons.remove_circle_outline_rounded,
-            title: l10n.deleteOccurrenceAction,
-            subtitle: canDeleteOccurrence
-                ? l10n.deleteModeHintCurrentWeek(week)
-                : l10n.deleteModeHintUnavailable(week),
-            enabled: canDeleteOccurrence,
-            onTap: canDeleteOccurrence
-                ? () => Navigator.of(context).pop(CourseDeleteMode.occurrence)
-                : null,
-          ),
-          const SizedBox(height: 14),
-          _FollowupCancelButton(onPress: () => Navigator.of(context).pop()),
-        ],
-      ),
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _FollowupSheetHeader(
+          icon: Icons.delete_outline_rounded,
+          iconColor: colors.destructive,
+          title: l10n.deleteModeTitle,
+          subtitle: l10n.deleteModeSubtitle,
+        ),
+        const SizedBox(height: 14),
+        _FollowupOptionTile(
+          icon: Icons.delete_sweep_outlined,
+          title: l10n.deleteCourseAction,
+          onTap: () => _finish(context, CourseDeleteMode.course),
+        ),
+        const SizedBox(height: 8),
+        _FollowupOptionTile(
+          icon: Icons.remove_circle_outline_rounded,
+          title: l10n.deleteOccurrenceAction,
+          subtitle: canDeleteOccurrence
+              ? l10n.deleteModeHintCurrentWeek(week)
+              : l10n.deleteModeHintUnavailable(week),
+          enabled: canDeleteOccurrence,
+          onTap: canDeleteOccurrence
+              ? () => _finish(context, CourseDeleteMode.occurrence)
+              : null,
+        ),
+        const SizedBox(height: 14),
+        _FollowupCancelButton(onPress: () => _finish(context)),
+      ],
     );
+
+    return embedded ? content : _FollowupSheetContainer(child: content);
   }
 }
 
-class _CourseSuspendModeSheetBody extends StatelessWidget {
-  const _CourseSuspendModeSheetBody({
+class CourseSuspendModeSheetBody extends StatelessWidget {
+  const CourseSuspendModeSheetBody({
     required this.isSuspendedThisWeek,
     required this.hasAnySuspended,
+    this.embedded = false,
+    this.onResult,
   });
 
   final bool isSuspendedThisWeek;
   final bool hasAnySuspended;
+  final bool embedded;
+  final ValueChanged<CourseSuspendMode?>? onResult;
+
+  void _finish(BuildContext context, [CourseSuspendMode? mode]) {
+    final callback = onResult;
+    if (callback == null) {
+      Navigator.of(context).pop(mode);
+      return;
+    }
+    callback(mode);
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.theme.colors;
 
-    return _FollowupSheetContainer(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _FollowupSheetHeader(
-            icon: isSuspendedThisWeek
-                ? Icons.play_circle_outline_rounded
-                : Icons.pause_circle_outline_rounded,
-            iconColor: colors.foreground,
-            title: l10n.suspendSheetTitle,
-            subtitle: l10n.suspendSheetSubtitle,
-          ),
-          const SizedBox(height: 14),
-          _FollowupOptionTile(
-            icon: isSuspendedThisWeek
-                ? Icons.play_circle_outline_rounded
-                : Icons.pause_circle_outline_rounded,
-            title: isSuspendedThisWeek
-                ? l10n.courseActionUnsuspend
-                : l10n.suspendThisWeek,
-            subtitle: l10n.suspendThisWeekDesc,
-            onTap: () => Navigator.of(context).pop(CourseSuspendMode.thisWeek),
-          ),
-          const SizedBox(height: 8),
-          _FollowupOptionTile(
-            icon: hasAnySuspended
-                ? Icons.play_circle_outline_rounded
-                : Icons.pause_circle_filled_outlined,
-            title: hasAnySuspended
-                ? l10n.unsuspendAllWeeks
-                : l10n.suspendAllWeeks,
-            subtitle: hasAnySuspended
-                ? l10n.unsuspendAllWeeksDesc
-                : l10n.suspendAllWeeksDesc,
-            onTap: () => Navigator.of(context).pop(CourseSuspendMode.allWeeks),
-          ),
-          const SizedBox(height: 14),
-          _FollowupCancelButton(onPress: () => Navigator.of(context).pop()),
-        ],
-      ),
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _FollowupSheetHeader(
+          icon: isSuspendedThisWeek
+              ? Icons.play_circle_outline_rounded
+              : Icons.pause_circle_outline_rounded,
+          iconColor: colors.foreground,
+          title: l10n.suspendSheetTitle,
+          subtitle: l10n.suspendSheetSubtitle,
+        ),
+        const SizedBox(height: 14),
+        _FollowupOptionTile(
+          icon: isSuspendedThisWeek
+              ? Icons.play_circle_outline_rounded
+              : Icons.pause_circle_outline_rounded,
+          title: isSuspendedThisWeek
+              ? l10n.courseActionUnsuspend
+              : l10n.suspendThisWeek,
+          subtitle: l10n.suspendThisWeekDesc,
+          onTap: () => _finish(context, CourseSuspendMode.thisWeek),
+        ),
+        const SizedBox(height: 8),
+        _FollowupOptionTile(
+          icon: hasAnySuspended
+              ? Icons.play_circle_outline_rounded
+              : Icons.pause_circle_filled_outlined,
+          title: hasAnySuspended
+              ? l10n.unsuspendAllWeeks
+              : l10n.suspendAllWeeks,
+          subtitle: hasAnySuspended
+              ? l10n.unsuspendAllWeeksDesc
+              : l10n.suspendAllWeeksDesc,
+          onTap: () => _finish(context, CourseSuspendMode.allWeeks),
+        ),
+        const SizedBox(height: 14),
+        _FollowupCancelButton(onPress: () => _finish(context)),
+      ],
     );
+
+    return embedded ? content : _FollowupSheetContainer(child: content);
   }
 }
 
@@ -273,14 +319,17 @@ class _DeleteCourseConfirmSheetBody extends StatelessWidget {
   }
 }
 
-class _CourseRescheduleSheetBody extends StatefulWidget {
-  const _CourseRescheduleSheetBody({
+class CourseRescheduleSheetBody extends StatefulWidget {
+  const CourseRescheduleSheetBody({
     required this.course,
     required this.sourceWeek,
     required this.settings,
     required this.weekDays,
     required this.sectionTimes,
     required this.locationSuggestions,
+    this.embedded = false,
+    this.onCancel,
+    this.onConfirmed,
   });
 
   final Course course;
@@ -289,14 +338,312 @@ class _CourseRescheduleSheetBody extends StatefulWidget {
   final List<String> weekDays;
   final List<SectionTime> sectionTimes;
   final List<String> locationSuggestions;
+  final bool embedded;
+  final VoidCallback? onCancel;
+  final ValueChanged<CourseRescheduleDraft>? onConfirmed;
 
   @override
-  State<_CourseRescheduleSheetBody> createState() =>
+  State<CourseRescheduleSheetBody> createState() =>
       _CourseRescheduleSheetBodyState();
 }
 
-class _CourseRescheduleSheetBodyState
-    extends State<_CourseRescheduleSheetBody> {
+class CourseTaskSheetBody extends StatefulWidget {
+  const CourseTaskSheetBody({
+    required this.course,
+    required this.week,
+    this.task,
+    this.embedded = false,
+    this.onCancel,
+    this.onCompleted,
+  });
+
+  final Course course;
+  final int week;
+  final CourseTask? task;
+  final bool embedded;
+  final VoidCallback? onCancel;
+  final VoidCallback? onCompleted;
+
+  @override
+  State<CourseTaskSheetBody> createState() => _CourseTaskSheetBodyState();
+}
+
+class _CourseTaskSheetBodyState extends State<CourseTaskSheetBody> {
+  late final TextEditingController _titleController = TextEditingController();
+  late final TextEditingController _noteController = TextEditingController();
+  DateTime? _dueDate;
+  bool _hasDueDate = false;
+  bool _isCompleted = false;
+  bool _isSaving = false;
+  bool _didInitTexts = false;
+  String? _titleError;
+
+  bool get _isEditing => widget.task != null;
+
+  void _finish() {
+    final callback = widget.onCompleted;
+    if (callback == null) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+    callback();
+  }
+
+  void _cancel() {
+    final callback = widget.onCancel;
+    if (callback == null) {
+      Navigator.of(context).pop();
+      return;
+    }
+    callback();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final task = widget.task;
+    if (task != null) {
+      _titleController.text = task.title;
+      _noteController.text = task.note ?? '';
+      _dueDate = task.dueDate;
+      _isCompleted = task.isCompleted;
+      _hasDueDate = task.dueDate != null;
+    } else {
+      _dueDate = context.read<TimetableProvider>().dateForCourseOccurrence(
+        widget.course,
+        widget.week,
+      );
+      _hasDueDate = _dueDate != null;
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didInitTexts) {
+      return;
+    }
+    _didInitTexts = true;
+    final l10n = AppLocalizations.of(context)!;
+    final task = widget.task;
+    if (task == null) {
+      _titleController.text =
+          widget.course.sessionNoteForWeek(widget.week)?.trimmedText ??
+          l10n.taskHomeworkDefaultTitle;
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDueDate() async {
+    final l10n = AppLocalizations.of(context)!;
+    final selected = await showMiuixDatePickerSheet(
+      context,
+      title: l10n.taskDueDateLabel,
+      initialDate: _dueDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2035, 12, 31),
+    );
+    if (selected == null || !mounted) {
+      return;
+    }
+    setState(() {
+      _dueDate = CourseTask.dateOnly(selected);
+      _hasDueDate = true;
+    });
+  }
+
+  Future<void> _deleteTask() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showHyperosConfirmDialog(
+      context: context,
+      title: l10n.taskDelete,
+      message: l10n.taskDeleteConfirm,
+      cancelLabel: l10n.cancelAction,
+      confirmLabel: l10n.deleteAction,
+      destructive: true,
+    );
+    if (confirmed != true || !mounted) {
+      return;
+    }
+    await context.read<TimetableProvider>().deleteTask(widget.task!.id);
+    if (!mounted) {
+      return;
+    }
+    _finish();
+  }
+
+  Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
+    final title = _titleController.text.trim();
+    if (_isSaving) {
+      return;
+    }
+    if (title.isEmpty) {
+      setState(() => _titleError = l10n.taskTitleRequired);
+      return;
+    }
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _titleError = null;
+      _isSaving = true;
+    });
+    final provider = context.read<TimetableProvider>();
+    final now = DateTime.now();
+    final note = _noteController.text.trim();
+    final task =
+        (widget.task ??
+                CourseTask(
+                  id: const Uuid().v4(),
+                  title: title,
+                  createdAt: now,
+                  updatedAt: now,
+                ))
+            .copyWith(
+              title: title,
+              courseId: widget.course.id,
+              sourceWeek: widget.week,
+              dueDate: _hasDueDate ? _dueDate : null,
+              isCompleted: _isCompleted,
+              note: note.isEmpty ? null : note,
+              updatedAt: now,
+            );
+    try {
+      if (_isEditing) {
+        await provider.updateTask(task);
+      } else {
+        await provider.addTask(task);
+      }
+      if (!mounted) {
+        return;
+      }
+      _finish();
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _isSaving = false);
+      showAppToast(
+        context,
+        message: error is ArgumentError
+            ? (error.message?.toString() ?? l10n.taskTitleRequired)
+            : l10n.taskTitleRequired,
+        kind: AppToastKind.warning,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = context.theme.colors;
+    final dueDate = _dueDate;
+    final actions = Row(
+      children: [
+        if (_isEditing) ...[
+          Expanded(
+            child: HyperosFrostedSheetButton(
+              label: l10n.deleteAction,
+              variant: HyperosFrostedSheetButtonVariant.destructive,
+              expand: true,
+              onPressed: _deleteTask,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+        Expanded(
+          child: HyperosFrostedSheetButton(
+            label: l10n.cancelAction,
+            expand: true,
+            onPressed: _cancel,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: HyperosButton(
+            label: l10n.saveTask,
+            expand: true,
+            onPressed: _isSaving ? null : _save,
+          ),
+        ),
+      ],
+    );
+
+    return _RescheduleSheetScaffold(
+      embedded: widget.embedded,
+      actions: actions,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _FollowupSheetHeader(
+            icon: Icons.assignment_outlined,
+            iconColor: colors.primary,
+            title: _isEditing ? l10n.editTask : l10n.addTask,
+            subtitle: '${widget.course.name} · ${l10n.weekLabel(widget.week)}',
+          ),
+          const SizedBox(height: 14),
+          HyperosTextField(
+            controller: _titleController,
+            label: l10n.taskTitleLabel,
+            hint: l10n.taskTitleHint,
+            helper: _titleError,
+            onChanged: (value) {
+              if (_titleError != null && value.trim().isNotEmpty) {
+                setState(() => _titleError = null);
+              }
+            },
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: 8),
+          HyperosTextField(
+            controller: _noteController,
+            label: l10n.taskNoteLabel,
+            hint: l10n.taskNoteHint,
+            minLines: 1,
+            maxLines: 3,
+          ),
+          const SizedBox(height: 10),
+          HyperosSwitchTile(
+            title: l10n.taskDueDateLabel,
+            value: _hasDueDate,
+            onChanged: (value) {
+              setState(() {
+                _hasDueDate = value;
+                _dueDate ??= CourseTask.dateOnly(DateTime.now());
+                if (!value) {
+                  _dueDate = null;
+                }
+              });
+            },
+          ),
+          if (_hasDueDate && dueDate != null) ...[
+            const SizedBox(height: 8),
+            CourseFieldPickerTile(
+              label: l10n.taskDueDateLabel,
+              value: DateFormat.yMMMMd(l10n.localeName).format(dueDate),
+              icon: Icons.event_outlined,
+              onPress: _pickDueDate,
+            ),
+          ],
+          const SizedBox(height: 8),
+          HyperosSwitchTile(
+            title: l10n.taskCompletedSection,
+            value: _isCompleted,
+            onChanged: (value) => setState(() => _isCompleted = value),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CourseRescheduleSheetBodyState extends State<CourseRescheduleSheetBody> {
   late int _targetWeek;
   late int _targetDayOfWeek;
   late int _targetStartSection;
@@ -420,7 +767,9 @@ class _CourseRescheduleSheetBodyState
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: theme.colors.border.withValues(alpha: 0.6)),
+              border: Border.all(
+                color: theme.colors.border.withValues(alpha: 0.6),
+              ),
             ),
             child: Row(
               children: [
@@ -507,13 +856,21 @@ class _CourseRescheduleSheetBodyState
     );
 
     return _RescheduleSheetScaffold(
+      embedded: widget.embedded,
       actions: Row(
         children: [
           Expanded(
             child: HyperosFrostedSheetButton(
               label: l10n.cancelAction,
               expand: true,
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                final callback = widget.onCancel;
+                if (callback != null) {
+                  callback();
+                  return;
+                }
+                Navigator.of(context).pop();
+              },
             ),
           ),
           const SizedBox(width: 12),
@@ -523,15 +880,19 @@ class _CourseRescheduleSheetBodyState
               expand: true,
               onPressed: _hasChanges
                   ? () {
-                      Navigator.of(context).pop(
-                        CourseRescheduleDraft(
-                          targetWeek: _targetWeek,
-                          targetDayOfWeek: _targetDayOfWeek,
-                          targetStartSection: _targetStartSection,
-                          targetEndSection: _targetEndSection,
-                          targetLocation: _locationController.text,
-                        ),
+                      final draft = CourseRescheduleDraft(
+                        targetWeek: _targetWeek,
+                        targetDayOfWeek: _targetDayOfWeek,
+                        targetStartSection: _targetStartSection,
+                        targetEndSection: _targetEndSection,
+                        targetLocation: _locationController.text,
                       );
+                      final callback = widget.onConfirmed;
+                      if (callback != null) {
+                        callback(draft);
+                        return;
+                      }
+                      Navigator.of(context).pop(draft);
                     }
                   : null,
             ),
@@ -709,10 +1070,15 @@ class _CourseRescheduleSheetBodyState
 }
 
 class _RescheduleSheetScaffold extends StatelessWidget {
-  const _RescheduleSheetScaffold({required this.child, required this.actions});
+  const _RescheduleSheetScaffold({
+    required this.child,
+    required this.actions,
+    this.embedded = false,
+  });
 
   final Widget child;
   final Widget actions;
+  final bool embedded;
 
   static const _footerHeight = 48.0;
   static const _footerGap = 12.0;
@@ -722,27 +1088,48 @@ class _RescheduleSheetScaffold extends StatelessWidget {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     final maxHeight = MediaQuery.sizeOf(context).height * 0.88;
 
+    final content = LayoutBuilder(
+      builder: (context, constraints) {
+        if (embedded) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: child,
+                ),
+              ),
+              actions,
+            ],
+          );
+        }
+
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: constraints.maxHeight),
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  bottom: _footerHeight + _footerGap,
+                ),
+                child: child,
+              ),
+              Positioned(left: 0, right: 0, bottom: 0, child: actions),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (embedded) {
+      return content;
+    }
+
     return HyperosSheetFrame(
       maxHeight: maxHeight,
       padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomInset),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: constraints.maxHeight),
-            child: Stack(
-              children: [
-                SingleChildScrollView(
-                  padding: const EdgeInsets.only(
-                    bottom: _footerHeight + _footerGap,
-                  ),
-                  child: child,
-                ),
-                Positioned(left: 0, right: 0, bottom: 0, child: actions),
-              ],
-            ),
-          );
-        },
-      ),
+      child: content,
     );
   }
 }
@@ -797,7 +1184,9 @@ class _WeekdayChoiceChip extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(999),
-              color: selected ? highlight.withValues(alpha: 0.10) : Colors.transparent,
+              color: selected
+                  ? highlight.withValues(alpha: 0.10)
+                  : Colors.transparent,
               border: Border.all(
                 color: selected
                     ? highlight.withValues(alpha: 0.45)

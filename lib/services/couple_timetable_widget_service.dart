@@ -7,6 +7,21 @@ import '../logging/app_debug_log.dart';
 import '../logging/app_log_messages.dart';
 import 'app_log_service.dart';
 
+enum CoupleTimetableWidgetStatus { ok, coupleModeOff, notLoggedIn }
+
+extension CoupleTimetableWidgetStatusX on CoupleTimetableWidgetStatus {
+  String get value {
+    switch (this) {
+      case CoupleTimetableWidgetStatus.ok:
+        return 'ok';
+      case CoupleTimetableWidgetStatus.coupleModeOff:
+        return 'couple_mode_off';
+      case CoupleTimetableWidgetStatus.notLoggedIn:
+        return 'not_logged_in';
+    }
+  }
+}
+
 class CoupleTimetableWidgetBreak {
   final String startTime;
   final String endTime;
@@ -77,10 +92,14 @@ class CoupleTimetableWidgetDayCourses {
 }
 
 class CoupleTimetableWidgetSnapshot {
+  static const String defaultMyName = 'xoveg';
+  static const String defaultPartnerName = 'govex';
+
   final String myName;
   final String partnerName;
   final String? leftColorHex;
   final String? rightColorHex;
+  final CoupleTimetableWidgetStatus status;
   final int generatedAtMillis;
   final CoupleTimetableWidgetDayCourses mine;
   final CoupleTimetableWidgetDayCourses partner;
@@ -90,10 +109,26 @@ class CoupleTimetableWidgetSnapshot {
     required this.partnerName,
     required this.leftColorHex,
     required this.rightColorHex,
+    required this.status,
     required this.generatedAtMillis,
     required this.mine,
     required this.partner,
   });
+
+  factory CoupleTimetableWidgetSnapshot.unavailable(
+    CoupleTimetableWidgetStatus status,
+  ) {
+    return CoupleTimetableWidgetSnapshot(
+      myName: defaultMyName,
+      partnerName: defaultPartnerName,
+      leftColorHex: null,
+      rightColorHex: null,
+      status: status,
+      generatedAtMillis: DateTime.now().millisecondsSinceEpoch,
+      mine: const CoupleTimetableWidgetDayCourses(today: [], tomorrow: []),
+      partner: const CoupleTimetableWidgetDayCourses(today: [], tomorrow: []),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -101,6 +136,7 @@ class CoupleTimetableWidgetSnapshot {
       'partnerName': partnerName,
       'leftColorHex': leftColorHex,
       'rightColorHex': rightColorHex,
+      'status': status.value,
       'generatedAtMillis': generatedAtMillis,
       'mine': mine.toJson(),
       'partner': partner.toJson(),

@@ -7,14 +7,17 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.os.Build
 import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
+import android.appwidget.AppWidgetManager
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import android.text.TextUtils
 import android.text.TextPaint
+import kotlin.math.roundToInt
 import java.util.Calendar
 
 internal sealed class CoupleWidgetDisplayItem {
@@ -24,20 +27,42 @@ internal sealed class CoupleWidgetDisplayItem {
     ) : CoupleWidgetDisplayItem()
 
     data class Notice(val text: String) : CoupleWidgetDisplayItem()
+    data object NoticeDivider : CoupleWidgetDisplayItem()
     data object Divider : CoupleWidgetDisplayItem()
 }
 
 internal data class CoupleWidgetDisplay(
     val items: List<CoupleWidgetDisplayItem>,
     val footerText: String,
+    val emptyText: String? = null,
 )
 
 internal object CoupleTimetableDisplayBuilder {
+    private const val MAX_VISIBLE_COURSES = 5
+    private const val MAX_VISIBLE_COURSES_WITH_NOTICE = 5
+
     fun build(
         context: Context,
         courses: CoupleWidgetDayCourses,
         nowMillis: Long = System.currentTimeMillis(),
+        status: CoupleWidgetStatus = CoupleWidgetStatus.OK,
+        maxVisibleCourses: Int = MAX_VISIBLE_COURSES,
     ): CoupleWidgetDisplay {
+        if (status != CoupleWidgetStatus.OK) {
+            val text = when (status) {
+                CoupleWidgetStatus.COUPLE_MODE_OFF ->
+                    context.getString(R.string.widget_couple_mode_off)
+                CoupleWidgetStatus.NOT_LOGGED_IN ->
+                    context.getString(R.string.widget_couple_not_logged_in)
+                CoupleWidgetStatus.OK -> ""
+            }
+            return CoupleWidgetDisplay(
+                items = emptyList(),
+                footerText = "",
+                emptyText = text,
+            )
+        }
+
         val now = Calendar.getInstance().apply { timeInMillis = nowMillis }
         val today = courses.today.sortedWith(
             compareBy({ it.startTime }, { it.startSection }, { it.id })
@@ -49,37 +74,57 @@ internal object CoupleTimetableDisplayBuilder {
         val hasRemainingCourse = today.any {
             parseClockMinutes(it.endTime)?.let { it > nowMinutes } == true
         }
+        val remainingCount = today.count {
+            parseClockMinutes(it.endTime)?.let { it > nowMinutes } == true
+        }
+        val statusText = when {
+            today.isNotEmpty() -> context.getString(R.string.widget_couple_today_ended)
+            now.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
+                now.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY ->
+                context.getString(R.string.widget_couple_weekend_no_course)
+            else -> context.getString(R.string.widget_couple_no_course_today)
+        }
 
         val shownCourses = if (hasRemainingCourse) today else tomorrow
-        val items = buildList {
-            if (!hasRemainingCourse) {
-                val noticeText = if (today.isEmpty()) {
-                    context.getString(R.string.widget_no_course_today)
-                } else {
-                    context.getString(R.string.widget_today_ended_short)
+        val items = if (!hasRemainingCourse && tomorrow.isEmpty()) {
+            emptyList()
+        } else {
+            buildList {
+                if (!hasRemainingCourse) {
+                    add(CoupleWidgetDisplayItem.Notice(statusText))
+                    add(CoupleWidgetDisplayItem.NoticeDivider)
                 }
-                add(CoupleWidgetDisplayItem.Notice(noticeText))
-            }
-            shownCourses.forEachIndexed { index, course ->
-                if (index > 0) add(CoupleWidgetDisplayItem.Divider)
-                val start = parseClockMinutes(course.startTime)
-                val end = parseClockMinutes(course.endTime)
-                add(
-                    CoupleWidgetDisplayItem.Course(
-                        course = course,
-                        isOngoing = start != null && end != null &&
-                            nowMinutes >= start && nowMinutes < end,
+                shownCourses.take(
+                    maxVisibleCourses.coerceIn(0, MAX_VISIBLE_COURSES)
+                ).forEachIndexed { index, course ->
+                    if (index > 0) add(CoupleWidgetDisplayItem.Divider)
+                    val start = parseClockMinutes(course.startTime)
+                    val end = parseClockMinutes(course.endTime)
+                    add(
+                        CoupleWidgetDisplayItem.Course(
+                            course = course,
+                            isOngoing = start != null && end != null &&
+                                nowMinutes >= start && nowMinutes < end,
+                        )
                     )
-                )
+                }
             }
         }
         val footerText = when {
-            hasRemainingCourse -> context.getString(R.string.widget_today_count, today.size)
+            hasRemainingCourse -> context.getString(
+                R.string.widget_couple_today_remaining,
+                remainingCount,
+                today.size,
+            )
             tomorrow.isNotEmpty() ->
                 context.getString(R.string.widget_couple_tomorrow_count, tomorrow.size)
             else -> context.getString(R.string.widget_couple_no_course_tomorrow)
         }
-        return CoupleWidgetDisplay(items, footerText)
+        return CoupleWidgetDisplay(
+            items = items,
+            footerText = footerText,
+            emptyText = if (items.isEmpty()) statusText else null,
+        )
     }
 
     fun parseClockMinutes(value: String): Int? {
@@ -89,6 +134,142 @@ internal object CoupleTimetableDisplayBuilder {
         val minute = parts[1].toIntOrNull() ?: return null
         if (hour !in 0..23 || minute !in 0..59) return null
         return hour * 60 + minute
+    }
+}
+
+internal data class CoupleTimetableSizing(
+    val availableListHeightPx: Float,
+    val visibleCourseCount: Int,
+    val courseRowHeightPx: Float,
+    val noticeRowHeightPx: Float = 0f,
+)
+
+internal object CoupleTimetableSizingSupport {
+    private const val CARD_VERTICAL_PADDING_DP = 14f
+    private const val HEADER_HEIGHT_DP = 20f
+    private const val HEADER_TOP_MARGIN_DP = 5f
+    private const val FOOTER_HEIGHT_DP = 13f
+    private const val MIN_COURSE_ROW_DP = 34f
+    private const val DIVIDER_TOTAL_DP = 5f
+
+    fun calculate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        display: CoupleWidgetDisplay,
+    ): CoupleTimetableSizing {
+        val density = context.resources.displayMetrics.density
+        val availableHeightPx = availableListHeightPx(context, appWidgetManager, appWidgetId)
+        val maxCourseCount = display.items.count { it is CoupleWidgetDisplayItem.Course }
+        val hasNotice = display.items.any { it is CoupleWidgetDisplayItem.Notice }
+        val courseCount = if (maxCourseCount == 0) {
+            0
+        } else {
+            val courseAreaHeightPx = if (hasNotice) {
+                availableHeightPx / 2f
+            } else {
+                availableHeightPx
+            }
+            (maxCourseCount downTo 1).firstOrNull { count ->
+                val dividerCount = if (hasNotice) count else (count - 1).coerceAtLeast(0)
+                val requiredHeightPx = count * MIN_COURSE_ROW_DP * density +
+                    dividerCount * DIVIDER_TOTAL_DP * density
+                courseAreaHeightPx >= requiredHeightPx
+            } ?: 0
+        }
+        val dividerCount = if (hasNotice) {
+            courseCount
+        } else {
+            (courseCount - 1).coerceAtLeast(0)
+        }
+        val dividerHeightPx = dividerCount * DIVIDER_TOTAL_DP * density
+        val rowHeightPx = if (courseCount == 0) {
+            0f
+        } else {
+            val courseAreaHeightPx = if (hasNotice) {
+                availableHeightPx / 2f
+            } else {
+                availableHeightPx
+            }
+            ((courseAreaHeightPx - dividerHeightPx) / courseCount)
+                .coerceAtLeast(MIN_COURSE_ROW_DP * density)
+        }
+        val noticeHeightPx = if (hasNotice) availableHeightPx / 2f else 0f
+        return CoupleTimetableSizing(
+            availableListHeightPx = availableHeightPx,
+            visibleCourseCount = courseCount,
+            courseRowHeightPx = rowHeightPx,
+            noticeRowHeightPx = noticeHeightPx,
+        )
+    }
+
+    fun calculateSynced(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        display: CoupleWidgetDisplay,
+        oppositeDisplay: CoupleWidgetDisplay,
+    ): CoupleTimetableSizing {
+        val current = calculate(context, appWidgetManager, appWidgetId, display)
+        val opposite = calculate(context, appWidgetManager, appWidgetId, oppositeDisplay)
+        val sharedRowHeightPx = listOf(
+            current.courseRowHeightPx.takeIf { it > 0f },
+            opposite.courseRowHeightPx.takeIf { it > 0f },
+        ).filterNotNull().minOrNull() ?: return current
+
+        val density = context.resources.displayMetrics.density
+        val availableHeightPx = availableListHeightPx(context, appWidgetManager, appWidgetId)
+        val maxCourseCount = display.items.count { it is CoupleWidgetDisplayItem.Course }
+        val hasNotice = display.items.any { it is CoupleWidgetDisplayItem.Notice }
+        val courseAreaHeightPx = if (hasNotice) {
+            availableHeightPx / 2f
+        } else {
+            availableHeightPx
+        }
+        val courseCount = if (maxCourseCount == 0) {
+            0
+        } else {
+            (maxCourseCount downTo 1).firstOrNull { count ->
+                val dividerCount = if (hasNotice) count else (count - 1).coerceAtLeast(0)
+                val requiredHeightPx = count * sharedRowHeightPx +
+                    dividerCount * DIVIDER_TOTAL_DP * density
+                courseAreaHeightPx >= requiredHeightPx
+            } ?: 0
+        }
+        return current.copy(
+            visibleCourseCount = courseCount,
+            courseRowHeightPx = sharedRowHeightPx,
+        )
+    }
+
+    fun applyRowHeight(views: RemoteViews, viewId: Int, heightPx: Float) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && heightPx > 0f) {
+            views.setViewLayoutHeight(viewId, heightPx, TypedValue.COMPLEX_UNIT_PX)
+        }
+    }
+
+    private fun availableListHeightPx(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+    ): Float {
+        val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
+        val isPortrait = context.resources.configuration.orientation ==
+            android.content.res.Configuration.ORIENTATION_PORTRAIT
+        val optionHeightDp = if (isPortrait) {
+            options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0)
+        } else {
+            options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
+        }
+        val heightDp = optionHeightDp.takeIf { it > 0 }
+            ?: appWidgetManager.getAppWidgetInfo(appWidgetId)?.minHeight?.takeIf { it > 0 }
+            ?: 180
+        val reservedHeightDp = CARD_VERTICAL_PADDING_DP +
+            HEADER_HEIGHT_DP +
+            HEADER_TOP_MARGIN_DP +
+            FOOTER_HEIGHT_DP
+        val listHeightDp = (heightDp - reservedHeightDp).coerceAtLeast(0f)
+        return listHeightDp * context.resources.displayMetrics.density
     }
 }
 
@@ -201,6 +382,8 @@ class CoupleTimetableViewsService : RemoteViewsService() {
             }
         )
         private var items: List<CoupleWidgetDisplayItem> = emptyList()
+        private var courseRowHeightPx = 0f
+        private var noticeRowHeightPx = 0f
 
         override fun onCreate() {
             onDataSetChanged()
@@ -208,11 +391,41 @@ class CoupleTimetableViewsService : RemoteViewsService() {
 
         override fun onDataSetChanged() {
             val snapshot = CoupleTimetableStore.readSnapshot(context)
+            val status = snapshot?.status ?: CoupleWidgetStatus.COUPLE_MODE_OFF
             val courses = if (isLeft) snapshot?.mine else snapshot?.partner
-            items = if (courses == null) {
-                emptyList()
+            if (status != CoupleWidgetStatus.OK || courses == null) {
+                items = emptyList()
+                courseRowHeightPx = 0f
+                noticeRowHeightPx = 0f
             } else {
-                CoupleTimetableDisplayBuilder.build(context, courses).items
+                val appWidgetManager = AppWidgetManager.getInstance(context)
+                val oppositeCourses = if (isLeft) snapshot?.partner else snapshot?.mine
+                val unconstrainedDisplay = CoupleTimetableDisplayBuilder.build(
+                    context,
+                    courses,
+                    status = status,
+                )
+                val oppositeUnconstrainedDisplay = CoupleTimetableDisplayBuilder.build(
+                    context,
+                    oppositeCourses ?: CoupleWidgetDayCourses(emptyList(), emptyList()),
+                    status = status,
+                )
+                val sizing = CoupleTimetableSizingSupport.calculateSynced(
+                    context,
+                    appWidgetManager,
+                    appWidgetId,
+                    unconstrainedDisplay,
+                    oppositeUnconstrainedDisplay,
+                )
+                val display = CoupleTimetableDisplayBuilder.build(
+                    context,
+                    courses,
+                    status = status,
+                    maxVisibleCourses = sizing.visibleCourseCount,
+                )
+                items = display.items
+                courseRowHeightPx = sizing.courseRowHeightPx
+                noticeRowHeightPx = sizing.noticeRowHeightPx
             }
         }
 
@@ -230,6 +443,13 @@ class CoupleTimetableViewsService : RemoteViewsService() {
                 is CoupleWidgetDisplayItem.Notice ->
                     renderNotice(item.text).apply {
                         attachSideTap(R.id.widget_couple_today_ended)
+                    }
+                CoupleWidgetDisplayItem.NoticeDivider ->
+                    RemoteViews(
+                        context.packageName,
+                        R.layout.widget_couple_notice_divider
+                    ).apply {
+                        attachSideTap(R.id.widget_couple_notice_divider)
                     }
                 CoupleWidgetDisplayItem.Divider ->
                     RemoteViews(
@@ -263,6 +483,11 @@ class CoupleTimetableViewsService : RemoteViewsService() {
             val views = RemoteViews(
                 context.packageName,
                 R.layout.widget_couple_course_item
+            )
+            CoupleTimetableSizingSupport.applyRowHeight(
+                views,
+                R.id.widget_couple_course_root,
+                courseRowHeightPx,
             )
             val course = item.course
             views.setTextViewText(
@@ -314,18 +539,24 @@ class CoupleTimetableViewsService : RemoteViewsService() {
                 R.layout.widget_couple_today_ended_item
             )
             views.setTextViewText(R.id.widget_couple_today_ended, text)
+            CoupleTimetableSizingSupport.applyRowHeight(
+                views,
+                R.id.widget_couple_today_ended,
+                noticeRowHeightPx,
+            )
             return views
         }
 
         override fun getLoadingView(): RemoteViews? = null
 
-        override fun getViewTypeCount(): Int = 3
+        override fun getViewTypeCount(): Int = 4
 
         override fun getItemId(position: Int): Long {
             return when (val item = items.getOrNull(position)) {
                 is CoupleWidgetDisplayItem.Course ->
                     (item.course.id.hashCode().toLong() * 31L) + item.course.startSection
                 is CoupleWidgetDisplayItem.Notice -> item.text.hashCode().toLong()
+                CoupleWidgetDisplayItem.NoticeDivider -> "notice-divider".hashCode().toLong()
                 CoupleWidgetDisplayItem.Divider -> "divider".hashCode().toLong()
                 null -> 0L
             }

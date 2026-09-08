@@ -191,6 +191,50 @@ void main() {
     expect(provider.settings.timetableHideWeekends, isTrue);
   });
 
+  test('background settings stay global unless a timetable overrides them',
+      () async {
+    final provider = await createProvider();
+    final firstProfileId = provider.activeProfile!.id;
+    await provider.updateGlobalTimetableSettings(
+      TimetableSettings.defaults().copyWith(
+        timetablePageBackgroundColor: '#ABCDEF',
+        homePageWallpaperPath: '/tmp/global-wallpaper.jpg',
+        homePageBackdropBlurSigma: 5,
+        homePageBackdropFrostAlpha: 0.2,
+        homePageBackdropFollowsWeekPager: true,
+        homePageBackgroundScope: 15,
+        homePageHeaderBlurEnabled: false,
+        homePageWeekdayBarBlurEnabled: false,
+      ),
+    );
+
+    final other = await provider.createProfile(name: 'Other');
+    await provider.switchProfile(other.id);
+    expect(provider.settings.timetablePageBackgroundColor, '#ABCDEF');
+    expect(
+      provider.settings.homePageWallpaperPath,
+      '/tmp/global-wallpaper.jpg',
+    );
+    expect(provider.settings.homePageBackdropBlurSigma, 5);
+    expect(provider.settings.homePageBackdropFrostAlpha, 0.2);
+    expect(provider.settings.homePageBackdropFollowsWeekPager, isTrue);
+    expect(provider.settings.homePageBackgroundScope, 15);
+    expect(provider.settings.homePageHeaderBlurEnabled, isFalse);
+    expect(provider.settings.homePageWeekdayBarBlurEnabled, isFalse);
+
+    await provider.updateTimetableSettings(
+      provider.settings.copyWith(timetablePageBackgroundColor: '#123456'),
+    );
+    await provider.switchProfile(firstProfileId);
+    expect(provider.settings.timetablePageBackgroundColor, '#ABCDEF');
+    await provider.switchProfile(other.id);
+    expect(provider.settings.timetablePageBackgroundColor, '#123456');
+    expect(
+      provider.settings.homePageWallpaperPath,
+      '/tmp/global-wallpaper.jpg',
+    );
+  });
+
   test('legacy profiles without override-key records keep customized fields',
       () async {
     // 模拟升级前的历史课表：settingsOverrideKeys 为空（旧数据根本没有这个
@@ -225,5 +269,31 @@ void main() {
     // 历史课表改过的字号保持自身值，从未动过的字段跟随全局。
     expect(provider.settings.courseCardFontSize, 14);
     expect(provider.settings.sectionHeight, 88);
+  });
+
+  test('imported partner timetable follows the global wallpaper', () async {
+    final provider = await createProvider();
+    await provider.updateGlobalTimetableSettings(
+      TimetableSettings.defaults().copyWith(
+        homePageWallpaperPath: '/tmp/global-wallpaper.jpg',
+      ),
+    );
+
+    final backup = provider.dataTransferService.buildBackupJson(
+      profileName: 'Partner',
+      courses: const [],
+      settings: TimetableSettings.defaults().copyWith(
+        homePageWallpaperPath: '/tmp/partner-private.jpg',
+      ),
+      currentWeek: 1,
+    );
+    final result = await provider.importPartnerTimetable(backup);
+    await provider.switchProfile(result.profile.id);
+
+    expect(provider.activeProfile!.isPartnerImported, isTrue);
+    expect(
+      provider.settings.homePageWallpaperPath,
+      '/tmp/global-wallpaper.jpg',
+    );
   });
 }

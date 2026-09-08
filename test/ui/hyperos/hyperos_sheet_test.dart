@@ -94,8 +94,27 @@ void main() {
       await gesture.moveBy(const Offset(0, 300));
       await tester.pump();
       expect(tester.getTopLeft(content).dy, greaterThan(topBeforeDrag));
+      final topDuringDrag = tester.getTopLeft(content).dy;
+      expect(topDuringDrag, closeTo(topBeforeDrag + 300, 0.5));
 
       await gesture.up();
+      await tester.pump();
+      final topAtHandoff = tester.getTopLeft(content).dy;
+      await tester.pump(const Duration(milliseconds: 20));
+
+      // The drag handoff must preserve downward motion. A zero-velocity exit
+      // curve stalls here before accelerating, which reads as a hitch.
+      final topJustAfterRelease = tester.getTopLeft(content).dy;
+      expect(topJustAfterRelease, greaterThan(topAtHandoff + 4));
+
+      await tester.pump(const Duration(milliseconds: 160));
+
+      // Continue downward on the same slide path instead of snapping the
+      // remaining distance or applying the finger offset twice.
+      final topAfterRelease = tester.getTopLeft(content).dy;
+      expect(topAfterRelease, greaterThan(topDuringDrag + 30));
+      expect(topAfterRelease, lessThan(topBeforeDrag + 400));
+
       await tester.pumpAndSettle();
 
       expect(content, findsNothing);
@@ -119,6 +138,25 @@ void main() {
 
       expect(content, findsOneWidget);
       expect(tester.getTopLeft(content).dy, closeTo(topBeforeDrag, 0.1));
+    });
+
+    testWidgets('barrier tap dismisses the sheet', (tester) async {
+      await openSheet(tester);
+
+      final content = find.text('Sheet content');
+      final topBeforeTap = tester.getTopLeft(content).dy;
+
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pump();
+      expect(tester.getTopLeft(content).dy, closeTo(topBeforeTap, 1.0));
+
+      await tester.pump(const Duration(milliseconds: 40));
+      final topEarlyInExit = tester.getTopLeft(content).dy;
+      expect(topEarlyInExit, lessThan(topBeforeTap + 40));
+
+      await tester.pumpAndSettle();
+
+      expect(content, findsNothing);
     });
   });
 

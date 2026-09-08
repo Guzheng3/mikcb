@@ -26,11 +26,26 @@ data class CoupleWidgetDayCourses(
     val tomorrow: List<CoupleWidgetCourse>,
 )
 
+enum class CoupleWidgetStatus {
+    OK,
+    COUPLE_MODE_OFF,
+    NOT_LOGGED_IN;
+
+    companion object {
+        fun from(value: String?): CoupleWidgetStatus = when (value) {
+            "couple_mode_off" -> COUPLE_MODE_OFF
+            "not_logged_in" -> NOT_LOGGED_IN
+            else -> OK
+        }
+    }
+}
+
 data class CoupleTimetableWidgetSnapshot(
     val myName: String,
     val partnerName: String,
     val leftColorHex: String?,
     val rightColorHex: String?,
+    val status: CoupleWidgetStatus,
     val generatedAtMillis: Long,
     val mine: CoupleWidgetDayCourses,
     val partner: CoupleWidgetDayCourses,
@@ -39,6 +54,9 @@ data class CoupleTimetableWidgetSnapshot(
 object CoupleTimetableStore {
     private const val PREFS_NAME = "couple_widget_prefs"
     private const val KEY_SNAPSHOT_JSON = "snapshot_json"
+
+    const val DEFAULT_MY_NAME = "xoveg"
+    const val DEFAULT_PARTNER_NAME = "govex"
 
     fun syncSnapshot(context: Context, snapshot: Map<String, Any?>) {
         val payload = JSONObject(snapshot).toString()
@@ -76,6 +94,9 @@ object CoupleTimetableStore {
             partnerName = json.stringOrEmpty("partnerName"),
             leftColorHex = json.stringOrEmpty("leftColorHex").takeIf { it.isNotBlank() },
             rightColorHex = json.stringOrEmpty("rightColorHex").takeIf { it.isNotBlank() },
+            status = CoupleWidgetStatus.from(
+                if (json.isNull("status")) null else json.optString("status")
+            ),
             generatedAtMillis = json.optLong("generatedAtMillis"),
             mine = parseDayCourses(json.optJSONObject("mine")),
             partner = parseDayCourses(json.optJSONObject("partner")),
