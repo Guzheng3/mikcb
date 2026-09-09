@@ -59,12 +59,13 @@ adapters:
 
   WarehouseRepositoryService defaultService({
     String scuecAdapters = scuecAdaptersYaml,
+    String scuecScript = 'console.log("scuec");',
   }) {
     return serviceWith({
       'assets/warehouse/root_index.yaml': rootIndexYaml,
       'assets/warehouse/SCUEC/adapters.yaml': scuecAdapters,
       'assets/warehouse/MYSY/adapters.yaml': mysyAdaptersYaml,
-      'assets/warehouse/SCUEC/scuec.js': 'console.log("scuec");',
+      'assets/warehouse/SCUEC/scuec.js': scuecScript,
       'assets/warehouse/MYSY/mysy.js': 'console.log("mysy");',
     });
   }
@@ -206,6 +207,7 @@ adapters:
     description: "中南民族大学课程表导入适配"
     sha256: "${digest.toUpperCase()}"
 ''',
+      scuecScript: scriptBody,
     );
 
     final adapters = await service.fetchAdaptersIndex(

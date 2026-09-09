@@ -213,7 +213,8 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
   if (host.isHoliday(currentTime)) {
     return null;
   }
-  final targetWeek = week ?? host._calculateCalendarWeekForDate(currentTime);
+  final targetWeek = week ??
+      host._calculateCalendarWeekForDate(currentTime, fallbackWeek: host._currentWeek);
   var todayCourses = host.getActiveCoursesForDay(
     currentTime.weekday,
     week: targetWeek,
@@ -327,7 +328,8 @@ LiveActivityCourseSelection? _liveGetTestActivityCourseSelection(
   DateTime? now,
 }) {
   final currentTime = now ?? DateTime.now();
-  final targetWeek = host._calculateCalendarWeekForDate(currentTime);
+  final targetWeek =
+      host._calculateCalendarWeekForDate(currentTime, fallbackWeek: host._currentWeek);
   final immediateSelection = host.getLiveActivityCourseSelection(
     now: currentTime,
     allowUpcomingFallback: true,
@@ -423,7 +425,8 @@ HomeWidgetSnapshot? _liveBuildHomeWidgetSnapshot(
   final currentTime = now ?? DateTime.now();
   // Must use calendar week (no semesterWeekCount clamp). Clamping to the last
   // teaching week after the term ends would revive endWeek=N courses forever.
-  final targetWeek = host._calculateCalendarWeekForDate(currentTime);
+  final targetWeek =
+      host._calculateCalendarWeekForDate(currentTime, fallbackWeek: host._currentWeek);
   final originalTodayCount = host
       .getCoursesForDay(currentTime.weekday, week: targetWeek)
       .length;

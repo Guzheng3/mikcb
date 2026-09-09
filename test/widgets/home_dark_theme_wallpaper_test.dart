@@ -113,6 +113,15 @@ Color? _textColor(WidgetTester tester, String text) {
   return tester.widget<Text>(finder.first).style?.color;
 }
 
+/// 周次芯片已拆成「数字 + 周」两个 Text，按 key 取色。
+Color? _keyTextColor(WidgetTester tester, Key key) {
+  final finder = find.byKey(key);
+  if (finder.evaluate().isEmpty) {
+    return null;
+  }
+  return tester.widget<Text>(finder.first).style?.color;
+}
+
 /// Pumps the home timetable in **dark** theme over a real wallpaper file.
 Future<void> _pumpDarkHome(
   WidgetTester tester,
@@ -128,6 +137,8 @@ Future<void> _pumpDarkHome(
         homePageBackgroundScope: _scopeAll,
         homePageHeaderBlurEnabled: headerBlur,
         homePageWeekdayBarBlurEnabled: weekdayBlur,
+        // 情侣覆盖开启后标题会被登录芯片替换，壁纸/墨水断言需要普通标题。
+        coupleTimetableOverlayEnabled: false,
         // 开学锚取「下周一」：开学前对齐第 1 周，'1周' 芯片在任何运行
         // 日期都存在，周一列永不命中今天的 accent（详见 ink 测试同款注释）。
         semesterStartDate: _nextWeekMonday(),
@@ -271,14 +282,14 @@ void main() {
       // The backdrop Image carries `ValueKey<String?>` (the settings path is
       // nullable), so the finder must use the same generic type to match.
       expect(
-        find.byKey(ValueKey<String?>(wallpaper.path)),
+        find.byKey(ValueKey<String>('home-backdrop-${wallpaper.path}')),
         findsWidgets,
         reason: 'wallpaper layer must paint in dark theme',
       );
       // Dark wallpaper → light chrome ink everywhere, like light mode.
       expect(_textColor(tester, '轻屿课表'), homePageChromeForegroundOnDark);
       expect(_textColor(tester, '周一'), homePageChromeForegroundOnDark);
-      expect(_textColor(tester, '1周'), homePageChromeForegroundOnDark);
+      expect(_keyTextColor(tester, const ValueKey('timetable-week-number-1')), homePageChromeForegroundOnDark);
       await tester.binding.setSurfaceSize(null);
     },
   );
@@ -307,7 +318,7 @@ void main() {
       // white under a dark theme.
       expect(_textColor(tester, '轻屿课表'), homePageChromeForegroundOnLight);
       expect(_textColor(tester, '周一'), homePageChromeForegroundOnLight);
-      expect(_textColor(tester, '1周'), homePageChromeForegroundOnLight);
+      expect(_keyTextColor(tester, const ValueKey('timetable-week-number-1')), homePageChromeForegroundOnLight);
       await tester.binding.setSurfaceSize(null);
     },
   );
@@ -317,9 +328,11 @@ void main() {
     (tester) async {
       _seedInitializedPrefs();
       final provider = await createInitializedTestProvider(tester);
-      await provider.updateTimetableSettings(
-        provider.settings.copyWith(homePageWallpaperPath: ''),
-      );
+      await tester.runAsync(() async {
+        await provider.updateTimetableSettings(
+          provider.settings.copyWith(homePageWallpaperPath: ''),
+        );
+      });
       await tester.binding.setSurfaceSize(const Size(400, 800));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 

@@ -106,6 +106,14 @@ Color? _textColor(WidgetTester tester, String text) {
   }
   return tester.widget<Text>(finder.first).style?.color;
 }
+/// 周次芯片已拆成「数字 + 周」两个 Text，按 key 取色。
+Color? _keyTextColor(WidgetTester tester, Key key) {
+  final finder = find.byKey(key);
+  if (finder.evaluate().isEmpty) {
+    return null;
+  }
+  return tester.widget<Text>(finder.first).style?.color;
+}
 
 Future<void> _pumpHome(
   WidgetTester tester,
@@ -167,7 +175,7 @@ void main() {
 
     expect(_textColor(tester, '轻屿课表'), homePageChromeForegroundOnDark);
     expect(_textColor(tester, '周一'), homePageChromeForegroundOnDark);
-    expect(_textColor(tester, '1周'), homePageChromeForegroundOnDark);
+    expect(_keyTextColor(tester, const ValueKey('timetable-week-number-1')), homePageChromeForegroundOnDark);
     expect(
       _textColor(tester, _mmdd(_nextWeekMonday())),
       homePageChromeForegroundOnDark.withValues(alpha: 0.72),
@@ -199,7 +207,7 @@ void main() {
 
       expect(_textColor(tester, '轻屿课表'), homePageChromeForegroundOnLight);
       expect(_textColor(tester, '周一'), homePageChromeForegroundOnDark);
-      expect(_textColor(tester, '1周'), homePageChromeForegroundOnDark);
+      expect(_keyTextColor(tester, const ValueKey('timetable-week-number-1')), homePageChromeForegroundOnDark);
       expect(
         _textColor(tester, _mmdd(_nextWeekMonday())),
         homePageChromeForegroundOnDark.withValues(alpha: 0.72),
@@ -240,7 +248,7 @@ void main() {
     expect(find.text('文字对比度不足'), findsOneWidget);
     expect(find.textContaining('浅色壁纸'), findsOneWidget);
     expect(_textColor(tester, '周一'), homePageChromeForegroundOnLight);
-    expect(_textColor(tester, '1周'), homePageChromeForegroundOnLight);
+    expect(_keyTextColor(tester, const ValueKey('timetable-week-number-1')), homePageChromeForegroundOnLight);
     expect(
       _textColor(tester, _mmdd(_nextWeekMonday())),
       homePageChromeForegroundOnLight.withValues(alpha: 0.70),
@@ -274,7 +282,7 @@ void main() {
     // Default weekday ink on the opaque background: the configured default
     // white, not the wallpaper-flipped black.
     expect(_textColor(tester, '周一'), const Color(0xFFFFFFFF));
-    expect(_textColor(tester, '1周'), const Color(0xFFFFFFFF));
+    expect(_keyTextColor(tester, const ValueKey('timetable-week-number-1')), const Color(0xFFFFFFFF));
   });
 
   testWidgets(
@@ -315,7 +323,7 @@ void main() {
 
       // The weekday chrome renders the auto white ink, not the custom grey.
       expect(_textColor(tester, '周一'), homePageChromeForegroundOnDark);
-      expect(_textColor(tester, '1周'), homePageChromeForegroundOnDark);
+      expect(_keyTextColor(tester, const ValueKey('timetable-week-number-1')), homePageChromeForegroundOnDark);
       expect(
         _textColor(tester, _mmdd(_nextWeekMonday())),
         homePageChromeForegroundOnDark.withValues(alpha: 0.72),
@@ -323,7 +331,7 @@ void main() {
 
       await tester.tap(find.text('知道了'));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(seconds: 2));
       expect(find.text('文字对比度不足'), findsNothing);
       // Still white after dismissing — the fallback is not tied to the dialog.
       expect(_textColor(tester, '周一'), homePageChromeForegroundOnDark);

@@ -229,8 +229,15 @@ void main() {
       find.byKey(const ValueKey('course-action-content-course-a')),
       findsOneWidget,
     );
+    // 操作按钮 key 现为 course-action-<行号>-<文案>-<课程 id>，按后缀与文案匹配。
     expect(
-      find.byKey(const ValueKey('course-action-reschedule-course-a')),
+      find.byWidgetPredicate((widget) {
+        final key = widget.key;
+        return key is ValueKey<String> &&
+            key.value.startsWith('course-action-') &&
+            key.value.endsWith('-course-a') &&
+            key.value.contains('调课');
+      }),
       findsOneWidget,
     );
     expect(find.text('计算机网络'), findsWidgets);

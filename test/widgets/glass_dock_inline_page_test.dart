@@ -77,6 +77,8 @@ void main() {
         glassDockActions: dockActions,
         glassDockButtonEntryId: roundButtonEntryId ?? 'addCourse',
         glassDockShowAddButton: roundButtonVisible,
+        // 本文件断言振动次数：触感默认关闭，需显式开启。
+        enableHaptics: true,
       ),
     );
     await tester.pumpWidget(
