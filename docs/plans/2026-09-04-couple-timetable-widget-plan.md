@@ -1,7 +1,7 @@
 # 情侣课表 4×2 桌面卡片复刻计划（2026-09-04）
 
 > 状态：仅计划，未实施。  
-> 目标项目：`mikcb`（Android 包名 `com.mutx163.qingyu`）。
+> 目标项目：`mikcb`（Android 包名 `vip.qinghan.withu`）。
 
 ## 1. 目标
 

@@ -46,7 +46,6 @@ class _UserGuideScreenState extends State<UserGuideScreen>
   bool _hasPromotedPermission = false;
   bool _canPostPromoted = false;
   bool _isIgnoringBatteryOptimizations = false;
-  bool _isKeepAliveAccessibilityEnabled = false;
   bool _isAutoStartEnabled = false;
   late bool _privacyChecked;
   Timer? _settingsPollTimer;
@@ -84,7 +83,6 @@ class _UserGuideScreenState extends State<UserGuideScreen>
       _canPostPromoted,
       _isAutoStartEnabled,
       _isIgnoringBatteryOptimizations,
-      _isKeepAliveAccessibilityEnabled,
     ].join(',');
   }
 
@@ -145,8 +143,6 @@ class _UserGuideScreenState extends State<UserGuideScreen>
         .checkNotificationPermission();
     final isIgnoringBatteryOptimizations = await _service
         .isIgnoringBatteryOptimizations();
-    final isKeepAliveAccessibilityEnabled = await _service
-        .isKeepAliveAccessibilityEnabled();
     final isAutoStartEnabled = await _service.isAutoStartEnabled();
 
     if (!mounted) {
@@ -159,7 +155,6 @@ class _UserGuideScreenState extends State<UserGuideScreen>
       _hasPromotedPermission = promotedSupport['hasPromotedPermission'] == true;
       _canPostPromoted = promotedSupport['canPostPromoted'] == true;
       _isIgnoringBatteryOptimizations = isIgnoringBatteryOptimizations;
-      _isKeepAliveAccessibilityEnabled = isKeepAliveAccessibilityEnabled;
       _isAutoStartEnabled = isAutoStartEnabled;
       _isLoading = false;
     });
@@ -612,15 +607,6 @@ class _UserGuideScreenState extends State<UserGuideScreen>
         enabledLabel: l10n.guideStatusBatteryUnrestricted,
         disabledLabel: l10n.guideStatusBatteryRestricted,
         onTap: () => _runAction(_service.openBatteryOptimizationSettings),
-      ),
-      _PermissionItem(
-        icon: Icons.accessibility_new_rounded,
-        accent: HyperosIconColors.orange,
-        title: l10n.guideStatusKeepAlive,
-        enabled: _isKeepAliveAccessibilityEnabled,
-        enabledLabel: l10n.guideStatusEnabled,
-        disabledLabel: l10n.guideStatusDisabled,
-        onTap: () => _runAction(_service.openAccessibilitySettings),
       ),
     ];
   }

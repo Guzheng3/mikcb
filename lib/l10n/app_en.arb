@@ -2029,8 +2029,6 @@
   "sampleTeacherZhang": "Prof. Zhang",
   "sampleCourseEnglish": "English",
   "sampleTeacherLi": "Prof. Li",
-  "aboutOpenWarehouseRepoAction": "Open adapter repository",
-  "copiedWarehouseRepositoryAddress": "Adapter repository address copied",
   "aboutUpdateScreenTitle": "Version updates",
   "aboutUpdateStatusTitle": "Update status",
   "aboutRefreshCheckTooltip": "Check again",
@@ -2220,8 +2218,6 @@
       }
     }
   },
-  "aboutParticipateWarehouseTitle": "Contribute adapters",
-  "aboutParticipateWarehouseSubtitle": "If you know packet capture, web debugging, JavaScript, or are willing to maintain your school's academic system long-term, you are welcome to submit new school adapters and fixes to qingyu_warehouse",
   "importFileReadFailed": "Unable to read the selected file",
   "importCleartextBlockedHint": "This site does not support HTTPS and is not on the cleartext allowlist, so it cannot be opened here",
   "importReplaceExistingTitle": "Import courses",
@@ -2506,7 +2502,6 @@
   "loginEntryLabel": "Login entry",
   "unsetConfigLabel": "Not configured",
   "adapterOverrideImportUrlHint": "The manually overridden login address is currently in use",
-  "repositoryLabel": "Repository",
   "scriptStatusTitle": "Script status",
   "scriptLoadedLength": "Script loaded successfully. Length: {count} chars.",
   "@scriptLoadedLength": {

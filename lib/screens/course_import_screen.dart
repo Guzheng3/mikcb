@@ -3100,10 +3100,6 @@ class _WarehouseAdapterDetailScreenState
                           label: l10n.homeWidgetDescriptionTitle,
                           value: l10n.adapterOverrideImportUrlHint,
                         ),
-                      _DetailLine(
-                        label: l10n.repositoryLabel,
-                        value: widget.source.repositoryUrl,
-                      ),
                     ],
                   ),
                 ),

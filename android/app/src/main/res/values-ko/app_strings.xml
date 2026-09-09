@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_keep_alive_label">경우 시간표 백그라운드 유지 서비스</string>
-    <string name="accessibility_keep_alive_description">슈퍼 아일랜드와 알림의 백그라운드 안정성을 높이는 보조 서비스입니다. 화면 내용을 읽거나 자동 조작하지 않습니다.</string>
 
     <string name="app_display_name">경우 시간표</string>
 

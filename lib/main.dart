@@ -309,7 +309,7 @@ Future<void> main() async {
         );
         packageInfo = PackageInfo(
           appName: '轻屿课表',
-          packageName: 'com.mutx163.qingyu',
+          packageName: 'vip.qinghan.withu',
           version: '',
           buildNumber: '',
         );
@@ -655,7 +655,7 @@ class _AppEntryScreenState extends State<AppEntryScreen>
   }
 
   Future<void> _installSharedMethodChannelHandler() async {
-    const channel = MethodChannel('com.mutx163.qingyu/miui_live');
+    const channel = MethodChannel('vip.qinghan.withu/miui_live');
     channel.setMethodCallHandler((call) async {
       if (call.method == 'onExternalImportReceived') {
         await Future.delayed(const Duration(milliseconds: 300));
@@ -1285,7 +1285,7 @@ class _AppEntryScreenState extends State<AppEntryScreen>
 
   Future<void> _checkPendingExternalImport() async {
     try {
-      const channel = MethodChannel('com.mutx163.qingyu/miui_live');
+      const channel = MethodChannel('vip.qinghan.withu/miui_live');
       final payload = await channel.invokeMethod<Map<Object?, Object?>>(
         'getPendingExternalImport',
       );

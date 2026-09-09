@@ -3814,12 +3814,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sampleTeacherLi => '이 선생님';
 
   @override
-  String get aboutOpenWarehouseRepoAction => '교무 적응 저장소 열기';
-
-  @override
-  String get copiedWarehouseRepositoryAddress => '교무 적응 저장소 주소를 복사했습니다';
-
-  @override
   String get aboutUpdateScreenTitle => '버전 업데이트';
 
   @override
@@ -4162,13 +4156,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String aboutWarehouseMaintainerCount(int count) {
     return '$count개 적응 항목';
   }
-
-  @override
-  String get aboutParticipateWarehouseTitle => '교무 적응에 참여';
-
-  @override
-  String get aboutParticipateWarehouseSubtitle =>
-      '패킷 캡처, 웹 디버깅, JavaScript를 할 수 있거나 자신의 학교 교무 시스템을 장기 유지보수하고 싶다면, qingyu_warehouse에서 새 학교 적응과 수정을 제출해 주세요';
 
   @override
   String get importFileReadFailed => '선택한 파일을 읽을 수 없습니다';
@@ -4666,9 +4653,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get adapterOverrideImportUrlHint => '현재 수동으로 덮어쓴 로그인 주소를 사용 중입니다';
-
-  @override
-  String get repositoryLabel => '저장소';
 
   @override
   String get scriptStatusTitle => '스크립트 상태';

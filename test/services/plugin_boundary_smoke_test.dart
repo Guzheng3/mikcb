@@ -290,7 +290,7 @@ void main() {
   });
 
   test('MethodChannel migration flow forwards arguments and results', () async {
-    const channel = MethodChannel('com.mutx163.qingyu/migration');
+    const channel = MethodChannel('vip.qinghan.withu/migration');
     final calls = <MethodCall>[];
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {

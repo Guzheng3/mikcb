@@ -44,7 +44,7 @@ class ExamReminderFire {
 /// Builds fire points and syncs them to the native AlarmManager scheduler.
 class ExamReminderService {
   static const MethodChannel _channel = MethodChannel(
-    'com.mutx163.qingyu/exam_reminder',
+    'vip.qinghan.withu/exam_reminder',
   );
 
   /// Namespace for PendingIntent request codes (must match native cancel).

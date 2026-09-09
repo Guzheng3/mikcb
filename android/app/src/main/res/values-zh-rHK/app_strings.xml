@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_keep_alive_label">輕嶼課表後台保活服務</string>
-    <string name="accessibility_keep_alive_description">輕嶼課表用於提升超級島與提醒在後台場景下穩定性的輔助服務，不會讀取頁面內容或執行自動操作。</string>
 
     <string name="app_display_name">輕嶼課表</string>
 

@@ -37,7 +37,7 @@ class SystemAlarmResult {
 
 class SystemAlarmService {
   static const MethodChannel _channel = MethodChannel(
-    'com.mutx163.qingyu/system_alarm',
+    'vip.qinghan.withu/system_alarm',
   );
 
   static Future<SystemAlarmResult> addAlarm(SystemAlarmPlan plan) async {

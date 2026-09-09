@@ -9,7 +9,7 @@ class WeeklyReportService {
   WeeklyReportService._();
 
   static const MethodChannel _channel = MethodChannel(
-    'com.mutx163.qingyu/weekly_report',
+    'vip.qinghan.withu/weekly_report',
   );
 
   /// 每周日 21:00 推送

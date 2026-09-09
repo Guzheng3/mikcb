@@ -8,7 +8,7 @@
 
 ## 一、现状盘点
 
-当前共 **6 个**桌面小组件，全部通过 MethodChannel `com.mutx163.qingyu/home_widget` 与 Flutter 同步数据：
+当前共 **6 个**桌面小组件，全部通过 MethodChannel `vip.qinghan.withu/home_widget` 与 Flutter 同步数据：
 
 | 组件 | Provider | 目标格数 | 精细程度 |
 |---|---|---|---|

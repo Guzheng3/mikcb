@@ -25,7 +25,7 @@ Course _course({
 }
 
 void main() {
-  const channel = MethodChannel('com.mutx163.qingyu/home_widget');
+  const channel = MethodChannel('vip.qinghan.withu/home_widget');
 
   late List<MethodCall> pushed;
 

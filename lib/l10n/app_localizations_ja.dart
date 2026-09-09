@@ -3788,12 +3788,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sampleTeacherLi => '李先生';
 
   @override
-  String get aboutOpenWarehouseRepoAction => '教務適応倉庫を開く';
-
-  @override
-  String get copiedWarehouseRepositoryAddress => '教務適応倉庫アドレスをコピーしました';
-
-  @override
   String get aboutUpdateScreenTitle => 'バージョン更新';
 
   @override
@@ -4134,13 +4128,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String aboutWarehouseMaintainerCount(int count) {
     return '$count件の適応項目';
   }
-
-  @override
-  String get aboutParticipateWarehouseTitle => '教務適応に参加';
-
-  @override
-  String get aboutParticipateWarehouseSubtitle =>
-      'パケットキャプチャ、Webデバッグ、JavaScriptができる場合、または自分の学校の教務システムを長期メンテナンスしたい場合は、qingyu_warehouseで新しい学校適応と修正の提出歓迎';
 
   @override
   String get importFileReadFailed => '選択したファイルを読み込めません';
@@ -4636,9 +4623,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get adapterOverrideImportUrlHint => '現在手動で上書きしたログインアドレスを使用中';
-
-  @override
-  String get repositoryLabel => 'リポジトリ';
 
   @override
   String get scriptStatusTitle => 'スクリプトステータス';

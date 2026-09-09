@@ -13,7 +13,7 @@ import '../helpers_test_app.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const liveChannel = MethodChannel('com.mutx163.qingyu/miui_live');
+  const liveChannel = MethodChannel('vip.qinghan.withu/miui_live');
 
   setUp(() {
     StorageService().resetForTesting();
@@ -30,7 +30,6 @@ void main() {
               };
             case 'checkNotificationPermission':
             case 'isIgnoringBatteryOptimizations':
-            case 'isKeepAliveAccessibilityEnabled':
             case 'isAutoStartEnabled':
               return true;
           }

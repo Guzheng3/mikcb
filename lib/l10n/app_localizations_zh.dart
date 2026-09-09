@@ -3709,12 +3709,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sampleTeacherLi => '李老师';
 
   @override
-  String get aboutOpenWarehouseRepoAction => '打开教务适配仓';
-
-  @override
-  String get copiedWarehouseRepositoryAddress => '已复制教务适配仓地址';
-
-  @override
   String get aboutUpdateScreenTitle => '版本更新';
 
   @override
@@ -4043,13 +4037,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String aboutWarehouseMaintainerCount(int count) {
     return '$count 个适配项';
   }
-
-  @override
-  String get aboutParticipateWarehouseTitle => '参与教务适配';
-
-  @override
-  String get aboutParticipateWarehouseSubtitle =>
-      '如果你会抓包、网页调试、JavaScript，或者愿意长期维护自己学校的教务系统，欢迎去 qingyu_warehouse 提交新的学校适配与修复';
 
   @override
   String get importFileReadFailed => '无法读取所选文件';
@@ -4541,9 +4528,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get adapterOverrideImportUrlHint => '当前使用你手动覆盖的登录地址';
-
-  @override
-  String get repositoryLabel => '仓库';
 
   @override
   String get scriptStatusTitle => '脚本状态';
@@ -13527,12 +13511,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get sampleTeacherLi => '李老師';
 
   @override
-  String get aboutOpenWarehouseRepoAction => '打開教務適配倉';
-
-  @override
-  String get copiedWarehouseRepositoryAddress => '已複制教務適配倉地址';
-
-  @override
   String get aboutUpdateScreenTitle => '版本更新';
 
   @override
@@ -13860,13 +13838,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String aboutWarehouseMaintainerCount(int count) {
     return '$count 個適配項';
   }
-
-  @override
-  String get aboutParticipateWarehouseTitle => '參與教務適配';
-
-  @override
-  String get aboutParticipateWarehouseSubtitle =>
-      '如果你會抓包、網頁偵錯、JavaScript，或者願意長期維護自己學校的教務系統，歡迎去 qingyu_warehouse 提交新的學校適配與修複';
 
   @override
   String get importFileReadFailed => '無法讀取所選文件';
@@ -14358,9 +14329,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get adapterOverrideImportUrlHint => '目前使用你手動覆蓋的登入地址';
-
-  @override
-  String get repositoryLabel => '倉庫';
 
   @override
   String get scriptStatusTitle => '脚本狀態';
@@ -23383,12 +23351,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get sampleTeacherLi => '李老師';
 
   @override
-  String get aboutOpenWarehouseRepoAction => '打開教務適配倉';
-
-  @override
-  String get copiedWarehouseRepositoryAddress => '已複制教務適配倉地址';
-
-  @override
   String get aboutUpdateScreenTitle => '版本更新';
 
   @override
@@ -23716,13 +23678,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String aboutWarehouseMaintainerCount(int count) {
     return '$count 個適配項';
   }
-
-  @override
-  String get aboutParticipateWarehouseTitle => '參與教務適配';
-
-  @override
-  String get aboutParticipateWarehouseSubtitle =>
-      '如果你会抓包、網頁偵錯、JavaScript，或者愿意长期維護自己学校的教務系統，欢迎去 qingyu_warehouse 提交新的学校適配與修複';
 
   @override
   String get importFileReadFailed => '無法讀取所选文件';
@@ -24214,9 +24169,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get adapterOverrideImportUrlHint => '目前使用你手動覆盖的登入地址';
-
-  @override
-  String get repositoryLabel => '倉庫';
 
   @override
   String get scriptStatusTitle => '脚本狀態';

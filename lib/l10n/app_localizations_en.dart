@@ -3955,13 +3955,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sampleTeacherLi => 'Prof. Li';
 
   @override
-  String get aboutOpenWarehouseRepoAction => 'Open adapter repository';
-
-  @override
-  String get copiedWarehouseRepositoryAddress =>
-      'Adapter repository address copied';
-
-  @override
   String get aboutUpdateScreenTitle => 'Version updates';
 
   @override
@@ -4316,13 +4309,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String aboutWarehouseMaintainerCount(int count) {
     return '$count adapter items';
   }
-
-  @override
-  String get aboutParticipateWarehouseTitle => 'Contribute adapters';
-
-  @override
-  String get aboutParticipateWarehouseSubtitle =>
-      'If you know packet capture, web debugging, JavaScript, or are willing to maintain your school\'s academic system long-term, you are welcome to submit new school adapters and fixes to qingyu_warehouse';
 
   @override
   String get importFileReadFailed => 'Unable to read the selected file';
@@ -4844,9 +4830,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get adapterOverrideImportUrlHint =>
       'The manually overridden login address is currently in use';
-
-  @override
-  String get repositoryLabel => 'Repository';
 
   @override
   String get scriptStatusTitle => 'Script status';

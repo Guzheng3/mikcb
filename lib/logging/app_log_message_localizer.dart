@@ -64,8 +64,6 @@ abstract final class AppLogMessageLocalizer {
         l10n.logMiuiLiveOpenAutostartSettingsFailed,
       'log_miui_live_open_battery_settings_failed' =>
         l10n.logMiuiLiveOpenBatterySettingsFailed,
-      'log_miui_live_open_accessibility_settings_failed' =>
-        l10n.logMiuiLiveOpenAccessibilitySettingsFailed,
       'log_miui_live_hide_from_recents_failed' =>
         l10n.logMiuiLiveHideFromRecentsFailed,
       'log_live_update_start_failed' => l10n.logLiveUpdateStartFailed,
@@ -123,8 +121,6 @@ abstract final class AppLogMessageLocalizer {
         l10n.logFieldCanPostPromotedNotifications,
       'log_field_ignoring_battery_optimizations' =>
         l10n.logFieldIgnoringBatteryOptimizations,
-      'log_field_keep_alive_accessibility_enabled' =>
-        l10n.logFieldKeepAliveAccessibilityEnabled,
       'log_field_hide_from_recents_enabled' =>
         l10n.logFieldHideFromRecentsEnabled,
       'log_field_task_removed_recently' => l10n.logFieldTaskRemovedRecently,
@@ -246,8 +242,6 @@ abstract final class AppLogMessageLocalizer {
         l10n.logCatMiuiLiveOpenAutostartSettingsFailed,
       'log_cat_miui_live_open_battery_settings_failed' =>
         l10n.logCatMiuiLiveOpenBatterySettingsFailed,
-      'log_cat_miui_live_open_accessibility_settings_failed' =>
-        l10n.logCatMiuiLiveOpenAccessibilitySettingsFailed,
       'log_cat_miui_live_hide_from_recents_failed' =>
         l10n.logCatMiuiLiveHideFromRecentsFailed,
       'log_cat_live_update_flutter_initialize_failed' =>
@@ -321,8 +315,6 @@ abstract final class AppLogMessageLocalizer {
         l10n.logCatLiveUpdatePromotedNotShown,
       'log_cat_live_update_service_stopped' =>
         l10n.logCatLiveUpdateServiceStopped,
-      'log_cat_keep_alive_accessibility_connected' =>
-        l10n.logCatKeepAliveAccessibilityConnected,
       'log_cat_diagnostics_enabled' => l10n.logCatDiagnosticsEnabled,
       'log_cat_diagnostics_cleared' => l10n.logCatDiagnosticsCleared,
       'log_cat_diagnostics_bootstrap' => l10n.logCatDiagnosticsBootstrap,

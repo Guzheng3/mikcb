@@ -21,7 +21,7 @@ class FairMemoryService {
   static final FairMemoryService instance = FairMemoryService._();
 
   static const MethodChannel _channel = MethodChannel(
-    'com.mutx163.qingyu/fair_memory',
+    'vip.qinghan.withu/fair_memory',
   );
   static const String _recoverySnapshotKey = 'fair_memory_recovery_snapshot_v1';
 

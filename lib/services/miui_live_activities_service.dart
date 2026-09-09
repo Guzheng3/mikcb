@@ -12,7 +12,7 @@ import 'umeng_analytics_service.dart';
 
 class MiuiLiveActivitiesService {
   static const MethodChannel _channel = MethodChannel(
-    'com.mutx163.qingyu/miui_live',
+    'vip.qinghan.withu/miui_live',
   );
 
   static final MiuiLiveActivitiesService _instance =
@@ -142,37 +142,10 @@ class MiuiLiveActivitiesService {
     }
   }
 
-  Future<void> openAccessibilitySettings() async {
-    try {
-      await _channel.invokeMethod('openAccessibilitySettings');
-    } catch (e) {
-      unawaited(
-        AppLogService.instance.warn(
-          'miui_live_open_accessibility_settings_failed',
-          AppLogMessages.miuiLiveOpenAccessibilitySettingsFailed,
-          extras: {'error': '$e'},
-        ),
-      );
-      appDebugLog('MiuiLive', '打开无障碍设置失败：$e');
-    }
-  }
-
   Future<bool> isAutoStartEnabled() async {
     if (!Platform.isAndroid) return true;
     try {
       final result = await _channel.invokeMethod('isAutoStartEnabled');
-      return result == true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Future<bool> isKeepAliveAccessibilityEnabled() async {
-    if (!Platform.isAndroid) return false;
-    try {
-      final result = await _channel.invokeMethod(
-        'isKeepAliveAccessibilityEnabled',
-      );
       return result == true;
     } catch (e) {
       return false;

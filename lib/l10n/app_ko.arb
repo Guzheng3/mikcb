@@ -1809,8 +1809,6 @@
   "sampleTeacherZhang": "장 선생님",
   "sampleCourseEnglish": "영어",
   "sampleTeacherLi": "이 선생님",
-  "aboutOpenWarehouseRepoAction": "교무 적응 저장소 열기",
-  "copiedWarehouseRepositoryAddress": "교무 적응 저장소 주소를 복사했습니다",
   "aboutUpdateScreenTitle": "버전 업데이트",
   "aboutUpdateStatusTitle": "업데이트 상태",
   "aboutRefreshCheckTooltip": "다시 확인",
@@ -2000,8 +1998,6 @@
       }
     }
   },
-  "aboutParticipateWarehouseTitle": "교무 적응에 참여",
-  "aboutParticipateWarehouseSubtitle": "패킷 캡처, 웹 디버깅, JavaScript를 할 수 있거나 자신의 학교 교무 시스템을 장기 유지보수하고 싶다면, qingyu_warehouse에서 새 학교 적응과 수정을 제출해 주세요",
   "importFileReadFailed": "선택한 파일을 읽을 수 없습니다",
   "importCleartextBlockedHint": "이 사이트는 HTTPS를 지원하지 않고 평문 통신 허용 목록에도 없어서 여기서 열 수 없습니다",
   "importReplaceExistingTitle": "수업 가져오기",
@@ -2286,7 +2282,6 @@
   "loginEntryLabel": "로그인 항목",
   "unsetConfigLabel": "미설정",
   "adapterOverrideImportUrlHint": "현재 수동으로 덮어쓴 로그인 주소를 사용 중입니다",
-  "repositoryLabel": "저장소",
   "scriptStatusTitle": "스크립트 상태",
   "scriptLoadedLength": "스크립트 읽기 성공. 길이 {count}자.",
   "@scriptLoadedLength": {

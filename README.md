@@ -18,7 +18,7 @@
 |------|------|
 | 仓库 `mikcb` | GitHub 仓库名 |
 | Dart 包 `university_timetable` | 历史包名（pubspec），与仓库名不同 |
-| Android 包名 `com.mutx163.qingyu` | 应用 ID |
+| Android 包名 `vip.qinghan.withu` | 应用 ID |
 | 产品名「轻屿课表」 | 用户可见名称 |
 
 ## 项目定位

@@ -75,8 +75,8 @@ function Resolve-Package {
         return $Preferred
     }
     foreach ($candidate in @(
-        "com.mutx163.qingyu.debug",
-        "com.mutx163.qingyu.profile"
+        "vip.qinghan.withu.debug",
+        "vip.qinghan.withu.profile"
     )) {
         $path = (& $adb shell pm path $candidate 2>$null)
         if ($path -and $path.Trim().Length -gt 0) {
@@ -99,7 +99,7 @@ function Invoke-DeepLink {
         -a android.intent.action.VIEW `
         -c android.intent.category.BROWSABLE `
         -d $Uri `
-        -n "$PackageName/com.mutx163.qingyu.MainActivity" | Out-Host
+        -n "$PackageName/vip.qinghan.withu.MainActivity" | Out-Host
 }
 
 function Show-Help {

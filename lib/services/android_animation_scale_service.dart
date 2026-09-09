@@ -6,7 +6,7 @@ import 'package:university_timetable/ui/hyperos/hyperos_miuix_spec.dart';
 
 /// Reads Android developer-option animation scales for Flutter transitions.
 abstract final class AndroidAnimationScaleService {
-  static const _channel = MethodChannel('com.mutx163.qingyu/system_ui');
+  static const _channel = MethodChannel('vip.qinghan.withu/system_ui');
 
   static double _transitionScale = 1;
   static double _userTransitionSpeed = 1;

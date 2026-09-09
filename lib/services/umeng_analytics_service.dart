@@ -18,7 +18,7 @@ class UmengAnalyticsService {
   UmengAnalyticsService._();
 
   static const MethodChannel _channel = MethodChannel(
-    'com.mutx163.qingyu/umeng_analytics',
+    'vip.qinghan.withu/umeng_analytics',
   );
 
   static bool _initialized = false;

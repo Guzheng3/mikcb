@@ -1400,10 +1400,8 @@ class ContributorsScreen extends StatefulWidget {
 }
 
 class _ContributorsScreenState extends State<ContributorsScreen> {
-  static final WarehouseRepositorySource _warehouseSource =
-      WarehouseRepositorySource.fromGitHubUrl(
-        'https://github.com/Mutx163/qingyu_warehouse',
-      );
+  static const WarehouseRepositorySource _warehouseSource =
+      WarehouseRepositorySource(owner: 'Mutx163', repo: 'qingyu_warehouse');
   static const String _maintainersCacheKey = 'warehouse_maintainers_cache_v1';
 
   final WarehouseRepositoryService _repositoryService =
@@ -1420,11 +1418,8 @@ class _ContributorsScreenState extends State<ContributorsScreen> {
 
   Future<List<_WarehouseMaintainerGroup>>
   _fetchMaintainersFromWarehouse() async {
-    final settings = context.read<TimetableProvider>().settings;
-    final options = WarehouseFetchOptions.fromSettings(settings);
     final rootIndex = await _repositoryService.fetchRootIndex(
       _warehouseSource,
-      options: options,
     );
     final groups = <String, List<String>>{};
 
@@ -1434,7 +1429,6 @@ class _ContributorsScreenState extends State<ContributorsScreen> {
             final adapters = await _repositoryService.fetchAdaptersIndex(
               _warehouseSource,
               school,
-              options: options,
             );
             return adapters.adapters
                 .where((adapter) => adapter.maintainer.trim().isNotEmpty)
@@ -1611,52 +1605,8 @@ class _ContributorsScreenState extends State<ContributorsScreen> {
               ),
             ),
           ),
-          const HyperosSectionGap(),
-          HyperosControlCard(
-            title: l10n.aboutParticipateWarehouseTitle,
-            subtitle: l10n.aboutParticipateWarehouseSubtitle,
-            child: HyperosControlCardInset(
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  HyperosButton(
-                    label: l10n.aboutOpenWarehouseRepoAction,
-                    onPressed: _openWarehouseRepository,
-                  ),
-                  HyperosButton(
-                    label: l10n.copyAddress,
-                    variant: HyperosButtonVariant.secondary,
-                    onPressed: _copyWarehouseRepositoryUrl,
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
-    );
-  }
-
-  Future<void> _openWarehouseRepository() async {
-    final uri = Uri.tryParse(_warehouseSource.repositoryUrl);
-    if (uri == null) {
-      return;
-    }
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-
-  Future<void> _copyWarehouseRepositoryUrl() async {
-    await Clipboard.setData(
-      ClipboardData(text: _warehouseSource.repositoryUrl),
-    );
-    if (!mounted) {
-      return;
-    }
-    showAppToast(
-      context,
-      message: AppLocalizations.of(context)!.copiedWarehouseRepositoryAddress,
-      kind: AppToastKind.success,
     );
   }
 }

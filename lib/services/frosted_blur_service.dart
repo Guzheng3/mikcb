@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 
 /// Android-native RGBA blur (RenderEffect API 31+) with Dart Gaussian fallback.
 abstract final class FrostedBlurService {
-  static const _channel = MethodChannel('com.mutx163.qingyu/frosted_blur');
+  static const _channel = MethodChannel('vip.qinghan.withu/frosted_blur');
 
   static bool? _nativeSupportedCache;
   static bool _nativeBlurUnavailable = false;

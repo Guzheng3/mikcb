@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:university_timetable/data/timetable_repository.dart';
@@ -27,7 +29,7 @@ void main() {
       () async {
     final provider = await createProvider();
     expect(provider.globalSettings, isNull);
-    expect(provider.settings.courseCardFontSize, 9);
+    expect(provider.settings.courseCardFontSize, 11.5);
   });
 
   test('global settings apply to timetable fields left at defaults', () async {
@@ -111,7 +113,7 @@ void main() {
     await provider.clearGlobalTimetableSettings();
     expect(provider.globalSettings, isNull);
     expect(provider.settings.timetableAutoFitSectionHeight, isTrue);
-    expect(provider.settings.courseCardFontSize, 9);
+    expect(provider.settings.courseCardFontSize, 11.5);
   });
 
   test('updateSettings (batch/theme path) also only pins changed fields',
@@ -159,7 +161,7 @@ void main() {
 
     await provider.clearGlobalTimetableSettings();
     expect(notifications, greaterThanOrEqualTo(1));
-    expect(provider.settings.courseCardFontSize, 9);
+    expect(provider.settings.courseCardFontSize, 11.5);
 
     final reloaded = await createProvider();
     expect(reloaded.globalSettings, isNull);
@@ -295,5 +297,34 @@ void main() {
       provider.settings.homePageWallpaperPath,
       '/tmp/global-wallpaper.jpg',
     );
+  });
+
+  test('legacy backdrop blur/frost defaults are zeroed once', () async {
+    final legacySettings = TimetableSettings.defaults().copyWith(
+      homePageBackdropBlurSigma: 13,
+      homePageBackdropFrostAlpha: 0.05,
+    );
+    final legacyProfile = TimetableProfile(
+      id: 'legacy-backdrop',
+      name: '旧课表',
+      courses: const [],
+      settings: legacySettings,
+      currentWeek: 1,
+      createdAt: DateTime(2026, 1, 5),
+      lastUsedAt: DateTime(2026, 1, 5),
+    );
+    SharedPreferences.setMockInitialValues({
+      'timetable_profiles': jsonEncode([legacyProfile.toJson()]),
+      'active_timetable_profile_id': 'legacy-backdrop',
+      'global_timetable_settings': legacySettings.toJsonString(),
+    });
+
+    final provider = await createProvider();
+
+    // 全局显示设置与课表自身的旧默认值都要归零。
+    expect(provider.globalSettings!.homePageBackdropBlurSigma, 0);
+    expect(provider.globalSettings!.homePageBackdropFrostAlpha, 0);
+    expect(provider.settings.homePageBackdropBlurSigma, 0);
+    expect(provider.settings.homePageBackdropFrostAlpha, 0);
   });
 }

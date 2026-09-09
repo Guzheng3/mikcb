@@ -81,7 +81,7 @@ void main() {
       settings.courseCardHorizontalAlign,
       CourseCardHorizontalAlign.center,
     );
-    expect(settings.courseCardFontSize, 9);
+    expect(settings.courseCardFontSize, 11.5);
     expect(
       settings.timetableTimeColumnWidthMode,
       TimetableTimeColumnWidthMode.narrow,
@@ -168,7 +168,7 @@ void main() {
       restored.courseCardHorizontalAlign,
       CourseCardHorizontalAlign.center,
     );
-    expect(restored.courseCardFontSize, 9);
+    expect(restored.courseCardFontSize, 11.5);
     expect(
       restored.timetableTimeColumnWidthMode,
       TimetableTimeColumnWidthMode.narrow,
@@ -849,8 +849,8 @@ void main() {
 
   test('home page background settings roundtrip in json', () {
     final defaults = TimetableSettings.defaults();
-    expect(defaults.homePageBackdropBlurSigma, 13);
-    expect(defaults.homePageBackdropFrostAlpha, 0.05);
+    expect(defaults.homePageBackdropBlurSigma, 0.0);
+    expect(defaults.homePageBackdropFrostAlpha, 0.0);
 
     final settings = TimetableSettings.defaults().copyWith(
       homePageBackgroundFill: HomePageBackgroundFill.image,

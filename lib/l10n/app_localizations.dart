@@ -6855,18 +6855,6 @@ abstract class AppLocalizations {
   /// **'李老师'**
   String get sampleTeacherLi;
 
-  /// No description provided for @aboutOpenWarehouseRepoAction.
-  ///
-  /// In zh, this message translates to:
-  /// **'打开教务适配仓'**
-  String get aboutOpenWarehouseRepoAction;
-
-  /// No description provided for @copiedWarehouseRepositoryAddress.
-  ///
-  /// In zh, this message translates to:
-  /// **'已复制教务适配仓地址'**
-  String get copiedWarehouseRepositoryAddress;
-
   /// No description provided for @aboutUpdateScreenTitle.
   ///
   /// In zh, this message translates to:
@@ -7460,18 +7448,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'{count} 个适配项'**
   String aboutWarehouseMaintainerCount(int count);
-
-  /// No description provided for @aboutParticipateWarehouseTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'参与教务适配'**
-  String get aboutParticipateWarehouseTitle;
-
-  /// No description provided for @aboutParticipateWarehouseSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'如果你会抓包、网页调试、JavaScript，或者愿意长期维护自己学校的教务系统，欢迎去 qingyu_warehouse 提交新的学校适配与修复'**
-  String get aboutParticipateWarehouseSubtitle;
 
   /// No description provided for @importFileReadFailed.
   ///
@@ -8352,12 +8328,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'当前使用你手动覆盖的登录地址'**
   String get adapterOverrideImportUrlHint;
-
-  /// No description provided for @repositoryLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'仓库'**
-  String get repositoryLabel;
 
   /// No description provided for @scriptStatusTitle.
   ///

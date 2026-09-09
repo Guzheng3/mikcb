@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_keep_alive_label">Qingyu Timetable keep-alive service</string>
-    <string name="accessibility_keep_alive_description">Auxiliary service to improve Super Island and reminder stability in the background. Does not read screen content or perform automated actions.</string>
 
     <string name="app_display_name">Qingyu Timetable</string>
 

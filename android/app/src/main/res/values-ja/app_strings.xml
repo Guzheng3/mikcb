@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_keep_alive_label">軽屿時間割バックグラウンド維持サービス</string>
-    <string name="accessibility_keep_alive_description">スーパーアイランドとリマインダーの安定性を高める補助サービスです。画面内容の読み取りや自動操作は行いません。</string>
 
     <string name="app_display_name">軽屿時間割</string>
 

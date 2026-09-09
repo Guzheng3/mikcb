@@ -5,7 +5,7 @@ import 'package:university_timetable/services/app_migration_service.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const migrationChannel = MethodChannel('com.mutx163.qingyu/migration');
+  const migrationChannel = MethodChannel('vip.qinghan.withu/migration');
 
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

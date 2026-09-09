@@ -37,8 +37,6 @@ abstract final class AppLogMessages {
       'log_miui_live_open_autostart_settings_failed';
   static const miuiLiveOpenBatterySettingsFailed =
       'log_miui_live_open_battery_settings_failed';
-  static const miuiLiveOpenAccessibilitySettingsFailed =
-      'log_miui_live_open_accessibility_settings_failed';
   static const miuiLiveHideFromRecentsFailed =
       'log_miui_live_hide_from_recents_failed';
   static const liveUpdateStartFailed = 'log_live_update_start_failed';
@@ -116,7 +114,6 @@ const Map<String, String> appLogFieldLabels = {
   'hasPromotedPermissionDeclared': 'log_field_has_promoted_permission_declared',
   'canPostPromotedNotifications': 'log_field_can_post_promoted_notifications',
   'ignoringBatteryOptimizations': 'log_field_ignoring_battery_optimizations',
-  'keepAliveAccessibilityEnabled': 'log_field_keep_alive_accessibility_enabled',
   'hideFromRecentsEnabled': 'log_field_hide_from_recents_enabled',
   'taskRemovedRecently': 'log_field_task_removed_recently',
   'lastTaskRemovedAt': 'log_field_last_task_removed_at',
@@ -215,8 +212,6 @@ const Map<String, String> appLogCategoryLabels = {
       'log_cat_miui_live_open_autostart_settings_failed',
   'miui_live_open_battery_settings_failed':
       'log_cat_miui_live_open_battery_settings_failed',
-  'miui_live_open_accessibility_settings_failed':
-      'log_cat_miui_live_open_accessibility_settings_failed',
   'miui_live_hide_from_recents_failed':
       'log_cat_miui_live_hide_from_recents_failed',
   'live_update_flutter_initialize_failed':
@@ -272,8 +267,6 @@ const Map<String, String> appLogCategoryLabels = {
   'live_update_not_promoted': 'log_cat_live_update_not_promoted',
   'live_update_promoted_not_shown': 'log_cat_live_update_promoted_not_shown',
   'live_update_service_stopped': 'log_cat_live_update_service_stopped',
-  'keep_alive_accessibility_connected':
-      'log_cat_keep_alive_accessibility_connected',
   'diagnostics_enabled': 'log_cat_diagnostics_enabled',
   'diagnostics_cleared': 'log_cat_diagnostics_cleared',
   'diagnostics_bootstrap': 'log_cat_diagnostics_bootstrap',

@@ -11,7 +11,7 @@ import 'package:flutter_miuix/miuix.dart';
 /// 回退到 [MediaQueryData.boldText]。
 abstract final class SystemFontWeightService {
   static const MethodChannel _channel = MethodChannel(
-    'com.mutx163.qingyu/system_ui',
+    'vip.qinghan.withu/system_ui',
   );
 
   static Future<int?> readAdjustment() async {

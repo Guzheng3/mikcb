@@ -12,7 +12,7 @@ class MemoryStatsService {
   static final MemoryStatsService instance = MemoryStatsService._();
 
   static const MethodChannel _channel = MethodChannel(
-    'com.mutx163.qingyu/memory_stats',
+    'vip.qinghan.withu/memory_stats',
   );
 
   /// 与 Android productFlavor 一致：dev → `.debug`，perf → `.profile`。

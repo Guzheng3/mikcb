@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 
 import '../models/timetable_settings.dart';
 import '../providers/timetable_provider.dart';
-import '../services/miui_live_activities_service.dart';
 import '../services/app_log_service.dart';
 import '../utils/hex_color.dart';
 import '../utils/app_toast.dart';
@@ -989,31 +988,13 @@ class LiveKeepAliveSettingsScreen extends StatefulWidget {
 }
 
 class _LiveKeepAliveSettingsScreenState
-    extends State<LiveKeepAliveSettingsScreen>
-    with WidgetsBindingObserver {
-  final MiuiLiveActivitiesService _liveService = MiuiLiveActivitiesService();
+    extends State<LiveKeepAliveSettingsScreen> {
   late TimetableSettings _draft;
-  bool _enabled = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _draft = context.read<TimetableProvider>().settings;
-    unawaited(_refresh(retryIfDisabled: true));
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      unawaited(_refresh(retryIfDisabled: true));
-    }
   }
 
   @override
@@ -1043,120 +1024,10 @@ class _LiveKeepAliveSettingsScreenState
                   setState(() => _draft = provider.settings);
                 },
               ),
-              _LiveKeepAliveServiceTile(
-                enabled: _enabled,
-                onOpenSettings: _openSettings,
-              ),
             ],
           ),
         ],
       ),
-    );
-  }
-
-  Future<void> _openSettings() async {
-    // 无障碍保活属于敏感权限：跳系统设置前先弹窗说明用途与边界（不读屏、
-    // 不代点），用户确认后再进入系统设置，降低误开与投诉风险。
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showHyperosConfirmDialog(
-      context: context,
-      title: l10n.keepAliveConfirmTitle,
-      message: l10n.keepAliveConfirmBody,
-      cancelLabel: l10n.cancelAction,
-      confirmLabel: l10n.keepAliveConfirmGoAction,
-    );
-    if (confirmed != true) return;
-    if (!mounted) return;
-    await _liveService.openAccessibilitySettings();
-    await Future<void>.delayed(const Duration(milliseconds: 500));
-    if (!mounted) return;
-    await _refresh(retryIfDisabled: true);
-  }
-
-  Future<void> _refresh({bool retryIfDisabled = false}) async {
-    var enabled = await _liveService.isKeepAliveAccessibilityEnabled();
-    if (!enabled && retryIfDisabled) {
-      for (var i = 0; i < 3 && !enabled; i++) {
-        await Future<void>.delayed(const Duration(milliseconds: 450));
-        if (!mounted) return;
-        enabled = await _liveService.isKeepAliveAccessibilityEnabled();
-      }
-    }
-    if (!mounted) return;
-    setState(() {
-      _enabled = enabled;
-    });
-  }
-}
-
-class _LiveKeepAliveServiceTile extends StatelessWidget {
-  const _LiveKeepAliveServiceTile({
-    required this.enabled,
-    required this.onOpenSettings,
-  });
-
-  final bool enabled;
-  final VoidCallback onOpenSettings;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final cardColor = HyperosColors.card(context);
-    final highlightColor = HyperosColors.rowHighlight(context);
-    final iconAccent = enabled
-        ? HyperosIconColors.green
-        : HyperosIconColors.orange;
-
-    final row = ConstrainedBox(
-      constraints: const BoxConstraints(
-        minHeight: HyperosTokens.listRowMinHeight,
-      ),
-      child: Padding(
-        padding: HyperosTokens.rowPaddingUniform,
-        child: Row(
-          children: [
-            HyperosIconBadge(
-              icon: enabled
-                  ? Icons.check_circle_rounded
-                  : Icons.accessibility_new_rounded,
-              accent: iconAccent,
-            ),
-            const SizedBox(width: HyperosTokens.rowContentGap),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    l10n.keepAliveServiceTitle,
-                    style: HyperosTypography.listTitle(context),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    enabled
-                        ? l10n.keepAliveServiceEnabledSubtitle
-                        : l10n.keepAliveServiceDisabledSubtitle,
-                    style: HyperosTypography.listDetail(context),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            HyperosButton(
-              label: l10n.goEnableAction,
-              variant: HyperosButtonVariant.secondary,
-              onPressed: onOpenSettings,
-            ),
-          ],
-        ),
-      ),
-    );
-
-    return HyperosPressableRow(
-      onTap: onOpenSettings,
-      backgroundColor: cardColor,
-      highlightColor: highlightColor,
-      child: row,
     );
   }
 }

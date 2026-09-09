@@ -13,9 +13,9 @@ import 'package:university_timetable/services/widget_launch_router.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const channel = MethodChannel('com.mutx163.qingyu/home_widget');
-  const liveChannel = MethodChannel('com.mutx163.qingyu/miui_live');
-  const examChannel = MethodChannel('com.mutx163.qingyu/exam_reminder');
+  const channel = MethodChannel('vip.qinghan.withu/home_widget');
+  const liveChannel = MethodChannel('vip.qinghan.withu/miui_live');
+  const examChannel = MethodChannel('vip.qinghan.withu/exam_reminder');
   PendingHomeWidgetLaunch? pendingLaunch;
   final bindings = <int, String?>{};
 

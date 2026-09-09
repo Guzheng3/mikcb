@@ -16,10 +16,10 @@ if (-not (Test-Path $adb)) {
 }
 
 $debugPackages = @(
-    "com.mutx163.qingyu.debug",
-    "com.mutx163.qingyu.profile"
+    "vip.qinghan.withu.debug",
+    "vip.qinghan.withu.profile"
 )
-$prodPackage = "com.mutx163.qingyu"
+$prodPackage = "vip.qinghan.withu"
 
 $devices = & $adb devices | Select-String "device$"
 if (-not $devices) {

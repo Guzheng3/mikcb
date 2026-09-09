@@ -1806,8 +1806,6 @@
   "sampleTeacherZhang": "张老師",
   "sampleCourseEnglish": "英語",
   "sampleTeacherLi": "李老師",
-  "aboutOpenWarehouseRepoAction": "打開教務適配倉",
-  "copiedWarehouseRepositoryAddress": "已複制教務適配倉地址",
   "aboutUpdateScreenTitle": "版本更新",
   "aboutUpdateStatusTitle": "更新狀態",
   "aboutRefreshCheckTooltip": "重新檢查",
@@ -1997,8 +1995,6 @@
       }
     }
   },
-  "aboutParticipateWarehouseTitle": "參與教務適配",
-  "aboutParticipateWarehouseSubtitle": "如果你会抓包、網頁偵錯、JavaScript，或者愿意长期維護自己学校的教務系統，欢迎去 qingyu_warehouse 提交新的学校適配與修複",
   "importFileReadFailed": "無法讀取所选文件",
   "importCleartextBlockedHint": "該站點暫不支援 HTTPS 存取且未在明文白名單內，無法在此開啟",
   "importReplaceExistingTitle": "匯入課程",
@@ -2283,7 +2279,6 @@
   "loginEntryLabel": "登入入口",
   "unsetConfigLabel": "未配置",
   "adapterOverrideImportUrlHint": "目前使用你手動覆盖的登入地址",
-  "repositoryLabel": "倉庫",
   "scriptStatusTitle": "脚本狀態",
   "scriptLoadedLength": "脚本已成功讀取，长度 {count} 字符",
   "@scriptLoadedLength": {

@@ -763,6 +763,74 @@ class TimetableProvider with ChangeNotifier {
     await _profileRepository.saveProfiles(profiles);
   }
 
+  /// 旧版「背景模糊强度 / 磨砂亮度」默认值是 13 / 0.05，现改为 0。
+  ///
+  /// 存量数据里沿用旧默认（且未被显式覆盖）的字段需一次性归零：否则它们会
+  /// 因「与内置默认不同」被惰性判定成课表自己配过，反过来盖掉新的全局 0。
+  /// 全局显示设置与每份课表自身设置都要处理。返回归零后的全局设置。
+  Future<TimetableSettings?> _migrateLegacyBackdropTuningZero(
+    List<TimetableProfile> profiles,
+    TimetableSettings? globalSettings,
+  ) async {
+    if (await _storageService.hasMigratedBackdropTuningZero()) {
+      return globalSettings;
+    }
+    const legacyBlurSigma = 13.0;
+    const legacyFrostAlpha = 0.05;
+
+    var profilesChanged = false;
+    for (var i = 0; i < profiles.length; i++) {
+      final profile = profiles[i];
+      final settings = profile.settings;
+      final overrides = profile.settingsOverrideKeys;
+      final zeroBlur =
+          settings.homePageBackdropBlurSigma == legacyBlurSigma &&
+          !overrides.contains('homePageBackdropBlurSigma');
+      final zeroFrost =
+          settings.homePageBackdropFrostAlpha == legacyFrostAlpha &&
+          !overrides.contains('homePageBackdropFrostAlpha');
+      if (!zeroBlur && !zeroFrost) {
+        continue;
+      }
+      profiles[i] = profile.copyWith(
+        settings: settings.copyWith(
+          homePageBackdropBlurSigma: zeroBlur
+              ? 0
+              : settings.homePageBackdropBlurSigma,
+          homePageBackdropFrostAlpha: zeroFrost
+              ? 0
+              : settings.homePageBackdropFrostAlpha,
+        ),
+      );
+      profilesChanged = true;
+    }
+    if (profilesChanged) {
+      await _profileRepository.saveProfiles(profiles);
+    }
+
+    var migratedGlobal = globalSettings;
+    if (globalSettings != null) {
+      final zeroBlur =
+          globalSettings.homePageBackdropBlurSigma == legacyBlurSigma;
+      final zeroFrost =
+          globalSettings.homePageBackdropFrostAlpha == legacyFrostAlpha;
+      if (zeroBlur || zeroFrost) {
+        migratedGlobal = globalSettings.copyWith(
+          homePageBackdropBlurSigma: zeroBlur
+              ? 0
+              : globalSettings.homePageBackdropBlurSigma,
+          homePageBackdropFrostAlpha: zeroFrost
+              ? 0
+              : globalSettings.homePageBackdropFrostAlpha,
+        );
+        await _profileRepository.saveGlobalTimetableSettings(migratedGlobal);
+      }
+    }
+
+    await _storageService.setMigratedBackdropTuningZero(true);
+    return migratedGlobal;
+  }
+
   Future<void> _init() async {
     await _storageService.init();
 
@@ -781,6 +849,12 @@ class TimetableProvider with ChangeNotifier {
         .getScheduleDateRuleLastAppliedSignature();
     final globalSettings = await _profileRepository
         .getGlobalTimetableSettings();
+    // 旧版背景模糊/磨砂默认值（13 / 0.05）改为 0 的一次性归零：全局设置
+    // 与每份课表自身设置都要处理，否则存量值会盖掉新的 0。
+    final migratedGlobalSettings = await _migrateLegacyBackdropTuningZero(
+      profiles,
+      globalSettings,
+    );
 
     _profiles = profiles;
     _timeSchemes = timeSchemes;
@@ -789,7 +863,7 @@ class TimetableProvider with ChangeNotifier {
     _activeProfileId = activeProfileId;
     _partnerBinding = partnerBinding;
     _scheduleDateRuleLastAppliedSignature = lastAppliedSignature;
-    _globalSettings = globalSettings;
+    _globalSettings = migratedGlobalSettings;
 
     if (_activeProfileId != null) {
       final storedActive = _getProfileById(_activeProfileId);

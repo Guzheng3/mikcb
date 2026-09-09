@@ -127,7 +127,7 @@ class AppUpdateService {
   static const String downloadCancelledMessage = 'download_cancelled';
 
   static const MethodChannel _systemDownloadChannel = MethodChannel(
-    'com.mutx163.qingyu/system_download',
+    'vip.qinghan.withu/system_download',
   );
 
   final List<UpdateLogEntry> logs = [];

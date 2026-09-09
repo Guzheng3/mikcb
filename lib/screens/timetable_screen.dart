@@ -3789,15 +3789,15 @@ class _TimetableScreenState extends State<TimetableScreen>
   }
 
   // Card paging tuning: the incoming neighbor enters the centered card reveal.
-  // Forward (left swipe): the incoming page rises from below (scale 79�?00%,
-  // fade 0.22�?, blur 14蟽鈫?) while the outgoing page follows the finger away.
-  // Backward (right swipe): the outgoing page stacks in place and recedes
-  // (fade ? .22 + shrink ? 2.5% + blur) while the left neighbor drops in from
-  // the very top.
+  // Forward (left swipe): the incoming page rises from below (scale 85% -> 100%,
+  // opacity 0.0052 -> 1, blur 14 sigma -> 0) while the outgoing page follows the
+  // finger away. Backward (right swipe): the outgoing page stacks in place and
+  // recedes (opacity 1 -> 0.0052, shrink to 85%, blur) while the left neighbor
+  // drops in from the very top.
   static const double _cardPagerAppearStart = 0.1314;
-  static const double _cardPagerAppearOpacity = 0.22;
+  static const double _cardPagerAppearOpacity = 0.0052;
   static const double _cardPagerMaxBlurSigma = 14;
-  static const double _cardPagerMinScale = 0.79;
+  static const double _cardPagerMinScale = 0.85;
 
   /// Only the gesture-target neighbor enters the centered card reveal.
   Widget _buildPagerCardTransition({
@@ -4453,8 +4453,26 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
+  /// Lower-layer reveal curve for the week deck. Mirrors the day pager's
+  /// [_cardPagerAppearStart] dead zone: the lower card holds its seed state
+  /// until the upper layer has travelled that fraction of the page, then ramps
+  /// to full over the remaining travel.
+  double _weekDeckAppearProgress(double progress) {
+    return ((progress - _cardPagerAppearStart) /
+            (1.0 - _cardPagerAppearStart))
+        .clamp(0.0, 1.0)
+        .toDouble();
+  }
+
   /// Week swipe z-order stack; see [_buildWeekPagerDeck] for the
   /// choreography.
+  ///
+  /// Both cards keep the cross-dissolve (scale + opacity) while the moving
+  /// card also travels horizontally:
+  /// - Forward (left swipe): the current week follows the finger out to the
+  ///   left while it fades; the next week rises in place underneath.
+  /// - Backward (right swipe): the previous week slides in from the left while
+  ///   it fades in; the current week recedes in place underneath.
   Widget _buildWeekDeckStack({
     required TimetableProvider provider,
     required TimetableSettings settings,
@@ -4467,56 +4485,74 @@ class _TimetableScreenState extends State<TimetableScreen>
     final maxIndex = settings.semesterWeekCount;
     final outgoingIndex = startPage.round();
 
-    Widget revealCard(
+    Widget deckCard(
       int index, {
-      required double scale,
+      required double translateX,
+      double scale = 1.0,
       double opacity = 1.0,
     }) {
       if (index < 0 || index >= maxIndex) {
         return const SizedBox.shrink();
       }
-      final card = Transform.scale(
-        scale: scale,
-        child: _buildWeekDeckCard(
-          provider,
-          settings,
-          availableWidth,
-          availableHeight,
-          index,
-        ),
-      );
       return Opacity(
         opacity: opacity.clamp(0.0, 1.0),
-        child: card,
+        child: Transform.translate(
+          offset: Offset(translateX, 0),
+          child: Transform.scale(
+            scale: scale,
+            child: _buildWeekDeckCard(
+              provider,
+              settings,
+              availableWidth,
+              availableHeight,
+              index,
+            ),
+          ),
+        ),
       );
     }
 
-    // Forward (left swipe): the incoming right neighbor grows in place on the
-    // lower layer while the outgoing page fades over it. Both cards stay
-    // centered so the gesture never reads as a horizontal page slide.
+    // Forward (left swipe): the current week slides out to the left while it
+    // fades over the next week, which rises in place underneath (scale
+    // 85%->100%, opacity 0.52%->100% after the 13.14% dead zone).
     if (direction > 0) {
       final progress = delta.clamp(0.0, 1.0).toDouble();
+      final appear = _weekDeckAppearProgress(progress);
       final incomingScale =
-          _cardPagerMinScale + (1.0 - _cardPagerMinScale) * progress;
+          _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appear;
+      final incomingOpacity =
+          _cardPagerAppearOpacity +
+          (1.0 - _cardPagerAppearOpacity) * appear;
       final outgoingOpacity =
           _cardPagerAppearOpacity +
           (1.0 - _cardPagerAppearOpacity) * (1.0 - progress);
       return Stack(
         fit: StackFit.expand,
         children: [
-          revealCard(outgoingIndex + 1, scale: incomingScale),
-          revealCard(
+          deckCard(
+            outgoingIndex + 1,
+            translateX: 0,
+            scale: incomingScale,
+            opacity: incomingOpacity,
+          ),
+          deckCard(
             outgoingIndex,
-            scale: 1.0,
+            translateX: -progress * availableWidth,
             opacity: outgoingOpacity,
           ),
         ],
       );
     }
 
-    // Backward (right swipe): the outgoing page recedes in place on the top
-    // layer while the previous week stays centered underneath it.
+    // Backward (right swipe): the previous week slides in from the left while
+    // it fades in; the current week recedes in place underneath.
     final progress = (-delta).clamp(0.0, 1.0).toDouble();
+    final appear = _weekDeckAppearProgress(progress);
+    final incomingScale =
+        _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appear;
+    final incomingOpacity =
+        _cardPagerAppearOpacity +
+        (1.0 - _cardPagerAppearOpacity) * appear;
     final outgoingScale = 1.0 - (1.0 - _cardPagerMinScale) * progress;
     final outgoingOpacity =
         _cardPagerAppearOpacity +
@@ -4524,11 +4560,17 @@ class _TimetableScreenState extends State<TimetableScreen>
     return Stack(
       fit: StackFit.expand,
       children: [
-        revealCard(outgoingIndex - 1, scale: 1.0),
-        revealCard(
+        deckCard(
           outgoingIndex,
+          translateX: 0,
           scale: outgoingScale,
           opacity: outgoingOpacity,
+        ),
+        deckCard(
+          outgoingIndex - 1,
+          translateX: -(1.0 - progress) * availableWidth,
+          scale: incomingScale,
+          opacity: incomingOpacity,
         ),
       ],
     );

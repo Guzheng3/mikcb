@@ -20,12 +20,12 @@ if (-not (Test-Path $adb)) { Write-Host "找不到 adb（ANDROID_HOME=$env:ANDRO
 if ($Mode -eq "debug") {
     $flavor = "dev"
     $buildMode = "debug"
-    $appId = "com.mutx163.qingyu.debug"
+    $appId = "vip.qinghan.withu.debug"
     $apk = Join-Path $root "build/app/outputs/flutter-apk/app-dev-debug.apk"
 } else {
     $flavor = "perf"
     $buildMode = "profile"
-    $appId = "com.mutx163.qingyu.profile"
+    $appId = "vip.qinghan.withu.profile"
     $apk = Join-Path $root "build/app/outputs/flutter-apk/app-perf-profile.apk"
 }
 
@@ -60,6 +60,6 @@ if ($LASTEXITCODE -ne 0) { Write-Host "android install 失败" -ForegroundColor 
 Write-Host ("    安装阶段耗时: {0:N1}s" -f $sw.Elapsed.TotalSeconds)
 
 Write-Host "==> [3/3] 启动 $appId ..."
-$activity = "com.mutx163.qingyu.MainActivity"  # Kotlin 包名（flavor 只改 applicationId，不改类包）
+$activity = "vip.qinghan.withu.MainActivity"  # Kotlin 包名（flavor 只改 applicationId，不改类包）
 & $adb -s $Device shell am start -n "$appId/$activity" 2>$null | Out-Null
 Write-Host "==> 完成（总耗时: $([math]::Round($sw.Elapsed.TotalSeconds, 1))s）"

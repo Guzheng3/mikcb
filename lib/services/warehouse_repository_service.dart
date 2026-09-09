@@ -2,14 +2,12 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:http/http.dart' as http;
 
 import '../l10n/service_message_localizer.dart';
 import '../logging/app_debug_log.dart';
-import '../models/warehouse_repository_models.dart';
 import '../models/timetable_settings.dart';
+import '../models/warehouse_repository_models.dart';
 import '../utils/async_utils.dart';
-import 'app_http_client.dart';
 
 typedef WarehouseAssetLoader = Future<List<int>> Function(String assetPath);
 
@@ -27,6 +25,10 @@ class _BuiltInWarehouseAdapter {
   });
 }
 
+/// 兼容层：远程适配仓已移除，本类型不再参与任何取值决策。
+///
+/// 调用方仍可传入（`fetchRootIndex` / `fetchAdaptersIndex` / `fetchAdapterScript`
+/// 都保留了 `options` 参数以维持既有签名），但内容会被完全忽略。
 class WarehouseFetchOptions {
   final AppUpdateDownloadSource downloadSource;
   final AppUpdateMirrorPreset mirrorPreset;
@@ -38,6 +40,10 @@ class WarehouseFetchOptions {
     required this.customMirrorUrlPrefix,
   });
 
+  /// 兼容层：远程适配仓已移除，返回值不再参与任何取值决策。
+  ///
+  /// 保留工厂以便 `WarehouseFetchOptions.fromSettings(settings)` 的既有调用
+  /// 继续编译，但下载源 / 镜像配置对导入流程不再有任何影响。
   factory WarehouseFetchOptions.fromSettings(TimetableSettings settings) {
     return WarehouseFetchOptions(
       downloadSource: AppUpdateDownloadSourceX.fromValue(
@@ -51,6 +57,13 @@ class WarehouseFetchOptions {
   }
 }
 
+/// 教务适配资源服务。
+///
+/// 只从打包进应用的 assets 读取学校索引、适配器索引与适配脚本：
+/// 不发起任何网络请求，因此不存在镜像回退、投毒镜像或远程仓不可达的失败面。
+/// 目前内置学校为 [builtInSchoolEntries]（SCUEC / MYSY），
+/// 索引文件为 `assets/warehouse/root_index.yaml` 与
+/// `assets/warehouse/<学校>/adapters.yaml`。
 class WarehouseRepositoryService {
   static const String builtInSchoolId = 'SCUEC';
   static const WarehouseSchoolEntry builtInSchoolEntry = WarehouseSchoolEntry(
@@ -87,14 +100,11 @@ class WarehouseRepositoryService {
         ),
       };
 
-  final http.Client _client;
   final WarehouseAssetLoader _assetLoader;
 
   WarehouseRepositoryService({
-    http.Client? client,
     WarehouseAssetLoader? assetLoader,
-  }) : _client = client ?? createAppHttpClient(),
-       _assetLoader = assetLoader ?? _loadBundledAsset;
+  }) : _assetLoader = assetLoader ?? _loadBundledAsset;
 
   static Future<List<int>> _loadBundledAsset(String assetPath) async {
     final data = await rootBundle.load(assetPath);
@@ -105,61 +115,66 @@ class WarehouseRepositoryService {
     appDebugLog('WarehouseService', '${formatLogTimestamp()} $message');
   }
 
+  /// 读取内置学校列表。
+  ///
+  /// [source] 与 [options] 仅为兼容既有调用签名保留，不再被使用：
+  /// 学校列表永远来自打包 assets。
   Future<WarehouseRootIndex> fetchRootIndex(
     WarehouseRepositorySource source, {
     WarehouseFetchOptions? options,
   }) async {
-    _log('获取学校列表...');
-    try {
-      final content = await _fetchText(
-        source.buildRawFileUri('index/root_index.yaml'),
-        options: options,
-      );
-      return _withBuiltInSchools(_parseRootIndex(content));
-    } on WarehouseRepositoryException catch (error) {
-      _log('remote root index unavailable: ${error.message}');
-      return _withBuiltInSchools(
-        _parseRootIndex(await _loadAssetText(_builtInRootIndexAssetPath)),
-      );
-    }
+    _log('读取内置学校列表 assets=$_builtInRootIndexAssetPath');
+    return _withBuiltInSchools(
+      _parseRootIndex(await _loadAssetText(_builtInRootIndexAssetPath)),
+    );
   }
 
+  /// 读取指定学校的适配器列表；仅内置学校有索引，其余返回
+  /// `warehouse_no_adapters`。
   Future<WarehouseAdaptersIndex> fetchAdaptersIndex(
     WarehouseRepositorySource source,
     WarehouseSchoolEntry school, {
     WarehouseFetchOptions? options,
   }) async {
-    _log('获取 ${school.name} 适配器列表...');
     final builtInAdapter = _builtInAdapterForSchool(school);
-    if (builtInAdapter != null) {
-      _log('${school.name} uses bundled adapter index');
-      return _parseAdaptersIndex(
-        await _loadAssetText(builtInAdapter.adapterIndexAssetPath),
-        schoolName: school.name,
+    if (builtInAdapter == null) {
+      _log('${school.name} 无内置适配器索引');
+      throw WarehouseRepositoryException(
+        encodeServiceMessage('warehouse_no_adapters', {
+          'schoolName': school.name,
+        }),
       );
     }
-    final content = await _fetchText(
-      source.buildRawFileUri(
-        'resources/${school.resourceFolder}/adapters.yaml',
-      ),
-      options: options,
+    _log('读取 ${school.name} 内置适配器索引');
+    return _parseAdaptersIndex(
+      await _loadAssetText(builtInAdapter.adapterIndexAssetPath),
+      schoolName: school.name,
     );
-    return _parseAdaptersIndex(content, schoolName: school.name);
   }
 
+  /// 读取适配脚本；仅内置适配器有脚本，其余返回
+  /// `warehouse_no_adapters`。
   Future<String> fetchAdapterScript(
     WarehouseRepositorySource source, {
     required WarehouseSchoolEntry school,
     required WarehouseAdapterEntry adapter,
     WarehouseFetchOptions? options,
   }) async {
-    final path = 'resources/${school.resourceFolder}/${adapter.assetJsPath}';
     final builtInAdapter = _builtInAdapterForSchool(school);
-    final bytes =
-        builtInAdapter != null && _isBuiltInAdapter(builtInAdapter, adapter)
-        ? await _assetLoader(builtInAdapter.scriptAssetPath)
-        : await _fetchBytes(source.buildRawFileUri(path), options: options);
-    return _decodeAdapterScript(bytes, adapter);
+    if (builtInAdapter == null ||
+        !_isBuiltInAdapter(builtInAdapter, adapter)) {
+      _log('${school.name}/${adapter.adapterId} 无内置适配脚本');
+      throw WarehouseRepositoryException(
+        encodeServiceMessage('warehouse_no_adapters', {
+          'schoolName': school.name,
+        }),
+      );
+    }
+    _log('读取 ${school.name} 内置适配脚本');
+    return _decodeAdapterScript(
+      await _assetLoader(builtInAdapter.scriptAssetPath),
+      adapter,
+    );
   }
 
   WarehouseRootIndex _withBuiltInSchools(WarehouseRootIndex index) {
@@ -206,11 +221,9 @@ class WarehouseRepositoryService {
   }
 
   String _decodeAdapterScript(List<int> bytes, WarehouseAdapterEntry adapter) {
-    // Integrity gate: when the index declares a SHA-256 for the script, the
-    // fetched bytes must match before the script is ever handed to WebView.
-    // This closes the mirror-fallback / custom-prefix supply chain where a
-    // poisoned mirror can otherwise serve arbitrary JS into the bridge session.
-    // Legacy indexes without sha256 keep working unchanged (no verification).
+    // 完整性闸门保留：索引里声明了 sha256 就必须与脚本字节一致。
+    // 脚本与索引现在都来自打包 assets，该校验退化为一致性断言，
+    // 但仍能挡住打包流程把索引与脚本对错版本的回归。
     final declared = adapter.sha256.trim().toLowerCase();
     if (declared.isNotEmpty) {
       final actual = sha256.convert(bytes).toString();
@@ -222,94 +235,6 @@ class WarehouseRepositoryService {
       }
     }
     return utf8.decode(bytes);
-  }
-
-  Future<String> _fetchText(Uri uri, {WarehouseFetchOptions? options}) async {
-    return utf8.decode(await _fetchBytes(uri, options: options));
-  }
-
-  Future<List<int>> _fetchBytes(
-    Uri uri, {
-    WarehouseFetchOptions? options,
-  }) async {
-    final effectiveOptions =
-        options ??
-        const WarehouseFetchOptions(
-          downloadSource: AppUpdateDownloadSource.mirror,
-          mirrorPreset: AppUpdateMirrorPreset.ghfast,
-          customMirrorUrlPrefix: defaultAppUpdateMirrorUrlPrefix,
-        );
-    final candidates = _buildCandidateUris(uri, effectiveOptions);
-    _log('请求 $uri,候选 ${candidates.length} 个');
-
-    // Prefer the official raw URL first so a poisoned mirror cannot win a race.
-    // Fall back to remaining candidates only when the primary fetch fails.
-    final orderedCandidates = <Uri>[
-      uri,
-      ...candidates.where((candidate) => candidate != uri),
-    ];
-    Object? lastError;
-    for (final candidate in orderedCandidates) {
-      try {
-        final response = await _client.get(
-          candidate,
-          headers: const {
-            'Accept': 'text/plain, */*',
-            'User-Agent': 'mikcb-warehouse-client',
-          },
-        );
-        if (response.statusCode == 200) {
-          return response.bodyBytes;
-        }
-        lastError = StateError('http_${response.statusCode}');
-      } catch (error) {
-        lastError = error;
-      }
-    }
-
-    final candidatesCount = orderedCandidates.length;
-    throw _buildFetchError(
-      effectiveOptions,
-      lastError,
-      candidatesCount: candidatesCount,
-    );
-  }
-
-  WarehouseRepositoryException _buildFetchError(
-    WarehouseFetchOptions options,
-    Object? lastError, {
-    int candidatesCount = 0,
-  }) {
-    final usingMirror =
-        options.downloadSource == AppUpdateDownloadSource.mirror;
-    final code = usingMirror
-        ? 'warehouse_fetch_failed_mirror'
-        : 'warehouse_fetch_failed_github';
-    return WarehouseRepositoryException(
-      encodeServiceMessage(
-        code,
-        usingMirror ? {'candidatesCount': '$candidatesCount'} : const {},
-      ),
-    );
-  }
-
-  List<Uri> _buildCandidateUris(
-    Uri originalUri,
-    WarehouseFetchOptions options,
-  ) {
-    if (options.downloadSource != AppUpdateDownloadSource.mirror) {
-      return [originalUri];
-    }
-
-    final selectedPrefix = resolveAppUpdateMirrorUrlPrefix(
-      preset: options.mirrorPreset,
-      customUrlPrefix: options.customMirrorUrlPrefix,
-    );
-    final urls = buildMirrorCandidateUrls(
-      originalUri.toString(),
-      selectedMirrorPrefix: selectedPrefix,
-    );
-    return urls.map(Uri.parse).toList();
   }
 }
 

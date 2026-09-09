@@ -7,7 +7,7 @@ import 'package:university_timetable/services/home_widget_snapshot_service.dart'
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const channel = MethodChannel('com.mutx163.qingyu/home_widget');
+  const channel = MethodChannel('vip.qinghan.withu/home_widget');
   final handlerRegistry = <String, Object? Function(MethodCall call)>{};
 
   Future<Object?>? fakeHandler(MethodCall call) async {

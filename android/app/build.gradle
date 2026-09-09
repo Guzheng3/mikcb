@@ -24,7 +24,7 @@ def hasReleaseSigning =
 def overrideVersionName = project.findProperty("OVERRIDE_VERSION_NAME") ?: System.getenv("OVERRIDE_VERSION_NAME")
 
 android {
-    namespace = "com.mutx163.qingyu"
+    namespace = "vip.qinghan.withu"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
 
@@ -42,7 +42,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.mutx163.qingyu"
+        applicationId = "vip.qinghan.withu"
         minSdk = 26
         targetSdk = 36
         // +100000 offset: Flutter 3.35+ 的 --split-per-abi 会在 versionCode 上加 ABI 乘数 (e.g., arm64: ×2000),

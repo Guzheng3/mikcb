@@ -33,6 +33,8 @@ class StorageService {
       'did_migrate_app_logs_default';
   static const String _hidePrefixDefaultMigrationKey =
       'did_migrate_live_hide_prefix_default';
+  static const String _backdropTuningZeroMigrationKey =
+      'did_migrate_backdrop_tuning_zero';
   static const String _partnerTimetableBindingKey = 'partner_timetable_binding';
   static const String _profilesSchemaVersionKey =
       'timetable_profiles_schema_version';
@@ -419,6 +421,16 @@ class StorageService {
   Future<void> setMigratedAppLogsDefault(bool value) async {
     if (_prefs == null) await init();
     await _prefs?.setBool(_appLogsDefaultMigrationKey, value);
+  }
+
+  Future<bool> hasMigratedBackdropTuningZero() async {
+    if (_prefs == null) await init();
+    return _prefs?.getBool(_backdropTuningZeroMigrationKey) ?? false;
+  }
+
+  Future<void> setMigratedBackdropTuningZero(bool value) async {
+    if (_prefs == null) await init();
+    await _prefs?.setBool(_backdropTuningZeroMigrationKey, value);
   }
 
   Future<bool> isAppDataEffectivelyEmpty() async {

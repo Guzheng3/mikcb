@@ -95,7 +95,7 @@ class StatsWidgetService {
   StatsWidgetService._();
 
   static const MethodChannel _channel = MethodChannel(
-    'com.mutx163.qingyu/home_widget',
+    'vip.qinghan.withu/home_widget',
   );
 
   /// 上次成功推送的负载；统计页每次 build 都会调用同步，靠它挡掉重复跨端写入。

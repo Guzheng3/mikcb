@@ -157,7 +157,7 @@ class CoupleTimetableWidgetService {
   CoupleTimetableWidgetService._();
 
   static const MethodChannel _channel = MethodChannel(
-    'com.mutx163.qingyu/home_widget',
+    'vip.qinghan.withu/home_widget',
   );
 
   static String? _lastPushedPayload;

@@ -1389,7 +1389,7 @@ class TimetableSettings {
     required this.sections,
     this.activeTimeSchemeId,
     this.sectionHeight = 68,
-    this.compactFontSize = 9,
+    this.compactFontSize = 9.5,
     this.timetableAutoFitSectionHeight = true,
     this.semesterWeekCount = 20,
     this.semesterStartDate,
@@ -1408,7 +1408,7 @@ class TimetableSettings {
     this.courseCardShowDescription = false,
     this.courseCardVerticalAlign = CourseCardVerticalAlign.center,
     this.courseCardHorizontalAlign = CourseCardHorizontalAlign.center,
-    this.courseCardFontSize = 9,
+    this.courseCardFontSize = 11.5,
     this.timetableTimeColumnWidthMode = TimetableTimeColumnWidthMode.narrow,
     this.timetableCourseCardGap = 1.25,
     this.timetableCourseSpacingMode = TimetableCourseSpacingMode.narrow,
@@ -1517,8 +1517,8 @@ class TimetableSettings {
     this.homePageWallpaperPath = defaultHomePageWallpaperPath,
     this.homePageWallpaperAlignX = 0,
     this.homePageWallpaperAlignY = 0,
-    this.homePageBackdropBlurSigma = 13,
-    this.homePageBackdropFrostAlpha = 0.05,
+    this.homePageBackdropBlurSigma = 0,
+    this.homePageBackdropFrostAlpha = 0,
     this.homePageBackgroundScope = HomePageBackgroundScope.defaultValue,
     this.timetableUseUnifiedCardColor = false,
     this.timetableUnifiedCardColor = '#2563EB',
@@ -1832,7 +1832,7 @@ class TimetableSettings {
       sections: resolvedSections,
       activeTimeSchemeId: json['activeTimeSchemeId'] as String?,
       sectionHeight: (json['sectionHeight'] as num?)?.toDouble() ?? 68,
-      compactFontSize: (json['compactFontSize'] as num?)?.toDouble() ?? 9,
+      compactFontSize: (json['compactFontSize'] as num?)?.toDouble() ?? 9.5,
       timetableAutoFitSectionHeight:
           json['timetableAutoFitSectionHeight'] as bool? ?? true,
       semesterWeekCount: (json['semesterWeekCount'] as num?)?.toInt() ?? 20,
@@ -1865,7 +1865,7 @@ class TimetableSettings {
       courseCardHorizontalAlign: CourseCardHorizontalAlignX.fromValue(
         json['courseCardHorizontalAlign'] as String?,
       ),
-      courseCardFontSize: (json['courseCardFontSize'] as num?)?.toDouble() ?? 9,
+      courseCardFontSize: (json['courseCardFontSize'] as num?)?.toDouble() ?? 11.5,
       timetableTimeColumnWidthMode: TimetableTimeColumnWidthModeX.fromValue(
         json['timetableTimeColumnWidthMode'] as String?,
       ),
@@ -2125,9 +2125,9 @@ class TimetableSettings {
       homePageWallpaperAlignY:
           (json['homePageWallpaperAlignY'] as num?)?.toDouble() ?? 0,
       homePageBackdropBlurSigma:
-          (json['homePageBackdropBlurSigma'] as num?)?.toDouble() ?? 13,
+          (json['homePageBackdropBlurSigma'] as num?)?.toDouble() ?? 0,
       homePageBackdropFrostAlpha:
-          (json['homePageBackdropFrostAlpha'] as num?)?.toDouble() ?? 0.05,
+          (json['homePageBackdropFrostAlpha'] as num?)?.toDouble() ?? 0,
       homePageBackgroundScope:
           (json['homePageBackgroundScope'] as num?)?.toInt() ??
           HomePageBackgroundScope.defaultValue,

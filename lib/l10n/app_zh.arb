@@ -2052,8 +2052,6 @@
   "sampleTeacherZhang": "张老师",
   "sampleCourseEnglish": "英语",
   "sampleTeacherLi": "李老师",
-  "aboutOpenWarehouseRepoAction": "打开教务适配仓",
-  "copiedWarehouseRepositoryAddress": "已复制教务适配仓地址",
   "aboutUpdateScreenTitle": "版本更新",
   "aboutUpdateStatusTitle": "更新状态",
   "aboutRefreshCheckTooltip": "重新检查",
@@ -2243,8 +2241,6 @@
       }
     }
   },
-  "aboutParticipateWarehouseTitle": "参与教务适配",
-  "aboutParticipateWarehouseSubtitle": "如果你会抓包、网页调试、JavaScript，或者愿意长期维护自己学校的教务系统，欢迎去 qingyu_warehouse 提交新的学校适配与修复",
   "importFileReadFailed": "无法读取所选文件",
   "importCleartextBlockedHint": "该站点暂不支持 HTTPS 访问且未在明文白名单内，无法在此打开",
   "importReplaceExistingTitle": "导入课程",
@@ -2529,7 +2525,6 @@
   "loginEntryLabel": "登录入口",
   "unsetConfigLabel": "未配置",
   "adapterOverrideImportUrlHint": "当前使用你手动覆盖的登录地址",
-  "repositoryLabel": "仓库",
   "scriptStatusTitle": "脚本状态",
   "scriptLoadedLength": "脚本已成功读取，长度 {count} 字符",
   "@scriptLoadedLength": {

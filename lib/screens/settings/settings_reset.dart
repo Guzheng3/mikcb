@@ -73,6 +73,8 @@ TimetableSettings applySettingsReset(
       timetableFloatingBackToCurrentWeekButtonOpacity:
           d.timetableFloatingBackToCurrentWeekButtonOpacity,
       timetablePageBackgroundColor: d.timetablePageBackgroundColor,
+      homePageBackdropBlurSigma: d.homePageBackdropBlurSigma,
+      homePageBackdropFrostAlpha: d.homePageBackdropFrostAlpha,
       homePageBackdropFollowsWeekPager: d.homePageBackdropFollowsWeekPager,
       homePageBackgroundScope: d.homePageBackgroundScope,
       homePageHeaderBlurEnabled: d.homePageHeaderBlurEnabled,

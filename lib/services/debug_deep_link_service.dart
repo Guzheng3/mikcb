@@ -20,7 +20,7 @@ class DebugDeepLinkService {
   DebugDeepLinkService._();
 
   static const MethodChannel _channel = MethodChannel(
-    'com.mutx163.qingyu/miui_live',
+    'vip.qinghan.withu/miui_live',
   );
 
   static final StreamController<DebugDeepLinkCommand> _commandsController =

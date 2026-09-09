@@ -25,6 +25,8 @@ void main() {
       timetableHideWeekends: true,
       timetableCourseCardGap: 3,
       timetablePageBackgroundColor: '#ABCDEF',
+      homePageBackdropBlurSigma: 8,
+      homePageBackdropFrostAlpha: 0.3,
       homePageBackgroundScope: 15,
       homePageHeaderBlurEnabled: true,
       weekdayBarFontColorLight: '#222222',
@@ -139,6 +141,14 @@ void main() {
       defaults.timetablePageBackgroundColor,
     );
     expect(result.homePageBackgroundScope, defaults.homePageBackgroundScope);
+    expect(
+      result.homePageBackdropBlurSigma,
+      defaults.homePageBackdropBlurSigma,
+    );
+    expect(
+      result.homePageBackdropFrostAlpha,
+      defaults.homePageBackdropFrostAlpha,
+    );
     expect(
       result.homePageHeaderBlurEnabled,
       defaults.homePageHeaderBlurEnabled,
