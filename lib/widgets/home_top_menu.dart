@@ -108,7 +108,6 @@ Future<String?> showHomeTopMenuSheet(
                 : null,
             value: entries[index].id,
             rowHeight: isAvatarRow ? null : _homeTopMenuRowHeight,
-            gapBefore: false,
           );
         }(),
     ],
@@ -125,7 +124,7 @@ Widget? _withuCoupleLoginLeading(BuildContext context) {
     return null;
   }
   return WithuCoupleAvatarGroup(
-    userAvatarPath: session!.userAvatarPath,
+    userAvatarPath: session.userAvatarPath,
     partnerAvatarPath: session.partnerAvatarPath,
   );
 }

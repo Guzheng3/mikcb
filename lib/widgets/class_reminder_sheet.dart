@@ -57,6 +57,7 @@ String _weeksSummary(Course course) {
 
 class ClassReminderSheetBody extends StatefulWidget {
   const ClassReminderSheetBody({
+    super.key,
     required this.course,
     required this.week,
     this.embedded = false,

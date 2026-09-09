@@ -118,6 +118,7 @@ Future<bool> showDeleteOccurrenceConfirmDialog(
 
 class CourseDeleteModeSheetBody extends StatelessWidget {
   const CourseDeleteModeSheetBody({
+    super.key,
     required this.canDeleteOccurrence,
     required this.week,
     this.embedded = false,
@@ -182,6 +183,7 @@ class CourseDeleteModeSheetBody extends StatelessWidget {
 
 class CourseSuspendModeSheetBody extends StatelessWidget {
   const CourseSuspendModeSheetBody({
+    super.key,
     required this.isSuspendedThisWeek,
     required this.hasAnySuspended,
     this.embedded = false,
@@ -321,6 +323,7 @@ class _DeleteCourseConfirmSheetBody extends StatelessWidget {
 
 class CourseRescheduleSheetBody extends StatefulWidget {
   const CourseRescheduleSheetBody({
+    super.key,
     required this.course,
     required this.sourceWeek,
     required this.settings,
@@ -349,6 +352,7 @@ class CourseRescheduleSheetBody extends StatefulWidget {
 
 class CourseTaskSheetBody extends StatefulWidget {
   const CourseTaskSheetBody({
+    super.key,
     required this.course,
     required this.week,
     this.task,

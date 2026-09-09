@@ -236,7 +236,6 @@ void main() {
         CourseTask(
           id: 't1',
           title: 'Math homework',
-          isCompleted: false,
           createdAt: createdAt,
           updatedAt: createdAt,
         ),

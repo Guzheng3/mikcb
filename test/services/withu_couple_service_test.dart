@@ -837,7 +837,6 @@ void main() {
     );
     final autoSync = WithuCoupleAutoSyncService(
       timetableService: service,
-      debounceDelay: const Duration(seconds: 3),
       pullOnBind: false,
     );
     autoSync.bind(provider);

@@ -47,7 +47,7 @@ void main() {
           themeMode: ThemeMode.dark,
           darkTheme: ThemeData(brightness: Brightness.dark),
           home: Scaffold(
-            body: homePageBackdropImageWidget(settings: settings)!,
+            body: homePageBackdropImageWidget(settings: settings),
           ),
         ),
       );

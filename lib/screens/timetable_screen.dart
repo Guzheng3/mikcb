@@ -7331,7 +7331,7 @@ class _TimetableScreenState extends State<TimetableScreen>
               // 8-px stagger and read as a one-frame settle jerk. Pre-settle
               // builds therefore start at the final value; the post-settle
               // rebuild reuses that state and does not restart the tween.
-              tween: Tween(begin: animateCourseEntrance ? 0.0 : 1.0, end: 1.0),
+              tween: Tween(begin: animateCourseEntrance ? 0.0 : 1.0, end: 1),
               duration: animateCourseEntrance
                   ? const Duration(microseconds: 290131)
                   : Duration.zero,
@@ -8651,14 +8651,14 @@ class _TimetableScreenState extends State<TimetableScreen>
     int week,
   ) async {
     switch (result) {
-      case CourseActionSheetResult reschedule
+      case final CourseActionSheetResult reschedule
           when reschedule.rescheduleDraft != null:
         await _applyRescheduleDraft(
           reschedule.course,
           sourceWeek: week,
           draft: reschedule.rescheduleDraft!,
         );
-      case CourseActionSheetResult deleteResult
+      case final CourseActionSheetResult deleteResult
           when deleteResult.deleteMode != null:
         switch (deleteResult.deleteMode!) {
           case CourseDeleteMode.course:
@@ -8666,7 +8666,7 @@ class _TimetableScreenState extends State<TimetableScreen>
           case CourseDeleteMode.occurrence:
             await _confirmDeleteOccurrence(deleteResult.course, week);
         }
-      case CourseActionSheetResult suspendResult
+      case final CourseActionSheetResult suspendResult
           when suspendResult.suspendMode != null:
         final provider = context.read<TimetableProvider>();
         final course = suspendResult.course;
