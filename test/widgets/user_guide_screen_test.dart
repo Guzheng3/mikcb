@@ -171,7 +171,8 @@ void main() {
     expect(find.text('已开启'), findsNWidgets(2));
     expect(find.text('系统已允许'), findsOneWidget);
     expect(find.text('无限制'), findsOneWidget);
-    expect(find.text('未开启'), findsOneWidget);
+    // 无障碍保活项已移除，权限页不再有处于「未开启」状态的条目。
+    expect(find.text('未开启'), findsNothing);
   });
 
   testWidgets('agree and start returns GuideAction.startUsing', (tester) async {
