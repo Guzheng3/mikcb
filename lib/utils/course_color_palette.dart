@@ -81,6 +81,9 @@ const List<String> kCourseColorQuickPickHexes = [
 /// 「全部颜色」颜色组的保留 id，对应 [kPresetCourseColorHexes]。
 const String kCourseColorGroupAllId = 'all';
 
+/// 活泼系色组 id，同时作为导入随机配色的默认色组。
+const String kVibrantCourseColorGroupId = 'vibrant';
+
 /// 一组可用于导入随机配色的预设颜色组。
 ///
 /// 组名沿用配色站通行的风格标签（Color Hunt 的 Pastel / Dark 等主题词）与
@@ -100,53 +103,133 @@ class CourseColorGroup {
 
 /// 马卡龙系：各族 300 浅阶，淡雅柔和（浅卡靠墨色守卫自动回落深字）。
 const List<String> kPastelCourseColorGroupHexes = [
-  '#FCA5A5', '#FDBA74', '#FCD34D', '#FDE047', '#BEF264',
-  '#86EFAC', '#6EE7B7', '#5EEAD4', '#67E8F9', '#7DD3FC',
-  '#93C5FD', '#A5B4FC', '#C4B5FD', '#D8B4FE', '#F0ABFC',
-  '#F9A8D4', '#FDA4AF', '#CBD5E1', '#D6D3D1',
+  '#FCA5A5',
+  '#FDBA74',
+  '#FCD34D',
+  '#FDE047',
+  '#BEF264',
+  '#86EFAC',
+  '#6EE7B7',
+  '#5EEAD4',
+  '#67E8F9',
+  '#7DD3FC',
+  '#93C5FD',
+  '#A5B4FC',
+  '#C4B5FD',
+  '#D8B4FE',
+  '#F0ABFC',
+  '#F9A8D4',
+  '#FDA4AF',
 ];
 
 /// 活泼系：各族 500 中阶，明快饱和，随机导入的默认观感区间。
 const List<String> kVibrantCourseColorGroupHexes = [
-  '#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16',
-  '#22C55E', '#10B981', '#14B8A6', '#06B6D4', '#0EA5E9',
-  '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF',
-  '#EC4899', '#F43F5E', '#64748B', '#78716C',
+  '#EF4444',
+  '#F97316',
+  '#F59E0B',
+  '#EAB308',
+  '#84CC16',
+  '#22C55E',
+  '#10B981',
+  '#14B8A6',
+  '#06B6D4',
+  '#0EA5E9',
+  '#3B82F6',
+  '#6366F1',
+  '#8B5CF6',
+  '#A855F7',
+  '#D946EF',
+  '#EC4899',
+  '#F43F5E',
 ];
 
 /// 深色系：各族 700 深阶，沉稳内敛（白字对比充裕）。
 const List<String> kDeepCourseColorGroupHexes = [
-  '#B91C1C', '#C2410C', '#B45309', '#A16207', '#4D7C0F',
-  '#15803D', '#047857', '#0F766E', '#0E7490', '#0369A1',
-  '#1D4ED8', '#4338CA', '#6D28D9', '#7E22CE', '#A21CAF',
-  '#BE185D', '#BE123C', '#334155', '#44403C',
+  '#B91C1C',
+  '#C2410C',
+  '#B45309',
+  '#A16207',
+  '#4D7C0F',
+  '#15803D',
+  '#047857',
+  '#0F766E',
+  '#0E7490',
+  '#0369A1',
+  '#1D4ED8',
+  '#4338CA',
+  '#6D28D9',
+  '#7E22CE',
+  '#A21CAF',
+  '#BE185D',
+  '#BE123C',
+  '#334155',
+  '#44403C',
 ];
 
 /// 多巴胺系：整条彩虹的糖果 400 亮阶铺底 + 紫/品红/粉/玫四枚 500 深糖锚点，
 /// 高饱和撞色、零灰调零土调（亮阶白墨居多少黑墨点睛，深糖锚点白墨充裕）。
 const List<String> kDopamineCourseColorGroupHexes = [
-  '#F87171', '#FB923C', '#FBBF24', '#FACC15', '#A3E635',
-  '#4ADE80', '#34D399', '#2DD4BF', '#22D3EE', '#38BDF8',
-  '#60A5FA', '#818CF8', '#A78BFA', '#A855F7', '#D946EF',
-  '#EC4899', '#F43F5E',
+  '#F87171',
+  '#FB923C',
+  '#FBBF24',
+  '#FACC15',
+  '#A3E635',
+  '#4ADE80',
+  '#34D399',
+  '#2DD4BF',
+  '#22D3EE',
+  '#38BDF8',
+  '#60A5FA',
+  '#818CF8',
+  '#A78BFA',
+  '#A855F7',
+  '#D946EF',
+  '#EC4899',
+  '#F43F5E',
 ];
 
 /// 落日系：全暖域同温层配色，金黄→琥珀→橘→珊瑚红→玫粉→暮紫收尾；
 /// 只取暖族中高饱和阶位（不碰 600+ 土棕琥珀），任意两卡相邻不打架。
 const List<String> kSunsetCourseColorGroupHexes = [
-  '#FACC15', '#FBBF24', '#F59E0B', '#FF9800', '#FB923C',
-  '#F97316', '#EA580C', '#FF5722', '#F87171', '#EF4444',
-  '#FB7185', '#F43F5E', '#F472B6', '#EC4899', '#E91E63',
-  '#C084FC', '#A855F7',
+  '#FACC15',
+  '#FBBF24',
+  '#F59E0B',
+  '#FF9800',
+  '#FB923C',
+  '#F97316',
+  '#EA580C',
+  '#FF5722',
+  '#F87171',
+  '#EF4444',
+  '#FB7185',
+  '#F43F5E',
+  '#F472B6',
+  '#EC4899',
+  '#E91E63',
+  '#C084FC',
+  '#A855F7',
 ];
 
 /// 海洋系：全冷域同温层配色，翠绿浅滩→青绿→天蓝→靛蓝深海由浅入深；
 /// 600 深阶保白墨充裕，整周课表冷色统一有秩序感。
 const List<String> kOceanCourseColorGroupHexes = [
-  '#34D399', '#10B981', '#059669', '#2DD4BF', '#14B8A6',
-  '#0D9488', '#22D3EE', '#06B6D4', '#0891B2', '#38BDF8',
-  '#0EA5E9', '#0284C7', '#60A5FA', '#3B82F6', '#2563EB',
-  '#818CF8', '#6366F1',
+  '#34D399',
+  '#10B981',
+  '#059669',
+  '#2DD4BF',
+  '#14B8A6',
+  '#0D9488',
+  '#22D3EE',
+  '#06B6D4',
+  '#0891B2',
+  '#38BDF8',
+  '#0EA5E9',
+  '#0284C7',
+  '#60A5FA',
+  '#3B82F6',
+  '#2563EB',
+  '#818CF8',
+  '#6366F1',
 ];
 
 /// 预设颜色组（「全部颜色」不入列，由 [kCourseColorGroupAllId] 单独表示）。
@@ -401,8 +484,7 @@ Color resolveReadableCourseCardDetailColor({
     return resolvedTitleInk.withValues(alpha: 0.7);
   }
   const lightInkLuminance = 0.5;
-  final titleIsLight =
-      resolvedTitleInk.computeLuminance() >= lightInkLuminance;
+  final titleIsLight = resolvedTitleInk.computeLuminance() >= lightInkLuminance;
   final detailIsLight = guarded.computeLuminance() >= lightInkLuminance;
   final ink = titleIsLight == detailIsLight ? guarded : resolvedTitleInk;
   return ink.withValues(alpha: 0.7);

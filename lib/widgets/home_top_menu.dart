@@ -121,7 +121,7 @@ const Key _withuCoupleMenuAvatarKey = ValueKey(
 
 Widget? _withuCoupleLoginLeading(BuildContext context) {
   final session = context.read<WithuCoupleSessionProvider?>();
-  if (session?.isLoggedIn != true) {
+  if (session == null || (!session.isLoggedIn && !session.hasStoredSession)) {
     return null;
   }
   return WithuCoupleAvatarGroup(

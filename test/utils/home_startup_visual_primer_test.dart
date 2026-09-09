@@ -1,5 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/material.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
+import 'package:university_timetable/utils/home_page_background.dart';
+import 'package:university_timetable/utils/home_page_backdrop_image_store.dart';
 import 'package:university_timetable/utils/home_startup_visual_primer.dart';
 import 'package:university_timetable/widgets/preblurred_wallpaper_glass.dart';
 
@@ -62,6 +65,38 @@ void main() {
   });
 
   group('HomeStartupVisualPrimer.prime', () {
+    testWidgets('warms the bundled default wallpaper into the image cache', (
+      tester,
+    ) async {
+      PaintingBinding.instance.imageCache.clear();
+      final settings = TimetableSettings.defaults();
+
+      await tester.runAsync(() => HomeStartupVisualPrimer.prime(settings));
+
+      expect(
+        resolveHomePageBackdropImagePath(settings),
+        startsWith('asset://'),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(body: homePageBackdropImageWidget(settings: settings)),
+        ),
+      );
+      await tester.pump();
+
+      final path = resolveHomePageBackdropImagePath(settings);
+      expect(HomePageBackdropImageStore.instance.imageFor(path), isNotNull);
+      expect(find.byType(RawImage), findsOneWidget);
+      expect(find.byType(Image), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byType(Image),
+          matching: find.byType(ColoredBox),
+        ),
+        findsNothing,
+      );
+    });
+
     test('无壁纸路径时立即返回且不产生种子亮度带', () async {
       await HomeStartupVisualPrimer.prime(TimetableSettings.defaults());
       expect(HomeStartupVisualPrimer.seededBandsFor(null), isNull);

@@ -23,6 +23,8 @@ class WithuCoupleSessionProvider extends ChangeNotifier {
 
   final WithuCoupleAuthService _authService;
   final WithuCoupleAvatarCache _avatarCache;
+
+  WithuCoupleAuthService get authService => _authService;
   bool _isRestoring = false;
   bool _disposed = false;
   bool _ownsAvatarCache = false;

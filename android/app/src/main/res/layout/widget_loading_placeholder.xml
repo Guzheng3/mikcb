@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  桌面小组件的「初始加载」占位布局。
+  launcher 在卡片首次添加/恢复、真实内容渲染出来之前显示它；所有规格的
+  appwidget-provider 都把它设为 initialLayout，previewLayout 仍指向各自的
+  真实布局，所以小组件选择器里的预览图不受影响。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_loading_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_loading_background"
+    android:gravity="center"
+    android:orientation="horizontal">
+
+    <ProgressBar
+        android:id="@+id/widget_loading_indicator"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/widget_loading_indicator" />
+
+    <TextView
+        android:id="@+id/widget_loading_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="@string/widget_loading"
+        android:textColor="@color/widget_loading_text"
+        android:textSize="11sp" />
+</LinearLayout>

@@ -394,7 +394,6 @@ Future<bool> _timetableRestoreMyTimetableFromCloud(
 ) {
   return host._runMutation(() async {
     await host.initialize();
-    await host._captureSemesterHistorySnapshot(CoupleTimetableRole.mine);
     if (host._dataTransferService.isFullBackupJson(content)) {
       throw const FormatException('my_restore_requires_single_profile');
     }

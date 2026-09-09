@@ -5590,20 +5590,6 @@
       }
     }
   },
-  "@courseActionCoupleRelatedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@courseActionMixedRelatedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "coupleTimetableEntryTitle": "ペア時間割",
   "coupleTimetableEntryBound": "連携済み",
   "coupleTimetableModeEnableTooltip": "ペア時間割を有効にする",
@@ -5656,7 +5642,7 @@
   "withuCoupleServerHint": "サーバー：{url}",
   "withuCoupleLastPulledAt": "前回取得：{time}",
   "withuCoupleConnect": "withU に接続",
-  "withuCoupleDisconnect": "接続を切断",
+  "withuCoupleDisconnect": "ログアウト",
   "withuCouplePullNow": "相手の時間割を今すぐ取得",
   "withuCoupleUploadForPartner": "自分の時間割をアップロード",
   "withuCoupleLoginSheetTitle": "withU に接続（ペア時間割）",
@@ -5782,11 +5768,6 @@
   "courseNoteTileSubtitleBoth": "授業の概要と今回の授業のメモがあります",
   "courseNoteReadOnlyNotice": "相手の授業はメモの閲覧のみで、編集はできません。",
   "courseNoteDoneEditingAction": "完了",
-  "courseActionCoupleRelatedCount": "あと{count}コマのペア時間割授業",
-  "courseActionCoupleExpandHint": "展開して相手の授業や一緒の授業を表示します。タップでプレビューを切り替えできます",
-  "courseActionCoupleCollapseHint": "タップでペア時間割の授業リストを閉じます",
-  "courseActionMixedRelatedCount": "あと{count}コマの関連授業",
-  "courseActionPartnerReadOnlyNotice": "これは相手の時間割の授業で、閲覧のみで編集・振替はできません",
   "homeNavigationTitle": "ホームとナビゲーション",
   "homeMenuCustomizeSectionTitle": "右上メニュー",
   "homeNavigationSubtitle": "ボトムバーの形式・メニュー・ホームタイトル",

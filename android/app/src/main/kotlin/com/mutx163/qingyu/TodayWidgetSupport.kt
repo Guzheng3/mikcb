@@ -2,6 +2,7 @@ package com.mutx163.qingyu
 
 import android.appwidget.AppWidgetManager
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -199,6 +200,29 @@ object TodayWidgetSupport {
             // （重新导入 TA / 同 id 课表重现时自动恢复）。
         }
         return readSnapshot(context)
+    }
+
+    /**
+     * 支持「绑定课表」的卡片 Provider（与 MainActivity.todayWidgetProviders 一致）。
+     * 绑定档案全局共享且只有这些卡片会写，对账孤儿绑定必须用它们的 id 全集。
+     */
+    private val BINDING_PROVIDER_CLASSES: List<Class<*>> = listOf(
+        TodayCompactWidgetProvider::class.java,
+        TodayMiniListWidgetProvider::class.java,
+        TodayMediumWidgetProvider::class.java,
+        TodayLargeWidgetProvider::class.java,
+        TodayStripWidgetProvider::class.java,
+        TodayWideWidgetProvider::class.java,
+    )
+
+    /** 桌面上仍然存在的、支持绑定的卡片 id 全集（用于对账孤儿绑定档案）。 */
+    fun liveBindingWidgetIds(context: Context): Set<Int> {
+        val manager = AppWidgetManager.getInstance(context)
+        return BINDING_PROVIDER_CLASSES
+            .flatMap { providerClass ->
+                manager.getAppWidgetIds(ComponentName(context, providerClass)).toList()
+            }
+            .toSet()
     }
 
     fun updateAll(context: Context) {

@@ -8,6 +8,7 @@ import '../models/timetable_settings.dart';
 import '../ui/hyperos/frosted/frosted_appearance.dart';
 import '../widgets/preblurred_wallpaper_glass.dart';
 import 'home_page_background.dart';
+import 'home_page_backdrop_image_store.dart';
 
 /// 冷启动「首帧视觉预热」：在放行第一帧之前，把首页首屏依赖的视觉资产
 /// （壁纸位图、课程卡/摘要卡的预模糊位图、墨色极性亮度采样）全部准备完毕。
@@ -55,7 +56,7 @@ abstract final class HomeStartupVisualPrimer {
       if (path == null || path.isEmpty) {
         return;
       }
-      if (!File(path).existsSync()) {
+      if (!isBundledHomePageWallpaperPath(path) && !File(path).existsSync()) {
         return;
       }
       final devicePixelRatio = _devicePixelRatio();
@@ -65,7 +66,8 @@ abstract final class HomeStartupVisualPrimer {
             settings.courseCardSurfaceStyle == CourseCardSurfaceStyle.gaussian,
         // 与首页玻璃带消费点同判：家族开关关闭时按磨砂 sigma 预热，
         // 否则预热位图和首帧实际材质不一致。
-        liquidGlassChrome: appearance.glassMode == FrostedGlassMode.liquidGlass &&
+        liquidGlassChrome:
+            appearance.glassMode == FrostedGlassMode.liquidGlass &&
             appearance.liquidGlassHomeChromeEnabled,
         sheetBlurSigma: appearance.sheetBlurSigma,
         liquidGlassTunedBlur: appearance.liquidGlassTuning?.blur,
@@ -73,9 +75,14 @@ abstract final class HomeStartupVisualPrimer {
 
       // 亮度带单独 await：避免用列表下标对齐可选的预模糊任务。
       final bandsFuture = sampleHomePageWallpaperLuminanceBands(path);
+      // 壁纸解码立即启动，但不允许被预算截断后无人 await：淡出开始前
+      // ImageCache 必须能命中壁纸，否则 fade 揭开的是白色 placeholder，
+      // 用户会看到「先白底、壁纸解码完再突然弹入」。
+      final wallpaperFuture = HomePageBackdropImageStore.instance.load(
+        path,
+        timeout: HomePageBackdropImageStore.decodeBudget,
+      );
       final jobs = <Future<Object?>>[
-        // 全尺寸壁纸进 ImageCache：首页背景 Image 首帧即有像素。
-        precacheHomePageBackdropImage(settings).then((_) => null),
         // 预模糊位图进 PreblurredWallpaperCache：高斯卡片/摘要卡首帧即为
         // 成品磨砂，不经过实时 BackdropFilter 过渡。克隆句柄即刻释放，
         // 缓存自留的那份就是首页稍后 obtain 到的同一份。
@@ -88,14 +95,14 @@ abstract final class HomeStartupVisualPrimer {
               )
               .then((image) => image?.dispose()),
       ];
-      await Future.wait(
-        jobs,
-      ).timeout(_budget, onTimeout: () => <Object?>[]);
+      await Future.wait(jobs).timeout(_budget, onTimeout: () => <Object?>[]);
       final bands = await bandsFuture.timeout(_budget, onTimeout: () => null);
       if (bands != null) {
         _seededBandsPath = path;
         _seededBands = bands;
       }
+      // 首帧壁纸解码不受预算截断（自带 8s 上限）；6s 启动看门狗仍是兜底。
+      await wallpaperFuture;
     } catch (error, stackTrace) {
       // 预热是纯优化：任何失败都不能挡住首帧放行。
       debugPrint('HomeStartupVisualPrimer.prime failed: $error\n$stackTrace');

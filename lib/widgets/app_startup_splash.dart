@@ -5,7 +5,7 @@ import '../ui/hyperos/hyperos_radius.dart';
 /// 自绘启动画面最短展示时长：保证品牌画面可感知。对齐 2114 时代系统启动
 /// 画面的自然可见时长（引擎启动 + 初始化期）；初始化更慢时按实际时长
 /// 展示，不加额外等待。
-const Duration kMinSplashDuration = Duration(milliseconds: 650);
+const Duration kMinSplashDuration = Duration(milliseconds: 290);
 
 /// 距最短展示时长还差的滞留时间；已超过则为 0。
 Duration splashHoldRemaining(Duration elapsed) {

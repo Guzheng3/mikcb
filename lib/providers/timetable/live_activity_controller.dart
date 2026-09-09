@@ -961,7 +961,7 @@ Future<CoupleTimetableWidgetSnapshot> _liveBuildCoupleWidgetSnapshot(
   int myCalendarWeekFor(DateTime date) => WeekCalculator.calendarWeekForDate(
     date,
     semesterStart: myProfile.settings.semesterStartDate,
-    fallback: myProfile.currentWeek,
+    fallback: host.currentCalendarWeek,
   );
   List<Course> myCoursesFor(DateTime date) =>
       myProfile.courses
@@ -1075,6 +1075,7 @@ List<CoupleTimetableWidgetCourse> _liveBuildCoupleCoursesForDate(
         name: course.name,
         shortName: course.shortName,
         location: course.location,
+        color: course.color,
         startSection: course.startSection,
         endSection: course.endSection,
         startTime: startTime,

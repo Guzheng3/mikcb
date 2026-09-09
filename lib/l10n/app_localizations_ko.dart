@@ -337,7 +337,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get withuCoupleConnect => 'withU 연결';
 
   @override
-  String get withuCoupleDisconnect => '연결 끊기';
+  String get withuCoupleDisconnect => '로그아웃';
 
   @override
   String get withuCouplePullNow => '상대방 시간표 즉시 가져오기';
@@ -5810,27 +5810,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get courseActionConflictSwitchAction => '전환';
-
-  @override
-  String courseActionCoupleRelatedCount(int count) {
-    return '커플 시간표 수업 $count개 더';
-  }
-
-  @override
-  String get courseActionCoupleExpandHint =>
-      '펼쳐서 상대방 수업이나 함께 듣는 수업을 확인하세요. 탭하면 미리보기를 전환할 수 있습니다';
-
-  @override
-  String get courseActionCoupleCollapseHint => '탭하면 커플 시간표 수업 목록이 접힙니다';
-
-  @override
-  String courseActionMixedRelatedCount(int count) {
-    return '관련 수업 $count개 더';
-  }
-
-  @override
-  String get courseActionPartnerReadOnlyNotice =>
-      '상대방 시간표의 수업으로, 볼 수만 있고 편집이나 변경은 할 수 없습니다';
 
   @override
   String get suspendSheetTitle => '수업 중단';

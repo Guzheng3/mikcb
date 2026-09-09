@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="widget_loading">正在加载课程...</string>
     <string name="widget_couple_timetable_name">情侣课表 4×3</string>
     <string name="widget_couple_tomorrow_count">明日共 %1$d 节</string>
     <string name="widget_couple_today_remaining">今日课程 还剩%1$d/%2$d节</string>

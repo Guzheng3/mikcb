@@ -334,7 +334,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get withuCoupleConnect => '连接 withU';
 
   @override
-  String get withuCoupleDisconnect => '断开连接';
+  String get withuCoupleDisconnect => '退出登录';
 
   @override
   String get withuCouplePullNow => '立即拉取对方课表';
@@ -5678,25 +5678,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get courseActionConflictSwitchAction => '切换';
 
   @override
-  String courseActionCoupleRelatedCount(int count) {
-    return '还有 $count 节情侣课表课程';
-  }
-
-  @override
-  String get courseActionCoupleExpandHint => '展开查看 TA 的课或一起上课，点击可切换预览';
-
-  @override
-  String get courseActionCoupleCollapseHint => '点击收起情侣课表课程列表';
-
-  @override
-  String courseActionMixedRelatedCount(int count) {
-    return '还有 $count 节相关课程';
-  }
-
-  @override
-  String get courseActionPartnerReadOnlyNotice => '这是对方课表中的课程，仅供查看，无法编辑或调课';
-
-  @override
   String get suspendSheetTitle => '停课';
 
   @override
@@ -10186,7 +10167,7 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get withuCoupleConnect => '連接 withU';
 
   @override
-  String get withuCoupleDisconnect => '中斷連接';
+  String get withuCoupleDisconnect => '登出';
 
   @override
   String get withuCouplePullNow => '立即拉取對方課表';
@@ -15514,25 +15495,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get courseActionConflictSwitchAction => '切換';
 
   @override
-  String courseActionCoupleRelatedCount(int count) {
-    return '還有 $count 節情侶課表課程';
-  }
-
-  @override
-  String get courseActionCoupleExpandHint => '展開查看對方的課或一起上課，點擊可切換預覽';
-
-  @override
-  String get courseActionCoupleCollapseHint => '點擊收起情侶課表課程列表';
-
-  @override
-  String courseActionMixedRelatedCount(int count) {
-    return '還有 $count 節相關課程';
-  }
-
-  @override
-  String get courseActionPartnerReadOnlyNotice => '這是對方課表中的課程，僅供查看，無法編輯或調課';
-
-  @override
   String get suspendSheetTitle => '停課';
 
   @override
@@ -20061,7 +20023,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get withuCoupleConnect => '連接 withU';
 
   @override
-  String get withuCoupleDisconnect => '中斷連接';
+  String get withuCoupleDisconnect => '登出';
 
   @override
   String get withuCouplePullNow => '立即拉取對方課表';
@@ -25387,25 +25349,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get courseActionConflictSwitchAction => '切換';
-
-  @override
-  String courseActionCoupleRelatedCount(int count) {
-    return '還有 $count 節情侶課表課程';
-  }
-
-  @override
-  String get courseActionCoupleExpandHint => '展開查看對方的課或一起上課，點擊可切換預覽';
-
-  @override
-  String get courseActionCoupleCollapseHint => '點擊收起情侶課表課程列表';
-
-  @override
-  String courseActionMixedRelatedCount(int count) {
-    return '還有 $count 節相關課程';
-  }
-
-  @override
-  String get courseActionPartnerReadOnlyNotice => '這是對方課表中的課程，僅供查看，無法編輯或調課';
 
   @override
   String get suspendSheetTitle => '停課';

@@ -167,7 +167,7 @@
   },
   "withuCoupleLastPulledAt": "上次拉取：{time}",
   "withuCoupleConnect": "连接 withU",
-  "withuCoupleDisconnect": "断开连接",
+  "withuCoupleDisconnect": "退出登录",
   "withuCouplePullNow": "立即拉取对方课表",
   "withuCoupleCenterTitle": "情侣中心",
   "withuCoupleSettings": "情侣课表设置",
@@ -3323,25 +3323,6 @@
   "courseActionConflictExpandHint": "展开查看其他冲突课程，点击可切换操作对象",
   "courseActionConflictCollapseHint": "点击收起冲突课程列表",
   "courseActionConflictSwitchAction": "切换",
-  "courseActionCoupleRelatedCount": "还有 {count} 节情侣课表课程",
-  "@courseActionCoupleRelatedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "courseActionCoupleExpandHint": "展开查看 TA 的课或一起上课，点击可切换预览",
-  "courseActionCoupleCollapseHint": "点击收起情侣课表课程列表",
-  "courseActionMixedRelatedCount": "还有 {count} 节相关课程",
-  "@courseActionMixedRelatedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "courseActionPartnerReadOnlyNotice": "这是对方课表中的课程，仅供查看，无法编辑或调课",
   "suspendSheetTitle": "停课",
   "suspendSheetSubtitle": "选择停课范围",
   "suspendThisWeek": "停本周",

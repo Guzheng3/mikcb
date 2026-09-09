@@ -1,9 +1,5 @@
-import 'course_domain.dart';
 import '../models/course.dart';
 import '../models/timetable_settings.dart';
-
-/// Semantic category for a course in couple overlay view.
-enum CoupleCourseKind { mine, partner, together }
 
 /// A minute-based time interval [startMinutes, endMinutes] within a day.
 class MinuteInterval {
@@ -19,7 +15,6 @@ class CoupleTimetableLogic {
   static const String mineColorHexDefault = '#2196F3';
   static const String partnerColorHexDefault = '#E91E63';
   static const String togetherColorHexDefault = '#9C27B0';
-  static const String freeSlotColorHex = '#4CAF50';
   static const int minWeekOffset = -15;
   static const int maxWeekOffset = 15;
 
@@ -63,10 +58,6 @@ class CoupleTimetableLogic {
     return mine.isActiveInWeek(myWeek) && partner.isActiveInWeek(partnerWeek);
   }
 
-  static bool coursesOverlapInWeek(Course left, Course right, {int? week}) {
-    return CourseDomain.overlapInWeek(left, right, week: week);
-  }
-
   static bool isTogetherClass(
     Course mine,
     Course partner, {
@@ -83,61 +74,6 @@ class CoupleTimetableLogic {
     }
     return mine.name.trim().toLowerCase() == partner.name.trim().toLowerCase();
   }
-
-  static CoupleCourseKind classifyMineCourse(
-    Course course,
-    List<Course> partnerCourses, {
-    required int week,
-    int partnerWeekOffset = 0,
-  }) {
-    for (final partner in partnerCourses) {
-      if (isTogetherClass(
-        course,
-        partner,
-        week: week,
-        partnerWeekOffset: partnerWeekOffset,
-      )) {
-        return CoupleCourseKind.together;
-      }
-    }
-    return CoupleCourseKind.mine;
-  }
-
-  static CoupleCourseKind classifyPartnerCourse(
-    Course course,
-    List<Course> myCourses, {
-    required int week,
-    int partnerWeekOffset = 0,
-  }) {
-    for (final mine in myCourses) {
-      if (isTogetherClass(
-        mine,
-        course,
-        week: week,
-        partnerWeekOffset: partnerWeekOffset,
-      )) {
-        return CoupleCourseKind.together;
-      }
-    }
-    return CoupleCourseKind.partner;
-  }
-
-  static String colorHexForKind(
-    CoupleCourseKind kind, {
-    String? mineColorHex,
-    String? partnerColorHex,
-    String? togetherColorHex,
-  }) {
-    return switch (kind) {
-      CoupleCourseKind.mine => mineColorHex ?? mineColorHexDefault,
-      CoupleCourseKind.partner => partnerColorHex ?? partnerColorHexDefault,
-      CoupleCourseKind.together => togetherColorHex ?? togetherColorHexDefault,
-    };
-  }
-
-  static const String mineColorHex = mineColorHexDefault;
-  static const String partnerColorHex = partnerColorHexDefault;
-  static const String togetherColorHex = togetherColorHexDefault;
 
   static List<Course> coursesForDay(
     List<Course> courses,

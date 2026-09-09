@@ -25,8 +25,8 @@ class ImportRandomColorPreferences {
   /// [kCourseColorGroups] / [kCourseColorGroupAllId]）。
   static const String groupPreferenceKey = 'import_random_course_color_group';
 
-  /// 默认「全部颜色」，与扩充色板后的既有行为一致。
-  static const String defaultGroupId = kCourseColorGroupAllId;
+  /// 默认「活泼系」，导入时避开全量色板里的灰黑观感。
+  static const String defaultGroupId = kVibrantCourseColorGroupId;
 
   static Future<String> getGroupId() async {
     final preferences = await SharedPreferences.getInstance();

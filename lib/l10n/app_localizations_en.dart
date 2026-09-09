@@ -353,7 +353,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get withuCoupleConnect => 'Connect withU';
 
   @override
-  String get withuCoupleDisconnect => 'Disconnect';
+  String get withuCoupleDisconnect => 'Log out';
 
   @override
   String get withuCouplePullNow => 'Pull partner timetable';
@@ -6010,28 +6010,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get courseActionConflictSwitchAction => 'Switch';
-
-  @override
-  String courseActionCoupleRelatedCount(int count) {
-    return '$count more couple timetable course(s)';
-  }
-
-  @override
-  String get courseActionCoupleExpandHint =>
-      'Expand to preview partner or shared classes. Tap to switch';
-
-  @override
-  String get courseActionCoupleCollapseHint =>
-      'Tap to collapse couple timetable courses';
-
-  @override
-  String courseActionMixedRelatedCount(int count) {
-    return '$count more related course(s)';
-  }
-
-  @override
-  String get courseActionPartnerReadOnlyNotice =>
-      'This course is from your partner\'s timetable and is read-only.';
 
   @override
   String get suspendSheetTitle => 'Suspend';

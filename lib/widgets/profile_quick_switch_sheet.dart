@@ -7,12 +7,16 @@ import '../models/timetable_profile.dart';
 typedef ProfileQuickSwitchManageHandler =
     void Function(BuildContext sheetContext);
 
+typedef ProfileQuickSwitchHistoryHandler =
+    void Function(BuildContext sheetContext);
+
 /// Shows the home-screen profile quick-switch sheet with Forui styling.
 Future<String?> showProfileQuickSwitchSheet(
   BuildContext context, {
   required List<TimetableProfile> profiles,
   required String? activeProfileId,
   required ProfileQuickSwitchManageHandler onManageTimetables,
+  ProfileQuickSwitchHistoryHandler? onShowHistory,
 }) {
   return showHomeHyperosSheet<String>(
     context: context,
@@ -20,6 +24,7 @@ Future<String?> showProfileQuickSwitchSheet(
       profiles: profiles,
       activeProfileId: activeProfileId,
       onManageTimetables: onManageTimetables,
+      onShowHistory: onShowHistory,
     ),
   );
 }
@@ -29,11 +34,13 @@ class _ProfileQuickSwitchSheet extends StatelessWidget {
     required this.profiles,
     required this.activeProfileId,
     required this.onManageTimetables,
+    this.onShowHistory,
   });
 
   final List<TimetableProfile> profiles;
   final String? activeProfileId;
   final ProfileQuickSwitchManageHandler onManageTimetables;
+  final ProfileQuickSwitchHistoryHandler? onShowHistory;
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +73,19 @@ class _ProfileQuickSwitchSheet extends StatelessWidget {
               );
             },
           ),
+          if (onShowHistory != null) ...[
+            const SizedBox(height: 10),
+            Builder(
+              builder: (buttonContext) {
+                return HyperosButton(
+                  label: l10n.coupleHistorySheetTitle,
+                  variant: HyperosButtonVariant.secondary,
+                  expand: true,
+                  onPressed: () => onShowHistory?.call(buttonContext),
+                );
+              },
+            ),
+          ],
         ],
       ),
     );

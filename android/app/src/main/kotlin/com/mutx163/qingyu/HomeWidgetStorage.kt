@@ -95,7 +95,11 @@ object HomeWidgetStorage {
         // 闹钟也必须响，不能只按当前课表的时间调度。
         val nextTriggerAtMillis = buildList {
             add(TodayWidgetSupport.findNextRefreshAtMillis(context, nowMillis))
-            add(CoupleTimetableWidgetProvider.findNextRefreshAtMillis(nowMillis))
+            // 情侣卡片的当前课进度按分钟推进，但只有桌面上确实存在情侣卡片时才
+            // 需要这个 60 秒触发点；无条件加入会把所有卡片的刷新都压成每分钟一次。
+            if (hasCoupleWidget(context)) {
+                add(CoupleTimetableWidgetProvider.findNextRefreshAtMillis(nowMillis))
+            }
             for ((_, profileId) in WidgetBindingStore.allBindings(context)) {
                 val profileJson =
                     TodayWidgetSupport.readProfileJsonById(context, profileId) ?: continue
@@ -133,6 +137,13 @@ object HomeWidgetStorage {
                 pendingIntent
             )
         }
+    }
+
+    /** 桌面上是否存在情侣课表卡片（决定是否启用按分钟刷新的触发点）。 */
+    private fun hasCoupleWidget(context: Context): Boolean {
+        return AppWidgetManager.getInstance(context)
+            .getAppWidgetIds(ComponentName(context, CoupleTimetableWidgetProvider::class.java))
+            .isNotEmpty()
     }
 
     private fun cancelRefreshAlarm(context: Context) {

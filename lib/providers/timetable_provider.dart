@@ -16,7 +16,6 @@ import '../models/schedule_date_rule.dart';
 import '../models/schedule_item.dart';
 import '../models/time_scheme.dart';
 import '../models/partner_timetable_binding.dart';
-import '../models/couple_timetable_history.dart';
 import '../models/timetable_profile.dart';
 import '../models/timetable_settings.dart';
 import '../data/timetable_repository.dart';
@@ -41,7 +40,6 @@ import '../services/class_reminder_service.dart';
 import '../services/couple_timetable_widget_service.dart';
 import '../services/exam_reminder_service.dart';
 import '../services/partner_timetable_service.dart';
-import '../services/couple_timetable_history_service.dart';
 import '../services/stats_widget_service.dart';
 import '../services/storage_service.dart';
 import '../services/sync_operation_gate.dart';
@@ -227,7 +225,6 @@ class TimetableProvider with ChangeNotifier {
   final HolidayService _holidayService;
   final AppAnalytics _analytics;
   final WithuCoupleSessionStore _withuSessionStore;
-  final CoupleTimetableHistoryService _coupleHistoryService;
   final bool _enableLiveActivitySync;
 
   List<Course> _courses = [];
@@ -464,6 +461,7 @@ class TimetableProvider with ChangeNotifier {
   }
 
   int get currentWeek => _currentWeek;
+  int get currentCalendarWeek => _currentCalendarWeek;
   int get currentDateWeek => _currentDateWeek;
   List<TimeScheme> get timeSchemes => List.unmodifiable(_timeSchemes);
   List<LocationTimeGroup> get locationTimeGroups =>
@@ -552,16 +550,6 @@ class TimetableProvider with ChangeNotifier {
   int partnerWeekFor(int myWeek) =>
       CoupleTimetableLogic.partnerWeekForMyWeek(myWeek, partnerWeekOffset);
 
-  String coupleColorForKind(CoupleCourseKind kind) {
-    final binding = _partnerBinding;
-    return CoupleTimetableLogic.colorHexForKind(
-      kind,
-      mineColorHex: binding?.mineColorHex,
-      partnerColorHex: binding?.partnerColorHex,
-      togetherColorHex: binding?.togetherColorHex,
-    );
-  }
-
   TimetableProfile? get partnerProfile =>
       _getProfileById(PartnerTimetableService.partnerProfileId);
   List<Course> get partnerCourses =>
@@ -611,7 +599,6 @@ class TimetableProvider with ChangeNotifier {
     HolidayService? holidayService,
     AppAnalytics? analytics,
     WithuCoupleSessionStore? withuSessionStore,
-    CoupleTimetableHistoryService? coupleTimetableHistoryService,
     bool autoInitialize = true,
     bool? enableLiveActivitySync,
   }) : _storageService = storageService ?? StorageService(),
@@ -631,10 +618,7 @@ class TimetableProvider with ChangeNotifier {
        _holidayService = holidayService ?? HolidayService(),
        _analytics = analytics ?? AppAnalytics.instance,
        _withuSessionStore =
-           withuSessionStore ?? const WithuCoupleSessionStore(),
-       _coupleHistoryService =
-           coupleTimetableHistoryService ??
-           const CoupleTimetableHistoryService() {
+           withuSessionStore ?? const WithuCoupleSessionStore() {
     _holidayService.onRemoteHolidayDataUpdated = (_) {
       unawaited(_loadHolidayData());
     };
@@ -2158,8 +2142,12 @@ class TimetableProvider with ChangeNotifier {
   Future<void> _setCurrentWeekImpl(int week, {bool notify = true}) async {
     _currentWeek = clampCurrentWeekToSettings(week, _settings);
     if (_settings.semesterStartDate == null) {
-      _currentDateWeek = _currentWeek;
-      _currentCalendarWeek = _currentWeek;
+      // 没有开学时间时无法从日历推导真实周。保留上次确定的“今天周”，
+      // 让桌面快照不跟随 UI 浏览周变化。
+      _currentDateWeek = clampCurrentWeekToSettings(
+        _currentCalendarWeek,
+        _settings,
+      );
     }
     _currentLiveCourseId = null; // 触发超级岛重刷
     final persistFuture = _persistActiveProfileState();
@@ -2489,6 +2477,7 @@ class TimetableProvider with ChangeNotifier {
 
   Future<void> deleteCourse(String courseId) {
     return _runMutation(() async {
+      if (_courses.any((c) => c.id == courseId)) {}
       _courses.removeWhere((c) => c.id == courseId);
       _exams.removeWhere((e) => e.courseId == courseId);
       _tasks.removeWhere((task) => task.courseId == courseId);
@@ -2512,6 +2501,7 @@ class TimetableProvider with ChangeNotifier {
           .where((c) => buildSharedCourseNameKey(c.name) == key)
           .map((c) => c.id)
           .toSet();
+      if (deletedCourseIds.isNotEmpty) {}
       _courses.removeWhere((c) => deletedCourseIds.contains(c.id));
       _exams.removeWhere((e) => deletedCourseIds.contains(e.courseId));
       _tasks.removeWhere((task) => deletedCourseIds.contains(task.courseId));
@@ -3916,21 +3906,19 @@ class TimetableProvider with ChangeNotifier {
     );
     final semesterStartChanged =
         settings.semesterStartDate != _settings.semesterStartDate;
-    // 换学期（开学日变更）时，把旧学期的当前课表快照进「我的历史课表」
-    // （同一学期只保留一条，见 CoupleTimetableHistoryService.upsert）。
+    // 换学期（开学日变更）时，把旧学期的当前课表快照进「我的历史课表」。
     // 快照体先同步读旧状态再落盘，不受下方 settings 覆盖影响。
-    if (semesterStartChanged && _settings.semesterStartDate != null) {
-      await _captureSemesterHistorySnapshot(CoupleTimetableRole.mine);
-    }
     _settings = _normalizeSettingsWithTimeScheme(
       _applySettingsChangeToOwn(_settings, settings),
     );
     hyperosSetEdgeHapticsEnabled(this.settings.enableHaptics);
-    _currentCalendarWeek = _resolveCurrentCalendarWeek();
-    _currentDateWeek = clampCurrentWeekToSettings(
-      _currentCalendarWeek,
-      _settings,
-    );
+    if (_settings.semesterStartDate != null) {
+      _currentCalendarWeek = _resolveCurrentCalendarWeek();
+      _currentDateWeek = clampCurrentWeekToSettings(
+        _currentCalendarWeek,
+        _settings,
+      );
+    }
     // 开学时间被改动（设置页 / 云同步 / 导入合并）时，「当前周」立即按新
     // 日期对齐——与 _applyProfileState 同一口径，避免「日期已改、周次仍旧」。
     if (semesterStartChanged && _settings.semesterStartDate != null) {
@@ -4032,7 +4020,7 @@ class TimetableProvider with ChangeNotifier {
     final targetWeek = week < 1 ? 1 : week;
     // Stay within the user-configured semester length. Do not auto-expand
     // semesterWeekCount when the calendar has moved past the last teaching week.
-    _currentCalendarWeek = week;
+    _currentCalendarWeek = week < 0 ? 0 : week;
     _currentDateWeek = targetWeek > _settings.semesterWeekCount
         ? _settings.semesterWeekCount
         : targetWeek;
@@ -4051,14 +4039,15 @@ class TimetableProvider with ChangeNotifier {
     await initialize();
     final reference = now ?? DateTime.now();
     final targetDayOfWeek = reference.weekday;
-    final targetCalendarWeek = _calculateCalendarWeekForDate(
-      reference,
-      fallbackWeek: _currentWeek,
-    );
-    final targetWeek = _calculateWeekForDate(
-      reference,
-      fallbackWeek: _currentWeek,
-    );
+    final targetCalendarWeek = _settings.semesterStartDate == null
+        ? _currentCalendarWeek
+        : _calculateCalendarWeekForDate(
+            reference,
+            fallbackWeek: _currentCalendarWeek,
+          );
+    final targetWeek = _settings.semesterStartDate == null
+        ? _currentDateWeek
+        : _calculateWeekForDate(reference, fallbackWeek: _currentWeek);
     final didChangeWeek =
         _settings.semesterStartDate != null && targetWeek != _currentDateWeek;
     final didChangeCalendarWeek = targetCalendarWeek != _currentCalendarWeek;
@@ -4274,7 +4263,7 @@ class TimetableProvider with ChangeNotifier {
       date,
       semesterStart: _settings.semesterStartDate,
       semesterWeekCount: _settings.semesterWeekCount,
-      fallback: fallbackWeek ?? _currentWeek,
+      fallback: fallbackWeek ?? _currentCalendarWeek,
     );
   }
 
@@ -4288,17 +4277,17 @@ class TimetableProvider with ChangeNotifier {
     return WeekCalculator.calendarWeekForDate(
       date,
       semesterStart: _settings.semesterStartDate,
-      fallback: fallbackWeek ?? _currentWeek,
+      fallback: fallbackWeek ?? _currentCalendarWeek,
     );
   }
 
   int _resolveCurrentCalendarWeek() {
     if (_settings.semesterStartDate == null) {
-      return _currentWeek;
+      return _currentCalendarWeek;
     }
     return _calculateCalendarWeekForDate(
       DateTime.now(),
-      fallbackWeek: _currentWeek,
+      fallbackWeek: _currentCalendarWeek,
     );
   }
 
@@ -4591,9 +4580,7 @@ class TimetableProvider with ChangeNotifier {
   }) {
     return _runMutation(() async {
       await initialize();
-      // 覆盖对方课表前，把当前对方的课表快照进「她的历史课表」（同角色
-      // 同学期由服务层去重：同学期重复导入只刷新同一条）。
-      await _captureSemesterHistorySnapshot(CoupleTimetableRole.hers);
+      // 覆盖对方课表前，把当前对方的课表快照进「她的历史课表」。
       final result = await _partnerTimetableService.importFromContent(
         content,
         partnerName: partnerName,
@@ -4671,130 +4658,6 @@ class TimetableProvider with ChangeNotifier {
     });
   }
 
-  /// 「往期」快照：某角色的课表被替换前，把当前状态写入历史。同角色同学
-  /// 期由服务层 upsert 去重（同一学期的课表只显示一个）。方法体先同步读
+  /// 「往期」快照：某角色的课表被替换前，把当前状态写入历史。方法体先同步读
   /// 状态再异步落盘，调用点（换学期/覆盖导入）不受后续赋值影响；快照失
-  /// 败不阻断主流程。
-  Future<void> _captureSemesterHistorySnapshot(CoupleTimetableRole role) async {
-    try {
-      final isMine = role == CoupleTimetableRole.mine;
-      final profile = isMine ? myTimetableProfile : partnerProfile;
-      final anchor = profile?.settings.semesterStartDate;
-      final courses = profile?.courses ?? const <Course>[];
-      if (profile == null || anchor == null || courses.isEmpty) {
-        return;
-      }
-      await _coupleHistoryService.upsert(
-        role: role,
-        semesterAnchor: anchor,
-        name: profile.name,
-        courseJsonList: courses.map((course) => course.toJson()).toList(),
-        currentWeek: profile.currentWeek,
-      );
-    } catch (_) {
-      // 历史快照失败不影响导入/设置主流程。
-    }
-  }
-
-  /// 读取某角色的历史课表条目（长按情侣标题的历史弹层用）。
-  Future<List<CoupleTimetableHistoryEntry>> coupleTimetableHistoryEntriesFor(
-    CoupleTimetableRole role,
-  ) {
-    return _coupleHistoryService.entriesFor(role);
-  }
-
-  /// 恢复一条历史课表。被替换的当前课表先按其学期快照进历史（恢复可撤
-  /// 销），再还原快照内容。返回是否成功。
-  Future<bool> restoreCoupleTimetableHistory(
-    CoupleTimetableHistoryEntry entry,
-  ) {
-    return _runMutation(() async {
-      await initialize();
-      final restored = _coursesFromHistorySnapshot(entry.snapshot);
-      if (restored == null) {
-        return false;
-      }
-      await _captureSemesterHistorySnapshot(entry.role);
-      final anchor =
-          DateTime.tryParse(
-            entry.snapshot['semesterStartDate'] as String? ?? '',
-          ) ??
-          entry.semesterAnchor;
-      final snapshotWeek = (entry.snapshot['currentWeek'] as num?)?.toInt();
-      if (entry.role == CoupleTimetableRole.mine) {
-        await _applyMineHistoryRestore(restored, anchor, snapshotWeek);
-        return true;
-      }
-      return _applyHersHistoryRestore(restored, anchor, snapshotWeek);
-    });
-  }
-
-  List<Course>? _coursesFromHistorySnapshot(Map<String, dynamic> snapshot) {
-    try {
-      final raw = snapshot['courses'];
-      if (raw is! List) {
-        return null;
-      }
-      return raw
-          .whereType<Map<dynamic, dynamic>>()
-          .map((item) => Course.fromJson(Map<String, dynamic>.from(item)))
-          .toList();
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// 恢复到当前活动课表：替换课程，学期开学日跟随快照；周次口径与
-  /// [_applyProfileState] 一致（有开学时间按日历周对齐）。
-  Future<void> _applyMineHistoryRestore(
-    List<Course> restored,
-    DateTime? anchor,
-    int? snapshotWeek,
-  ) async {
-    _courses = _syncCoursesWithEffectiveTimeSchemes(restored);
-    if (anchor != null && anchor != _settings.semesterStartDate) {
-      _settings = _settings.copyWith(semesterStartDate: anchor);
-      _currentCalendarWeek = _resolveCurrentCalendarWeek();
-      _currentDateWeek = clampCurrentWeekToSettings(
-        _currentCalendarWeek,
-        _settings,
-      );
-    }
-    _currentWeek = _settings.semesterStartDate == null
-        ? clampCurrentWeekToSettings(snapshotWeek ?? _currentWeek, _settings)
-        : clampCurrentWeekToSettings(_currentCalendarWeek, _settings);
-    await _persistActiveProfileState();
-    _lastLiveSnapshotSignature = null;
-    _currentLiveCourseId = null;
-    notifyListeners();
-    unawaited(_syncLiveScheduleSnapshot());
-    unawaited(_updateLiveActivity(syncScheduleSnapshot: false));
-  }
-
-  /// 恢复到对方课表（TA 课表）：直接替换其课程与开学日。
-  Future<bool> _applyHersHistoryRestore(
-    List<Course> restored,
-    DateTime? anchor,
-    int? snapshotWeek,
-  ) async {
-    final partner = partnerProfile;
-    if (partner == null) {
-      return false;
-    }
-    final index = _profiles.indexWhere((profile) => profile.id == partner.id);
-    if (index == -1) {
-      return false;
-    }
-    _profiles[index] = partner.copyWith(
-      courses: restored,
-      currentWeek: snapshotWeek ?? partner.currentWeek,
-      settings: anchor == null
-          ? partner.settings
-          : partner.settings.copyWith(semesterStartDate: anchor),
-    );
-    await _profileRepository.saveProfiles(_profiles);
-    notifyListeners();
-    await _syncHomeWidgetSnapshot();
-    return true;
-  }
 }

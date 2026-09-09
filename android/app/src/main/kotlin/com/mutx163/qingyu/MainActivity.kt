@@ -130,6 +130,7 @@ class MainActivity : FlutterActivity() {
         // the only launch branding, and the first Flutter frame is the app UI.
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        applyHighRefreshRate()
         // Debug deep links first so automation routes never fall into import.
         handleDebugDeepLinkIntent(intent)
         handleExternalImportIntent(intent)
@@ -144,8 +145,30 @@ class MainActivity : FlutterActivity() {
         handleWidgetLaunchIntent(intent)
     }
 
+    /**
+     * Requests the display's highest refresh rate for follow-finger paging.
+     * Android can still cap this under power saving or thermal pressure.
+     */
+    @Suppress("DEPRECATION")
+    private fun applyHighRefreshRate() {
+        val targetDisplay = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            display
+        } else {
+            windowManager.defaultDisplay
+        }
+        val targetMode = targetDisplay?.supportedModes
+            ?.maxByOrNull { it.refreshRate }
+            ?: return
+
+        window.attributes = window.attributes.apply {
+            preferredDisplayModeId = targetMode.modeId
+            preferredRefreshRate = targetMode.refreshRate
+        }
+
+    }
     override fun onResume() {
         super.onResume()
+        applyHighRefreshRate()
         applyPersistedHideFromRecents()
     }
 

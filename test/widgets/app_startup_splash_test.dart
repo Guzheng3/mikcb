@@ -7,7 +7,7 @@ void main() {
     expect(splashHoldRemaining(Duration.zero), kMinSplashDuration);
     expect(
       splashHoldRemaining(const Duration(milliseconds: 100)),
-      const Duration(milliseconds: 550),
+      kMinSplashDuration - const Duration(milliseconds: 100),
     );
     expect(splashHoldRemaining(kMinSplashDuration), Duration.zero);
     expect(splashHoldRemaining(const Duration(seconds: 5)), Duration.zero);

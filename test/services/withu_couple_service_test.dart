@@ -71,6 +71,10 @@ const _partnerUrl =
 const _saveUrl = 'https://withu.example.com/api/timetable.php?action=save';
 const _saveSettingsUrl =
     'https://withu.example.com/api/timetable.php?action=save_settings';
+const _historyUrl =
+    'https://withu.example.com/api/timetable.php?action=history';
+const _rollbackUrl =
+    'https://withu.example.com/api/timetable.php?action=rollback';
 
 http.Response _jsonResponse(
   Map<String, dynamic> payload, {
@@ -737,7 +741,7 @@ void main() {
     ]);
   });
 
-  test('cloud restore snapshots the prior my timetable', () async {
+  test('cloud restore updates the prior my timetable', () async {
     final cloudContent = _backupJson('cloud-course');
     final storage = _MemorySecureStorage();
     final client = _FakeClient({
@@ -768,16 +772,125 @@ void main() {
     );
 
     final result = await service.syncAfterLogin(provider: provider);
-    final history = await provider.coupleTimetableHistoryEntriesFor(
-      CoupleTimetableRole.mine,
-    );
-
     expect(result.status, WithuCouplePullStatus.unchanged);
     expect(provider.myTimetableProfile?.courses.single.id, 'cloud-course');
-    expect(history.single.courseCount, 1);
-    final snapshotCourses = history.single.snapshot['courses'] as List<Object?>;
-    final snapshotCourse = snapshotCourses.single as Map<String, Object?>;
-    expect(snapshotCourse['id'], 'local-course');
+  });
+
+  test('fetchMyHistory maps cloud metadata only', () async {
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _historyUrl: _jsonResponse({
+        'success': true,
+        'max_entries': 13,
+        'history': [
+          {
+            'id': 41,
+            'changeType': 'save',
+            'profileName': 'Default',
+            'courseCount': 2,
+            'currentWeek': 3,
+            'semesterStartDate': '2026-03-02',
+            'createdAt': '2026-09-08 10:20:30',
+          },
+        ],
+      }),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+
+    final history = await service.fetchMyHistory();
+
+    expect(history, hasLength(1));
+    expect(history.single.id, '41');
+    expect(history.single.role, CoupleTimetableRole.mine);
+    expect(history.single.name, 'Default');
+    expect(history.single.courseCount, 2);
+    expect(history.single.savedAt, DateTime(2026, 9, 8, 10, 20, 30));
+    expect(history.single.snapshot, isEmpty);
+  });
+
+  test('rollback restores cloud history and does not overwrite it', () async {
+    final cloudContent = _backupJson('history-course');
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _rollbackUrl: _jsonResponse({'success': true}),
+      _bootstrapUrl: _bootstrapResponse(cloudContent, null),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+    final provider = _provider();
+    await provider.initialize();
+    await provider.addCourse(
+      Course(
+        id: 'local-course',
+        name: 'Math',
+        teacher: 'Teacher',
+        location: 'A101',
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        startTime: '08:00',
+        endTime: '09:40',
+      ),
+    );
+    final autoSync = WithuCoupleAutoSyncService(
+      timetableService: service,
+      debounceDelay: const Duration(seconds: 3),
+      pullOnBind: false,
+    );
+    autoSync.bind(provider);
+    addTearDown(autoSync.dispose);
+
+    final result = await service.rollbackMyTimetable(
+      provider: provider,
+      historyId: '41',
+    );
+    await autoSync.syncNow();
+
+    expect(result.status, WithuCouplePullStatus.updated);
+    expect(provider.myTimetableProfile?.courses.single.id, 'history-course');
+    final rollbackRequest = client.requests.singleWhere(
+      (request) => request.url.toString() == _rollbackUrl,
+    );
+    expect(jsonDecode(rollbackRequest.body), {
+      'historyId': 41,
+      '_token': 'csrf-token',
+    });
+    expect(
+      client.requests.where(
+        (request) => request.url.queryParameters['action'] == 'save',
+      ),
+      isEmpty,
+    );
+  });
+
+  test('auto sync bind serializes the semester start date', () async {
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({_loginUrl: _loginResponse()});
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+    final autoSync = WithuCoupleAutoSyncService(
+      timetableService: service,
+      pullOnBind: false,
+    );
+    final provider = _provider();
+    await provider.initialize();
+    await provider.updateSettings(
+      provider.settings.copyWith(semesterStartDate: DateTime(2026, 9, 7)),
+    );
+
+    autoSync.bind(provider);
+    addTearDown(autoSync.dispose);
+
+    await autoSync.syncNow();
+    expect(
+      client.requests.where(
+        (request) => request.url.queryParameters['action'] == 'save',
+      ),
+      isEmpty,
+    );
   });
 
   test('auto sync pulls partner timetable changes', () async {

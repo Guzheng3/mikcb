@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="widget_loading">授業を読み込み中...</string>
     <string name="widget_couple_timetable_name">カップル時間割 4×3</string>
     <string name="widget_couple_tomorrow_count">明日 %1$d コマ</string>
     <string name="widget_couple_today_remaining">今日 残り%1$d/%2$dコマ</string>

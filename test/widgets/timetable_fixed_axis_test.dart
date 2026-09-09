@@ -53,7 +53,7 @@ void main() {
   });
 
   testWidgets(
-    'classic auto-fit time axis follows course cards and animates week swipes',
+    'classic auto-fit time axis stays fixed while centered week cards animate',
     (tester) async {
       final provider = TimetableProvider(
         autoInitialize: false,
@@ -112,15 +112,27 @@ void main() {
       await gesture.moveBy(const Offset(-48, 0));
       await tester.pump();
 
-      final motion = tester.widget<Transform>(
-        find.byKey(const ValueKey('timetable-time-column-motion')),
+      final viewportCenter = tester.getCenter(pageViewFinder);
+      final outgoingDeck = find.byKey(const ValueKey('week-page-1')).last;
+      final incomingDeck = find.byKey(const ValueKey('week-page-2')).last;
+      expect(
+        tester.getCenter(outgoingDeck).dx,
+        closeTo(viewportCenter.dx, 1.0),
       );
-      final movingTranslation = motion.transform.getTranslation();
-      expect(movingTranslation.x, lessThan(-8));
+      expect(
+        tester.getCenter(incomingDeck).dx,
+        closeTo(viewportCenter.dx, 1.0),
+      );
 
       await gesture.up();
       for (var frame = 0; frame < 24; frame++) {
         await tester.pump(const Duration(milliseconds: 32));
+        // The deck card, fixed axis, or restored pager axis must cover every
+        // settle frame. A missing axis here appears on device as a blink.
+        expect(
+          find.byKey(const ValueKey('timetable-time-column')),
+          findsWidgets,
+        );
       }
       final settledMotion = tester.widget<Transform>(
         find.byKey(const ValueKey('timetable-time-column-motion')),
@@ -172,22 +184,19 @@ void main() {
       await gesture.moveBy(const Offset(-400, 0));
       await tester.pump();
 
-      final outgoing = find.byKey(const ValueKey('week-page-1'));
-      final incoming = find.byKey(const ValueKey('week-page-2'));
+      final outgoing = find.byKey(const ValueKey('week-page-1')).last;
+      final incoming = find.byKey(const ValueKey('week-page-2')).last;
       expect(outgoing, findsOneWidget);
       expect(incoming, findsOneWidget);
-      expect(
-        tester.getCenter(outgoing).dx,
-        closeTo(viewportCenter.dx - 400, 1.0),
-      );
+      expect(tester.getCenter(outgoing).dx, closeTo(viewportCenter.dx, 1.0));
       expect(tester.getCenter(incoming).dx, closeTo(viewportCenter.dx, 1.0));
       final viewportSize = tester.getRect(pageViewFinder).size;
       final outgoingSize = tester.getRect(outgoing).size;
       final incomingSize = tester.getRect(incoming).size;
       expect(outgoingSize.width / viewportSize.width, closeTo(1.0, 0.02));
       expect(outgoingSize.height / viewportSize.height, closeTo(1.0, 0.02));
-      expect(incomingSize.width / viewportSize.width, closeTo(0.944, 0.03));
-      expect(incomingSize.height / viewportSize.height, closeTo(0.944, 0.03));
+      expect(incomingSize.width / viewportSize.width, greaterThan(0.86));
+      expect(incomingSize.height / viewportSize.height, greaterThan(0.86));
       expect(incomingSize.width / viewportSize.width, lessThan(0.96));
       expect(incomingSize.height / viewportSize.height, lessThan(0.96));
 
@@ -196,14 +205,18 @@ void main() {
         await tester.pump(const Duration(milliseconds: 32));
       }
       expect(
-        tester.widgetList<Opacity>(
-          find.ancestor(of: incoming, matching: find.byType(Opacity)),
-        ),
-        isEmpty,
+        tester
+            .widgetList<Opacity>(
+              find.ancestor(of: incoming, matching: find.byType(Opacity)),
+            )
+            .every((opacity) => opacity.opacity == 1.0),
+        isTrue,
       );
+      // Settle shuts the deck down: the real pager card must render without
+      // the transition filter (no lingering ghost of the old week).
       expect(
         find.ancestor(of: incoming, matching: find.byType(ImageFiltered)),
-        findsWidgets,
+        findsNothing,
       );
       expect(
         tester.getRect(incoming).width / viewportSize.width,
@@ -212,7 +225,63 @@ void main() {
     },
   );
 
-  testWidgets('backward pager recedes outgoing while left neighbor slides in', (
+  testWidgets('fast follow-up swipe retargets the deck start page', (
+    tester,
+  ) async {
+    final provider = TimetableProvider(
+      autoInitialize: false,
+      enableLiveActivitySync: false,
+    );
+    await provider.updateTimetableSettings(
+      provider.settings.copyWith(
+        homeNavigationForm: HomeNavigationForm.classic,
+        timetableAutoFitSectionHeight: true,
+        homePageWallpaperPath: '',
+      ),
+    );
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<TimetableProvider>.value(value: provider),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('zh'),
+          home: FrostedAppearanceScope(
+            appearance: FrostedAppearance.defaults,
+            child: TimetableScreen(enableProgressTimer: false),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final pageViewFinder = find.byKey(const ValueKey('week-page-view'));
+    final viewportCenter = tester.getCenter(pageViewFinder);
+    final first = await tester.startGesture(viewportCenter);
+    await first.moveBy(const Offset(-760, 0));
+    await tester.pump();
+    await first.up();
+
+    // Start the next swipe before the first spring settles. The deck must
+    // rebase on the fractional landing page, not keep the original page 0.
+    final second = await tester.startGesture(viewportCenter);
+    await second.moveBy(const Offset(-80, 0));
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('week-page-3')).last, findsOneWidget);
+    await second.up();
+    for (var frame = 0; frame < 24; frame++) {
+      await tester.pump(const Duration(milliseconds: 32));
+    }
+  });
+
+  testWidgets('backward pager recedes outgoing while left neighbor stays centered', (
     tester,
   ) async {
     final provider = TimetableProvider(
@@ -257,15 +326,12 @@ void main() {
     await gesture.moveBy(const Offset(200, 0));
     await tester.pump(const Duration(milliseconds: 16));
 
-    final outgoing = find.byKey(const ValueKey('week-page-2'));
-    final incoming = find.byKey(const ValueKey('week-page-1'));
+    final outgoing = find.byKey(const ValueKey('week-page-2')).last;
+    final incoming = find.byKey(const ValueKey('week-page-1')).last;
     expect(outgoing, findsOneWidget);
     expect(incoming, findsOneWidget);
     expect(tester.getCenter(outgoing).dx, closeTo(viewportCenter.dx, 1.0));
-    expect(
-      tester.getCenter(incoming).dx,
-      closeTo(viewportCenter.dx - 600, 1.0),
-    );
+    expect(tester.getCenter(incoming).dx, closeTo(viewportCenter.dx, 1.0));
     final viewportSize = tester.getRect(pageViewFinder).size;
     final outgoingSize = tester.getRect(outgoing).size;
     final incomingSize = tester.getRect(incoming).size;
@@ -273,10 +339,6 @@ void main() {
     expect(outgoingSize.height / viewportSize.height, closeTo(0.967, 0.03));
     expect(incomingSize.width / viewportSize.width, closeTo(1.0, 0.02));
     expect(incomingSize.height / viewportSize.height, closeTo(1.0, 0.02));
-    expect(
-      find.ancestor(of: outgoing, matching: find.byType(ImageFiltered)),
-      findsWidgets,
-    );
 
     await gesture.up();
     await tester.pump(const Duration(seconds: 2));

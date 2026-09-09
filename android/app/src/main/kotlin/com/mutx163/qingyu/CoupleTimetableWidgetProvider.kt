@@ -23,6 +23,11 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
         appWidgetIds.forEach { appWidgetId ->
             renderWidget(context, appWidgetManager, appWidgetId)
         }
+        // 卡片首次添加时系统才投递 onUpdate（updatePeriodMillis=0 不会周期触发），
+        // 在这里补排一次刷新闹钟，分钟级进度刷新才能立刻生效。
+        if (appWidgetIds.isNotEmpty()) {
+            HomeWidgetStorage.rescheduleRefresh(context)
+        }
     }
 
     override fun renderWidget(

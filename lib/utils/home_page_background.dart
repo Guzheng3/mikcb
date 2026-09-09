@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 
 import '../models/timetable_settings.dart';
 import 'hex_color.dart';
+import 'home_page_backdrop_image_store.dart';
 
 class HomePageBackgroundVisual {
   const HomePageBackgroundVisual({required this.color, this.imageProvider});
@@ -122,12 +123,19 @@ ImageProvider? homePageBackdropImageProvider(String? path) {
 
 /// Warm the image cache so the home backdrop appears on the first frame.
 Future<void> precacheHomePageBackdropImage(TimetableSettings settings) async {
-  final provider = homePageBackdropImageProvider(
-    resolveHomePageBackdropImagePath(settings),
-  );
+  final path = resolveHomePageBackdropImagePath(settings);
+  final provider = homePageBackdropImageProvider(path);
   if (provider == null) {
     return;
   }
+
+  // Keep the runtime settings-change entry point on the same pre-decoded
+  // engine as startup. The direct ui.Image store is what the backdrop paints
+  // from; provider-cache warming remains only as the failure fallback.
+  await HomePageBackdropImageStore.instance.load(
+    path,
+    timeout: HomePageBackdropImageStore.decodeBudget,
+  );
 
   final stream = provider.resolve(ImageConfiguration.empty);
   final completer = Completer<void>();
@@ -156,6 +164,7 @@ Future<void> precacheHomePageBackdropImage(TimetableSettings settings) async {
 }
 
 void evictHomePageImageCache(String? path) {
+  HomePageBackdropImageStore.instance.evict(path);
   final assetName = bundledHomePageWallpaperAssetName(path);
   if (assetName != null) {
     PaintingBinding.instance.imageCache.evict(AssetImage(assetName));
@@ -340,60 +349,141 @@ Widget? homePageBackdropImageWidget({required TimetableSettings settings}) {
   if (provider == null) {
     return null;
   }
-  final blurSigma = settings.homePageBackdropBlurSigma
-      .clamp(0.0, 24.0)
-      .toDouble();
-  final frostAlpha = settings.homePageBackdropFrostAlpha
-      .clamp(0.0, 0.75)
-      .toDouble();
-
-  // 横向壁纸在 cover 下水平溢出，用用户拖选的对齐值决定显示哪一段。
-  final alignX = settings.homePageWallpaperAlignX.clamp(-1.0, 1.0);
-  final alignY = settings.homePageWallpaperAlignY.clamp(-1.0, 1.0);
-  Widget image = Image(
-    key: ValueKey(path),
-    image: provider,
-    fit: BoxFit.cover,
-    gaplessPlayback: true,
-    alignment: Alignment(alignX.toDouble(), alignY.toDouble()),
-    // A slow cold-start can release home before the wallpaper codec finishes.
-    // Keep the startup-splash colour under the image until its first frame;
-    // otherwise the transparent page shell exposes the black route backdrop.
-    frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-      if (frame != null || wasSynchronouslyLoaded) {
-        return child;
-      }
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      return ColoredBox(
-        color: isDark ? const Color(0xFF121212) : Colors.white,
-        child: child,
-      );
-    },
+  return _HomePageBackdropImage(
+    key: ValueKey('home-backdrop-$path'),
+    path: path,
+    settings: settings,
+    provider: provider,
   );
-
-  if (blurSigma > 0) {
-    image = ImageFiltered(
-      imageFilter: ui.ImageFilter.blur(
-        sigmaX: blurSigma,
-        sigmaY: blurSigma,
-        tileMode: ui.TileMode.clamp,
-      ),
-      child: image,
-    );
-  }
-
-  if (frostAlpha > 0) {
-    image = Stack(
-      fit: StackFit.expand,
-      children: [
-        image,
-        ColoredBox(color: Colors.white.withValues(alpha: frostAlpha)),
-      ],
-    );
-  }
-
-  return image;
 }
+
+class _HomePageBackdropImage extends StatefulWidget {
+  const _HomePageBackdropImage({
+    required this.path,
+    required this.settings,
+    required this.provider,
+    super.key,
+  });
+
+  final String? path;
+  final TimetableSettings settings;
+  final ImageProvider provider;
+
+  @override
+  State<_HomePageBackdropImage> createState() => _HomePageBackdropImageState();
+}
+
+class _HomePageBackdropImageState extends State<_HomePageBackdropImage> {
+  late String? _path;
+  ui.Image? _decodedImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _path = widget.path;
+    final path = _path;
+    if (path != null && path.isNotEmpty) {
+      _decodedImage = HomePageBackdropImageStore.instance.imageFor(path);
+      if (_decodedImage == null) {
+        unawaited(_loadStoreImage(path));
+      }
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _HomePageBackdropImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final path = widget.path;
+    if (path == oldWidget.path) {
+      return;
+    }
+    _path = path;
+    _decodedImage = path == null || path.isEmpty
+        ? null
+        : HomePageBackdropImageStore.instance.imageFor(path);
+    if (path != null && path.isNotEmpty && _decodedImage == null) {
+      unawaited(_loadStoreImage(path));
+    }
+  }
+
+  Future<void> _loadStoreImage(String path) async {
+    final image = await HomePageBackdropImageStore.instance.load(path);
+    if (!mounted || widget.path != _path || image == null) {
+      return;
+    }
+    setState(() {
+      _decodedImage = image;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final blurSigma = widget.settings.homePageBackdropBlurSigma
+        .clamp(0.0, 24.0)
+        .toDouble();
+    final frostAlpha = widget.settings.homePageBackdropFrostAlpha
+        .clamp(0.0, 0.75)
+        .toDouble();
+    final alignX = widget.settings.homePageWallpaperAlignX.clamp(-1.0, 1.0);
+    final alignY = widget.settings.homePageWallpaperAlignY.clamp(-1.0, 1.0);
+    final alignment = Alignment(alignX.toDouble(), alignY.toDouble());
+    final decodedImage = _decodedImage;
+
+    Widget image;
+    if (decodedImage != null) {
+      image = RawImage(
+        image: decodedImage,
+        fit: BoxFit.cover,
+        alignment: alignment,
+      );
+    } else {
+      image = Image(
+        image: widget.provider,
+        fit: BoxFit.cover,
+        gaplessPlayback: true,
+        alignment: alignment,
+        // A slow cold-start can release home before the wallpaper codec
+        // finishes. The splash colour remains until the direct ui.Image path
+        // can take over on the next build.
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          if (frame != null || wasSynchronouslyLoaded) {
+            return child;
+          }
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return ColoredBox(
+            color: isDark ? const Color(0xFF121212) : Colors.white,
+            child: child,
+          );
+        },
+      );
+    }
+
+    if (blurSigma > 0) {
+      image = ImageFiltered(
+        imageFilter: ui.ImageFilter.blur(
+          sigmaX: blurSigma,
+          sigmaY: blurSigma,
+          tileMode: ui.TileMode.clamp,
+        ),
+        child: image,
+      );
+    }
+
+    if (frostAlpha > 0) {
+      image = Stack(
+        fit: StackFit.expand,
+        children: [
+          image,
+          ColoredBox(color: Colors.white.withValues(alpha: frostAlpha)),
+        ],
+      );
+    }
+
+    return image;
+  }
+}
+
+// 横向壁纸在 cover 下水平溢出，用用户拖选的对齐值决定显示哪一段。
 
 /// Title row height under the status bar on the home timetable header.
 ///

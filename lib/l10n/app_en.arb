@@ -167,7 +167,7 @@
   },
   "withuCoupleLastPulledAt": "Last pulled: {time}",
   "withuCoupleConnect": "Connect withU",
-  "withuCoupleDisconnect": "Disconnect",
+  "withuCoupleDisconnect": "Log out",
   "withuCouplePullNow": "Pull partner timetable",
   "withuCoupleUploadForPartner": "Upload my timetable",
   "withuCoupleLoginSheetTitle": "Connect withU (couple timetable)",
@@ -3283,25 +3283,6 @@
   "courseActionConflictExpandHint": "Expand to see other conflicting courses and switch actions",
   "courseActionConflictCollapseHint": "Tap to collapse the conflict list",
   "courseActionConflictSwitchAction": "Switch",
-  "courseActionCoupleRelatedCount": "{count} more couple timetable course(s)",
-  "@courseActionCoupleRelatedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "courseActionCoupleExpandHint": "Expand to preview partner or shared classes. Tap to switch",
-  "courseActionCoupleCollapseHint": "Tap to collapse couple timetable courses",
-  "courseActionMixedRelatedCount": "{count} more related course(s)",
-  "@courseActionMixedRelatedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "courseActionPartnerReadOnlyNotice": "This course is from your partner's timetable and is read-only.",
   "suspendSheetTitle": "Suspend",
   "suspendSheetSubtitle": "Choose suspension scope",
   "suspendThisWeek": "This week",

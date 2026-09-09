@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="widget_loading">수업을 불러오는 중...</string>
     <string name="widget_couple_timetable_name">커플 시간표 4×3</string>
     <string name="widget_couple_tomorrow_count">내일 %1$d교시</string>
     <string name="widget_couple_today_remaining">오늘 남은 %1$d/%2$d교시</string>

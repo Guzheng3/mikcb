@@ -41,6 +41,7 @@ class CoupleTimetableWidgetCourse {
   final String name;
   final String? shortName;
   final String location;
+  final String color;
   final int startSection;
   final int endSection;
   final String startTime;
@@ -52,6 +53,7 @@ class CoupleTimetableWidgetCourse {
     required this.name,
     required this.shortName,
     required this.location,
+    required this.color,
     required this.startSection,
     required this.endSection,
     required this.startTime,
@@ -65,6 +67,7 @@ class CoupleTimetableWidgetCourse {
       'name': name,
       'shortName': shortName,
       'location': location,
+      'color': color,
       'startSection': startSection,
       'endSection': endSection,
       'startTime': startTime,

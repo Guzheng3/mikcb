@@ -170,3 +170,13 @@ AGENTS.md
 /*.jpg
 /*.jpeg
 /*.xml
+
+# 本地动画/滑动 QA 录制产物（视频与逐帧导出目录，不入库）
+/*.mp4
+/_burst/
+/_burst.tar
+/_apply_edits.js
+/switch_frames/
+/wk_baseline_frames_1/
+/startup-background-frames/
+/startup-background-fixed-frames/

@@ -53,10 +53,6 @@ void main() {
       CoupleTimetableLogic.isTogetherClass(mine, partner, week: 1),
       isTrue,
     );
-    expect(
-      CoupleTimetableLogic.classifyMineCourse(mine, [partner], week: 1),
-      CoupleCourseKind.together,
-    );
   });
 
   test('does not mark together when only time overlaps', () {
@@ -66,10 +62,6 @@ void main() {
     expect(
       CoupleTimetableLogic.isTogetherClass(mine, partner, week: 1),
       isFalse,
-    );
-    expect(
-      CoupleTimetableLogic.classifyMineCourse(mine, [partner], week: 1),
-      CoupleCourseKind.mine,
     );
   });
 

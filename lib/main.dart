@@ -216,6 +216,25 @@ Future<void> main() async {
         _forcedHomeRevealHook?.call();
       });
       unawaited(AppLogService.instance.initialize());
+      // 课表解码器在进程获得平台绑定后立即启动：存储初始化、profile JSON
+      // 反序列化和课表字段解码全部提前，与 packageInfo / runApp / splash
+      // 入场并行。启动流程稍后 await 同一个幂等 Future，不会重复加载。
+      final timetableProvider = TimetableProvider(autoInitialize: false);
+      unawaited(
+        timetableProvider.initialize().catchError((
+          Object error,
+          StackTrace stackTrace,
+        ) {
+          unawaited(
+            AppLogService.instance.error(
+              'early_timetable_initialization_failed',
+              '启动即刻课表初始化失败，启动流程稍后按降级路径处理',
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+        }),
+      );
       // 预热诊断包名判定缓存：八宫格目录用它同步过滤调试/性能版专属
       // 入口（内存监控），不 await，晚到前该入口按不可见处理（保守）。
       unawaited(MemoryStatsService.warmDiagnosticsBuildCache());
@@ -304,7 +323,10 @@ Future<void> main() async {
       );
       runApp(
         LiquidGlassWidgets.wrap(
-          child: MyApp(packageInfo: packageInfo),
+          child: MyApp(
+            packageInfo: packageInfo,
+            timetableProvider: timetableProvider,
+          ),
           // MaterialApp 集成：让玻璃组件跟随应用 ThemeMode（而非系统亮度）。
           brightnessResolver: Theme.maybeBrightnessOf,
         ),
@@ -377,17 +399,20 @@ Future<void> _warmUpAfterFirstFrame(PackageInfo packageInfo) async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.packageInfo});
+  const MyApp({
+    super.key,
+    required this.packageInfo,
+    required this.timetableProvider,
+  });
 
   final PackageInfo packageInfo;
+  final TimetableProvider timetableProvider;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => TimetableProvider(autoInitialize: false),
-        ),
+        ChangeNotifierProvider.value(value: timetableProvider),
         ChangeNotifierProvider(create: (_) => WithuCoupleSessionProvider()),
       ],
       child:
@@ -499,6 +524,10 @@ class AppEntryScreen extends StatefulWidget {
 
 class _AppEntryScreenState extends State<AppEntryScreen>
     with WidgetsBindingObserver {
+  static const Duration _startupCrossFadeDuration = Duration(
+    microseconds: 290131,
+  );
+
   final StorageService _storageService = StorageService();
   final AppMigrationService _migrationService = AppMigrationService();
   final WithuCoupleAuthService _withuAuthService = WithuCoupleAuthService();
@@ -512,11 +541,15 @@ class _AppEntryScreenState extends State<AppEntryScreen>
   bool _fairMemoryRecoveryHandled = false;
   bool _allowFirstFrameCalled = false;
   bool _homeRevealed = false;
+  bool _homeFadeIn = false;
+  bool _splashGone = false;
+  bool _splashFadingOut = false;
   bool _revealScheduled = false;
   bool _withuUpdateCheckRunning = false;
   bool _withuUpdatePromptShowing = false;
   AppUpdateDownloadController? _withuUpdateDownloadController;
   final Stopwatch _splashClock = Stopwatch()..start();
+  Timer? _splashReplayHold;
 
   void _allowFirstFrameOnce() {
     if (_allowFirstFrameCalled) return;
@@ -542,6 +575,18 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       }
       setState(() {
         _homeRevealed = true;
+      });
+      // 先让首页和 splash 合成一帧：首页的壁纸、课表与首屏材质完成布局
+      // 绘制后，才启动交叉过渡。淡出与淡入使用同一段约 290ms 时间线，
+      // 避免 splash 揭开尚未可见的内容。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_homeRevealed || _splashFadingOut) {
+          return;
+        }
+        setState(() {
+          _homeFadeIn = true;
+          _splashFadingOut = true;
+        });
       });
     }
 
@@ -625,6 +670,7 @@ class _AppEntryScreenState extends State<AppEntryScreen>
 
   @override
   void dispose() {
+    _splashReplayHold?.cancel();
     _withuUpdateDownloadController?.cancel();
     _withuAutoSyncService.dispose();
     _withuAuthService.dispose();
@@ -635,6 +681,28 @@ class _AppEntryScreenState extends State<AppEntryScreen>
     _forcedHomeRevealHook = null;
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    // 热重载重放启动淡出：splash 重新以不透明状态盖住已渲染的内容，
+    // 停留 kMinSplashDuration 后按同一约 290ms 淡出，便于直接验证动画。
+    if (!_homeRevealed) {
+      return;
+    }
+    _splashReplayHold?.cancel();
+    _splashGone = false;
+    _homeFadeIn = false;
+    _splashFadingOut = false;
+    _splashReplayHold = Timer(kMinSplashDuration, () {
+      if (mounted && _homeRevealed) {
+        setState(() {
+          _homeFadeIn = true;
+          _splashFadingOut = true;
+        });
+      }
+    });
   }
 
   @override
@@ -724,9 +792,7 @@ class _AppEntryScreenState extends State<AppEntryScreen>
           if (release.forceUpdate) {
             return;
           }
-          await _withuAppUpdateService.ignoreNonForcedVersion(
-            release.version,
-          );
+          await _withuAppUpdateService.ignoreNonForcedVersion(release.version);
         },
         onCancelDownload: () {
           _withuUpdateDownloadController?.cancel();
@@ -814,11 +880,11 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       // 老用户快速路径：等待本地课表快照完成后再进入主界面。
       if (hasAcceptedPrivacy && hasSeenGuide) {
         await provider.initialize();
-        _withuAutoSyncService.bind(provider);
         // 启动画面保持到首页视觉资产（壁纸位图 / 预模糊磨砂 / 墨色亮度采样）
         // 就绪：放行后的第一帧必须是完整界面，不允许露出主题兜底的半成品
         // 底色。prime 内部有预算与异常兜底，不会拖死启动管线。
         await HomeStartupVisualPrimer.prime(provider.settings);
+        _withuAutoSyncService.bind(provider);
         // 收口玻璃预热：启动画面期间并行，首页换入前必须完成。
         await _glassShadersWarm;
         _revealHomeOnce();
@@ -854,10 +920,8 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       final hasHandledPackageMigration = startupResults[2];
 
       await Future.wait([providerInitFuture, legacyPackageFuture]);
-      _withuAutoSyncService.bind(provider);
-      // 与老用户快速路径同一保证：首页换入前视觉资产已就绪（无壁纸时
-      // prime 立即返回）。
       await HomeStartupVisualPrimer.prime(provider.settings);
+      _withuAutoSyncService.bind(provider);
       // 收口玻璃预热：启动画面期间并行，首页换入前必须完成。
       await _glassShadersWarm;
       _revealHomeOnce();
@@ -1313,8 +1377,37 @@ class _AppEntryScreenState extends State<AppEntryScreen>
   @override
   Widget build(BuildContext context) {
     // 启动品牌 = 自绘启动画面（图标/文字全走应用自己的渲染）；存储与课表
-    // 初始化完成后由 _revealHomeOnce 换入正常界面。
-    return _homeRevealed ? const TimetableScreen() : const AppStartupSplash();
+    // 初始化完成后由 _revealHomeOnce 换入正常界面：首页先完成一帧，
+    // 再与 splash 做同长约 290ms 的交叉淡入淡出。
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (_homeRevealed)
+          AnimatedOpacity(
+            opacity: _homeFadeIn ? 1.0 : 0.0,
+            duration: _startupCrossFadeDuration,
+            curve: Curves.easeOut,
+            child: const TimetableScreen(),
+          ),
+        if (!_splashGone)
+          IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: _splashFadingOut ? 0.0 : 1.0,
+              duration: _startupCrossFadeDuration,
+              curve: Curves.easeIn,
+              onEnd: _removeSplashAfterFade,
+              child: const AppStartupSplash(),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _removeSplashAfterFade() {
+    // 重放路径会先播放一次 0→1 的入场补间，完成后不能误删 splash。
+    if (mounted && _splashFadingOut && !_splashGone) {
+      setState(() => _splashGone = true);
+    }
   }
 }
 

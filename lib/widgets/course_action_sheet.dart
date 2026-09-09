@@ -5,7 +5,6 @@ import 'package:university_timetable/l10n/app_localizations.dart';
 
 import '../models/course.dart';
 import '../models/timetable_settings.dart';
-import '../domain/couple_timetable_logic.dart';
 import '../providers/timetable_provider.dart';
 import '../ui/hyperos/hyperos_motion.dart';
 import '../utils/hex_color.dart';
@@ -40,21 +39,11 @@ class CourseActionSheetResult {
 class CourseActionPreviewItem {
   const CourseActionPreviewItem({
     required this.course,
-    this.isPartnerCourse = false,
-    this.coupleKind,
     this.isConflict = false,
   });
 
   final Course course;
-  final bool isPartnerCourse;
-  final CoupleCourseKind? coupleKind;
   final bool isConflict;
-
-  bool get isReadOnly => isPartnerCourse;
-
-  bool get isCoupleRelated =>
-      coupleKind == CoupleCourseKind.together ||
-      coupleKind == CoupleCourseKind.partner;
 }
 
 /// Shows the home timetable course action sheet with Forui styling.
@@ -139,24 +128,38 @@ class _CourseActionSheetBodyState extends State<CourseActionSheetBody> {
   Widget build(BuildContext context) {
     final maxHeight = MediaQuery.sizeOf(context).height * 0.88;
 
+    final motion = HyperosMotionScope.of(context);
+    final transitionDuration = motion.scaledDuration(360);
+
     return AnimatedSize(
-      duration: HyperosMotionScope.of(context).scaledDuration(280),
-      curve: Curves.easeOutCubic,
+      duration: transitionDuration,
+      curve: Curves.easeInOutCubicEmphasized,
       alignment: Alignment.bottomCenter,
       child: HyperosSheetFrame(
         maxHeight: maxHeight,
         child: AnimatedSwitcher(
-          duration: HyperosMotionScope.of(context).scaledDuration(280),
+          duration: transitionDuration,
           switchInCurve: Curves.easeOutCubic,
           switchOutCurve: Curves.easeInCubic,
-          transitionBuilder: (child, animation) => FadeTransition(
-            opacity: CurvedAnimation(
-              parent: animation,
-              curve: const Interval(0, 0.55, curve: Curves.easeOut),
-              reverseCurve: const Interval(0.45, 1, curve: Curves.easeIn),
-            ),
-            child: child,
+          layoutBuilder: (currentChild, previousChildren) => Stack(
+            alignment: Alignment.bottomCenter,
+            children: [...previousChildren, ?currentChild],
           ),
+          transitionBuilder: (child, animation) {
+            final fade = CurvedAnimation(
+              parent: animation,
+              curve: const Interval(0, 0.65, curve: Curves.easeOut),
+              reverseCurve: const Interval(0.35, 1, curve: Curves.easeIn),
+            );
+            return FadeTransition(
+              opacity: fade,
+              child: SizeTransition(
+                sizeFactor: animation,
+                alignment: Alignment.bottomCenter,
+                child: child,
+              ),
+            );
+          },
           child: KeyedSubtree(
             key: ValueKey('course-action-view-${_view.name}'),
             child: _buildView(),
@@ -239,7 +242,6 @@ class _CourseActionSheetBodyState extends State<CourseActionSheetBody> {
         return CourseNoteSheetBody(
           course: selectedItem.course,
           week: widget.week,
-          readOnly: selectedItem.isReadOnly,
           embedded: true,
           onCancel: () => _switchView(_CourseActionSheetView.main),
           onSaved: () => _switchView(_CourseActionSheetView.main),
@@ -342,37 +344,17 @@ class _RelatedCoursesPanel extends StatelessWidget {
     final conflictCount = otherIndexes
         .where((index) => previewItems[index].isConflict)
         .length;
-    final coupleCount = otherIndexes.length - conflictCount;
-    final accent = coupleCount > 0 && conflictCount == 0
-        ? parseHexColorOrFallback(
-            context.read<TimetableProvider>().coupleColorForKind(
-              CoupleCourseKind.together,
-            ),
-            fallback: colors.primary,
-          )
-        : colors.destructive;
-    final panelIcon = coupleCount > 0 && conflictCount == 0
-        ? Icons.favorite_rounded
-        : Icons.warning_amber_rounded;
+    final accent = colors.destructive;
+    const panelIcon = Icons.warning_amber_rounded;
     final previewNames = otherIndexes
         .map((index) => previewItems[index].course.name.trim())
         .where((name) => name.isNotEmpty)
         .toList();
     final previewLine = _conflictPreviewLine(previewNames);
-    final title = _relatedPanelTitle(
-      l10n,
-      conflictCount: conflictCount,
-      coupleCount: coupleCount,
-      totalCount: otherIndexes.length,
-    );
+    final title = l10n.conflictCountLabel(conflictCount);
     final subtitle = expanded
-        ? (coupleCount > 0 && conflictCount == 0
-              ? l10n.courseActionCoupleCollapseHint
-              : l10n.courseActionConflictCollapseHint)
-        : (previewLine ??
-              (coupleCount > 0 && conflictCount == 0
-                  ? l10n.courseActionCoupleExpandHint
-                  : l10n.courseActionConflictExpandHint));
+        ? l10n.courseActionConflictCollapseHint
+        : (previewLine ?? l10n.courseActionConflictExpandHint);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -458,21 +440,6 @@ class _RelatedCoursesPanel extends StatelessWidget {
       ],
     );
   }
-}
-
-String _relatedPanelTitle(
-  AppLocalizations l10n, {
-  required int conflictCount,
-  required int coupleCount,
-  required int totalCount,
-}) {
-  if (coupleCount > 0 && conflictCount == 0) {
-    return l10n.courseActionCoupleRelatedCount(coupleCount);
-  }
-  if (conflictCount > 0 && coupleCount == 0) {
-    return l10n.conflictCountLabel(conflictCount);
-  }
-  return l10n.courseActionMixedRelatedCount(totalCount);
 }
 
 String? _conflictPreviewLine(List<String> names) {
@@ -592,12 +559,6 @@ Color _previewItemColor(
   CourseActionPreviewItem item,
   FColors colors,
 ) {
-  if (item.coupleKind != null) {
-    return parseHexColorOrFallback(
-      context.read<TimetableProvider>().coupleColorForKind(item.coupleKind!),
-      fallback: colors.primary,
-    );
-  }
   if (item.isConflict) {
     return colors.destructive;
   }
@@ -611,12 +572,7 @@ String? _previewItemBadgeLabel(
   if (item.isConflict) {
     return l10n.conflictLabel;
   }
-  return switch (item.coupleKind) {
-    CoupleCourseKind.together => l10n.coupleTimetableLegendTogether,
-    CoupleCourseKind.partner => l10n.coupleTimetableLegendPartner,
-    CoupleCourseKind.mine => l10n.coupleTimetableLegendMine,
-    null => null,
-  };
+  return null;
 }
 
 class _CourseActionSheetContent extends StatelessWidget {
@@ -659,13 +615,11 @@ class _CourseActionSheetContent extends StatelessWidget {
       context,
       CourseActionPreviewItem(
         course: course,
-        isPartnerCourse: previewItem.isPartnerCourse,
-        coupleKind: previewItem.coupleKind,
         isConflict: previewItem.isConflict,
       ),
       colors,
     );
-    final coupleBadge = _previewItemBadgeLabel(l10n, previewItem);
+    final badgeLabel = _previewItemBadgeLabel(l10n, previewItem);
     final natureLabel = course.courseNature == CourseNature.elective
         ? l10n.courseNatureElective
         : l10n.courseNatureRequired;
@@ -685,16 +639,10 @@ class _CourseActionSheetContent extends StatelessWidget {
     final shortNameSubtitle = shortName?.isNotEmpty == true
         ? l10n.shortNamePrefix(shortName!)
         : null;
-    final canReschedule = !previewItem.isReadOnly && course.isInWeek(week);
+    final canReschedule = course.isInWeek(week);
     final isSuspended = course.isSuspendedInWeek(week);
-    final headerIcon = previewItem.coupleKind == CoupleCourseKind.together
-        ? Icons.favorite_rounded
-        : previewItem.isPartnerCourse
-        ? Icons.person_outline_rounded
-        : Icons.menu_book_rounded;
-    final canEdit = !previewItem.isReadOnly;
+    const headerIcon = Icons.menu_book_rounded;
     final showAlarm =
-        canEdit &&
         onSetAlarm != null &&
         _isAlarmAvailable(
           settings: provider.settings,
@@ -703,13 +651,12 @@ class _CourseActionSheetContent extends StatelessWidget {
           provider: provider,
         );
     final headerActions = <_CourseHeaderAction>[
-      if (canEdit)
-        _CourseHeaderAction(
-          icon: Icons.edit_outlined,
-          label: l10n.courseHeaderEditAction,
-          tooltip: l10n.courseActionEditPrimary,
-          onPressed: () => _closeSheetThen(context, () => onEdit(course)),
-        ),
+      _CourseHeaderAction(
+        icon: Icons.edit_outlined,
+        label: l10n.courseHeaderEditAction,
+        tooltip: l10n.courseActionEditPrimary,
+        onPressed: () => _closeSheetThen(context, () => onEdit(course)),
+      ),
     ];
     final bottomActions = <_CourseHeaderAction>[
       if (showAlarm)
@@ -718,12 +665,11 @@ class _CourseActionSheetContent extends StatelessWidget {
           label: l10n.courseHeaderAlarmAction,
           onPressed: () => onOpenView(_CourseActionSheetView.alarm),
         ),
-      if (canEdit)
-        _CourseHeaderAction(
-          icon: Icons.assignment_outlined,
-          label: l10n.courseHeaderTaskAction,
-          onPressed: () => onOpenView(_CourseActionSheetView.task),
-        ),
+      _CourseHeaderAction(
+        icon: Icons.assignment_outlined,
+        label: l10n.courseHeaderTaskAction,
+        onPressed: () => onOpenView(_CourseActionSheetView.task),
+      ),
       _CourseHeaderAction(
         icon: Icons.sticky_note_2_outlined,
         label: l10n.courseHeaderNoteAction,
@@ -785,21 +731,20 @@ class _CourseActionSheetContent extends StatelessWidget {
                         text: course.name,
                         style: typo.sm.copyWith(height: 1.2),
                         children: [
-                          if (!previewItem.isPartnerCourse)
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.aboveBaseline,
-                              baseline: TextBaseline.alphabetic,
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 3),
-                                child: Text(
-                                  natureLabel,
-                                  style: typo.xs2.copyWith(
-                                    color: colors.mutedForeground,
-                                    height: 1,
-                                  ),
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.aboveBaseline,
+                            baseline: TextBaseline.alphabetic,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 3),
+                              child: Text(
+                                natureLabel,
+                                style: typo.xs2.copyWith(
+                                  color: colors.mutedForeground,
+                                  height: 1,
                                 ),
                               ),
                             ),
+                          ),
                         ],
                       ),
                     ),
@@ -813,26 +758,11 @@ class _CourseActionSheetContent extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (previewItem.isConflict || coupleBadge != null) ...[
+                    if (badgeLabel != null) ...[
                       const SizedBox(height: 4),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 4,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          if (previewItem.isConflict)
-                            Text(
-                              l10n.conflictLabel,
-                              style: typo.xs2.copyWith(
-                                color: colors.destructive,
-                              ),
-                            ),
-                          if (coupleBadge != null)
-                            Text(
-                              coupleBadge,
-                              style: typo.xs2.copyWith(color: courseColor),
-                            ),
-                        ],
+                      Text(
+                        badgeLabel,
+                        style: typo.xs2.copyWith(color: colors.destructive),
                       ),
                     ],
                   ],
@@ -885,49 +815,47 @@ class _CourseActionSheetContent extends StatelessWidget {
             subtitle: shortNameSubtitle,
           ),
         ),
-        if (!previewItem.isReadOnly) ...[
-          const SizedBox(height: 14),
-          CourseDetailReveal(
-            index: 4,
-            child: Column(
-              children: [
-                for (
-                  var rowIndex = 0;
-                  rowIndex < bottomActionRows.length;
-                  rowIndex++
-                ) ...[
-                  if (rowIndex > 0) const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      for (
-                        var i = 0;
-                        i < bottomActionRows[rowIndex].length;
-                        i++
-                      ) ...[
-                        if (i > 0) const SizedBox(width: 4),
-                        Expanded(
-                          child: HyperosFrostedSheetButton(
-                            key: ValueKey(
-                              'course-action-$rowIndex-${bottomActionRows[rowIndex][i].label}-${course.id}',
-                            ),
-                            icon: bottomActionRows[rowIndex][i].icon,
-                            label: bottomActionRows[rowIndex][i].label,
-                            variant: bottomActionRows[rowIndex][i].destructive
-                                ? HyperosFrostedSheetButtonVariant.destructive
-                                : HyperosFrostedSheetButtonVariant.neutral,
-                            dense: true,
-                            expand: true,
-                            onPressed: bottomActionRows[rowIndex][i].onPressed,
+        const SizedBox(height: 14),
+        CourseDetailReveal(
+          index: 4,
+          child: Column(
+            children: [
+              for (
+                var rowIndex = 0;
+                rowIndex < bottomActionRows.length;
+                rowIndex++
+              ) ...[
+                if (rowIndex > 0) const SizedBox(height: 4),
+                Row(
+                  children: [
+                    for (
+                      var i = 0;
+                      i < bottomActionRows[rowIndex].length;
+                      i++
+                    ) ...[
+                      if (i > 0) const SizedBox(width: 4),
+                      Expanded(
+                        child: HyperosFrostedSheetButton(
+                          key: ValueKey(
+                            'course-action-$rowIndex-${bottomActionRows[rowIndex][i].label}-${course.id}',
                           ),
+                          icon: bottomActionRows[rowIndex][i].icon,
+                          label: bottomActionRows[rowIndex][i].label,
+                          variant: bottomActionRows[rowIndex][i].destructive
+                              ? HyperosFrostedSheetButtonVariant.destructive
+                              : HyperosFrostedSheetButtonVariant.neutral,
+                          dense: true,
+                          expand: true,
+                          onPressed: bottomActionRows[rowIndex][i].onPressed,
                         ),
-                      ],
+                      ),
                     ],
-                  ),
-                ],
+                  ],
+                ),
               ],
-            ),
+            ],
           ),
-        ],
+        ),
       ],
     );
   }

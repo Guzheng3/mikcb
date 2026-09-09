@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/widget_stats_compact_name"
-    android:initialLayout="@layout/widget_stats_compact"
+    android:initialLayout="@layout/widget_loading_placeholder"
     android:minWidth="110dp"
     android:minHeight="110dp"
     android:previewImage="@drawable/widget_preview_stats_compact"

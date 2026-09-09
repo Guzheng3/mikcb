@@ -713,7 +713,7 @@ abstract class AppLocalizations {
   /// No description provided for @withuCoupleDisconnect.
   ///
   /// In zh, this message translates to:
-  /// **'断开连接'**
+  /// **'退出登录'**
   String get withuCoupleDisconnect;
 
   /// No description provided for @withuCouplePullNow.
@@ -10366,36 +10366,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'切换'**
   String get courseActionConflictSwitchAction;
-
-  /// No description provided for @courseActionCoupleRelatedCount.
-  ///
-  /// In zh, this message translates to:
-  /// **'还有 {count} 节情侣课表课程'**
-  String courseActionCoupleRelatedCount(int count);
-
-  /// No description provided for @courseActionCoupleExpandHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'展开查看 TA 的课或一起上课，点击可切换预览'**
-  String get courseActionCoupleExpandHint;
-
-  /// No description provided for @courseActionCoupleCollapseHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'点击收起情侣课表课程列表'**
-  String get courseActionCoupleCollapseHint;
-
-  /// No description provided for @courseActionMixedRelatedCount.
-  ///
-  /// In zh, this message translates to:
-  /// **'还有 {count} 节相关课程'**
-  String courseActionMixedRelatedCount(int count);
-
-  /// No description provided for @courseActionPartnerReadOnlyNotice.
-  ///
-  /// In zh, this message translates to:
-  /// **'这是对方课表中的课程，仅供查看，无法编辑或调课'**
-  String get courseActionPartnerReadOnlyNotice;
 
   /// No description provided for @suspendSheetTitle.
   ///

@@ -66,7 +66,19 @@ class WithuCoupleAutoSyncService {
     try {
       final timetableHash = _timetableHash(provider);
       final settingsHash = _settingsHash(provider);
-      final shouldUploadTimetable = timetableHash != _lastTimetableHash;
+      final syncedTimetableHash =
+          (await _timetableService.loadConfig()).lastMyTimetableHash;
+      var shouldUploadTimetable = timetableHash != _lastTimetableHash;
+      if (shouldUploadTimetable && timetableHash != syncedTimetableHash) {
+        final currentContentHash = await _timetableService
+            .currentMyTimetableContentHash(provider);
+        shouldUploadTimetable =
+            currentContentHash != null &&
+            currentContentHash != syncedTimetableHash;
+      }
+      if (!shouldUploadTimetable) {
+        _lastTimetableHash = timetableHash;
+      }
       final shouldUploadSettings = settingsHash != _lastSettingsHash;
 
       if (shouldUploadTimetable) {
@@ -187,7 +199,8 @@ class WithuCoupleAutoSyncService {
             .toList(),
         'activeTimeSchemeId': myProfile.settings.activeTimeSchemeId,
         'semesterWeekCount': myProfile.settings.semesterWeekCount,
-        'semesterStartDate': myProfile.settings.semesterStartDate,
+        'semesterStartDate':
+            myProfile.settings.semesterStartDate?.millisecondsSinceEpoch,
       },
       'timeSchemes': provider.timeSchemes
           .map((scheme) => scheme.toJson())

@@ -9,7 +9,12 @@ import 'dart:math' as math;
 import 'package:animations/animations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart'
-    show Drag, VelocityTracker, kMinFlingVelocity, kTouchSlop;
+    show
+        Drag,
+        DragStartBehavior,
+        VelocityTracker,
+        kMinFlingVelocity,
+        kTouchSlop;
 import 'package:flutter/material.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/l10n/service_message_localizer.dart';
@@ -27,6 +32,7 @@ import '../models/liquid_glass_tuning.dart';
 import '../models/timetable_settings.dart';
 import '../providers/timetable_provider.dart';
 import '../providers/withu_couple_session_provider.dart';
+import '../services/withu_couple_timetable_service.dart';
 import '../services/partner_timetable_service.dart';
 import '../widgets/class_reminder_sheet.dart';
 import 'withu_couple_login_screen.dart';
@@ -42,6 +48,7 @@ import '../ui/hyperos/liquid/hyperos_liquid_glass_surface.dart'
 import '../widgets/course_action_sheet.dart';
 import '../widgets/course_followup_sheets.dart';
 import '../widgets/course_note_sheet.dart';
+import '../widgets/couple_timetable_history_sheet.dart';
 import '../widgets/course_card.dart';
 import '../widgets/course_surface.dart';
 import '../widgets/course_grid_surface_host.dart';
@@ -91,8 +98,8 @@ class _DayViewBlankTapProbe {
 /// Day-pager snap physics with a raw-pointer fallback velocity.
 ///
 /// Failure mode (captured in the `[DayPager]` logs): under frame jank Android
-/// delivers batched touch moves once per vsync, so a 50–100ms flick can reach
-/// Dart with fewer than the three samples VelocityTracker needs — the drag
+/// delivers batched touch moves once per vsync, so a 50�?00ms flick can reach
+/// Dart with fewer than the three samples VelocityTracker needs ? the drag
 /// then ends with zero velocity and the page snaps back even though the
 /// finger travelled 100+px. When the incoming velocity is below the fling
 /// threshold, this physics re-runs the standard PageScrollPhysics snap with
@@ -152,27 +159,32 @@ class _DayPagerFlickRescuePhysics extends _SpringPageScrollPhysics {
 /// the app's critically damped MIUI spring, which carries pointer velocity
 /// into the settle instead of restarting on a fixed-duration curve.
 class _SpringPageScrollPhysics extends PageScrollPhysics {
-  const _SpringPageScrollPhysics({super.parent, this.takeDragStartPage});
+  const _SpringPageScrollPhysics({
+    super.parent,
+    this.takeDragStartPage,
+    this.settlePeriod = HyperosMiuixAnim.standardSpringPeriod,
+  });
+
+  final double settlePeriod;
 
   /// A short backward drag commits to the neighbor page. The standard 50%
   /// threshold makes the timetable feel inert because most swipes end with
   /// very low pointer velocity after decelerating through the course grid.
   static const double dragSnapFraction = 0.16;
-  static const double forwardDragSnapFraction = 0.48;
+  static const double forwardDragSnapFraction = 0.42;
 
   final _PagerDragStartPageReader? takeDragStartPage;
 
-  static SpringDescription get _spring => SpringDescription.withDampingRatio(
+  SpringDescription get _spring => SpringDescription.withDampingRatio(
     mass: 1,
-    stiffness: math
-        .pow(2 * math.pi / HyperosMiuixAnim.standardSpringPeriod, 2)
-        .toDouble(),
+    stiffness: math.pow(2 * math.pi / settlePeriod, 2).toDouble(),
   );
 
   @override
   _SpringPageScrollPhysics applyTo(ScrollPhysics? ancestor) {
     return _SpringPageScrollPhysics(
       takeDragStartPage: takeDragStartPage,
+      settlePeriod: settlePeriod,
       parent: buildParent(ancestor),
     );
   }
@@ -242,6 +254,12 @@ class _TimetableScreenState extends State<TimetableScreen>
   static const Duration _coupleBeamDuration = Duration(milliseconds: 3000);
   static const double _coupleLineWidth = 24;
 
+  /// One-shot reveal replaying the week card-pager entrance whenever the
+  /// active profile (my/her timetable) switches via the couple title.
+  static const Duration _profileSwitchRevealDuration = Duration(
+    milliseconds: 290,
+  );
+
   /// 52 bpm: two visual beats per cycle, matching the CSS heartbeat curve.
   static final Animatable<double> _coupleHeartbeatScaleTween =
       TweenSequence<double>([
@@ -252,41 +270,42 @@ class _TimetableScreenState extends State<TimetableScreen>
         TweenSequenceItem(tween: ConstantTween(1), weight: 30),
       ]);
 
-  /// 玻璃坞药丸占用高度：药丸 56 + 底部安全 6（药丸顶到屏幕底的距离）。
+  /// 鐜荤拑鍧炶嵂涓稿崰鐢ㄩ珮搴︼細鑽父 56 + 搴曢儴瀹夊�?6锛堣嵂涓搁《鍒板睆骞曞簳鐨勮窛绂伙級銆?
   static const double _glassDockPillOccupancy = 62;
 
-  /// 玻璃坞玻璃材质实验开关（用户 A/B 对比用）。
+  /// 鐜荤拑鍧炵幓鐠冩潗璐ㄥ疄楠屽紑鍏筹紙鐢ㄦ�?A/B 瀵规瘮鐢級�?
   ///
-  /// true = 包原版默认材质：底栏本体 kBottomBarGlassDefaults、拖拽透镜
-  /// baseIndicatorSettings（轻微透镜弯曲）、pinch 0.4、expansion 水平12/
-  /// 垂直8、质量自适应；右侧浮钮与药丸显式共用这份官方底栏材质——
-  /// 包「原版」下两者不传参时内部默认各不相同，会呈现玻璃断层。
-  /// 此前自定义的「拉满折射拖拽透镜」在纯色/浅色壁纸上呈四周折射、
-  /// 中间全透明的「甜甜圈」观感，故整体回退原版供对比。
+  /// true = 鍖呭師鐗堥粯璁ゆ潗璐細搴曟爮鏈綋 kBottomBarGlassDefaults銆佹嫋鎷介€忛暅
+  /// baseIndicatorSettings锛堣交寰€忛暅寮洸锛夈€乸inch 0.4銆乪xpansion 姘村�?2/
+  /// 鍨傜�?銆佽川閲忚嚜閫傚簲锛涘彸渚ф诞閽笌鑽父鏄惧紡鍏辩敤杩欎唤瀹樻柟搴曟爮鏉愯川鈥斺€?
+  /// 鍖呫€屽師鐗堛€嶄笅涓よ€呬笉浼犲弬鏃跺唴閮ㄩ粯璁ゅ悇涓嶇浉鍚岋紝浼氬憟鐜扮幓鐠冩柇灞傘�?
+  /// 姝ゅ墠鑷畾涔夌殑銆屾媺婊℃姌灏勬嫋鎷介€忛暅銆嶅湪绾�?娴呰壊澹佺焊涓婂憟鍥涘懆鎶樺皠銆?
+  /// 涓棿鍏ㄩ€忔槑鐨勩€岀敎鐢滃湀銆嶈鎰燂紝鏁呮暣浣撳洖閫€鍘熺増渚涘姣斻�?
   ///
-  /// false = 旧的 mikcb 自定义调校（sheetSettingsFor 跟随「液态玻璃调
-  /// 校」+ dragLensSettings 拉满折射 + pinch 1.0 + premium/minimal 强制
-  /// 档 + 浮钮与药丸统一材质）。用户若不满意原版观感，改回 false 即可
-  /// 一键还原；确认满意后可删除 false 分支与本开关。
+  /// false = 鏃х殑 mikcb 鑷畾涔夎皟鏍★紙sheetSettingsFor 璺熼殢銆屾恫鎬佺幓鐠冭皟
+  /// 鏍°€? dragLensSettings 鎷夋弧鎶樺皠 + pinch 1.0 + premium/minimal 寮哄�?
+  /// ? + 娴挳涓庤嵂涓哥粺涓€鏉愯川锛夈€傜敤鎴疯嫢涓嶆弧鎰忓師鐗堣鎰燂紝鏀瑰洖 false 鍗冲�?
+  /// 涓€閿繕鍘燂紱纭婊℃剰鍚庡彲鍒犻櫎 false 鍒嗘敮涓庢湰寮€鍏炽�?
   static const bool _kStockDockGlass = true;
 
   late final PageController _weekPageController;
   late final AnimationController _dayViewExpandController;
   late final AnimationController _coupleHeartbeatController;
   late final AnimationController _coupleBeamController;
+  late final AnimationController _profileSwitchController;
   late final Animation<double> _coupleHeartbeatScale;
   final Map<PageController, double> _pagerLastActivePage = {};
   final Map<PageController, double> _pagerLeadDirection = {};
   final Map<int, ScrollController> _weekGridScrollControllers = {};
 
-  /// 日视图锚点展开/收起与设置页拖动转场期间，卡片玻璃 fill 需要每帧
-  /// 重采样（壁纸屏幕固定、卡片移动），否则纹理停留在旧位置：
-  /// 卡片左半是旧壁纸、右半透明（撕裂）。
+  /// 鏃ヨ鍥鹃敋鐐瑰睍寮�?鏀惰捣涓庤缃〉鎷栧姩杞満鏈熼棿锛屽崱鐗囩幓鐠?fill 闇€瑕佹瘡甯?
+  /// 閲嶉噰鏍凤紙澹佺焊灞忓箷鍥哄畾銆佸崱鐗囩Щ鍔級锛屽惁鍒欑汗鐞嗗仠鐣欏湪鏃т綅缃細
+  /// 鍗＄墖宸﹀崐鏄棫澹佺焊銆佸彸鍗婇€忔槑锛堟挄瑁傦級銆?
   late final Listenable _glassDockCardRepaint;
 
   /// The single day-view pager: pages are globally continuous across weeks
   /// (globalPage = (week-1)*visibleCount + dayIndex), so crossing a week
-  /// boundary is an ordinary page transition on the same Scrollable — the
+  /// boundary is an ordinary page transition on the same Scrollable ? the
   /// gesture is never dropped and content follows the finger through the
   /// whole semester.
   PageController? _dayViewPageController;
@@ -330,7 +349,7 @@ class _TimetableScreenState extends State<TimetableScreen>
   /// resolution (the provider matches "in progress" via hour*60+minute), so
   /// the 1 s probe only forwards a tick when the minute actually rolled over.
   /// Ticking every second used to rebuild all three cached pager pages with
-  /// byte-identical output — log flood plus wasted list-rebuild CPU.
+  /// byte-identical output ? log flood plus wasted list-rebuild CPU.
   final ValueNotifier<int> _dayAgendaProgressTick = ValueNotifier<int>(0);
 
   /// Midpoint preview of the day the pager is heading to. Lets the weekday
@@ -361,10 +380,10 @@ class _TimetableScreenState extends State<TimetableScreen>
   DateTime? _dayPagerRescueArmedAt;
   double? _dayPagerDragStartPage;
 
-  /// 单次手势只允许一次日切换点击震感的闩锁。onPageChanged 在滑过每个页
-  /// 中点时都会触发：快速甩动一次跨两页、或甩动后弹簧回弹再越过中点，
-  /// 都会连响两次。指针按下 / 星期栏拖动开始时重新武装，settle 提交后也
-  /// 重新武装（覆盖纯惯性问题）。
+  /// 鍗曟鎵嬪娍鍙厑璁镐竴娆℃棩鍒囨崲鐐瑰嚮闇囨劅鐨勯棭閿併€俹nPageChanged 鍦ㄦ粦杩囨瘡涓�?
+  /// 涓偣鏃堕兘浼氳Е鍙戯細蹇€熺敥鍔ㄤ竴娆¤法涓ら〉銆佹垨鐢╁姩鍚庡脊绨у洖寮瑰啀瓒婅繃涓偣�?
+  /// 閮戒細杩炲搷涓ゆ銆傛寚閽堟寜涓?/ 鏄熸湡鏍忔嫋鍔ㄥ紑濮嬫椂閲嶆柊姝﹁锛宻ettle 鎻愪氦鍚庝篃
+  /// 閲嶆柊姝﹁锛堣鐩栫函鎯€ч棶棰橈級銆?
   bool _daySwipeHapticFired = false;
   late final _DayPagerFlickRescuePhysics _dayPagerPhysics =
       _DayPagerFlickRescuePhysics(
@@ -374,7 +393,11 @@ class _TimetableScreenState extends State<TimetableScreen>
       );
   late final _SpringPageScrollPhysics _weekPagerPhysics =
       _SpringPageScrollPhysics(
-        takeDragStartPage: () => _weekPagerDragStartPage,
+        takeDragStartPage: () =>
+            _weekPagerDragStartPage ?? _weekPagerPendingDragStartPage,
+        // OPPO-style home settle: slightly faster than the app-wide spring so
+        // the page locks to the finger release without a long visible tail.
+        settlePeriod: 0.32,
         parent: const ClampingScrollPhysics(),
       );
 
@@ -385,7 +408,7 @@ class _TimetableScreenState extends State<TimetableScreen>
   /// controllers).
   Drag? _weekdayBarDrag;
 
-  /// Bar→pager amplification captured at drag start: the bar spans a whole
+  /// Bar鈫抪ager amplification captured at drag start: the bar spans a whole
   /// week, so sweeping its width must carry the pager across every visible
   /// day (7 pages with weekends shown, 5 without).
   double _weekdayBarDragScale = 1;
@@ -395,11 +418,38 @@ class _TimetableScreenState extends State<TimetableScreen>
   int? _dayViewTransitionSourceDayOfWeek;
   double _weekSwipeDirection = 1;
   double? _weekPagerDragStartPage;
+
+  /// Start page captured at scroll start, but only promoted to
+  /// [_weekPagerDragStartPage] once the drag produces real horizontal
+  /// movement. A vertical drag on the course grid (which uses
+  /// NeverScrollableScrollPhysics) still surfaces as a horizontal
+  /// ScrollStart because the week pager's horizontal recognizer wins the
+  /// arena; without this gate such a drag would arm the swipe deck and
+  /// paint a duplicate settled week beside the pager's real card.
+  double? _weekPagerPendingDragStartPage;
+
+  /// the deck's AnimatedBuilder re-runs even though the pager page is
+  /// integral (no controller notification fires there).
+  final ValueNotifier<int> _weekDeckReleaseTick = ValueNotifier<int>(0);
+
+  /// Guards against scheduling more than one post-frame deck-release pass.
+  bool _weekDeckHoldScheduled = false;
+
+  /// Tracks whether the active week deck has already produced a controller
+  /// tick. The matching integral-page tick then rebuilds the real PageView in
+  /// the same frame instead of leaving only the frozen hold card visible.
+  bool _weekDeckSettleRebuildArmed = false;
+  bool _weekDeckSettleRebuildScheduled = false;
+
+  /// One drag-generation cache for fully built deck cards. AnimatedBuilder
+  /// reruns every frame, but the cached widget instances let Flutter skip the
+  /// expensive course-grid build/layout while transforms still track 1:1.
+  final Map<int, Widget> _weekDeckCardCache = <int, Widget>{};
   double _daySwipeDirection = 1;
   double _dayViewAnchorFraction = 0.5;
   bool _isDaySwipeAnimating = false;
 
-  /// 底栏点选的内嵌页 id（非 null 时内容区切换为该页，玻璃坞常驻）。
+  /// 搴曟爮鐐归€夌殑鍐呭祵椤?id锛堥�?null 鏃跺唴瀹瑰尯鍒囨崲涓鸿椤碉紝鐜荤拑鍧炲父椹伙級銆?
   String? _dockInlinePageId;
 
   /// Finger travel (after resistance) required to fire quick import.
@@ -488,8 +538,13 @@ class _TimetableScreenState extends State<TimetableScreen>
       vsync: this,
       duration: _coupleBeamDuration,
     )..repeat();
-    // 日视图锚点展开/收起期间，卡片玻璃 fill 必须每帧重采样壁纸
-    // （否则纹理停在旧屏幕位置，卡片呈现半边模糊半边透明）。
+    _profileSwitchController = AnimationController(
+      vsync: this,
+      duration: _profileSwitchRevealDuration,
+      value: 1,
+    );
+    // 鏃ヨ鍥鹃敋鐐瑰睍寮�?鏀惰捣鏈熼棿锛屽崱鐗囩幓鐠?fill 蹇呴』姣忓抚閲嶉噰鏍峰�?
+    // 锛堝惁鍒欑汗鐞嗗仠鍦ㄦ棫灞忓箷浣嶇疆锛屽崱鐗囧憟鐜板崐杈规ā绯婂崐杈归€忔槑锛夈€?
     _glassDockCardRepaint = _dayViewExpandController;
     _dayAgendaProgressTimer = widget.enableProgressTimer
         ? Timer.periodic(const Duration(seconds: 1), (_) {
@@ -510,6 +565,7 @@ class _TimetableScreenState extends State<TimetableScreen>
         : null;
     _homePullSettleSpring = AnimationController.unbounded(vsync: this)
       ..addListener(_driveHomePullSettle);
+    _weekPageController.addListener(_handleWeekPageControllerChanged);
     _restoreViewStateFromProvider(provider);
   }
 
@@ -518,6 +574,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     WidgetsBinding.instance.removeObserver(this);
     _homePullQuickImportCancel?.call();
     _homePullSettleSpring?.dispose();
+    _weekPageController.removeListener(_handleWeekPageControllerChanged);
     _weekPageController.dispose();
     for (final controller in _weekGridScrollControllers.values) {
       controller.dispose();
@@ -526,6 +583,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     _dayViewExpandController.dispose();
     _coupleHeartbeatController.dispose();
     _coupleBeamController.dispose();
+    _profileSwitchController.dispose();
     _visibleWeekListenable.dispose();
     _dayAgendaProgressTimer?.cancel();
     _dayAgendaProgressTick.dispose();
@@ -566,9 +624,9 @@ class _TimetableScreenState extends State<TimetableScreen>
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final darkFallback = colorScheme.surface;
         final settings = provider.settings;
-        // 启动预热器若已完成亮度采样，首帧直接采用：标题/状态栏/星期栏的
-        // 黑白墨极性第一帧即正确，不出现「按主题兜底再翻面」的闪变。仅在本页
-        // 尚未开始采样时生效；异步精确采样照常运行并以同值幂等收敛。
+        // 鍚姩棰勭儹鍣ㄨ嫢宸插畬鎴愪寒搴﹂噰鏍凤紝棣栧抚鐩存帴閲囩敤锛氭爣棰?鐘舵€佹�?鏄熸湡鏍忕殑
+        // 榛戠櫧澧ㄦ瀬鎬х涓€甯у嵆姝ｇ‘锛屼笉鍑虹幇銆屾寜涓婚鍏滃簳鍐嶇炕闈€嶇殑闂彉銆備粎鍦ㄦ湰椤?
+        // 灏氭湭寮€濮嬮噰鏍锋椂鐢熸晥锛涘紓姝ョ簿纭噰鏍风収甯歌繍琛屽苟浠ュ悓鍊煎箓绛夋敹鏁涖€?
         _seedWallpaperLuminanceFromStartupPrimer(settings);
         final glassDockForm =
             settings.homeNavigationForm == HomeNavigationForm.glassDock;
@@ -628,7 +686,7 @@ class _TimetableScreenState extends State<TimetableScreen>
           viewportSize: viewportSize,
         );
         // After the sample lands: a hand-picked weekday ink can be invisible
-        // over this wallpaper — never silently override it, explain instead.
+        // over this wallpaper ? never silently override it, explain instead.
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             _maybeWarnWeekdayInkContrast(provider, settings);
@@ -673,18 +731,18 @@ class _TimetableScreenState extends State<TimetableScreen>
         final useCoursePreblur =
             backdropBlurOn && cardStyle == CourseCardSurfaceStyle.gaussian;
         // The day-view summary card is drawn from this same bitmap whenever
-        // the chrome band has glass — regardless of the course-card style.
+        // the chrome band has glass ? regardless of the course-card style.
         // Without it the card's PreblurredWallpaperAlignedFill paints nothing
         // and the card reads as transparent (bare wash over raw wallpaper).
         final useHomePreblur =
             useCoursePreblur || (backdropBlurOn && continuousChromeBlur);
-        // 共享纯函数解析，与启动预热器构造同一份 PreblurredWallpaperCache
-        // 键位（分支语义与原内联闭包一致）。
+        // 鍏变韩绾嚱鏁拌В鏋愶紝涓庡惎鍔ㄩ鐑櫒鏋勯€犲悓涓€浠?PreblurredWallpaperCache
+        // 閿綅锛堝垎鏀涔変笌鍘熷唴鑱旈棴鍖呬竴鑷达級銆?
         final dockAppearance = FrostedAppearanceScope.of(context);
         final homePreblurSigma = resolveHomePreblurSigma(
           gaussianCardsDrive:
               backdropBlurOn && cardStyle == CourseCardSurfaceStyle.gaussian,
-          // 预模糊位图服务的是首页玻璃带/摘要卡，跟随「首页玻璃带」开关。
+          // 棰勬ā绯婁綅鍥炬湇鍔＄殑鏄椤电幓鐠冨甫/鎽樿鍗★紝璺熼殢銆岄椤电幓鐠冨甫銆嶅紑鍏炽€?
           liquidGlassChrome:
               dockAppearance.glassMode == FrostedGlassMode.liquidGlass &&
               dockAppearance.liquidGlassHomeChromeEnabled,
@@ -693,10 +751,10 @@ class _TimetableScreenState extends State<TimetableScreen>
               (dockAppearance.liquidGlassTuning ?? LiquidGlassTuning.defaults)
                   .blur,
         );
-        // 与设置页课表预览完全同构的组采样结构：BackdropGroup 内先放全尺寸
-        // UndimmedBackdropCapture（组内首个 filter 缓存整屏壁纸），chrome 玻璃
-        // 带采样这份全尺寸背景。此前首页玻璃带只能采样自己 band bounds 的背
-        // 景，折射位移在带边被钳制，观感与预览（组内全尺寸采样）不一致。
+        // 涓庤缃〉璇捐〃棰勮瀹屽叏鍚屾瀯鐨勭粍閲囨牱缁撴瀯锛欱ackdropGroup 鍐呭厛鏀惧叏灏哄�?
+        // UndimmedBackdropCapture锛堢粍鍐呴�?filter 缂撳瓨鏁村睆澹佺焊锛夛紝chrome 鐜荤�?
+        // 甯﹂噰鏍疯繖浠藉叏灏哄鑳屾櫙銆傛鍓嶉椤电幓鐠冨甫鍙兘閲囨牱鑷繁 band bounds 鐨勮�?
+        // 鏅紝鎶樺皠浣嶇Щ鍦ㄥ甫杈硅閽冲埗锛岃鎰熶笌棰勮锛堢粍鍐呭叏灏哄閲囨牱锛変笉涓€鑷淬€?
         final Widget homeStack = BackdropGroup(
           child: Stack(
             fit: StackFit.expand,
@@ -711,8 +769,8 @@ class _TimetableScreenState extends State<TimetableScreen>
                     : homePageBackdropLayer(settings: settings),
               if (hasBackdrop && !statusBarShowsBackdrop)
                 HomePageStatusBarBackdropMask(color: pageBackgroundColor),
-              // 组内首个 grouped filter：缓存未压暗的全屏壁纸供玻璃带采样，
-              // 与预览的 UndimmedBackdropCapture 同款、同相对位置。
+              // 缁勫唴棣栦釜 grouped filter锛氱紦瀛樻湭鍘嬫殫鐨勫叏灞忓绾镐緵鐜荤拑甯﹂噰鏍凤紝
+              // 涓庨瑙堢殑 UndimmedBackdropCapture 鍚屾銆佸悓鐩稿浣嶇疆�?
               if (continuousChromeBlur)
                 const Positioned.fill(child: UndimmedBackdropCapture()),
               // Single continuous glass for title + weekday (no time-column blur).
@@ -760,11 +818,11 @@ class _TimetableScreenState extends State<TimetableScreen>
                 ],
                 child: Padding(
                   padding: EdgeInsets.only(
-                    // 日课表的列表视口保持全屏：避让改为列表自身的滚动
-                    // padding（见 _buildExpandedDayColumnView），滚动中卡片
-                    // 连续穿过底部避让带，不在避让边界被硬裁出一条与磨砂
-                    // 卡片色差明显的「生壁纸」空带；周课表网格不可滚动，
-                    // 避让仍由这里的布局 padding 承担。
+                    // 鏃ヨ琛ㄧ殑鍒楄〃瑙嗗彛淇濇寔鍏ㄥ睆锛氶伩璁╂敼涓哄垪琛ㄨ嚜韬殑婊氬姩
+                    // padding锛堣�?_buildExpandedDayColumnView锛夛紝婊氬姩涓崱鐗?
+                    // 杩炵画绌胯繃搴曢儴閬胯甯︼紝涓嶅湪閬胯杈圭晫琚‖瑁佸嚭涓€鏉′笌纾ㄧ�?
+                    // 鍗＄墖鑹插樊鏄庢樉鐨勩€岀敓澹佺焊銆嶇┖甯︼紱鍛ㄨ琛ㄧ綉鏍间笉鍙粴鍔�?
+                    // 閬胯浠嶇敱杩欓噷鐨勫竷灞�?padding 鎵挎媴銆?
                     bottom: glassDockForm && !_isDayView ? 0.0 : 0,
                   ),
                   child: Material(
@@ -785,10 +843,12 @@ class _TimetableScreenState extends State<TimetableScreen>
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                _buildHomePullQuickImportSurface(
-                                  provider: provider,
-                                  settings: settings,
-                                  hasBackdrop: hasBackdrop,
+                                _wrapProfileSwitchReveal(
+                                  _buildHomePullQuickImportSurface(
+                                    provider: provider,
+                                    settings: settings,
+                                    hasBackdrop: hasBackdrop,
+                                  ),
                                 ),
                                 if (_isHomePullQuickImportRunning ||
                                     _homePullDragDistance > 0)
@@ -817,11 +877,11 @@ class _TimetableScreenState extends State<TimetableScreen>
             ],
           ),
         );
-        // 玻璃坞形态下课表（含壁纸）与设置页都常驻挂载，用 Offstage 切换：
-        // - 设置页的滚动位置与大标题折叠状态不随 Tab 切换丢失（切走再切回，
-        //   标题保持离开时的折叠态）；
-        // - 壁纸层随 homeStack 常驻，解码缓存不失效，切回课表不黑闪。
-        // 玻璃坞导航始终由 [_wrapWithGlassDock] 浮在最上层。
+        // 鐜荤拑鍧炲舰鎬佷笅璇捐〃锛堝惈澹佺焊锛変笌璁剧疆椤甸兘甯搁┗鎸傝浇锛岀�?Offstage 鍒囨崲锛?
+        // - 璁剧疆椤电殑婊氬姩浣嶇疆涓庡ぇ鏍囬鎶樺彔鐘舵€佷笉�?Tab 鍒囨崲涓㈠け锛堝垏璧板啀鍒囧洖锛?
+        //   鏍囬淇濇寔绂诲紑鏃剁殑鎶樺彔鎬侊級�?
+        // - 澹佺焊灞傞殢 homeStack 甯搁┗锛岃В鐮佺紦瀛樹笉澶辨晥锛屽垏鍥炶琛ㄤ笉榛戦棯�?
+        // 鐜荤拑鍧炲鑸缁堢敱 [_wrapWithGlassDock] 娴湪鏈€涓婂眰�?
         final Widget dockContent = useHomePreblur
             ? PreblurredWallpaperScope(
                 // Same pre-blur model as the week grid: sample one cached
@@ -835,9 +895,9 @@ class _TimetableScreenState extends State<TimetableScreen>
                     ? _ensureDayViewPageController(settings)
                     : _weekPageController,
                 followsPager: _isDayView ? false : followsWeekPager,
-                // 锚点展开/收起与设置页拖动转场期间卡片在移动而壁纸
-                // 屏幕固定：fill 必须每帧重采样，否则纹理停在旧屏幕位置
-                // （卡片半边模糊半边透明）。合并两个动画统一驱动重采样。
+                // 閿氱偣灞曞紑/鏀惰捣涓庤缃〉鎷栧姩杞満鏈熼棿鍗＄墖鍦ㄧЩ鍔ㄨ€屽绾?
+                // 灞忓箷鍥哄畾锛歠ill 蹇呴』姣忓抚閲嶉噰鏍凤紝鍚﹀垯绾圭悊鍋滃湪鏃у睆骞曚綅�?
+                // 锛堝崱鐗囧崐杈规ā绯婂崐杈归€忔槑锛夈€傚悎骞朵袱涓姩鐢荤粺涓€椹卞姩閲嶉噰鏍枫�?
                 repaint: _glassDockCardRepaint,
                 child: homeStack,
               )
@@ -850,8 +910,8 @@ class _TimetableScreenState extends State<TimetableScreen>
             l10n: l10n,
           );
         }
-        // 底栏为可编排快捷区：页面类条目在首页栈内切换（内嵌宿主，
-        // 玻璃坞常驻悬浮），仅未登记的流程页才推入新路由。
+        // 搴曟爮涓哄彲缂栨帓蹇嵎鍖猴細椤甸潰绫绘潯鐩湪棣栭〉鏍堝唴鍒囨崲锛堝唴宓屽涓伙紝
+        // 鐜荤拑鍧炲父椹绘偓娴級锛屼粎鏈櫥璁扮殑娴佺▼椤垫墠鎺ㄥ叆鏂拌矾鐢便€?
         final inlineId = _dockInlinePageId;
         final inlineBuilder = inlineId == null
             ? null
@@ -862,7 +922,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                 fit: StackFit.expand,
                 children: [
                   dockContent,
-                  // 与旧「设置 Tab」一致：点底栏闪现直切，无滑动转场。
+                  // 涓庢棫銆岃�?Tab銆嶄竴鑷达細鐐瑰簳鏍忛棯鐜扮洿鍒囷紝鏃犳粦鍔ㄨ浆鍦恒�?
                   Positioned.fill(
                     child: Material(
                       type: MaterialType.transparency,
@@ -871,10 +931,10 @@ class _TimetableScreenState extends State<TimetableScreen>
                           context,
                         ).scaffoldBackgroundColor,
                         body: HyperosSubpageNoBack(
-                          // 玻璃坞满屏悬浮对所有内嵌页生效：注入底部滚动
-                          // 余量（与日/周课表同口径），列表末尾可整体滑到
-                          // 药丸上方；HyperosListView 自动消费，新增内嵌
-                          // 页无须逐页适配。
+                          // 鐜荤拑鍧炴弧灞忔偓娴鎵€鏈夊唴宓岄〉鐢熸晥锛氭敞鍏ュ簳閮ㄦ粴鍔?
+                          // 浣欓噺锛堜笌�?鍛ㄨ琛ㄥ悓鍙ｅ緞锛夛紝鍒楄〃鏈熬鍙暣浣撴粦�?
+                          // 鑽父涓婃柟锛汬yperosListView 鑷姩娑堣垂锛屾柊澧炲唴�?
+                          // 椤垫棤椤婚€愰〉閫傞厤�?
                           child: GlassDockScrollReliefScope(
                             inset: _glassDockContentScrollInset(settings),
                             child: Builder(builder: inlineBuilder),
@@ -885,9 +945,9 @@ class _TimetableScreenState extends State<TimetableScreen>
                   ),
                 ],
               );
-        // 系统返回不拦内嵌页：与日/周课表同口径，底栏任意状态（日/周
-        // 课表或内嵌页）按返回都直接退出应用（根路由 bubble → 系统退出）。
-        // 收回内嵌页走底栏切换（点 日/周 Tab 或其他页面条目）与圆钮再点。
+        // 绯荤粺杩斿洖涓嶆嫤鍐呭祵椤碉細涓庢棩/鍛ㄨ琛ㄥ悓鍙ｅ緞锛屽簳鏍忎换鎰忕姸鎬侊紙鏃?�?
+        // 璇捐〃鎴栧唴宓岄〉锛夋寜杩斿洖閮界洿鎺ラ€€鍑哄簲鐢紙鏍硅矾鐢?bubble ? 绯荤粺閫€鍑猴級�?
+        // 鏀跺洖鍐呭祵椤佃蛋搴曟爮鍒囨崲锛堢�?�?�?Tab 鎴栧叾浠栭〉闈㈡潯鐩級涓庡渾閽啀鐐广�?
         return _wrapWithGlassDock(
           hostedContent,
           glassDockForm: true,
@@ -1003,11 +1063,20 @@ class _TimetableScreenState extends State<TimetableScreen>
       _isCommittingWeek;
 
   void _syncViewStateIfNeeded(TimetableProvider provider) {
+    final previousProfileId = _lastSyncedProfileId;
+    final shouldReplayProfileSwitch =
+        previousProfileId != null &&
+        previousProfileId != provider.activeProfileId;
     if (identical(_lastSyncedProvider, provider) &&
         _lastSyncedProfileId == provider.activeProfileId) {
       return;
     }
     _restoreViewStateFromProvider(provider);
+    // Replay the week card-pager entrance so switching my/her timetable reads
+    // as the same incoming-card-rises motion instead of a hard cut.
+    if (shouldReplayProfileSwitch) {
+      _profileSwitchController.forward(from: 0);
+    }
   }
 
   void _persistViewState(
@@ -1089,6 +1158,12 @@ class _TimetableScreenState extends State<TimetableScreen>
         normalizedWeek = settledWeek;
         if (_weekPageController.hasClients &&
             _weekPageController.page != settledWeek - 1) {
+          // Programmatic jump: the swipe deck is gesture-only, so fall back
+          // to the pager's own slide instead of a stale deck takeover.
+          _weekDeckSettleRebuildArmed = false;
+          _weekDeckSettleRebuildScheduled = false;
+          _weekPagerDragStartPage = null;
+          _weekPagerPendingDragStartPage = null;
           _lastObservedWeekPage = settledWeek - 1;
           _weekPageController.jumpToPage(settledWeek - 1);
         }
@@ -1156,7 +1231,7 @@ class _TimetableScreenState extends State<TimetableScreen>
           return;
         }
       } else {
-        // 底栏闪现直切：跳过收起动画直接归零，与下方清理同帧生效。
+        // 搴曟爮闂幇鐩村垏锛氳烦杩囨敹璧峰姩鐢荤洿鎺ュ綊闆讹紝涓庝笅鏂规竻鐞嗗悓甯х敓鏁堛�?
         _dayViewExpandController.value = 0;
       }
     }
@@ -1286,7 +1361,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     // more: the field was swapped (no future build will hand it out) and no
     // live PageView still holds it. The pre-blur fill re-latches its
     // listener in the same build that swaps the field, so this ordering
-    // guarantees the listener is detached before dispose — otherwise a
+    // guarantees the listener is detached before dispose ? otherwise a
     // stale LayoutBuilder rebuild can hit the disposed controller and throw
     // (a PageController used after being disposed).
     void retryDispose() {
@@ -1464,10 +1539,10 @@ class _TimetableScreenState extends State<TimetableScreen>
       }
     } finally {
       _isDaySwipeAnimating = false;
-      // 日视图滑动区外层的 IgnorePointer 在 build 时读取该标志：上面所有
-      // setState 都发生在标志仍为 true 的期间，若此处不复位后再补一次重建，
-      // 「回到今天」转场结束后 ignoring:true 会永久滞留，日视图左右滑动
-      // 就再也无响应。必须显式重建一帧把指针放行。
+      // 鏃ヨ鍥炬粦鍔ㄥ尯澶栧眰�?IgnorePointer ? build 鏃惰鍙栬鏍囧織锛氫笂闈㈡墍鏈?
+      // setState 閮藉彂鐢熷湪鏍囧織浠嶄负 true 鐨勬湡闂达紝鑻ユ澶勪笉澶嶄綅鍚庡啀琛ヤ竴娆￠噸寤猴�?
+      // 銆屽洖鍒颁粖澶┿€嶈浆鍦虹粨鏉熷�?ignoring:true 浼氭案涔呮粸鐣欙紝鏃ヨ鍥惧乏鍙虫粦�?
+      // 灏卞啀涔熸棤鍝嶅簲銆傚繀椤绘樉寮忛噸寤轰竴甯ф妸鎸囬拡鏀捐�?
       if (mounted) {
         setState(() {});
       }
@@ -1501,16 +1576,16 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
     // Midpoint preview: recolour the weekday header the moment the pager
     // crosses a page midpoint (matching the indicator), via the scoped
-    // notifier — no full-State rebuild while the fling is still running.
+    // notifier ? no full-State rebuild while the fling is still running.
     // Committing the selection here instead (setState + persist + week-page
-    // jump) rebuilt the whole home screen on *every* page crossing — a single
+    // jump) rebuilt the whole home screen on *every* page crossing ? a single
     // real-device swipe crosses 30+ pages and each rebuild re-samples the
     // wallpaper blur, which starved the main thread into an ANR. The actual
     // selection commit stays on ScrollEnd (_settleDayViewPage), which now
     // re-checks until the pager is truly stationary.
     _dayHeaderPreview.value = (target.week, target.dayOfWeek);
-    // 单次手势只震一次：快速甩动跨两页 / 弹簧回弹再过中点时，onPageChanged
-    // 会连发多次，不闩锁就会一次滑动触发两次震动。
+    // 鍗曟鎵嬪娍鍙渿涓€娆★細蹇€熺敥鍔ㄨ法涓ら�?/ 寮圭哀鍥炲脊鍐嶈繃涓偣鏃讹紝onPageChanged
+    // 浼氳繛鍙戝娆★紝涓嶉棭閿佸氨浼氫竴娆℃粦鍔ㄨЕ鍙戜袱娆￠渿鍔ㄣ€?
     if (!_daySwipeHapticFired) {
       _daySwipeHapticFired = true;
       _maybeSelectionClick(settings);
@@ -1518,7 +1593,7 @@ class _TimetableScreenState extends State<TimetableScreen>
   }
 
   /// Commits the settled day-pager page once the horizontal scroll has fully
-  /// stopped, mirroring the week pager's ScrollEnd → finalize model so the
+  /// stopped, mirroring the week pager's ScrollEnd ? finalize model so the
   /// setState + persist never land mid-animation. A cross-week landing is an
   /// ordinary page here (the pager is globally continuous), so the week page
   /// follows the committed week for state consistency.
@@ -1578,7 +1653,7 @@ class _TimetableScreenState extends State<TimetableScreen>
       mode: TimetableHomeViewMode.day,
       dayOfWeek: target.dayOfWeek,
     );
-    // 手势收尾：重新武装点击震感，下一次滑动（含纯惯性续滑）可再次触发。
+    // 鎵嬪娍鏀跺熬锛氶噸鏂版瑁呯偣鍑婚渿鎰燂紝涓嬩竴娆℃粦鍔紙鍚函鎯€х画婊戯級鍙啀娆¤Е鍙戙€?
     _daySwipeHapticFired = false;
     if (target.week != _visibleWeek && !_isSyncingWeekPage) {
       unawaited(_jumpToWeek(provider, target.week, animatePage: false));
@@ -1614,7 +1689,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     });
   }
 
-  /// Weekday-bar drag → day-pager bridge. The bar acts as a visible-day-count
+  /// Weekday-bar drag ? day-pager bridge. The bar acts as a visible-day-count
   /// (7x) scrubber over the day pager: bar deltas are amplified and injected
   /// straight into the pager's ScrollPosition, so the content follows the
   /// finger at week-per-bar-width speed while the bar itself moves slowly.
@@ -1632,7 +1707,7 @@ class _TimetableScreenState extends State<TimetableScreen>
       return;
     }
     _weekdayBarDragScale = _visibleDayNumbers(settings).length.toDouble();
-    // 星期栏刮擦也是一次手势：整段拖动只保留一次日切换点击震感。
+    // 鏄熸湡鏍忓埉鎿︿篃鏄竴娆℃墜鍔匡細鏁存鎷栧姩鍙繚鐣欎竴娆℃棩鍒囨崲鐐瑰嚮闇囨劅�?
     _daySwipeHapticFired = false;
     _dayPagerDragStartPage = controller.page?.roundToDouble();
     _weekdayBarDrag = controller.position.drag(details, () {
@@ -1665,7 +1740,7 @@ class _TimetableScreenState extends State<TimetableScreen>
       return;
     }
     // Release velocity is amplified like the deltas, then the pager's own
-    // snap physics (_dayPagerPhysics) settles it — same pipeline as a direct
+    // snap physics (_dayPagerPhysics) settles it ? same pipeline as a direct
     // content fling, so midpoint preview / ScrollEnd commit stay intact.
     final vx = details.velocity.pixelsPerSecond.dx * _weekdayBarDragScale;
     drag.end(
@@ -1709,10 +1784,10 @@ class _TimetableScreenState extends State<TimetableScreen>
   /// File existence is checked asynchronously; results are cached per path,
   /// viewport and wallpaper alignment so a cover crop change cannot keep using
   /// a sample from an off-screen part of the image.
-  /// 采用启动预热器（HomeStartupVisualPrimer）缓存的壁纸亮度带作初值。
+  /// 閲囩敤鍚姩棰勭儹鍣紙HomeStartupVisualPrimer锛夌紦瀛樼殑澹佺焊浜害甯︿綔鍒濆€笺�?
   ///
-  /// 只在冷启动首帧前的空窗期生效一次：本页任何亮度字段已被赋值或常规
-  /// 异步采样已启动（requestedKey 非空）时直接返回，绝不覆盖精确采样结果。
+  /// 鍙湪鍐峰惎鍔ㄩ甯у墠鐨勭┖绐楁湡鐢熸晥涓€娆★細鏈〉浠讳綍浜害瀛楁宸茶璧嬪€兼垨甯歌
+  /// 寮傛閲囨牱宸插惎鍔紙requestedKey 闈炵┖锛夋椂鐩存帴杩斿洖锛岀粷涓嶈鐩栫簿纭噰鏍风粨鏋溿�?
   void _seedWallpaperLuminanceFromStartupPrimer(TimetableSettings settings) {
     if (_wallpaperTopLuminance != null ||
         _wallpaperWeekdayLuminance != null ||
@@ -1769,11 +1844,11 @@ class _TimetableScreenState extends State<TimetableScreen>
             !_wallpaperLuminanceFileExists)) {
       return;
     }
-    // 本方法在 build 期间被调用，而 _ensureWallpaperLuminanceForPath 首段
-    // （existsSync 结果分流）含同步 setState：直接调用会在 build 期把本组件
-    // 标脏，触发 "setState() called during build" 异常并中断壁纸亮度采样
-    // 链，导致墨色极性停在主题默认色。统一推迟到帧后首跑，天然规避
-    // build 期限制，重复进入也由 requestedKey 幂等去重。
+    // 鏈柟娉曞湪 build 鏈熼棿琚皟鐢紝鑰?_ensureWallpaperLuminanceForPath 棣栨�?
+    // 锛坋xistsSync 缁撴灉鍒嗘祦锛夊惈鍚屾 setState锛氱洿鎺ヨ皟鐢ㄤ細鍦?build 鏈熸妸鏈粍�?
+    // 鏍囪剰锛岃Е鍙?"setState() called during build" 寮傚父骞朵腑鏂绾镐寒搴﹂噰鏍?
+    // 閾撅紝瀵艰嚧澧ㄨ壊鏋佹€у仠鍦ㄤ富棰橀粯璁よ壊銆傜粺涓€鎺ㄨ繜鍒板抚鍚庨璺戯紝澶╃劧瑙勯�?
+    // build 鏈熼檺鍒讹紝閲嶅杩涘叆涔熺�?requestedKey 骞傜瓑鍘婚噸�?
     unawaited(
       Future<void>.sync(() {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1792,11 +1867,11 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 采样缓存 key：`路径|视口宽x高|alignX|alignY`。
+  /// 閲囨牱缂撳瓨 key锛歚璺緞|瑙嗗彛瀹絰楂榺alignX|alignY`�?
   ///
-  /// 组成字段均为可枚举的有限来源（壁纸路径来自 managed storage、视口来自
-  /// MediaQuery、对齐值来自 -1.0~1.0 的滑杆），调用方不会注入意外分隔符。
-  /// 用 `|` 分隔足以避免歧义，无需哈希或结构化 key。
+  /// 缁勬垚瀛楁鍧囦负鍙灇涓剧殑鏈夐檺鏉ユ簮锛堝绾歌矾寰勬潵鑷?managed storage銆佽鍙ｆ潵�?
+  /// MediaQuery銆佸榻愬€兼潵�?-1.0~1.0 鐨勬粦鏉嗭級锛岃皟鐢ㄦ柟涓嶄細娉ㄥ叆鎰忓鍒嗛殧绗︺�?
+  /// ? `|` 鍒嗛殧瓒充互閬垮厤姝т箟锛屾棤闇€鍝堝笇鎴栫粨鏋勫�?key�?
   String _wallpaperLuminanceKey({
     required String path,
     required Size viewportSize,
@@ -1819,9 +1894,9 @@ class _TimetableScreenState extends State<TimetableScreen>
         _wallpaperTopLuminance != null) {
       return;
     }
-    // 下面的字段赋值统一收敛到 setState 内：本方法在异步回调中运行，
-    // 风格混用（部分在 setState 外、部分在内）会让后续维护者难以判断
-    // 哪些赋值会触发重绘，容易漏包导致 UI 与状态脱节。
+    // 涓嬮潰鐨勫瓧娈佃祴鍊肩粺涓€鏀舵暃�?setState 鍐咃細鏈柟娉曞湪寮傛鍥炶皟涓繍琛岋�?
+    // 椋庢牸娣风敤锛堥儴鍒嗗湪 setState 澶栥€侀儴鍒嗗湪鍐咃級浼氳鍚庣画缁存姢鑰呴毦浠ュ垽�?
+    // 鍝簺璧嬪€间細瑙﹀彂閲嶇粯锛屽鏄撴紡鍖呭鑷?UI 涓庣姸鎬佽劚鑺傘�?
     _wallpaperLuminanceRequestedKey = key;
     final fileExists = File(path).existsSync();
     if (!mounted || _wallpaperLuminanceRequestedKey != key) {
@@ -1927,7 +2002,7 @@ class _TimetableScreenState extends State<TimetableScreen>
       return;
     }
     // ~WCAG ratio against the sampled band; photos are busy, so anything
-    // above 3:1 is left alone — this only catches "nearly invisible".
+    // above 3:1 is left alone ? this only catches "nearly invisible".
     if (homePageInkHasSufficientContrast(ink, luminance)) {
       return;
     }
@@ -2024,9 +2099,9 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 标题分发：情侣课表开关开启且已绑定 TA 课表时显示
-  /// 「我的昵称 ❤ 她的昵称」情侣标题（点击切换我的/她的课表）；
-  /// 开关关闭或未绑定时显示应用名 + profile 快速切换。
+  /// 鏍囬鍒嗗彂锛氭儏渚ｈ琛ㄥ紑鍏冲紑鍚笖宸茬粦�?TA 璇捐〃鏃舵樉绀?
+  /// 銆屾垜鐨勬樀�?�?濂圭殑鏄电О銆嶆儏渚ｆ爣棰橈紙鐐瑰嚮鍒囨崲鎴戠�?濂圭殑璇捐〃锛夛紱
+  /// 寮€鍏冲叧闂垨鏈粦瀹氭椂鏄剧ず搴旂敤鍚?+ profile 蹇€熷垏鎹€?
   Widget _buildHomeTitle(
     TimetableProvider provider, {
     required Color foreground,
@@ -2057,8 +2132,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 情侣模式已开启但未登录且未绑定 TA 课表时：保留普通标题的
-  /// 居中显示「未登录 · 点击登录」，不显示应用名。
+  /// 鎯呬荆妯″紡宸插紑鍚絾鏈櫥褰曚笖鏈粦�?TA 璇捐〃鏃讹細淇濈暀鏅€氭爣棰樼殑
+  /// 灞呬腑鏄剧ず銆屾湭鐧诲綍 ? 鐐瑰嚮鐧诲綍銆嶏紝涓嶆樉绀哄簲鐢ㄥ悕銆?
   Widget _buildLoggedOutCoupleLoginTitle(
     TimetableProvider provider, {
     required WithuCoupleSessionProvider? session,
@@ -2088,9 +2163,9 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 情侣标题：[我的昵称] 渐变线 爱心 渐变线 [她的昵称]，当前显示谁的
-  /// 课表谁的昵称带选中点；点击任意位置在两份课表间切换，长按打开
-  /// profile 快速切换 sheet（切换我自己的多份课表）。
+  /// 鎯呬荆鏍囬锛歔鎴戠殑鏄电О] 娓愬彉绾?鐖卞�?娓愬彉绾?[濂圭殑鏄电О]锛屽綋鍓嶆樉绀鸿皝�?
+  /// 璇捐〃璋佺殑鏄电О甯﹂€変腑鐐癸紱鐐瑰嚮浠绘剰浣嶇疆鍦ㄤ袱浠借琛ㄩ棿鍒囨崲锛岄暱鎸夋墦寮€
+  /// profile 蹇€熷垏鎹?sheet锛堝垏鎹㈡垜鑷繁鐨勫浠借琛級銆?
   Widget _buildCoupleTitleSwitcher(
     TimetableProvider provider, {
     required Color foreground,
@@ -2118,7 +2193,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     return GestureDetector(
       key: const ValueKey('profile_switcher_trigger'),
       onTap: _toggleCoupleTimetable,
-      onLongPress: _showProfileQuickSwitchSheet,
+      onLongPress: _showCoupleTitleLongPressActions,
       behavior: HitTestBehavior.opaque,
       child: Semantics(
         label: '$myName / $herName',
@@ -2172,34 +2247,37 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 昵称块：DancingScript 手写体昵称 + 选中指示点。当前课表对应的一侧
-  /// 加粗标红，另一侧细体半透明前景色。
+  /// 鏄电О鍧楋細DancingScript 鎵嬪啓浣撴樀�?+ 閫変腑鎸囩ず鐐广€傚綋鍓嶈琛ㄥ搴旂殑涓€�?
+  /// 鍔犵矖鏍囩孩锛屽彟涓€渚х粏浣撳崐閫忔槑鍓嶆櫙鑹层�?
   Widget _buildCoupleNicknameBlock({
     required String name,
     required bool selected,
     required Color foreground,
   }) {
+    final transitionDuration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : _profileSwitchRevealDuration;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          AnimatedDefaultTextStyle(
+            duration: transitionDuration,
+            curve: Curves.easeInOutCubic,
             style: TextStyle(
               fontFamily: 'DancingScript',
               fontSize: 22,
               height: 1.1,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-              color: selected
-                  ? HyperosIconColors.red
-                  : Colors.white,
+              color: selected ? HyperosIconColors.red : Colors.white,
             ),
+            child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
           ),
           const SizedBox(height: 2),
-          Container(
+          AnimatedContainer(
+            duration: transitionDuration,
+            curve: Curves.easeInOutCubic,
             width: 4,
             height: 4,
             decoration: BoxDecoration(
@@ -2223,7 +2301,7 @@ class _TimetableScreenState extends State<TimetableScreen>
         width: _coupleLineWidth,
         height: 1.2,
         margin: const EdgeInsets.symmetric(horizontal: 4),
-        color: foreground.withValues(alpha: 0.35),
+        color: Colors.white,
       );
     }
 
@@ -2243,7 +2321,7 @@ class _TimetableScreenState extends State<TimetableScreen>
               Container(
                 width: double.infinity,
                 height: 1.2,
-                color: foreground.withValues(alpha: 0.24),
+                color: Colors.white,
               ),
               ClipRect(
                 child: SizedBox.expand(
@@ -2265,22 +2343,15 @@ class _TimetableScreenState extends State<TimetableScreen>
                             end: flowToRight
                                 ? Alignment.centerRight
                                 : Alignment.centerLeft,
-                            colors: [
-                              HyperosIconColors.red.withValues(alpha: 0),
-                              HyperosIconColors.red.withValues(alpha: 0.95),
-                              foreground.withValues(alpha: 0.35),
-                              HyperosIconColors.red.withValues(alpha: 0),
+                            colors: const [
+                              Color(0xFFFF5252),
+                              Color(0xFFFFAB40),
+                              Color(0xFFFFF176),
+                              Color(0xFF69F0AE),
+                              Color(0xFF40C4FF),
+                              Color(0xFFB388FF),
                             ],
-                            stops: const [0, 0.5, 0.75, 1],
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: HyperosIconColors.red.withValues(
-                                alpha: 0.28,
-                              ),
-                              blurRadius: 3,
-                            ),
-                          ],
                         ),
                       ),
                     ),
@@ -2319,9 +2390,9 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 爱心位：已登录显示爱心；未登录显示「登录」小入口，点击进入
-  /// WithU 登录弹窗（原「未登录 · 点击登录」提示的登录入口保留于此，
-  /// 不再整块霸占标题区，情侣标题的切换功能始终可用）。
+  /// 鐖卞績浣嶏細宸茬櫥褰曟樉绀虹埍蹇冿紱鏈櫥褰曟樉绀恒€岀櫥褰曘€嶅皬鍏ュ彛锛岀偣鍑昏繘�?
+  /// WithU 鐧诲綍寮圭獥锛堝師銆屾湭鐧诲�?�?鐐瑰嚮鐧诲綍銆嶆彁绀虹殑鐧诲綍鍏ュ彛淇濈暀浜庢锛?
+  /// 涓嶅啀鏁村潡闇稿崰鏍囬鍖猴紝鎯呬荆鏍囬鐨勫垏鎹㈠姛鑳藉缁堝彲鐢級銆?
   Widget _buildCoupleHeartSlot(WithuCoupleSessionProvider? session) {
     if ((session?.isLoggedIn ?? false) ||
         (session?.hasStoredSession ?? false)) {
@@ -2343,7 +2414,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 进入 WithU 情侣账号登录弹窗；登录成功刷新标题区登录态。
+  /// 杩涘�?WithU 鎯呬荆璐﹀彿鐧诲綍寮圭獥锛涚櫥褰曟垚鍔熷埛鏂版爣棰樺尯鐧诲綍鎬併€?
   Future<void> _openWithuCoupleLogin() async {
     final provider = context.read<TimetableProvider>();
     final sessionProvider = context.read<WithuCoupleSessionProvider>();
@@ -2358,7 +2429,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     await provider.syncCoupleTimetableWidgetSnapshot();
   }
 
-  /// 情侣标题点击：在我的/她的课表之间切换。
+  /// 鎯呬荆鏍囬鐐瑰嚮锛氬湪鎴戠�?濂圭殑璇捐〃涔嬮棿鍒囨崲銆?
   Future<void> _toggleCoupleTimetable() async {
     final provider = context.read<TimetableProvider>();
     final targetId =
@@ -2374,7 +2445,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
   }
 
-  /// 标题（未绑定 TA 课表时）：应用名 + profile 快速切换 sheet。
+  /// 鏍囬锛堟湭缁戝�?TA 璇捐〃鏃讹級锛氬簲鐢ㄥ悕 + profile 蹇€熷垏鎹?sheet�?
   Widget _buildLegacyProfileSwitcherTrigger(
     TimetableProvider provider, {
     required Color foreground,
@@ -2396,7 +2467,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 标题（classic 排版）：应用名，点按打开 profile 快速切换 sheet。
+  /// 鏍囬锛坈lassic 鎺掔増锛夛細搴旂敤鍚嶏紝鐐规寜鎵撳紑 profile 蹇€熷垏鎹?sheet�?
   Widget _buildLegacyClassicProfileSwitcherTrigger(
     TimetableProvider provider, {
     required Color foreground,
@@ -2417,7 +2488,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 标题（brand 排版）：第一行应用名，第二行当前课表名。
+  /// 鏍囬锛坆rand 鎺掔増锛夛細绗竴琛屽簲鐢ㄥ悕锛岀浜岃褰撳墠璇捐〃鍚嶃€?
   Widget _buildLegacyBrandProfileSwitcherTrigger(
     TimetableProvider provider, {
     required Color foreground,
@@ -2490,7 +2561,7 @@ class _TimetableScreenState extends State<TimetableScreen>
             ) ||
             settings.homePageWeekdayBarBlurEnabled);
     // Judge ink from the band actually behind the weekday bar, not the
-    // status/title strip above it — the two can differ on the same photo.
+    // status/title strip above it ? the two can differ on the same photo.
     // With the weekday glass band on, follow the band's scrim polarity (the
     // scrim derives from the top sample) so ink and wash never fight.
     final weekdayLuminance = settings.homePageWeekdayBarBlurEnabled
@@ -2515,7 +2586,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     final visibleDays = _visibleDayNumbers(settings);
 
     // Shared full-row builder: week label + back-to-current-week + the seven
-    // day slots + the selection indicator — one complete weekday bar row.
+    // day slots + the selection indicator ? one complete weekday bar row.
     // Week view renders one row per page (it scrolls with that page); day
     // view stacks three consecutive weeks and translates them with the pager
     // so the WHOLE bar slides like the week view's header.
@@ -2531,7 +2602,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                   onTap: _showWeekSelector,
                   borderRadius: BorderRadius.circular(10),
                   child: Padding(
-                    // 时间列偏窄，略向右让周次与节次数字视觉中心对齐。
+                    // 鏃堕棿鍒楀亸绐勶紝鐣ュ悜鍙宠鍛ㄦ涓庤妭娆℃暟瀛楄瑙変腑蹇冨榻愩€?
                     padding: const EdgeInsets.fromLTRB(8, 2, 2, 2),
                     child: _buildFlippingWeekLabel(
                       week: rowWeek,
@@ -2541,7 +2612,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                     ),
                   ),
                 ),
-                // （内嵌「回本周」小字已移除）
+                // 锛堝唴宓屻€屽洖鏈懆銆嶅皬瀛楀凡绉婚櫎�?
               ],
             ),
           ),
@@ -2641,10 +2712,10 @@ class _TimetableScreenState extends State<TimetableScreen>
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    // 固定 40dp 的星期栏扣掉 3+3 内边距和 0.5
-                                    // 分隔线后格子只剩 33.5dp，平铺考试红点会把
-                                    // 内容顶到 34dp 溢出；改悬浮层后基础内容恒
-                                    // 为 28dp，任何外观模式都有余量。
+                                    // 鍥哄�?40dp 鐨勬槦鏈熸爮鎵ｆ帀 3+3 鍐呰竟璺濆拰 0.5
+                                    // 鍒嗛殧绾垮悗鏍煎瓙鍙墿 33.5dp锛屽钩閾鸿€冭瘯绾㈢偣浼氭妸
+                                    // 鍐呭椤跺埌 34dp 婧㈠嚭锛涙敼鎮诞灞傚悗鍩虹鍐呭�?
+                                    // ? 28dp锛屼换浣曞瑙傛ā寮忛兘鏈変綑閲忋�?
                                     Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
@@ -2661,14 +2732,12 @@ class _TimetableScreenState extends State<TimetableScreen>
                                           ),
                                         ),
                                         const SizedBox(height: 2),
-                                        Text(
-                                          date == null
-                                              ? ''
-                                              : '${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}',
-                                          style: TextStyle(
-                                            fontSize: 8.5,
-                                            color: subLabelColor,
-                                          ),
+                                        _buildFlippingDateLabel(
+                                          settings: settings,
+                                          week: rowWeek,
+                                          dayOfWeek: dayOfWeek,
+                                          date: date,
+                                          color: subLabelColor,
                                         ),
                                       ],
                                     ),
@@ -2760,6 +2829,113 @@ class _TimetableScreenState extends State<TimetableScreen>
             0,
           ),
           child: header,
+        );
+      },
+    );
+  }
+
+  Widget _buildFlippingDateLabel({
+    required TimetableSettings settings,
+    required int week,
+    required int dayOfWeek,
+    required DateTime? date,
+    required Color color,
+  }) {
+    final labelStyle = TextStyle(fontSize: 8.5, color: color);
+
+    String formatDate(DateTime? value) {
+      if (value == null) {
+        return '';
+      }
+      return '${value.month.toString().padLeft(2, '0')}/'
+          '${value.day.toString().padLeft(2, '0')}';
+    }
+
+    final staticLabel = Text(formatDate(date), style: labelStyle);
+    if (date == null || MediaQuery.disableAnimationsOf(context)) {
+      return staticLabel;
+    }
+
+    return AnimatedBuilder(
+      animation: _weekPageController,
+      builder: (context, _) {
+        final hasClients = _weekPageController.hasClients;
+        final rawPage = hasClients
+            ? (_weekPageController.page ??
+                  _weekPageController.initialPage.toDouble())
+            : _weekPageController.initialPage.toDouble();
+        final maxWeek = settings.semesterWeekCount;
+        final settledWeek = (rawPage.roundToDouble().round() + 1).clamp(
+          1,
+          maxWeek,
+        );
+        if (!hasClients ||
+            rawPage < 0 ||
+            rawPage > maxWeek - 1 ||
+            (rawPage - rawPage.roundToDouble()).abs() < 0.001) {
+          return Text(
+            formatDate(_dateForWeekDay(settings, settledWeek, dayOfWeek)),
+            key: ValueKey('timetable-date-$settledWeek-$dayOfWeek'),
+            style: labelStyle,
+          );
+        }
+
+        final lowerPage = rawPage.floorToDouble();
+        final upperPage = (lowerPage + 1).clamp(0.0, (maxWeek - 1).toDouble());
+        final progress = (rawPage - lowerPage).clamp(0.0, 1.0);
+        final movingForward = _weekSwipeDirection >= 0;
+        final leavingWeek =
+            ((movingForward ? lowerPage : upperPage).round() + 1).clamp(
+              1,
+              maxWeek,
+            );
+        final arrivingWeek =
+            ((movingForward ? upperPage : lowerPage).round() + 1).clamp(
+              1,
+              maxWeek,
+            );
+        if (leavingWeek == arrivingWeek) {
+          return Text(
+            formatDate(_dateForWeekDay(settings, settledWeek, dayOfWeek)),
+            key: ValueKey('timetable-date-$settledWeek-$dayOfWeek'),
+            style: labelStyle,
+          );
+        }
+
+        final leavingDate = _dateForWeekDay(settings, leavingWeek, dayOfWeek);
+        final arrivingDate = _dateForWeekDay(settings, arrivingWeek, dayOfWeek);
+        if (leavingDate == null || arrivingDate == null) {
+          return staticLabel;
+        }
+
+        final leavingOpacity = (movingForward ? 1 - progress : progress).clamp(
+          0.0,
+          1.0,
+        );
+        final arrivingOpacity = (movingForward ? progress : 1 - progress).clamp(
+          0.0,
+          1.0,
+        );
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            Opacity(
+              opacity: leavingOpacity,
+              child: Text(
+                formatDate(leavingDate),
+                key: ValueKey('timetable-date-$leavingWeek-$dayOfWeek'),
+                style: labelStyle,
+              ),
+            ),
+            Opacity(
+              opacity: arrivingOpacity,
+              child: Text(
+                formatDate(arrivingDate),
+                key: ValueKey('timetable-date-$arrivingWeek-$dayOfWeek'),
+                style: labelStyle,
+              ),
+            ),
+          ],
         );
       },
     );
@@ -3014,6 +3190,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     int week,
     double sectionHeight, {
     required ScrollController weekGridScrollController,
+    bool animateCourseEntrance = true,
   }) {
     final visibleDays = _visibleDayNumbers(settings);
     final timeColumnWidth = _resolveTimeColumnWidth(settings);
@@ -3028,7 +3205,6 @@ class _TimetableScreenState extends State<TimetableScreen>
           SizedBox(
             width: timeColumnWidth,
             // Keep the lane transparent while cards slide above it. The
-            // visible axis is hoisted into the week-pager Stack.
           ),
           Expanded(
             child: homePageBackgroundLayer(
@@ -3069,6 +3245,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                           sectionHeight,
                           cardInset,
                           provider,
+                          animateCourseEntrance: animateCourseEntrance,
                           dayIndex: dayIndex,
                           dayCount: visibleDays.length,
                         ),
@@ -3120,92 +3297,56 @@ class _TimetableScreenState extends State<TimetableScreen>
     required double sectionHeight,
     required int maxWeek,
   }) {
+    // The week swipe is a z-stack reveal (see _buildWeekPagerDeck). The
+    // fixed rail below only paints while the deck is idle; during the swipe
+    // each deck card carries its own copy of the time column (inside
+    // _buildWeekDeckCard) so the rail slides and scales together with the
+    // timetable instead of staying parked.
+    return _buildFixedTimeColumn(settings, sectionHeight, followOffset: 0);
+  }
+
+  /// One-shot "incoming card" reveal matching [_buildPagerCardTransition]:
+  /// the timetable surface scales 0.79 -> 1, fades 0.22 -> 1 and unblurs
+  /// 14 -> 0 when the active profile switches. Wraps week view and the
+  /// day-view overlay (both live inside [_buildWeekPager]).
+  Widget _wrapProfileSwitchReveal(Widget child) {
+    if (MediaQuery.disableAnimationsOf(context)) {
+      return child;
+    }
     return AnimatedBuilder(
-      animation: _weekPageController,
-      builder: (context, _) {
-        final hasHorizontalPage =
-            _weekPageController.hasClients &&
-            _weekPageController.position.hasContentDimensions;
-        final page = hasHorizontalPage
-            ? (_weekPageController.page ?? _lastObservedWeekPage ?? 0)
-            : (_lastObservedWeekPage ?? 0).toDouble();
-        final week = _clampWeek(page.round() + 1, maxWeek);
-        final weekGridScrollController = _getWeekGridScrollController(week);
-        return AnimatedBuilder(
-          animation: weekGridScrollController,
-          builder: (context, _) {
-            final offset =
-                weekGridScrollController.hasClients &&
-                    weekGridScrollController.positions.length == 1
-                ? weekGridScrollController.positions.single.pixels
-                : 0.0;
-            final animationsDisabled = MediaQuery.disableAnimationsOf(context);
-            // Week-swipe motion is handled below; vertical grid scrolling
-            // keeps the axis parked in place.
-            const followFactor = 0.0;
-            var horizontalOffset = 0.0;
-            var motionScale = 1.0;
-            var motionOpacity = 1.0;
-            if (!animationsDisabled && hasHorizontalPage) {
-              // ScrollUpdate gives the intended direction even after PageView
-              // crosses the halfway page-change threshold.
-              final direction = _weekSwipeDirection;
-              final exitDistance = _resolveTimeColumnWidth(settings) + 64;
-              const exitWindow = 0.20;
-              const enterStart = 0.28;
-              final viewportDimension =
-                  _weekPageController.position.viewportDimension;
-              // Convert the raw pager position into 0..1 progress for this
-              // swipe. Distance-from-nearest alone cannot distinguish the
-              // outgoing edge from the incoming edge.
-              final rawPage = _weekPageController.page ?? 0.0;
-              // Keep the gesture's actual start page. floor/ceil resets to the
-              // next swipe when a fast spring overshoots the landing page for
-              // a frame, which makes the time axis jerk at the end.
-              final swipeStartPage =
-                  _weekPagerDragStartPage ??
-                  (direction >= 0
-                      ? rawPage.floorToDouble()
-                      : rawPage.ceilToDouble());
-              var swipeProgress = ((rawPage - swipeStartPage) * direction)
-                  .clamp(0.0, 1.0);
-              if ((rawPage - rawPage.roundToDouble()).abs() < 0.001) {
-                swipeProgress = 1.0;
-              }
-              if (swipeProgress <= exitWindow) {
-                // Leave in the swipe direction: left swipe exits left,
-                // right swipe exits right.
-                final progress = Curves.easeOutCubic.transform(
-                  (swipeProgress / exitWindow).clamp(0.0, 1.0),
-                );
-                horizontalOffset = -direction * exitDistance * progress;
-                motionOpacity = 1.0 - progress;
-                motionScale = 1.0 - 0.06 * progress;
-              } else if (swipeProgress >= 1.0 - enterStart) {
-                // The incoming page still has `(1 - swipeProgress) *
-                // viewportDimension` to travel. Give the axis the same travel,
-                // so its inner edge stays glued to the incoming course grid.
-                horizontalOffset =
-                    direction * (1.0 - swipeProgress) * viewportDimension;
-                motionOpacity =
-                    ((swipeProgress - (1.0 - enterStart)) / enterStart).clamp(
-                      0.0,
-                      1.0,
-                    );
-                motionScale = 0.94 + 0.06 * motionOpacity;
-              } else {
-                motionOpacity = 0.0;
-              }
-            }
-            return _buildFixedTimeColumn(
-              settings,
-              sectionHeight,
-              followOffset: -offset * followFactor,
-              horizontalOffset: horizontalOffset,
-              scale: motionScale,
-              opacity: motionOpacity,
-            );
-          },
+      animation: _profileSwitchController,
+      child: child,
+      builder: (context, content) {
+        final progress = _profileSwitchController.value;
+        if (progress >= 1) {
+          return content!;
+        }
+        final appearProgress =
+            ((progress - _cardPagerAppearStart) / (1.0 - _cardPagerAppearStart))
+                .clamp(0.0, 1.0);
+        final scale =
+            _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appearProgress;
+        final alpha =
+            (_cardPagerAppearOpacity +
+                    (1.0 - _cardPagerAppearOpacity) * appearProgress)
+                .clamp(0.0, 1.0);
+        final blurSigma = _cardPagerMaxBlurSigma * (1.0 - appearProgress);
+        final alphaFilter = ui.ColorFilter.mode(
+          Color.fromARGB((alpha * 255).round(), 0, 0, 0),
+          ui.BlendMode.dstIn,
+        );
+        return ImageFiltered(
+          imageFilter: blurSigma > 0
+              ? ui.ImageFilter.compose(
+                  outer: alphaFilter,
+                  inner: ui.ImageFilter.blur(
+                    sigmaX: blurSigma,
+                    sigmaY: blurSigma,
+                    tileMode: ui.TileMode.clamp,
+                  ),
+                )
+              : alphaFilter,
+          child: Transform.scale(scale: scale, child: content),
         );
       },
     );
@@ -3272,7 +3413,7 @@ class _TimetableScreenState extends State<TimetableScreen>
         _isHomePullQuickImportRunning ||
         _homePullDragDistance >= _homePullQuickImportTriggerDistance * 0.45;
     const indicatorTopInset = _weekDayHeaderHeight + 8;
-    // Subtle follow — 11px max, eased, not the previous 27px linear slide.
+    // Subtle follow ? 11px max, eased, not the previous 27px linear slide.
     final followY = () {
       if (_isHomePullQuickImportRunning) return 0.0;
       final d = _homePullDragDistance;
@@ -3457,8 +3598,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
     if (crossedUp && _homePullHapticArmed) {
       _homePullHapticArmed = false;
-      // 同步读取 provider：Element 已卸载时 context.read 会抛异常，
-      // 前置 mounted 守卫替代吞异常，避免掩盖真实的 unmounted-read bug。
+      // 鍚屾璇诲彇 provider锛欵lement 宸插嵏杞芥椂 context.read 浼氭姏寮傚父�?
+      // 鍓嶇�?mounted 瀹堝崼鏇夸唬鍚炲紓甯革紝閬垮厤鎺╃洊鐪熷疄鐨?unmounted-read bug�?
       if (mounted) {
         final settings = context.read<TimetableProvider>().settings;
         if (settings.enableHaptics) HapticFeedback.selectionClick();
@@ -3609,8 +3750,8 @@ class _TimetableScreenState extends State<TimetableScreen>
       _homePullDragDistance = 0;
       _homePullQuickImportCancel = null;
     });
-    // 同步读取 provider：前置 mounted 守卫替代吞异常，避免掩盖
-    // unmounted-read 类 bug。
+    // 鍚屾璇诲彇 provider锛氬墠缃?mounted 瀹堝崼鏇夸唬鍚炲紓甯革紝閬垮厤鎺╃洊
+    // unmounted-read ? bug�?
     if (mounted) {
       if (context.read<TimetableProvider>().settings.enableHaptics) {
         HapticFeedback.mediumImpact();
@@ -3647,12 +3788,16 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
   }
 
-  // Card paging tuning: the incoming neighbor grows in place while the active
-  // page follows the finger.
+  // Card paging tuning: the incoming neighbor enters the centered card reveal.
+  // Forward (left swipe): the incoming page rises from below (scale 79�?00%,
+  // fade 0.22�?, blur 14蟽鈫?) while the outgoing page follows the finger away.
+  // Backward (right swipe): the outgoing page stacks in place and recedes
+  // (fade ? .22 + shrink ? 2.5% + blur) while the left neighbor drops in from
+  // the very top.
   static const double _cardPagerAppearStart = 0.1314;
   static const double _cardPagerAppearOpacity = 0.22;
   static const double _cardPagerMaxBlurSigma = 14;
-  static const double _cardPagerMinScale = 0.8686;
+  static const double _cardPagerMinScale = 0.79;
 
   /// Only the gesture-target neighbor enters the centered card reveal.
   Widget _buildPagerCardTransition({
@@ -3679,39 +3824,77 @@ class _TimetableScreenState extends State<TimetableScreen>
         if (pageDelta.abs() > 1.5) {
           return cardChild ?? child;
         }
-        // Backward paging stacks the outgoing page in place: cancel its
-        // PageView offset so it recedes below while the left neighbor slides
-        // over it with the natural PageView trajectory.
-        if (resolvedDirection < 0) {
-          if (pageDelta != 0) return cardChild ?? child;
-          final recedeProgress = (dragStartPage - activePage).clamp(0.0, 1.0);
-          final scale = 1.0 - (1.0 - _cardPagerMinScale) * recedeProgress;
-          final blurSigma = _cardPagerMaxBlurSigma * recedeProgress;
-          final identityFilter = ui.ColorFilter.mode(
-            const Color.fromARGB(255, 0, 0, 0),
+        final viewportDimension = controller.position.viewportDimension;
+
+        ui.ImageFilter cardFilter({
+          required double alpha,
+          required double blurSigma,
+        }) {
+          final alphaFilter = ui.ColorFilter.mode(
+            Color.fromARGB((alpha.clamp(0.0, 1.0) * 255).round(), 0, 0, 0),
             ui.BlendMode.dstIn,
           );
-          final filter = blurSigma > 0
+          return blurSigma > 0
               ? ui.ImageFilter.compose(
-                  outer: identityFilter,
+                  outer: alphaFilter,
                   inner: ui.ImageFilter.blur(
                     sigmaX: blurSigma,
                     sigmaY: blurSigma,
                     tileMode: ui.TileMode.clamp,
                   ),
                 )
-              : identityFilter;
-          return ImageFiltered(
-            imageFilter: filter,
-            child: Transform.translate(
-              offset: Offset(
-                (activePage - page) * controller.position.viewportDimension,
-                0,
+              : alphaFilter;
+        }
+
+        // Backward paging (right swipe): the outgoing page stacks in place and
+        // recedes (fade out + shrink to 79% + blur) while the left neighbor
+        // drops in from the very top.
+        if (resolvedDirection < 0) {
+          if (pageDelta == -1) {
+            // Incoming left neighbor: cancel its PageView offset so it lands
+            // centered while the receding neighbor slides over it.
+            final dragProgress =
+                ((dragStartPage - activePage) / (dragStartPage - page))
+                    .clamp(0.0, 1.0)
+                    .toDouble();
+            final appearProgress =
+                ((dragProgress - _cardPagerAppearStart) /
+                        (1.0 - _cardPagerAppearStart))
+                    .clamp(0.0, 1.0)
+                    .toDouble();
+            final scale =
+                _cardPagerMinScale +
+                (1.0 - _cardPagerMinScale) * appearProgress;
+            final alpha =
+                (_cardPagerAppearOpacity +
+                        (1.0 - _cardPagerAppearOpacity) * appearProgress)
+                    .clamp(0.0, 1.0);
+            final blurSigma =
+                _cardPagerMaxBlurSigma * (1.0 - appearProgress).clamp(0.0, 1.0);
+            return ImageFiltered(
+              imageFilter: cardFilter(alpha: alpha, blurSigma: blurSigma),
+              child: Transform.translate(
+                offset: Offset((activePage - page) * viewportDimension, 0),
+                child: Transform.scale(scale: scale, child: cardChild ?? child),
               ),
+            );
+          }
+          if (pageDelta != 0) return cardChild ?? child;
+          // Outgoing page: cancel its PageView offset so it recedes in place.
+          final recedeProgress = (dragStartPage - activePage).clamp(0.0, 1.0);
+          final scale = 1.0 - (1.0 - _cardPagerMinScale) * recedeProgress;
+          final blurSigma = _cardPagerMaxBlurSigma * recedeProgress;
+          final alpha = 1.0 - (1.0 - _cardPagerAppearOpacity) * recedeProgress;
+          return ImageFiltered(
+            imageFilter: cardFilter(alpha: alpha, blurSigma: blurSigma),
+            child: Transform.translate(
+              offset: Offset((activePage - page) * viewportDimension, 0),
               child: Transform.scale(scale: scale, child: cardChild ?? child),
             ),
           );
         }
+        // Forward paging (left swipe): the outgoing page follows the finger
+        // away; only the incoming right neighbor enters the reveal.
         if (pageDelta * resolvedDirection <= 0) {
           return cardChild ?? child;
         }
@@ -3728,11 +3911,8 @@ class _TimetableScreenState extends State<TimetableScreen>
             _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appearProgress;
         // Cancel only the incoming card's PageView layout offset; the active
         // page still follows the finger.
-        Widget transition = Transform.translate(
-          offset: Offset(
-            (activePage - page) * controller.position.viewportDimension,
-            0,
-          ),
+        final Widget transition = Transform.translate(
+          offset: Offset((activePage - page) * viewportDimension, 0),
           child: Transform.scale(scale: scale, child: cardChild ?? child),
         );
         // Use a single image filter for alpha and blur. The completed state
@@ -3743,21 +3923,10 @@ class _TimetableScreenState extends State<TimetableScreen>
                 .clamp(0.0, 1.0);
         final blurSigma =
             _cardPagerMaxBlurSigma * (1.0 - appearProgress).clamp(0.0, 1.0);
-        final alphaFilter = ui.ColorFilter.mode(
-          Color.fromARGB((alpha * 255).round(), 0, 0, 0),
-          ui.BlendMode.dstIn,
+        return ImageFiltered(
+          imageFilter: cardFilter(alpha: alpha, blurSigma: blurSigma),
+          child: transition,
         );
-        final filter = blurSigma > 0
-            ? ui.ImageFilter.compose(
-                outer: alphaFilter,
-                inner: ui.ImageFilter.blur(
-                  sigmaX: blurSigma,
-                  sigmaY: blurSigma,
-                  tileMode: ui.TileMode.clamp,
-                ),
-              )
-            : alphaFilter;
-        return ImageFiltered(imageFilter: filter, child: transition);
       },
     );
   }
@@ -3813,22 +3982,39 @@ class _TimetableScreenState extends State<TimetableScreen>
           top: timeColumnTop,
           width: timeColumnWidth,
           height: timeColumnHeight,
-          child: Offstage(
-            offstage: _shouldShowDayViewOverlay,
-            child: IgnorePointer(
-              child: ClipRect(
-                child: OverflowBox(
-                  minHeight: 0,
-                  maxHeight: double.infinity,
-                  alignment: Alignment.topCenter,
-                  child: _buildFollowingTimeColumn(
-                    settings: settings,
-                    sectionHeight: fixedTimeColumnSectionHeight,
-                    maxWeek: settings.semesterWeekCount,
+          child: AnimatedBuilder(
+            // 鍔ㄧ敾鏈熼棿鏃堕棿杞寸敱 deck 鍗″唴鐨勫壇鏈礋璐ｏ紙闅忓崱鐗囦竴璧风缉鏀?浣嶇Щ锛夛�?
+            // 鍥哄畾杞ㄥ湪 deck 婵€娲绘垨鍋滈潬鎸傝捣鏃堕殣钘忥紝闈欐鏃舵仮澶嶃€?
+            animation: Listenable.merge([
+              _weekPageController,
+              _weekDeckReleaseTick,
+            ]),
+            builder: (context, _) {
+              // When the settle rebuild exposes the real PageView, its week
+              // page has no standalone time axis. Restore the fixed axis in
+              // that exact frame; otherwise the axis disappears for one frame.
+              final deckTakingOver =
+                  _isWeekDeckActive() ||
+                  (_weekPagerDragStartPage != null &&
+                      !_weekDeckSettleRebuildScheduled);
+              return Offstage(
+                offstage: _shouldShowDayViewOverlay || deckTakingOver,
+                child: IgnorePointer(
+                  child: ClipRect(
+                    child: OverflowBox(
+                      minHeight: 0,
+                      maxHeight: double.infinity,
+                      alignment: Alignment.topCenter,
+                      child: _buildFollowingTimeColumn(
+                        settings: settings,
+                        sectionHeight: fixedTimeColumnSectionHeight,
+                        maxWeek: settings.semesterWeekCount,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ),
         NotificationListener<ScrollNotification>(
@@ -3836,15 +4022,32 @@ class _TimetableScreenState extends State<TimetableScreen>
             if (notification.metrics.axis == Axis.horizontal) {
               if (notification is ScrollStartNotification &&
                   notification.dragDetails != null) {
-                _weekPagerDragStartPage = _pagerDragStartPageFromMetrics(
+                _weekPagerPendingDragStartPage = _pagerDragStartPageFromMetrics(
                   notification.metrics,
                 );
               }
               if (notification is ScrollUpdateNotification &&
                   notification.scrollDelta != 0) {
                 _weekSwipeDirection = notification.scrollDelta! > 0 ? 1 : -1;
+                // First real horizontal movement promotes the pending
+                // start page: vertical drags on the course grid also
+                // surface as a horizontal ScrollStart and must never arm
+                // the swipe deck (which would paint a duplicate week).
+                // A fast follow-up swipe can begin while the previous spring
+                // is still settling. Its ScrollStart is real, so replace the
+                // stale previous start point; otherwise the deck keeps using
+                // the old page and the card appears frozen for one swipe.
+                if (_weekPagerPendingDragStartPage != null &&
+                    _weekPagerDragStartPage != _weekPagerPendingDragStartPage) {
+                  _weekPagerDragStartPage = _weekPagerPendingDragStartPage;
+                  _weekPagerPendingDragStartPage = null;
+                  _weekDeckSettleRebuildArmed = true;
+                  _weekDeckSettleRebuildScheduled = false;
+                  if (mounted) setState(() {});
+                }
               }
               if (notification is ScrollEndNotification) {
+                _weekPagerPendingDragStartPage = null;
                 _finalizeWeekPageSettled(provider);
               }
             }
@@ -3852,28 +4055,33 @@ class _TimetableScreenState extends State<TimetableScreen>
           },
           child: IgnorePointer(
             ignoring: _isDayView,
-            child: PageView.builder(
-              key: const ValueKey('week-page-view'),
-              controller: _weekPageController,
-              itemCount: settings.semesterWeekCount,
-              allowImplicitScrolling: true,
-              physics: _weekPagerPhysics,
-              // The custom physics owns page snapping. Leaving this enabled
-              // would wrap default PageScrollPhysics outside it and hide the
-              // spring settle.
-              pageSnapping: false,
-              onPageChanged: (page) =>
-                  _handleWeekPageChanged(page, settings.semesterWeekCount),
-              itemBuilder: (context, index) {
-                final week = index + 1;
-                return _buildPagerCardTransition(
-                  takeDragStartPage: () => _weekPagerDragStartPage,
-                  takeDragDirection: () => _weekSwipeDirection,
-                  controller: _weekPageController,
-                  page: index,
-                  child: RepaintBoundary(
-                    // Lets card glass fills align to the wallpaper instance that
-                    // slides with this page (see PreblurredWallpaperAlignedFill).
+            child: AnimatedBuilder(
+              animation: Listenable.merge([
+                _weekPageController,
+                _weekDeckReleaseTick,
+              ]),
+              child: PageView.builder(
+                key: const ValueKey('week-page-view'),
+                controller: _weekPageController,
+                itemCount: settings.semesterWeekCount,
+                allowImplicitScrolling: true,
+                dragStartBehavior: DragStartBehavior.down,
+                physics: _weekPagerPhysics,
+                // The custom physics owns page snapping. Leaving this enabled
+                // would wrap default PageScrollPhysics outside it and hide the
+                // spring settle.
+                pageSnapping: false,
+                onPageChanged: (page) =>
+                    _handleWeekPageChanged(page, settings.semesterWeekCount),
+                itemBuilder: (context, index) {
+                  // Keep the real pager pages mounted during a deck swipe.
+                  // Hiding them at the PageView level avoids rebuilding and
+                  // replacing every card subtree when the deck hands back.
+                  final week = index + 1;
+                  return RepaintBoundary(
+                    // Lets card glass fills align to the wallpaper instance
+                    // that slides with this page (see
+                    // PreblurredWallpaperAlignedFill).
                     child: PreblurredWallpaperPage(
                       pageIndex: index,
                       child: _buildWeekPage(
@@ -3884,12 +4092,23 @@ class _TimetableScreenState extends State<TimetableScreen>
                         week,
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
+              builder: (context, child) => Opacity(
+                opacity: _isWeekDeckActive() ? 0.0 : 1.0,
+                child: child,
+              ),
             ),
           ),
         ),
+        if (!_shouldShowDayViewOverlay)
+          _buildWeekPagerDeck(
+            provider,
+            settings,
+            availableWidth,
+            availableHeight,
+          ),
         if (!_shouldShowDayViewOverlay)
           Positioned(
             top: 0,
@@ -3903,7 +4122,7 @@ class _TimetableScreenState extends State<TimetableScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 日视图自己的星期信息栏（scrubber 视觉由外部手势层覆盖）。
+                // 鏃ヨ鍥捐嚜宸辩殑鏄熸湡淇℃伅鏍忥紙scrubber 瑙嗚鐢卞閮ㄦ墜鍔垮眰瑕嗙洊锛夈€?
                 _buildWeekDayHeader(
                   provider,
                   visibleDayViewWeek,
@@ -3922,7 +4141,7 @@ class _TimetableScreenState extends State<TimetableScreen>
             ),
           ),
         // Swipeable weekday bar: when day view is open, the bar is a
-        // follow-finger scrubber over the day pager — drags are amplified by
+        // follow-finger scrubber over the day pager ? drags are amplified by
         // the visible-day count and injected into the pager position, so one
         // bar-width sweep flies the content across the whole week
         // (see _startWeekdayBarDrag).
@@ -3942,6 +4161,375 @@ class _TimetableScreenState extends State<TimetableScreen>
               onHorizontalDragCancel: _cancelWeekdayBarDrag,
             ),
           ),
+      ],
+    );
+  }
+
+  /// layer (and the pager placeholders) only exist in this window; at rest the
+  /// PageView renders the real pages again.
+  bool _isWeekDeckActive() {
+    final startPage = _weekPagerDragStartPage;
+    if (startPage == null ||
+        _isDayView ||
+        !_weekPageController.hasClients ||
+        !_weekPageController.position.hasContentDimensions) {
+      return false;
+    }
+    final activePage = _weekPageController.page;
+    if (activePage == null) return false;
+    return (activePage - activePage.roundToDouble()).abs() > 0.0001;
+  }
+
+  /// Deck layer that owns the week swipe's z-order.
+  ///
+  /// PageView always paints higher indexes above lower ones, which is the
+  /// opposite of what the swipe wants:
+  ///  - Left swipe: the outgoing week leaves on TOP while the incoming week
+  ///    rises from a LOWER layer: fade-in 0.22 -> 1 (no blur),
+  ///    79% -> 100%.
+  ///  - Right swipe: the outgoing week recedes IN PLACE on the lower layer:
+  ///    fade-out 1 -> 0.22 (no blur), shrinks to 79%, while the previous week
+  ///    slides over it from the TOP layer.
+  /// The pager keeps the finger drag; this layer hides the pager's own cards
+  /// and draws the two-page stack with explicit child order.
+  ///
+  /// The deck also owns the settle hand-off: when the spring reaches an
+  /// integral page the pager stops notifying, but its placeholder children
+  /// linger until the pager rebuilds. In that window the deck holds one frozen
+  /// real card and schedules [_completeWeekDeckSettle] to rebuild the pager so
+  /// the settled week never blinks away.
+  Widget _buildWeekPagerDeck(
+    TimetableProvider provider,
+    TimetableSettings settings,
+    double availableWidth,
+    double availableHeight,
+  ) {
+    // Parent build starts a new content/layout generation. Clear once here so
+    // the AnimatedBuilder below can reuse the same card widgets on every drag
+    // frame without serving stale provider/theme/layout data.
+    _weekDeckCardCache.clear();
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        // Merge: rebuild while the pager moves and again when the settle
+        // finishes on an integral page (release tick bump).
+        animation: Listenable.merge([
+          _weekPageController,
+          _weekDeckReleaseTick,
+        ]),
+        builder: (context, _) {
+          if (_isWeekDeckActive()) {
+            final startPage = _weekPagerDragStartPage ?? 0;
+            final activePage =
+                _weekPageController.hasClients &&
+                    _weekPageController.position.hasContentDimensions
+                ? (_weekPageController.page ?? startPage)
+                : startPage;
+            final maxIndex = settings.semesterWeekCount;
+            final outgoingIndex = startPage.round();
+            if (maxIndex <= 0 ||
+                outgoingIndex < 0 ||
+                outgoingIndex >= maxIndex) {
+              return const SizedBox.shrink();
+            }
+            final viewportWidth =
+                _weekPageController.position.viewportDimension;
+            if (viewportWidth <= 0) return const SizedBox.shrink();
+            final delta = activePage - startPage;
+            final direction = delta.abs() < 0.0001
+                ? _weekSwipeDirection
+                : delta.sign.toDouble();
+            return _buildWeekDeckStack(
+              provider: provider,
+              settings: settings,
+              availableWidth: availableWidth,
+              availableHeight: availableHeight,
+              startPage: startPage,
+              delta: delta,
+              direction: direction,
+            );
+          }
+
+          // The deck just shut down on an integral page, but the pager still
+          // shows its placeholder children until it rebuilds. Hold one frozen
+          // real card this frame and schedule the pager rebuild; otherwise the
+          // settled week would blink away for a frame.
+          if (_weekPagerDragStartPage != null &&
+              _weekPageController.hasClients &&
+              _weekPageController.position.hasContentDimensions) {
+            // The controller tick below has already rebuilt the real pager
+            // card in this frame. Returning empty here avoids stacking a
+            // near-identical frozen card on top of it (the visible settle
+            // jitter/flash).
+            if (!_weekDeckHoldScheduled) {
+              _weekDeckHoldScheduled = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _weekDeckHoldScheduled = false;
+                if (!mounted) return;
+                if (_isWeekDeckActive()) return; // New gesture resumed deck.
+                _completeWeekDeckSettle(provider);
+              });
+            }
+            if (_weekDeckSettleRebuildScheduled) {
+              return const SizedBox.shrink();
+            }
+            return _buildWeekDeckSettledCard(
+              provider,
+              settings,
+              availableWidth,
+              availableHeight,
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+
+  /// Rebuilds the real pager card on the same animation tick that reaches an
+  /// integral page. Without this, the deck hold card has to cover an extra
+  /// frame until the post-frame release rebuilds the PageView, which shows as
+  /// a one-frame settle flash on device.
+
+  void _handleWeekPageControllerChanged() {
+    if (!mounted ||
+        _weekPagerDragStartPage == null ||
+        _weekDeckSettleRebuildScheduled ||
+        !_weekPageController.hasClients ||
+        !_weekPageController.position.hasContentDimensions) {
+      return;
+    }
+    if (_isWeekDeckActive()) {
+      _weekDeckSettleRebuildArmed = true;
+      _weekDeckSettleRebuildScheduled = false;
+      return;
+    }
+    if (!_weekDeckSettleRebuildArmed) {
+      return;
+    }
+    _weekDeckSettleRebuildArmed = false;
+    _weekDeckSettleRebuildScheduled = true;
+    setState(() {});
+  }
+
+  /// Settle hand-off: anchors the pager on the resolved page, clears the
+  /// gesture state, and forces the pager to rebuild its real cards so the
+  /// settled week stays visible (no blank flash right after the swipe).
+  void _completeWeekDeckSettle(TimetableProvider provider) {
+    if (!mounted) return;
+    final targetWeek = _resolveSettledWeek(provider);
+    final targetPage = targetWeek - 1;
+    _lastObservedWeekPage = targetPage;
+    _weekDeckSettleRebuildArmed = false;
+    _weekDeckSettleRebuildScheduled = false;
+    _weekPagerDragStartPage = null;
+    // A post-frame settle can land after the next gesture has already captured
+    // its ScrollStart. Keep that pending start page: clearing it here steals
+    // the first real movement of the next swipe, so the pager can sit frozen
+    // until a later gesture/rebuild re-arms the deck.
+    final hasPendingNextDrag = _weekPagerPendingDragStartPage != null;
+    if (!hasPendingNextDrag) {
+      _weekPagerPendingDragStartPage = null;
+    }
+    _weekDeckReleaseTick.value += 1;
+    if (_weekPageController.hasClients) {
+      final page = _weekPageController.page;
+      if (page != null && (page - targetPage).abs() > 0.0001) {
+        _weekPageController.jumpToPage(targetPage);
+      }
+    }
+    _finalizeWeekPageSettled(provider);
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  /// 鏃堕棿杞村湪鍒囧懆鍔ㄧ敾鏈熼棿鐢卞崱鐗囧唴鍓湰璐熻矗锛堣窡闅忓崱鐗囦竴璧风缉鏀?浣嶇Щ/娣″叆锛夛�?
+  /// 闈欐鏃跺浐瀹氳建鎭㈠銆傛鏂规硶璁＄畻鍗＄墖鍐呮椂闂磋酱鐨勪綅缃笌鑺傞珮锛屼笌鍥哄畾杞?
+  /// 锛坃buildWeekPager 椤堕儴鐨?Positioned锛変繚鎸佸悓涓€鍧愭爣鍩哄噯�?
+  ({double width, double top, double height, double sectionHeight})
+  _weekDeckTimeColumnMetrics(
+    TimetableSettings settings,
+    double availableHeight,
+  ) {
+    final width = _resolveTimeColumnWidth(settings);
+    final hasBackdrop = hasHomePageBackdropImage(settings);
+    final chromeGridClearance =
+        hasBackdrop && settings.homePageWeekdayBarBlurEnabled
+        ? homePageFrostedRegionSeamOverlap
+        : 0.0;
+    final top = _weekDayHeaderHeight + chromeGridClearance;
+    final height = (availableHeight - top).clamp(0.0, double.infinity);
+    final sectionHeight =
+        settings.timetableAutoFitSectionHeight && settings.sectionCount > 0
+        ? height / settings.sectionCount
+        : settings.sectionHeight;
+    return (
+      width: width,
+      top: top,
+      height: height,
+      sectionHeight: sectionHeight,
+    );
+  }
+
+  /// 鍗曞紶鍒囧懆鍗＄墖锛氳琛ㄩ�?+ 鍗＄墖鍐呮椂闂磋酱鍓湰锛屼簩鑰呬綔涓烘暣浣撳弬涓庣缉鏀?
+  /// 浣嶇Щ/娣″叆锛堟椂闂磋酱闅忚琛ㄤ竴璧锋粦鍔ㄥ拰缂╂斁锛夈€?
+  Widget _buildWeekDeckCard(
+    TimetableProvider provider,
+    TimetableSettings settings,
+    double availableWidth,
+    double availableHeight,
+    int index,
+  ) {
+    final cached = _weekDeckCardCache[index];
+    if (cached != null) {
+      // Returning an identical widget makes Element.updateChild skip this
+      // subtree entirely; only the enclosing transform/filter rebuilds.
+      return cached;
+    }
+    final metrics = _weekDeckTimeColumnMetrics(settings, availableHeight);
+    final card = RepaintBoundary(
+      child: PreblurredWallpaperPage(
+        pageIndex: index,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildWeekPage(
+              provider,
+              settings,
+              availableWidth,
+              availableHeight,
+              index + 1,
+            ),
+            Positioned(
+              left: 0,
+              top: metrics.top,
+              width: metrics.width,
+              height: metrics.height,
+              child: ClipRect(
+                child: OverflowBox(
+                  minHeight: 0,
+                  maxHeight: double.infinity,
+                  alignment: Alignment.topCenter,
+                  child: _buildFollowingTimeColumn(
+                    settings: settings,
+                    sectionHeight: metrics.sectionHeight,
+                    maxWeek: settings.semesterWeekCount,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    _weekDeckCardCache[index] = card;
+    return card;
+  }
+
+  /// Frozen real card shown on the frame the deck shuts down, before the
+  /// pager rebuilds its own cards. Prevents a blank flash at settle end.
+  Widget _buildWeekDeckSettledCard(
+    TimetableProvider provider,
+    TimetableSettings settings,
+    double availableWidth,
+    double availableHeight,
+  ) {
+    final activePage =
+        _weekPageController.hasClients &&
+            _weekPageController.position.hasContentDimensions
+        ? (_weekPageController.page ?? 0)
+        : 0.0;
+    final index = activePage.round();
+    final maxIndex = settings.semesterWeekCount;
+    if (maxIndex <= 0 || index < 0 || index >= maxIndex) {
+      return const SizedBox.shrink();
+    }
+    return _buildWeekDeckCard(
+      provider,
+      settings,
+      availableWidth,
+      availableHeight,
+      index,
+    );
+  }
+
+  /// Week swipe z-order stack; see [_buildWeekPagerDeck] for the
+  /// choreography.
+  Widget _buildWeekDeckStack({
+    required TimetableProvider provider,
+    required TimetableSettings settings,
+    required double availableWidth,
+    required double availableHeight,
+    required double startPage,
+    required double delta,
+    required double direction,
+  }) {
+    final maxIndex = settings.semesterWeekCount;
+    final outgoingIndex = startPage.round();
+
+    Widget revealCard(
+      int index, {
+      required double scale,
+      double opacity = 1.0,
+    }) {
+      if (index < 0 || index >= maxIndex) {
+        return const SizedBox.shrink();
+      }
+      final card = Transform.scale(
+        scale: scale,
+        child: _buildWeekDeckCard(
+          provider,
+          settings,
+          availableWidth,
+          availableHeight,
+          index,
+        ),
+      );
+      return Opacity(
+        opacity: opacity.clamp(0.0, 1.0),
+        child: card,
+      );
+    }
+
+    // Forward (left swipe): the incoming right neighbor grows in place on the
+    // lower layer while the outgoing page fades over it. Both cards stay
+    // centered so the gesture never reads as a horizontal page slide.
+    if (direction > 0) {
+      final progress = delta.clamp(0.0, 1.0).toDouble();
+      final incomingScale =
+          _cardPagerMinScale + (1.0 - _cardPagerMinScale) * progress;
+      final outgoingOpacity =
+          _cardPagerAppearOpacity +
+          (1.0 - _cardPagerAppearOpacity) * (1.0 - progress);
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          revealCard(outgoingIndex + 1, scale: incomingScale),
+          revealCard(
+            outgoingIndex,
+            scale: 1.0,
+            opacity: outgoingOpacity,
+          ),
+        ],
+      );
+    }
+
+    // Backward (right swipe): the outgoing page recedes in place on the top
+    // layer while the previous week stays centered underneath it.
+    final progress = (-delta).clamp(0.0, 1.0).toDouble();
+    final outgoingScale = 1.0 - (1.0 - _cardPagerMinScale) * progress;
+    final outgoingOpacity =
+        _cardPagerAppearOpacity +
+        (1.0 - _cardPagerAppearOpacity) * (1.0 - progress);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        revealCard(outgoingIndex - 1, scale: 1.0),
+        revealCard(
+          outgoingIndex,
+          scale: outgoingScale,
+          opacity: outgoingOpacity,
+        ),
       ],
     );
   }
@@ -4000,9 +4588,9 @@ class _TimetableScreenState extends State<TimetableScreen>
     final chromeGridClearance = weekdayChromeBlurEnabled
         ? homePageFrostedRegionSeamOverlap
         : 0.0;
-    // 自适应节高按完整可用高度计算：玻璃坞满屏悬浮下网格延伸到药丸
-    // 底下（层次感）；被遮住的最后几节由 _buildWeekPageBody 的滚动余
-    // 量救回——上滑把整段课表完全滑出到药丸上方，下滑再让药丸盖回。
+    // 鑷€傚簲鑺傞珮鎸夊畬鏁村彲鐢ㄩ珮搴﹁绠楋細鐜荤拑鍧炴弧灞忔偓娴笅缃戞牸寤朵几鍒拌嵂�?
+    // 搴曚笅锛堝眰娆℃劅锛夛紱琚伄浣忕殑鏈€鍚庡嚑鑺傜敱 _buildWeekPageBody 鐨勬粴鍔ㄤ綑
+    // 閲忔晳鍥炩€斺€斾笂婊戞妸鏁存璇捐〃瀹屽叏婊戝嚭鍒拌嵂涓镐笂鏂癸紝涓嬫粦鍐嶈鑽父鐩栧洖�?
     final bodyAvailableHeight =
         (availableHeight - _weekDayHeaderHeight - chromeGridClearance).clamp(
           0.0,
@@ -4012,13 +4600,16 @@ class _TimetableScreenState extends State<TimetableScreen>
         settings.timetableAutoFitSectionHeight && settings.sectionCount > 0
         ? bodyAvailableHeight / settings.sectionCount
         : settings.sectionHeight;
+    final weekGridController = _getWeekGridScrollController(week);
     final grid = _buildTimetableGrid(
       provider,
       settings,
       availableWidth,
       week,
       sectionHeight,
-      weekGridScrollController: _getWeekGridScrollController(week),
+      weekGridScrollController: weekGridController,
+      animateCourseEntrance:
+          !_isWeekDeckActive() && !_weekDeckSettleRebuildScheduled,
     );
 
     return KeyedSubtree(
@@ -4026,7 +4617,7 @@ class _TimetableScreenState extends State<TimetableScreen>
       child: Column(
         children: [
           const SizedBox(height: _weekDayHeaderHeight),
-          // Original chrome↔grid clearance (same token as frosted seam overlap).
+          // Original chrome鈫攇rid clearance (same token as frosted seam overlap).
           // Keeps gaussian cards from sitting flush on the first course row.
           if (weekdayChromeBlurEnabled)
             const SizedBox(height: homePageFrostedRegionSeamOverlap),
@@ -4049,11 +4640,11 @@ class _TimetableScreenState extends State<TimetableScreen>
     required int week,
     required Widget grid,
   }) {
-    // 玻璃坞满屏悬浮：网格视口不避让、铺到药丸底下——静止时最后几节
-    // 停在药丸后面；给纵向滚动补一段底部余量，上滑把课表整体滑上来、
-    // 被遮的课程完全露到药丸上方，下滑再让药丸盖回内容。自适应与非自
-    // 适应在此统一（自适应网格同样可滚）。经典形态无坞（余量为 0），
-    // 保持原样：自适应恰满视口不滚，非自适应维持原滚动结构。
+    // 鐜荤拑鍧炴弧灞忔偓娴細缃戞牸瑙嗗彛涓嶉伩璁┿€侀摵鍒拌嵂涓稿簳涓嬧€斺€旈潤姝㈡椂鏈€鍚庡嚑�?
+    // 鍋滃湪鑽父鍚庨潰锛涚粰绾靛悜婊氬姩琛ヤ竴娈靛簳閮ㄤ綑閲忥紝涓婃粦鎶婅琛ㄦ暣浣撴粦涓婃潵銆?
+    // 琚伄鐨勮绋嬪畬鍏ㄩ湶鍒拌嵂涓镐笂鏂癸紝涓嬫粦鍐嶈鑽父鐩栧洖鍐呭銆傝嚜閫傚簲涓庨潪�?
+    // 閫傚簲鍦ㄦ缁熶竴锛堣嚜閫傚簲缃戞牸鍚屾牱鍙粴锛夈€傜粡鍏稿舰鎬佹棤鍧烇紙浣欓噺涓?0锛夛�?
+    // 淇濇寔鍘熸牱锛氳嚜閫傚簲鎭版弧瑙嗗彛涓嶆粴锛岄潪鑷€傚簲缁存寔鍘熸粴鍔ㄧ粨鏋勩�?
     final weekGridScrollRelief = _glassDockContentScrollInset(settings);
     final weekGridController = _getWeekGridScrollController(week);
     // Auto-fill is an exact-height layout: keep it still. The optional effect
@@ -4240,8 +4831,8 @@ class _TimetableScreenState extends State<TimetableScreen>
                 // Pre-blur fills still repaint via pager markNeedsPaint.
                 child: Listener(
                   // Raw-pointer fling meter + rescue arming. Touch batching
-                  // under jank starves the framework's VelocityTracker (2–5
-                  // samples per 50–100ms flick → zero velocity → snap-back);
+                  // under jank starves the framework's VelocityTracker (2�?
+                  // samples per 50�?00ms flick ? zero velocity ? snap-back);
                   // the probes keep the true displacement/duration so
                   // _dayPagerPhysics can redo the snap with it.
                   behavior: HitTestBehavior.translucent,
@@ -4249,7 +4840,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                     // A new touch invalidates any leftover rescue velocity.
                     _dayPagerRescueVelocityX = 0;
                     _dayPagerRescueArmedAt = null;
-                    // 新手势重新允许一次日切换点击震感。
+                    // 鏂版墜鍔块噸鏂板厑璁镐竴娆℃棩鍒囨崲鐐瑰嚮闇囨劅�?
                     _daySwipeHapticFired = false;
                     _dayPagerFlickProbes[event.pointer] = _DayPagerFlickProbe(
                       VelocityTracker.withKind(event.kind)
@@ -4325,27 +4916,27 @@ class _TimetableScreenState extends State<TimetableScreen>
                           (event.timeStamp - probe.downTime).inMilliseconds;
                       debugPrint(
                         '[DayPager] CANCEL(p${event.pointer}) after '
-                        '${durationMs}ms — gesture stolen '
+                        '${durationMs}ms ? gesture stolen '
                         '(system nav / palm rejection?)',
                       );
                     }
                   },
                   child: NotificationListener<ScrollNotification>(
-                    // Week-pager settle model: nothing commits until the swipe
                     // has fully stopped (see _settleDayViewPage).
                     onNotification: (notification) {
                       if (notification.metrics.axis != Axis.horizontal) {
                         return false;
-                        if (notification.scrollDelta != 0) {
-                          _daySwipeDirection =
-                              notification.scrollDelta! > 0 ? 1 : -1;
-                        }
                       }
                       if (notification is ScrollUpdateNotification) {
-                        // 拦截 update 继续冒泡：HyperosRootPage 的触边震动
-                        // 监听会在学期首/末日到达页边界时再计一次
-                        // selectionClick，与上面的页中点点击叠加成一次滑动
-                        // 双震动。日切换反馈已在页中点给过，这里就地消费。
+                        if (notification.scrollDelta != 0) {
+                          _daySwipeDirection = notification.scrollDelta! > 0
+                              ? 1
+                              : -1;
+                        }
+                        // 鎷︽�?update 缁х画鍐掓场锛欻yperosRootPage 鐨勮Е杈归渿鍔?
+                        // 鐩戝惉浼氬湪瀛︽湡棣?鏈棩鍒拌揪椤佃竟鐣屾椂鍐嶈涓€娆?
+                        // selectionClick锛屼笌涓婇潰鐨勯〉涓偣鐐瑰嚮鍙犲姞鎴愪竴娆℃粦�?
+                        // 鍙岄渿鍔ㄣ€傛棩鍒囨崲鍙嶉宸插湪椤典腑鐐圭粰杩囷紝杩欓噷灏卞湴娑堣垂銆?
                         return true;
                       }
                       if (notification is ScrollStartNotification &&
@@ -4395,10 +4986,10 @@ class _TimetableScreenState extends State<TimetableScreen>
                         // 1 Hz progress heartbeat rebuilds only this page's
                         // content (ongoing badges / progress), not the State.
                         return _buildPagerCardTransition(
-                          takeDragStartPage: () => _dayPagerDragStartPage,
-                          takeDragDirection: () => _daySwipeDirection,
                           controller: controller,
                           page: page,
+                          takeDragStartPage: () => _dayPagerDragStartPage,
+                          takeDragDirection: () => _daySwipeDirection,
                           child: ValueListenableBuilder<int>(
                             valueListenable: _dayAgendaProgressTick,
                             builder: (context, _, _) =>
@@ -4774,22 +5365,22 @@ class _TimetableScreenState extends State<TimetableScreen>
     final hasBackdrop = hasHomePageBackdropImage(settings);
     final backdropBlurOn =
         hasBackdrop && HyperosBlurredHeader.backdropBlurEnabled(context);
-    // 顶栏/信息栏开着玻璃时，摘要卡与顶部铬玻璃带同材质、同墨色极性。
+    // 椤舵�?淇℃伅鏍忓紑鐫€鐜荤拑鏃讹紝鎽樿鍗′笌椤堕儴閾幓鐠冨甫鍚屾潗璐ㄣ€佸悓澧ㄨ壊鏋佹€с€?
     final matchesChromeBand = homePageHasAnyChromeBlur(
       settings,
       hasBackdrop: hasBackdrop,
     );
-    // 课程卡切到「高斯模糊」档且有壁纸时，摘要卡也走铬玻璃亮磨砂材质：
-    // CourseSurface 的高斯路径只有 0.42 的弱中性 tint，深色壁纸会直接透出，
-    // 让「回到今天 / 关闭 / 日期」整张卡读作发黑的玻璃；铬玻璃 wash 与弹窗
-    // 同级（浅色主题约白色 0.68），保证卡片始终偏亮色。
+    // 璇剧▼鍗″垏鍒般€岄珮鏂ā绯娿€嶆。涓旀湁澹佺焊鏃讹紝鎽樿鍗′篃璧伴摤鐜荤拑浜（鐮傛潗璐�?
+    // CourseSurface 鐨勯珮鏂矾寰勫彧鏈?0.42 鐨勫急涓€?tint锛屾繁鑹插绾镐細鐩存帴閫忓嚭锛?
+    // 璁┿€屽洖鍒颁粖�?/ 鍏抽�?/ 鏃ユ湡銆嶆暣寮犲崱璇讳綔鍙戦粦鐨勭幓鐠冿紱閾幓�?wash 涓庡脊绐?
+    // 鍚岀骇锛堟祬鑹蹭富棰樼害鐧借壊 0.68锛夛紝淇濊瘉鍗＄墖濮嬬粓鍋忎寒鑹层€?
     final useChromeGlass =
         matchesChromeBand ||
         (backdropBlurOn &&
             settings.courseCardSurfaceStyle == CourseCardSurfaceStyle.gaussian);
-    // Ink: 与顶部玻璃带同材质时沿用壁纸亮度自动黑白；否则卡面就是主题底色
-    // （或亮磨砂），墨色必须跟主题走 —— 按原始壁纸亮度翻白会让白墨落在
-    // 亮色卡面上不可读。
+    // Ink: 涓庨《閮ㄧ幓鐠冨甫鍚屾潗璐ㄦ椂娌跨敤澹佺焊浜害鑷姩榛戠櫧锛涘惁鍒欏崱闈㈠氨鏄富棰樺簳鑹?
+    // 锛堟垨浜（鐮傦級锛屽ⅷ鑹插繀椤昏窡涓婚�?鈥斺�?鎸夊師濮嬪绾镐寒搴︾炕鐧戒細璁╃櫧澧ㄨ惤鍦?
+    // 浜壊鍗￠潰涓婁笉鍙�?
     final summaryInk = matchesChromeBand
         ? homePageOverWallpaperInk(
             configuredHex: isDark
@@ -4805,8 +5396,8 @@ class _TimetableScreenState extends State<TimetableScreen>
           )
         : foruiTheme.colors.foreground;
     final summaryMutedInk = homePageOverWallpaperMutedInk(summaryInk);
-    // 课程计数胶囊与「X 节日程」胶囊同款中性墨：跟摘要卡其余文字一样走
-    // 壁纸自动黑白，有课与否不再切换主题蓝强调色。
+    // 璇剧▼璁℃暟鑳跺泭涓庛€�?鑺傛棩绋嬨€嶈兌鍥婂悓娆句腑鎬уⅷ锛氳窡鎽樿鍗″叾浣欐枃瀛椾竴鏍疯蛋
+    // 澹佺焊鑷姩榛戠櫧锛屾湁璇句笌鍚︿笉鍐嶅垏鎹富棰樿摑寮鸿皟鑹层�?
     final countBadgeColor = summaryInk.withValues(alpha: 0.10);
     final countBadgeTextColor = summaryMutedInk;
     return _dayAgendaSurface(
@@ -4815,7 +5406,7 @@ class _TimetableScreenState extends State<TimetableScreen>
           useChromeGlass ||
               settings.courseCardSurfaceStyle == CourseCardSurfaceStyle.solid
           ? settings
-          // 无壁纸/模糊被关掉时高斯档没有可用的磨砂来源，退化为实心亮卡。
+          // 鏃犲绾?妯＄硦琚叧鎺夋椂楂樻柉妗ｆ病鏈夊彲鐢ㄧ殑纾ㄧ爞鏉ユ簮锛岄€€鍖栦负瀹炲績浜崱�?
           : settings.copyWith(
               courseCardSurfaceStyle: CourseCardSurfaceStyle.solid,
             ),
@@ -4825,11 +5416,11 @@ class _TimetableScreenState extends State<TimetableScreen>
       gradient: LinearGradient(
         colors: [foruiTheme.colors.background, foruiTheme.colors.background],
       ),
-      // 摘要卡没有课程色填充可依托：无壁纸（纯色页面）时填充色与页面底色
-      // 相同，无边框无阴影会整张隐形（下方课程卡靠 hue + outerShadow 保持
-      // 边界）。补一套中性细描边 + 柔和投影，几何参数与 agenda 卡片一致，
-      // 让两种卡片在纯白底上读作同一个卡片系统。chromeGlass 分支自绘壁纸
-      // 采样材质，忽略这两个参数，不受影响。
+      // 鎽樿鍗℃病鏈夎绋嬭壊濉厖鍙緷鎵橈細鏃犲绾革紙绾壊椤甸潰锛夋椂濉厖鑹蹭笌椤甸潰搴曡壊
+      // 鐩稿悓锛屾棤杈规鏃犻槾褰变細鏁村紶闅愬舰锛堜笅鏂硅绋嬪崱�?hue + outerShadow 淇濇�?
+      // 杈圭晫锛夈€傝ˉ涓€濂椾腑鎬х粏鎻忚�?+ 鏌斿拰鎶曞奖锛屽嚑浣曞弬鏁颁�?agenda 鍗＄墖涓€鑷达紝
+      // 璁╀袱绉嶅崱鐗囧湪绾櫧搴曚笂璇讳綔鍚屼竴涓崱鐗囩郴缁熴€俢hromeGlass 鍒嗘敮鑷粯澹佺�?
+      // 閲囨牱鏉愯川锛屽拷鐣ヨ繖涓や釜鍙傛暟锛屼笉鍙楀奖鍝嶃€?
       border: useChromeGlass
           ? null
           : Border.all(color: summaryInk.withValues(alpha: 0.12)),
@@ -5108,7 +5699,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     final hasBackdrop = hasHomePageBackdropImage(settings);
     final colorScheme = Theme.of(context).colorScheme;
     // Same wallpaper auto-contrast as weekday / time-axis chrome: default ink
-    // flips black↔white over dark photos; user-custom hex is kept as-is. The
+    // flips black鈫攚hite over dark photos; user-custom hex is kept as-is. The
     // empty state sits mid-screen, so judge from the card-region band.
     final titleColor = homePageOverWallpaperInk(
       configuredHex: isDark
@@ -5200,11 +5791,11 @@ class _TimetableScreenState extends State<TimetableScreen>
       dayOfWeek: dayOfWeek,
       courseItems: displayItems,
     );
-    // 玻璃坞避让（含底部安全区）：日课表视口全屏，避让以滚动 padding
-    // 实现——静止在列表底部时最后一项仍停在玻璃坞上方，滚动中卡片则
-    // 连续穿过避让带，不再在边界被硬裁出与磨砂卡片色差明显的空带。
-    // 满屏悬浮（overlay）同样取滚动余量（药丸占用兜底）：此前 overlay
-    // 余量为 0，下滑到底最后一张卡仍压在药丸后面，无法滑出来看。
+    // 鐜荤拑鍧為伩璁╋紙鍚簳閮ㄥ畨鍏ㄥ尯锛夛細鏃ヨ琛ㄨ鍙ｅ叏灞忥紝閬胯浠ユ粴鍔?padding
+    // 瀹炵幇鈥斺€旈潤姝㈠湪鍒楄〃搴曢儴鏃舵渶鍚庝竴椤逛粛鍋滃湪鐜荤拑鍧炰笂鏂癸紝婊氬姩涓崱鐗囧�?
+    // 杩炵画绌胯繃閬胯甯︼紝涓嶅啀鍦ㄨ竟鐣岃纭鍑轰笌纾ㄧ爞鍗＄墖鑹插樊鏄庢樉鐨勭┖甯︺€?
+    // 婊″睆鎮诞锛坥verlay锛夊悓鏍峰彇婊氬姩浣欓噺锛堣嵂涓稿崰鐢ㄥ厹搴曪級锛氭鍓?overlay
+    // 浣欓噺涓?0锛屼笅婊戝埌搴曟渶鍚庝竴寮犲崱浠嶅帇鍦ㄨ嵂涓稿悗闈紝鏃犳硶婊戝嚭鏉ョ湅�?
     final dockScrollAvoidance = _glassDockContentScrollInset(settings);
     if (agendaItems.isEmpty) {
       return Padding(
@@ -5273,7 +5864,7 @@ class _TimetableScreenState extends State<TimetableScreen>
           );
     if (chromeGlass) {
       // Chrome-band LOOK, course-card IMPLEMENTATION: the cached pre-blurred
-      // wallpaper sample under the chrome wash colour — a plain drawImageRect
+      // wallpaper sample under the chrome wash colour ? a plain drawImageRect
       // + ColoredBox, exactly like the agenda cards below. A live
       // BackdropFilter / liquid glass here had to be swapped out around every
       // pager swipe (per-frame backdrop resampling on the hot path) and the
@@ -5289,8 +5880,8 @@ class _TimetableScreenState extends State<TimetableScreen>
             Positioned.fill(
               child: IgnorePointer(
                 child: ColoredBox(
-                  // 与首页 chrome 玻璃带同观感：液态玻璃下只有玻璃本色，
-                  // 不再叠加可读性 scrim。
+                  // 涓庨椤?chrome 鐜荤拑甯﹀悓瑙傛劅锛氭恫鎬佺幓鐠冧笅鍙湁鐜荤拑鏈壊�?
+                  // 涓嶅啀鍙犲姞鍙�?scrim�?
                   color: HomePageChromeGlassFill.standInWashColor(context),
                 ),
               ),
@@ -5515,7 +6106,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     final teacherValue = item.course.teacher.trim().isNotEmpty
         ? item.course.teacher.trim()
         : l10n.unknownTeacher;
-    final teacherLine = '${l10n.teacherPrefix(teacherValue)} · $sectionLabel';
+    final teacherLine = '${l10n.teacherPrefix(teacherValue)} ? $sectionLabel';
     final locationValue = item.course.location.trim().isNotEmpty
         ? item.course.location.trim()
         : l10n.unknownLocation;
@@ -5642,7 +6233,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     final teacherValue = item.course.teacher.trim().isNotEmpty
         ? item.course.teacher.trim()
         : l10n.unknownTeacher;
-    final teacherLine = '${l10n.teacherPrefix(teacherValue)} · $sectionLabel';
+    final teacherLine = '${l10n.teacherPrefix(teacherValue)} ? $sectionLabel';
     final locationValue = item.course.location.trim().isNotEmpty
         ? item.course.location.trim()
         : l10n.unknownLocation;
@@ -5883,8 +6474,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    // 高斯模糊档下错误红只有 ~42% tint，亮色壁纸会透成浅粉底，写死的
-    // 白墨会洗没；与课程/日程卡一致改用自动黑白墨色。
+    // 楂樻柉妯＄硦妗ｄ笅閿欒绾㈠彧鏈?~42% tint锛屼寒鑹插绾镐細閫忔垚娴呯矇搴曪紝鍐欐鐨?
+    // 鐧藉ⅷ浼氭礂娌★紱涓庤�?鏃ョ▼鍗′竴鑷存敼鐢ㄨ嚜鍔ㄩ粦鐧藉ⅷ鑹层�?
     final ink = _dayAgendaAutoInk(
       colorScheme.error,
       settings: provider.settings,
@@ -6388,7 +6979,7 @@ class _TimetableScreenState extends State<TimetableScreen>
 
   /// Translucent chip/pill glaze under [ink]-coloured content.
   ///
-  /// White ink keeps the legacy white glaze; dark ink flips to a dark glaze —
+  /// White ink keeps the legacy white glaze; dark ink flips to a dark glaze ?
   /// a white wash under dark text over a bright wallpaper adds no contrast.
   Color _dayAgendaInkWash(Color ink, {required double lightAlpha}) {
     return ink.computeLuminance() > 0.5
@@ -6396,10 +6987,10 @@ class _TimetableScreenState extends State<TimetableScreen>
         : Colors.black.withValues(alpha: lightAlpha * 0.55);
   }
 
-  /// Progress snapped to ~0.4% steps (≈1.5 px on a full-width card).
+  /// Progress snapped to ~0.4% steps (�?.5 px on a full-width card).
   ///
   /// The raw ratio has sub-second precision, so it used to change on every
-  /// 1 s tick and the progress tween was retargeted before it could finish —
+  /// 1 s tick and the progress tween was retargeted before it could finish ?
   /// day view ended up animating (and re-rasterizing all its glass chrome)
   /// on every frame, forever. Stepping is visually indistinguishable while
   /// letting the tween settle, so no frames are scheduled between steps.
@@ -6533,10 +7124,10 @@ class _TimetableScreenState extends State<TimetableScreen>
     final customInk = foregroundHex == null || foregroundHex.trim().isEmpty
         ? null
         : _colorFromHex(foregroundHex, Colors.white);
-    // 自定义字色（导入/LAN 同步携带）在实心卡面上做可读性兜底：与卡色
-    // 同色系时（如蓝字配蓝卡）替换为黑白最优墨色。玻璃档按壁纸亮度走玻璃
-    // 规则（彩色墨回落自动黑白、中性墨对比度门槛），与 CourseCard 行为
-    // 一致；壁纸亮度未知时保留用户选择。
+    // 鑷畾涔夊瓧鑹诧紙瀵煎�?LAN 鍚屾鎼哄甫锛夊湪瀹炲績鍗￠潰涓婂仛鍙鎬у厹搴曪細涓庡崱�?
+    // 鍚岃壊绯绘椂锛堝钃濆瓧閰嶈摑鍗★級鏇挎崲涓洪粦鐧芥渶浼樺ⅷ鑹层€傜幓鐠冩。鎸夊绾镐寒搴﹁蛋鐜荤�?
+    // 瑙勫垯锛堝僵鑹插ⅷ鍥炶惤鑷姩榛戠櫧銆佷腑鎬уⅷ瀵规瘮搴﹂棬妲涳級锛屼笌 CourseCard 琛屼�?
+    // 涓€鑷达紱澹佺焊浜害鏈煡鏃朵繚鐣欑敤鎴烽€夋嫨銆?
     final showsWallpaper =
         settings != null &&
         courseCardSurfaceShowsWallpaper(settings.courseCardSurfaceStyle);
@@ -6561,7 +7152,7 @@ class _TimetableScreenState extends State<TimetableScreen>
   ///
   /// Opaque styles keep the legacy white-on-hue. The gaussian style shows
   /// mostly wallpaper through a ~40% tint, so the ink flips black/white against
-  /// the blend of course hue and the wallpaper band behind the cards — a bright
+  /// the blend of course hue and the wallpaper band behind the cards ? a bright
   /// wallpaper region otherwise gives white-on-white.
   Color _dayAgendaAutoInk(Color fill, {TimetableSettings? settings}) {
     if (settings == null) {
@@ -6641,6 +7232,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     double sectionHeight,
     double cardInset,
     TimetableProvider provider, {
+    required bool animateCourseEntrance,
     required int dayIndex,
     required int dayCount,
   }) {
@@ -6672,80 +7264,108 @@ class _TimetableScreenState extends State<TimetableScreen>
       );
 
       for (final item in startingCourses) {
+        // Staggered entrance: each card slides up with a small delay based on
+        // its day column and section position. Uses Transform only (no
+        // Opacity wrapper) so backdrop blur stays intact during and after.
+        final staggerSlot = (dayIndex * 2 + sectionIndex.clamp(0, 3)).clamp(
+          0,
+          7,
+        );
+        final staggerBegin = staggerSlot * 0.06;
+        final entranceCurve = Interval(
+          staggerBegin.clamp(0, 0.6),
+          1,
+          curve: Curves.easeOutCubic,
+        );
         courseCards.add(
           Positioned(
             top: sectionIndex * sectionHeight,
             left: 0,
             right: 0,
             height: item.course.sectionCount * sectionHeight,
-            // Do not wrap CourseCard in Opacity: BackdropFilter / FakeGlass
-            // cannot sample behind an opacity layer (blur becomes pure clear).
-            child: CourseCard(
-              course: item.course,
-              overrideColorHex: _resolveDisplayCourseColor(
-                item,
-                settings: settings,
+            child: TweenAnimationBuilder<double>(
+              // During a week deck hand-off the real PageView element is newly
+              // mounted. Starting this implicit entrance at 0 would replay the
+              // 8-px stagger and read as a one-frame settle jerk. Pre-settle
+              // builds therefore start at the final value; the post-settle
+              // rebuild reuses that state and does not restart the tween.
+              tween: Tween(begin: animateCourseEntrance ? 0.0 : 1.0, end: 1.0),
+              duration: animateCourseEntrance
+                  ? const Duration(microseconds: 290131)
+                  : Duration.zero,
+              curve: entranceCurve,
+              child: CourseCard(
+                course: item.course,
+                overrideColorHex: _resolveDisplayCourseColor(
+                  item,
+                  settings: settings,
+                ),
+                compactOverlineText: _resolveCompactOverlineText(
+                  item,
+                  showConflictBadge,
+                ),
+                topRightBadgeText: _resolveCompactBadgeText(
+                  item,
+                  showConflictBadge,
+                ),
+                // 鏃ヨ琛細杩欒妭璇撅紙璇剧▼脳鐪熷疄鏃ユ湡锛夊凡璁惧崟鑺傝鎻愰啋鏃讹紝鍦ㄥ�?
+                // 瑙掓爣鏃佷寒閾冮摏銆?
+                hasReminder:
+                    date != null &&
+                    provider.classReminderFor(
+                          item.course.id,
+                          ClassReminderEntry.formatDate(date),
+                        ) !=
+                        null,
+                showHomeworkIndicator: item.course.hasHomeworkInWeek(week),
+                isHighlighted: item.isCurrentCourse,
+                isHoliday: isDayHoliday,
+                isSuspended: item.course.isSuspendedInWeek(week),
+                isCompact: true,
+                showName: settings.courseCardShowName,
+                showTeacher: settings.courseCardShowTeacher,
+                showLocation: settings.courseCardShowLocation,
+                showTime: settings.courseCardShowTime,
+                showTimeLabels: settings.courseCardShowTimeLabels,
+                showWeeks: settings.courseCardShowWeeks,
+                showDescription: settings.courseCardShowDescription,
+                verticalAlign: settings.courseCardVerticalAlign,
+                horizontalAlign: settings.courseCardHorizontalAlign,
+                onTap: () =>
+                    _showCourseActions(item.course, week, displayItem: item),
+                compactTitleFontSize: settings.courseCardFontSize,
+                compactSubtitleFontSize: (settings.courseCardFontSize - 1)
+                    .clamp(7.0, 14.0),
+                compactVerticalPadding: sectionHeight < 64 ? 4 : 6,
+                compactOuterInset: cardInset,
+                surfaceStyle: settings.courseCardSurfaceStyle,
+                // 鐜荤拑妗ｈ嚜鍔ㄩ粦鐧藉垽瀹氱殑澹佺焊甯︿寒搴︼紱瀹炰綋鍗″拷鐣ャ�?
+                wallpaperLuminance:
+                    _wallpaperBodyLuminance ?? _wallpaperTopLuminance,
+                // Dim conflict / non-current via fill alphas, keep frost
+                // working.
+                surfaceOpacity: item.opacity,
+                titleColorHex: resolveCourseCardTitleColorHex(
+                  courseTextColorHex: item.course.textColor,
+                  settingsTitleColorLight: settings.courseCardTitleColorLight,
+                  settingsTitleColorDark: settings.courseCardTitleColorDark,
+                  isDark: Theme.of(context).brightness == Brightness.dark,
+                ),
+                detailColorHex: resolveCourseCardDetailColorHex(
+                  courseTextColorHex: item.course.textColor,
+                  settingsDetailColorLight: settings.courseCardDetailColorLight,
+                  settingsDetailColorDark: settings.courseCardDetailColorDark,
+                  settingsTitleColorLight: settings.courseCardTitleColorLight,
+                  settingsTitleColorDark: settings.courseCardTitleColorDark,
+                  isDark: Theme.of(context).brightness == Brightness.dark,
+                ),
               ),
-              compactOverlineText: _resolveCompactOverlineText(
-                item,
-                showConflictBadge,
-              ),
-              topRightBadgeText: _resolveCompactBadgeText(
-                item,
-                showConflictBadge,
-              ),
-              // 日课表：这节课（课程×真实日期）已设单节课提醒时，在备注
-              // 角标旁亮铃铛。
-              hasReminder:
-                  date != null &&
-                  provider.classReminderFor(
-                        item.course.id,
-                        ClassReminderEntry.formatDate(date),
-                      ) !=
-                      null,
-              showHomeworkIndicator: item.course.hasHomeworkInWeek(week),
-              isHighlighted: item.isCurrentCourse,
-              isHoliday: isDayHoliday,
-              isSuspended: item.course.isSuspendedInWeek(week),
-              isCompact: true,
-              showName: settings.courseCardShowName,
-              showTeacher: settings.courseCardShowTeacher,
-              showLocation: settings.courseCardShowLocation,
-              showTime: settings.courseCardShowTime,
-              showTimeLabels: settings.courseCardShowTimeLabels,
-              showWeeks: settings.courseCardShowWeeks,
-              showDescription: settings.courseCardShowDescription,
-              verticalAlign: settings.courseCardVerticalAlign,
-              horizontalAlign: settings.courseCardHorizontalAlign,
-              onTap: () =>
-                  _showCourseActions(item.course, week, displayItem: item),
-              compactTitleFontSize: settings.courseCardFontSize,
-              compactSubtitleFontSize: (settings.courseCardFontSize - 1).clamp(
-                7.0,
-                14.0,
-              ),
-              compactVerticalPadding: sectionHeight < 64 ? 4 : 6,
-              compactOuterInset: cardInset,
-              surfaceStyle: settings.courseCardSurfaceStyle,
-              // 玻璃档自动黑白判定的壁纸带亮度；实体卡忽略。
-              wallpaperLuminance:
-                  _wallpaperBodyLuminance ?? _wallpaperTopLuminance,
-              // Dim conflict / non-current via fill alphas, keep frost working.
-              surfaceOpacity: item.opacity,
-              titleColorHex: resolveCourseCardTitleColorHex(
-                courseTextColorHex: item.course.textColor,
-                settingsTitleColorLight: settings.courseCardTitleColorLight,
-                settingsTitleColorDark: settings.courseCardTitleColorDark,
-                isDark: Theme.of(context).brightness == Brightness.dark,
-              ),
-              detailColorHex: resolveCourseCardDetailColorHex(
-                courseTextColorHex: item.course.textColor,
-                settingsDetailColorLight: settings.courseCardDetailColorLight,
-                settingsDetailColorDark: settings.courseCardDetailColorDark,
-                settingsTitleColorLight: settings.courseCardTitleColorLight,
-                settingsTitleColorDark: settings.courseCardTitleColorDark,
-                isDark: Theme.of(context).brightness == Brightness.dark,
-              ),
+              builder: (context, value, child) {
+                return Transform.translate(
+                  offset: Offset(0, (1 - value) * 8),
+                  child: child,
+                );
+              },
             ),
           ),
         );
@@ -7021,7 +7641,7 @@ class _TimetableScreenState extends State<TimetableScreen>
   ///
   /// Returns null when semester start is unset, before week 1, or **past the
   /// configured [TimetableSettings.semesterWeekCount]** (vacation / after term).
-  /// Callers must not invent weeks outside that range — never auto-expand the
+  /// Callers must not invent weeks outside that range ? never auto-expand the
   /// semester just to "return to today".
   int? _resolveCurrentSemesterWeek(TimetableSettings settings) {
     final semesterStart = settings.semesterStartDate;
@@ -7089,8 +7709,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     if (_isDayView) {
       return false;
     }
-    // 「回本周」已收敛为浮钮唯一入口（样式枚举仅存兼容，读取时
-    // 一律迁移为 floating），此处不再有接管分支。
+    // 銆屽洖鏈懆銆嶅凡鏀舵暃涓烘诞閽敮涓€鍏ュ彛锛堟牱寮忔灇涓句粎瀛樺吋瀹癸紝璇诲彇�?
+    // 涓€寰嬭縼绉讳负 floating锛夛紝姝ゅ涓嶅啀鏈夋帴绠″垎鏀€?
     if (settings.timetableBackToCurrentWeekButtonStyle !=
         BackToCurrentWeekButtonStyle.floating) {
       return false;
@@ -7098,10 +7718,10 @@ class _TimetableScreenState extends State<TimetableScreen>
     return _canReturnToCurrentWeek(settings, visibleWeek);
   }
 
-  /// 玻璃坞形态下「可滚动课表内容」的底部滚动余量（日课表列表、周课
-  /// 表纵向滚动）：视口保持原样，余量只加长可滚动区间——静止时内容
-  /// 照常铺满，下滑到底后最后一项停在浮动药丸上方，被药丸遮住的课程
-  /// 可以滑出来看。按药丸固定占用 + 底部安全区兜底。
+  /// 鐜荤拑鍧炲舰鎬佷笅銆屽彲婊氬姩璇捐〃鍐呭銆嶇殑搴曢儴婊氬姩浣欓噺锛堟棩璇捐〃鍒楄〃銆佸懆�?
+  /// 琛ㄧ旱鍚戞粴鍔級锛氳鍙ｄ繚鎸佸師鏍凤紝浣欓噺鍙姞闀垮彲婊氬姩鍖洪棿鈥斺€旈潤姝㈡椂鍐呭�?
+  /// 鐓у父閾烘弧锛屼笅婊戝埌搴曞悗鏈€鍚庝竴椤瑰仠鍦ㄦ诞鍔ㄨ嵂涓镐笂鏂癸紝琚嵂涓搁伄浣忕殑璇剧▼
+  /// 鍙互婊戝嚭鏉ョ湅銆傛寜鑽父鍥哄畾鍗犵�?+ 搴曢儴瀹夊叏鍖哄厹搴曘�?
   double _glassDockContentScrollInset(TimetableSettings settings) {
     if (settings.homeNavigationForm != HomeNavigationForm.glassDock) {
       return 0;
@@ -7109,9 +7729,9 @@ class _TimetableScreenState extends State<TimetableScreen>
     return _glassDockPillOccupancy + MediaQuery.viewPaddingOf(context).bottom;
   }
 
-  /// 玻璃坞形态：把底部液态玻璃药丸导航叠加到页面之上。
+  /// 鐜荤拑鍧炲舰鎬侊細鎶婂簳閮ㄦ恫鎬佺幓鐠冭嵂涓稿鑸彔鍔犲埌椤甸潰涔嬩笂�?
   ///
-  /// 经典形态直接返回原内容，行为与之前完全一致。
+  /// 缁忓吀褰㈡€佺洿鎺ヨ繑鍥炲師鍐呭锛岃涓轰笌涔嬪墠瀹屽叏涓€鑷淬€?
   Widget _wrapWithGlassDock(
     Widget child, {
     required bool glassDockForm,
@@ -7121,16 +7741,16 @@ class _TimetableScreenState extends State<TimetableScreen>
     if (!glassDockForm) {
       return child;
     }
-    // 浮钮与药丸显式同源材质：stock 实验态传包官方底栏默认，
-    // 自定义态走 sheetSettingsFor / frosted 回退（与 bar 内部一致）。
+    // 娴挳涓庤嵂涓告樉寮忓悓婧愭潗璐細stock 瀹為獙鎬佷紶鍖呭畼鏂瑰簳鏍忛粯璁わ紝
+    // 鑷畾涔夋€佽蛋 sheetSettingsFor / frosted 鍥為€€锛堜�?bar 鍐呴儴涓€鑷达級�?
     LiquidGlassSettings? dockBtnSettings;
     GlassQuality? dockBtnQuality;
     if (_kStockDockGlass) {
       dockBtnSettings = MikcbLiquidGlassTokens.stockBottomBarGlass;
-      dockBtnQuality = null; // 包原版自适应质量
+      dockBtnQuality = null; // 鍖呭師鐗堣嚜閫傚簲璐ㄩ噺
     } else {
       final dockAppearance = FrostedAppearanceScope.of(context);
-      // 「液态玻璃作用范围 → 玻璃坞导航」关闭时圆钮回退磨砂药丸材质。
+      // 銆屾恫鎬佺幓鐠冧綔鐢ㄨ寖�?�?鐜荤拑鍧炲鑸€嶅叧闂椂鍦嗛挳鍥為€€纾ㄧ爞鑽父鏉愯川�?
       final dockUseLiquidGlass =
           dockAppearance.glassMode == FrostedGlassMode.liquidGlass &&
           dockAppearance.liquidGlassDockEnabled &&
@@ -7162,14 +7782,14 @@ class _TimetableScreenState extends State<TimetableScreen>
           bottom: 0,
           child: SafeArea(
             minimum: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-            // 官方 iOS 26 形态：居中药丸 + 右侧独立圆钮，整组居中。
-            // 圆钮固定展开（加课程唯一主动入口，不再随页收起）；
-            // 材质经 dockBtnSettings 与药丸显式同源。
+            // 瀹樻�?iOS 26 褰㈡€侊細灞呬腑鑽�?+ 鍙充晶鐙珛鍦嗛挳锛屾暣缁勫眳涓€?
+            // 鍦嗛挳鍥哄畾灞曞紑锛堝姞璇剧▼鍞竴涓诲姩鍏ュ彛锛屼笉鍐嶉殢椤垫敹璧凤級�?
+            // 鏉愯川缁?dockBtnSettings 涓庤嵂涓告樉寮忓悓婧愩€?
             child: Builder(
               builder: (context) {
                 final lum = _dockInlinePageId != null
                     ? null
-                    : _wallpaperBodyLuminance; // 内嵌页表态只看主题
+                    : _wallpaperBodyLuminance; // 鍐呭祵椤佃〃鎬佸彧鐪嬩富棰?
                 final isDarkTheme =
                     Theme.of(context).brightness == Brightness.dark;
                 final ink = (lum != null ? lum < 0.45 : isDarkTheme)
@@ -7206,19 +7826,19 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 玻璃坞底部导航：周课表 / 日课表 / 设置。
+  /// 鐜荤拑鍧炲簳閮ㄥ鑸細鍛ㄨ琛?/ 鏃ヨ琛?/ 璁剧疆銆?
   ///
-  /// 使用 liquid_glass_widgets 的 [GlassTabBar.bottom]（iOS 26 官方形态：
-  /// 浮动药丸 + 拖拽指示器，自带真实折射 shader 与自适应质量）。
+  /// 浣跨�?liquid_glass_widgets ? [GlassTabBar.bottom]锛坕OS 26 瀹樻柟褰㈡€侊細
+  /// 娴姩鑽父 + 鎷栨嫿鎸囩ず鍣紝鑷甫鐪熷疄鎶樺皠 shader 涓庤嚜閫傚簲璐ㄩ噺锛夈€?
   Widget _buildGlassDockBar({
     required TimetableSettings settings,
     required AppLocalizations l10n,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
-    // 底栏文字极性分派：课表态跟随壁纸亮度（表面 = 壁纸 + 白玻璃）；
-    // 内嵌页表态底栏浮在纯色页面上，只看主题——否则白底设置页会沿用
-    // 暗壁纸的浅色墨，白字看不见（自动反色失效的根因）。
+    // 搴曟爮鏂囧瓧鏋佹€у垎娲撅細璇捐〃鎬佽窡闅忓绾镐寒搴︼紙琛ㄩ潰 = 澹佺�?+ 鐧界幓鐠冿級�?
+    // 鍐呭祵椤佃〃鎬佸簳鏍忔诞鍦ㄧ函鑹查〉闈笂锛屽彧鐪嬩富棰樷€斺€斿惁鍒欑櫧搴曡缃〉浼氭部�?
+    // 鏆楀绾哥殑娴呰壊澧紝鐧藉瓧鐪嬩笉瑙侊紙鑷姩鍙嶈壊澶辨晥鐨勬牴鍥狅級�?
     final wallpaperLuminance = _dockInlinePageId != null
         ? null
         : _wallpaperBodyLuminance;
@@ -7228,34 +7848,34 @@ class _TimetableScreenState extends State<TimetableScreen>
     final unselectedColor = barUsesLightInk
         ? Colors.white.withValues(alpha: 0.62)
         : Colors.black.withValues(alpha: 0.48);
-    // 选中色：暗表面用白色；亮表面上浅色主题的 primary 本身偏深可用，
-    // 深色主题的 primary 偏浅在亮玻璃上对比度不足 → 切深色墨。
+    // 閫変腑鑹诧細鏆楄〃闈㈢敤鐧借壊锛涗寒琛ㄩ潰涓婃祬鑹蹭富棰樼�?primary 鏈韩鍋忔繁鍙敤锛?
+    // 娣辫壊涓婚�?primary 鍋忔祬鍦ㄤ寒鐜荤拑涓婂姣斿害涓嶈冻 ? 鍒囨繁鑹插ⅷ�?
     final selectedColor = barUsesLightInk
         ? Colors.white
         : (isDark && wallpaperLuminance != null && wallpaperLuminance >= 0.45
               ? Colors.black.withValues(alpha: 0.80)
               : colorScheme.primary);
-    // 底栏材质（[_kStockDockGlass]=true 时下面全部走包原版默认，此段
-    // 仅在实验关闭时参与计算）：
-    // - 跟随「高级材质」设置（与弹窗/顶部/卡片统一）：液态玻璃用
-    //   sheetSettingsFor（跟随「液态玻璃调校」）+ premium 完整折射；
-    // - 标准/高斯：退化为高斯模糊药丸（blur/tint 与弹窗 frosted 一致）。
+    // 搴曟爮鏉愯川锛圼_kStockDockGlass]=true 鏃朵笅闈㈠叏閮ㄨ蛋鍖呭師鐗堥粯璁わ紝姝ゆ�?
+    // 浠呭湪瀹為獙鍏抽棴鏃跺弬涓庤绠楋級锛?
+    // - 璺熼殢銆岄珮绾ф潗璐ㄣ€嶈缃紙涓庡脊绐?椤堕�?鍗＄墖缁熶竴锛夛細娑叉€佺幓鐠冪�?
+    //   sheetSettingsFor锛堣窡闅忋€屾恫鎬佺幓鐠冭皟鏍°€嶏級+ premium 瀹屾暣鎶樺皠�?
+    // - 鏍囧�?楂樻柉锛氶€€鍖栦负楂樻柉妯＄硦鑽父锛坆lur/tint 涓庡脊绐?frosted 涓€鑷达級銆?
     final appearance = FrostedAppearanceScope.of(context);
-    // 「液态玻璃作用范围 → 玻璃坞导航」关闭时底栏回退磨砂药丸。
+    // 銆屾恫鎬佺幓鐠冧綔鐢ㄨ寖�?�?鐜荤拑鍧炲鑸€嶅叧闂椂搴曟爮鍥為€€纾ㄧ爞鑽父銆?
     final useLiquidGlass =
         !_kStockDockGlass &&
         appearance.glassMode == FrostedGlassMode.liquidGlass &&
         appearance.liquidGlassDockEnabled &&
         !LiquidGlassDegradation.shouldDegrade(context);
-    // 动态入口列表：底栏最多 5 槽，用户在「首页与导航」自由编排
-    // （'day'/'week' 视图动作 + 目录任意条目，含设置页）。
+    // 鍔ㄦ€佸叆鍙ｅ垪琛細搴曟爮鏈€�?5 妲斤紝鐢ㄦ埛鍦ㄣ€岄椤典笌瀵艰埅銆嶈嚜鐢辩紪鎺?
+    // ? day'/'week' 瑙嗗浘鍔ㄤ綔 + 鐩綍浠绘剰鏉＄洰锛屽惈璁剧疆椤碉級�?
     final dockIds = resolveGlassDockActionIds(settings);
     return GlassTabBar.bottom(
       tabs: [for (final id in dockIds) _dockTabForId(id, l10n)],
       selectedIndex: _dockSelectedIndex(dockIds),
       onTabSelected: (index) => _handleDockTap(dockIds[index], settings),
-      // 独立圆钮改由坞层「水滴合并槽」渲染（见 _wrapWithGlassDock）：
-      // 整颗按钮滑入药丸并被圆形裁切，运动与遮罩都贴合药丸端帽弧度。
+      // 鐙珛鍦嗛挳鏀圭敱鍧炲眰銆屾按婊村悎骞舵Ы銆嶆覆鏌擄紙瑙?_wrapWithGlassDock锛夛�?
+      // 鏁撮鎸夐挳婊戝叆鑽父骞惰鍦嗗舰瑁佸垏锛岃繍鍔ㄤ笌閬僵閮借创鍚堣嵂涓哥甯藉姬搴︺€?
       barHeight: 56,
       settings: _kStockDockGlass
           ? MikcbLiquidGlassTokens.stockBottomBarGlass
@@ -7289,26 +7909,26 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 独立圆钮：与药丸同质的液态玻璃圆钮（56 正圆）。
+  /// 鐙珛鍦嗛挳锛氫笌鑽父鍚岃川鐨勬恫鎬佺幓鐠冨渾閽�?6 姝ｅ渾锛夈€?
   ///
-  /// 材质与药丸显式同源（_wrapWithGlassDock 传入 stockBottomBarGlass），
-  /// useOwnLayer:true + isStationary:true 保证 minimal 回退时仍保留
-  /// BackdropFilter 模糊——与药丸 frosted 回退一致，消除“两种材质”断层。
+  /// 鏉愯川涓庤嵂涓告樉寮忓悓婧愶紙_wrapWithGlassDock 浼犲�?stockBottomBarGlass锛夛�?
+  /// useOwnLayer:true + isStationary:true 淇濊�?minimal 鍥為€€鏃朵粛淇濈暀
+  /// BackdropFilter 妯＄硦鈥斺€斾笌鑽�?frosted 鍥為€€涓€鑷达紝娑堥櫎鈥滀袱绉嶆潗璐ㄢ€濇柇灞傘€?
   Widget _buildDockMergeSlot({
     required Color ink,
     required AppLocalizations l10n,
     required LiquidGlassSettings? settings,
     required GlassQuality? quality,
   }) {
-    // 材质断层根因：此前此处以 useOwnLayer:false 渲染（LiquidGlass.grouped），
-    // 但坞层 Row 树外没有任何 LiquidGlassLayer/BluetoothGroup 祖先，
-    // Impeller 下 grouped 在无层时直接回退为固色无玻璃——看起来像一块
-    // 实色圆片，与药丸的真液态玻璃完全两种材质。改为 useOwnLayer:true
-    // + isStationary:true 后，按钮与药丸共享同质的 stockBottomBarGlass /
-    // sheetSettings，且在 minimal/降级路径两侧一致保留 BackdropFilter。
-    // 独立圆钮与药丸端帽同圆（56 正圆），外层 SizedBox(56) 与 Row 间距
-    // 由调用侧 SizedBox(width:8) 承担，无需 68 高的方形过渡槽及二次
-    // ClipRRect 裁切（会把玻璃边缘光切硬）。
+    // 鏉愯川鏂眰鏍瑰洜锛氭鍓嶆澶勪互 useOwnLayer:false 娓叉煋锛圠iquidGlass.grouped锛夛�?
+    // 浣嗗潪灞?Row 鏍戝娌℃湁浠讳�?LiquidGlassLayer/BluetoothGroup 绁栧厛锛?
+    // Impeller ? grouped 鍦ㄦ棤灞傛椂鐩存帴鍥為€€涓哄浐鑹叉棤鐜荤拑鈥斺€旂湅璧锋潵鍍忎竴鍧?
+    // 瀹炶壊鍦嗙墖锛屼笌鑽父鐨勭湡娑叉€佺幓鐠冨畬鍏ㄤ袱绉嶆潗璐ㄣ€傛敼�?useOwnLayer:true
+    // + isStationary:true 鍚庯紝鎸夐挳涓庤嵂涓稿叡浜悓璐ㄧ殑 stockBottomBarGlass /
+    // sheetSettings锛屼笖鍦?minimal/闄嶇骇璺緞涓や晶涓€鑷翠繚�?BackdropFilter�?
+    // 鐙珛鍦嗛挳涓庤嵂涓哥甯藉悓鍦嗭紙56 姝ｅ渾锛夛紝澶栧�?SizedBox(56) ? Row 闂磋�?
+    // 鐢辫皟鐢ㄤ晶 SizedBox(width:8) 鎵挎媴锛屾棤闇€ 68 楂樼殑鏂瑰舰杩囨浮妲藉強浜屾�?
+    // ClipRRect 瑁佸垏锛堜細鎶婄幓鐠冭竟缂樺厜鍒囩‖锛夈€?
     return SizedBox(
       width: 56,
       height: 56,
@@ -7327,7 +7947,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 底栏按钮 → GlassTab 视觉配置：视图动作用固定图标，页面条目取目录。
+  /// 搴曟爮鎸夐挳 ? GlassTab 瑙嗚閰嶇疆锛氳鍥惧姩浣滅敤鍥哄畾鍥炬爣锛岄〉闈㈡潯鐩彇鐩綍�?
   GlassTab _dockTabForId(String id, AppLocalizations l10n) {
     return GlassTab(
       icon: Icon(glassDockActionIcon(id)),
@@ -7335,8 +7955,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 圆钮图标：用户自选的 Miuix 矢量图标优先；未选时 addCourse 显示
-  /// 加号、其余功能显示目录图标。
+  /// 鍦嗛挳鍥炬爣锛氱敤鎴疯嚜閫夌�?Miuix 鐭㈤噺鍥炬爣浼樺厛锛涙湭閫夋�?addCourse 鏄剧�?
+  /// 鍔犲彿銆佸叾浣欏姛鑳芥樉绀虹洰褰曞浘鏍囥€?
   Widget _roundButtonIcon(TimetableSettings settings) {
     final customName = settings.glassDockButtonIconName;
     if (customName != null && customName.isNotEmpty) {
@@ -7355,8 +7975,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     return const Icon(Icons.add_rounded);
   }
 
-  /// 圆钮点击分发：addCourse/空走添加课程弹层；内嵌注册页在首页栈内
-  /// 切换（坞常驻，再点同钮收回）；其余目录条目普通推入。
+  /// 鍦嗛挳鐐瑰嚮鍒嗗彂锛歛ddCourse/绌鸿蛋娣诲姞璇剧▼寮瑰眰锛涘唴宓屾敞鍐岄〉鍦ㄩ椤垫爤鍐?
+  /// 鍒囨崲锛堝潪甯搁┗锛屽啀鐐瑰悓閽敹鍥烇級锛涘叾浣欑洰褰曟潯鐩櫘閫氭帹鍏ャ�?
   void _handleRoundButtonTap(TimetableSettings settings) {
     final id = settings.glassDockButtonEntryId;
     if (id == 'addCourse' || id.isEmpty) {
@@ -7367,8 +7987,8 @@ class _TimetableScreenState extends State<TimetableScreen>
       setState(() {
         _dockInlinePageId = (_dockInlinePageId == id) ? null : id;
       });
-      // 圆钮保留 toggle 收回（Tab 侧再点当前页已改无动作：圆钮无选中态
-      // 指示，按钮式「再点撤销」成立）；开/收/换页都是真实切换，给触觉。
+      // 鍦嗛挳淇濈暀 toggle 鏀跺洖锛圱ab 渚у啀鐐瑰綋鍓嶉〉宸叉敼鏃犲姩浣滐細鍦嗛挳鏃犻€変腑�?
+      // 鎸囩ず锛屾寜閽紡銆屽啀鐐规挙閿€銆嶆垚绔嬶級锛涘紑/鏀?鎹㈤〉閮芥槸鐪熷疄鍒囨崲锛岀粰瑙﹁�?
       _maybeSelectionClick(settings);
       return;
     }
@@ -7379,8 +7999,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
   }
 
-  /// 当前所在视图（日/周）在排列中的下标；排列未含该视图时高亮 0，
-  /// 避免库断言越界（此时底栏全是页面入口，无「当前页」语义）。
+  /// 褰撳墠鎵€鍦ㄨ鍥撅紙鏃?鍛級鍦ㄦ帓鍒椾腑鐨勪笅鏍囷紱鎺掑垪鏈惈璇ヨ鍥炬椂楂樹寒 0�?
+  /// 閬垮厤搴撴柇瑷€瓒婄晫锛堟鏃跺簳鏍忓叏鏄〉闈㈠叆鍙ｏ紝鏃犮€屽綋鍓嶉〉銆嶈涔夛級銆?
   int _dockSelectedIndex(List<String> ids) {
     final inline = _dockInlinePageId;
     if (inline != null && ids.contains(inline)) {
@@ -7391,26 +8011,26 @@ class _TimetableScreenState extends State<TimetableScreen>
     return index >= 0 ? index : 0;
   }
 
-  /// 底栏点击分发：'day'/'week' 闪现直切（animate:false，不播锚点展开/
-  /// 收起转场，对齐「点底栏直接就位」的手感，日期栏路径不受影响）并收回
-  /// 内嵌页；页面条目走内嵌宿主（坞常驻），未登记的流程页才推入新路由。
+  /// 搴曟爮鐐瑰嚮鍒嗗彂锛?day'/'week' 闂幇鐩村垏锛坅nimate:false锛屼笉鎾敋鐐瑰睍寮�?
+  /// 鏀惰捣杞満锛屽榻愩€岀偣搴曟爮鐩存帴灏变綅銆嶇殑鎵嬫劅锛屾棩鏈熸爮璺緞涓嶅彈褰卞搷锛夊苟鏀跺洖
+  /// 鍐呭祵椤碉紱椤甸潰鏉＄洰璧板唴宓屽涓伙紙鍧炲父椹伙級锛屾湭鐧昏鐨勬祦绋嬮〉鎵嶆帹鍏ユ柊璺敱�?
   ///
-  /// 触觉口径（恢复 3e41ac20）：真实切换（切视图/开页/换页/收页/推路由）
-  /// 给一次触觉，重复点击当前 Tab 静音——日/周靠既有守卫；内嵌页再点
-  /// 当前页不再翻转收回（与 日/周 同口径，收页走切视图或圆钮再点）。
+  /// 瑙﹁鍙ｅ緞锛堟仮澶?3e41ac20锛夛細鐪熷疄鍒囨崲锛堝垏瑙嗗�?寮€�?鎹㈤�?鏀堕�?鎺ㄨ矾鐢憋級
+  /// 缁欎竴娆¤Е瑙夛紝閲嶅鐐瑰嚮褰撳墠 Tab 闈欓煶鈥斺€旀�?鍛ㄩ潬鏃㈡湁瀹堝崼锛涘唴宓岄〉鍐嶇偣
+  /// 褰撳墠椤典笉鍐嶇炕杞敹鍥烇紙涓?�?�?鍚屽彛寰勶紝鏀堕〉璧板垏瑙嗗浘鎴栧渾閽啀鐐癸級銆?
   void _handleDockTap(String id, TimetableSettings settings) {
     final leavingInlinePage =
         _dockInlinePageId != null &&
         (id == kGlassDockActionDay || id == kGlassDockActionWeek);
     if (leavingInlinePage) {
-      // 从内嵌页点视图切换：先收页再切视图，避免两层状态叠加。
+      // 浠庡唴宓岄〉鐐硅鍥惧垏鎹細鍏堟敹椤靛啀鍒囪鍥撅紝閬垮厤涓ゅ眰鐘舵€佸彔鍔犮€?
       setState(() => _dockInlinePageId = null);
     }
     switch (id) {
       case kGlassDockActionDay:
         if (_isDayView) {
-          // 重复点日 Tab 无动作；从内嵌页收回落回日课表是一次真实切换
-          // （落回异视图的路径 _toggleDayView 内部已震，此处只补同视图）。
+          // 閲嶅鐐规棩 Tab 鏃犲姩浣滐紱浠庡唴宓岄〉鏀跺洖钀藉洖鏃ヨ琛ㄦ槸涓€娆＄湡瀹炲垏鎹?
+          // 锛堣惤鍥炲紓瑙嗗浘鐨勮矾�?_toggleDayView 鍐呴儴宸查渿锛屾澶勫彧琛ュ悓瑙嗗浘锛夈�?
           if (leavingInlinePage) {
             _maybeSelectionClick(settings);
           }
@@ -7433,18 +8053,18 @@ class _TimetableScreenState extends State<TimetableScreen>
             context.read<TimetableProvider>(),
             mode: TimetableHomeViewMode.week,
           );
-          // 重复点周 Tab 无动作；从内嵌页收回落回周课表是一次真实切换。
+          // 閲嶅鐐瑰懆 Tab 鏃犲姩浣滐紱浠庡唴宓岄〉鏀跺洖钀藉洖鍛ㄨ琛ㄦ槸涓€娆＄湡瀹炲垏鎹€?
           if (leavingInlinePage) {
             _maybeSelectionClick(settings);
           }
           return;
         }
-        // 闪现收起：_closeDayView 内部完成震动、状态清理与持久化。
+        // 闂幇鏀惰捣锛歘closeDayView 鍐呴儴瀹屾垚闇囧姩銆佺姸鎬佹竻鐞嗕笌鎸佷箙鍖栥�?
         unawaited(_closeDayView(settings, animate: false));
       default:
-        // 内嵌优先：注册过的页面在首页栈内切换，玻璃坞保持悬浮；未登记
-        // 的走普通推入。再点当前内嵌页与 日/周 Tab 同口径无动作，其余均
-        // 是真实切换（开页/换页/推路由），统一在此给触觉反馈。
+        // 鍐呭祵浼樺厛锛氭敞鍐岃繃鐨勯〉闈㈠湪棣栭〉鏍堝唴鍒囨崲锛岀幓鐠冨潪淇濇寔鎮诞锛涙湭鐧昏
+        // 鐨勮蛋鏅€氭帹鍏ャ€傚啀鐐瑰綋鍓嶅唴宓岄〉涓?�?�?Tab 鍚屽彛寰勬棤鍔ㄤ綔锛屽叾浣欏�?
+        // 鏄湡瀹炲垏鎹紙寮€�?鎹㈤�?鎺ㄨ矾鐢憋級锛岀粺涓€鍦ㄦ缁欒Е瑙夊弽棣堛€?
         if (inlineDockPageFor(id) != null) {
           if (_dockInlinePageId == id) {
             return;
@@ -7481,10 +8101,10 @@ class _TimetableScreenState extends State<TimetableScreen>
       alpha: (baseTint.a * buttonOpacity).clamp(0.0, 1.0),
     );
     final contentOpacity = buttonOpacity.clamp(0.0, 1.0);
-    // 液态玻璃模式下用真折射圆角玻璃，而不是高斯模糊磨砂——
-    // 与底栏/独立按钮同一套材质语言。
+    // 娑叉€佺幓鐠冩ā寮忎笅鐢ㄧ湡鎶樺皠鍦嗚鐜荤拑锛岃€屼笉鏄珮鏂ā绯婄（鐮傗€斺€?
+    // 涓庡簳鏍?鐙珛鎸夐挳鍚屼竴濂楁潗璐ㄨ瑷€銆?
     final dockAppearance = FrostedAppearanceScope.of(context);
-    // 「液态玻璃作用范围 → 玻璃坞导航」关闭时回浮按钮回磨砂圆片。
+    // 銆屾恫鎬佺幓鐠冧綔鐢ㄨ寖�?�?鐜荤拑鍧炲鑸€嶅叧闂椂鍥炴诞鎸夐挳鍥炵（鐮傚渾鐗囥�?
     final useLiquidGlassMaterial =
         dockAppearance.glassMode == FrostedGlassMode.liquidGlass &&
         dockAppearance.liquidGlassDockEnabled &&
@@ -7492,10 +8112,10 @@ class _TimetableScreenState extends State<TimetableScreen>
 
     final glassDockForm =
         provider.settings.homeNavigationForm == HomeNavigationForm.glassDock;
-    // 按钮需始终浮在玻璃坞药丸之上：玻璃坞形态下统一取「内容避让量 +
-    // 24 视觉边距」与「药丸占用 + 12 视觉间隙」的较大值——周视图由外层
-    // 布局避让垫高、日/设置页视口全屏时按钮自行避让，两种实现下都不被
-    // 药丸遮挡；经典形态保持原 24px 边距。
+    // 鎸夐挳闇€濮嬬粓娴湪鐜荤拑鍧炶嵂涓镐箣涓婏細鐜荤拑鍧炲舰鎬佷笅缁熶竴鍙栥€屽唴瀹归伩璁╅噺 +
+    // 24 瑙嗚杈硅窛銆嶄笌銆岃嵂涓稿崰鐢?+ 12 瑙嗚闂撮殭銆嶇殑杈冨ぇ鍊尖€斺€斿懆瑙嗗浘鐢卞灞?
+    // 甯冨眬閬胯鍨珮銆佹棩/璁剧疆椤佃鍙ｅ叏灞忔椂鎸夐挳鑷閬胯锛屼袱绉嶅疄鐜颁笅閮戒笉�?
+    // 鑽父閬尅锛涚粡鍏稿舰鎬佷繚鎸佸師 24px 杈硅窛銆?
     final double dockBackButtonBottom;
     if (!glassDockForm) {
       dockBackButtonBottom = 24;
@@ -7539,11 +8159,11 @@ class _TimetableScreenState extends State<TimetableScreen>
                       tuning: dockAppearance.liquidGlassTuning,
                     ),
                     quality: GlassQuality.premium,
-                    // 崩溃修复：此钮挂在无任何 LiquidGlassLayer 祖先的裸 Stack 上，
-                    // premium + 默认 useOwnLayer:false 会触发 LiquidGlassBlendGroup
-                    // 的 renderLink != null 断言。显式自带层；isStationary 与
-                    // _buildDockMergeSlot / 包内 BottomBarExtraBtn 对齐，
-                    // 保证引擎降级路径仍保留 BackdropFilter 模糊。
+                    // 宕╂簝淇锛氭閽寕鍦ㄦ棤浠讳綍 LiquidGlassLayer 绁栧厛鐨勮８ Stack 涓婏�?
+                    // premium + 榛樿�?useOwnLayer:false 浼氳Е�?LiquidGlassBlendGroup
+                    // ? renderLink != null 鏂█銆傛樉寮忚嚜甯﹀眰锛沬sStationary ?
+                    // _buildDockMergeSlot / 鍖呭�?BottomBarExtraBtn 瀵归綈锛?
+                    // 淇濊瘉寮曟搸闄嶇骇璺緞浠嶄繚鐣?BackdropFilter 妯＄硦銆?
                     useOwnLayer: true,
                     isStationary: true,
                     child: Opacity(
@@ -7684,6 +8304,10 @@ class _TimetableScreenState extends State<TimetableScreen>
 
     _isSyncingWeekPage = true;
     try {
+      // Programmatic jump: the swipe deck is gesture-only, so fall back to
+      // the pager's own slide instead of a stale deck takeover.
+      _weekPagerDragStartPage = null;
+      _weekPagerPendingDragStartPage = null;
       if (animatePage) {
         await _weekPageController.animateToPage(
           targetWeek - 1,
@@ -7722,14 +8346,14 @@ class _TimetableScreenState extends State<TimetableScreen>
     return CourseGridSurfaceHost(settings: settings, child: child);
   }
 
-  /// 将 provider 的当前周次同步到周视图 pager。
+  /// ? provider 鐨勫綋鍓嶅懆娆″悓姝ュ埌鍛ㄨ�?pager�?
   ///
-  /// 该方法在 build 中调用（外部周次来源可能在一帧内多次到达），副作用
-  /// 通过 post-frame 回调收敛且带三重防重入（[_pendingSyncedWeek]、
-  /// [_isSyncingWeekPage]、[_hasPendingLocalWeekTransition]）：同一目标页
-  /// 不会重复 jump，本地手势进行中绝不抢页。这是「build 中带副作用」的
-  /// 受控例外——迁到 didChangeDependencies 需要区分周次来源并改动
-  /// 同步时序，当前实现的行为与守卫已在测试中锚定，保持现状。
+  /// 璇ユ柟娉曞湪 build 涓皟鐢紙澶栭儴鍛ㄦ鏉ユ簮鍙兘鍦ㄤ竴甯у唴澶氭鍒拌揪锛夛紝鍓綔鐢?
+  /// 閫氳�?post-frame 鍥炶皟鏀舵暃涓斿甫涓夐噸闃查噸鍏ワ紙[_pendingSyncedWeek]�?
+  /// [_isSyncingWeekPage]銆乕_hasPendingLocalWeekTransition]锛夛細鍚屼竴鐩爣椤?
+  /// 涓嶄細閲嶅 jump锛屾湰鍦版墜鍔胯繘琛屼腑缁濅笉鎶㈤〉銆傝繖鏄€宐uild 涓甫鍓綔鐢ㄣ€嶇�?
+  /// 鍙楁帶渚嬪鈥斺€旇縼鍒?didChangeDependencies 闇€瑕佸尯鍒嗗懆娆℃潵婧愬苟鏀瑰姩
+  /// 鍚屾鏃跺簭锛屽綋鍓嶅疄鐜扮殑琛屼负涓庡畧鍗凡鍦ㄦ祴璇曚腑閿氬畾锛屼繚鎸佺幇鐘躲€?
   void _syncWeekPageWithProvider(int week, TimetableSettings settings) {
     final maxWeek = settings.semesterWeekCount;
     if (_isSyncingWeekPage || _hasPendingLocalWeekTransition) {
@@ -7787,6 +8411,12 @@ class _TimetableScreenState extends State<TimetableScreen>
         return;
       }
 
+      // Programmatic jump: the swipe deck is gesture-only, so fall back to
+      // the pager's own slide instead of a stale deck takeover.
+      _weekDeckSettleRebuildArmed = false;
+      _weekDeckSettleRebuildScheduled = false;
+      _weekPagerDragStartPage = null;
+      _weekPagerPendingDragStartPage = null;
       _lastObservedWeekPage = targetPage;
       _weekPageController.jumpToPage(targetPage);
     });
@@ -7959,7 +8589,7 @@ class _TimetableScreenState extends State<TimetableScreen>
       previewItems: previewItems,
       week: week,
       onEdit: _editCourse,
-      // 单节课提醒依赖原生精确闹钟调度，其他平台不显示入口。
+      // 鍗曡妭璇炬彁閱掍緷璧栧師鐢熺簿纭椆閽熻皟搴︼紝鍏朵粬骞冲彴涓嶆樉绀哄叆鍙ｃ�?
       onSetAlarm: (!kIsWeb && Platform.isAndroid)
           ? (target) => _openClassReminderSheet(target, week)
           : null,
@@ -8014,7 +8644,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
   }
 
-  /// 单节课提醒：打开提醒设置弹层（快捷提前量 / 自定义时间 / 取消）。
+  /// 鍗曡妭璇炬彁閱掞細鎵撳紑鎻愰啋璁剧疆寮瑰眰锛堝揩鎹锋彁鍓嶉噺 / 鑷畾涔夋椂�?/ 鍙栨秷锛夈€?
   Future<void> _openClassReminderSheet(Course course, int week) {
     return showClassReminderSheet(context, course: course, week: week);
   }
@@ -8271,8 +8901,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     final provider = context.read<TimetableProvider>();
     final selected = await showProfileQuickSwitchSheet(
       context,
-      // 情侣课表开关开启时 TA 课表同为可切换课表（情侣标题/卡片右半
-      // 直达），一并列出；开关关闭时回到原样：只列我自己的课表。
+      // 鎯呬荆璇捐〃寮€鍏冲紑鍚�?TA 璇捐〃鍚屼负鍙垏鎹㈣琛紙鎯呬荆鏍囬�?鍗＄墖鍙冲崐
+      // 鐩磋揪锛夛紝涓€骞跺垪鍑猴紱寮€鍏冲叧闂椂鍥炲埌鍘熸牱锛氬彧鍒楁垜鑷繁鐨勮琛ㄣ�?
       profiles: provider.profiles
           .where(
             (profile) =>
@@ -8288,6 +8918,7 @@ class _TimetableScreenState extends State<TimetableScreen>
           sheetRoute: ModalRoute.of(buttonContext),
         );
       },
+      onShowHistory: _showCoupleTimetableHistory,
     );
 
     if (!mounted || selected == null) {
@@ -8301,6 +8932,96 @@ class _TimetableScreenState extends State<TimetableScreen>
       return;
     }
     _maybeSelectionClick(provider.settings);
+  }
+
+  /// 鎯呬荆鏍囬闀挎寜锛氬彧缁欍€屽巻鍙茶琛?/ 璇捐〃绠＄悊銆嶄袱涓洿杈惧叆鍙ｏ紝
+  /// 涓嶅啀寮瑰嚭銆屽垏鎹㈣琛ㄣ€嶇殑 profile 鍒楄〃銆傝琛ㄧ鐞嗕互寮圭獥鎵撳紑�?
+  Future<void> _showCoupleTitleLongPressActions() async {
+    final l10n = AppLocalizations.of(context)!;
+    await showHomeHyperosSheet<void>(
+      context: context,
+      builder: (sheetContext) {
+        return HyperosSheet(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Builder(
+                builder: (buttonContext) {
+                  return HyperosButton(
+                    label: l10n.coupleHistorySheetTitle,
+                    variant: HyperosButtonVariant.secondary,
+                    expand: true,
+                    onPressed: () => _showCoupleTimetableHistory(buttonContext),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+              Builder(
+                builder: (buttonContext) {
+                  return HyperosButton(
+                    label: l10n.timetableManagement,
+                    variant: HyperosButtonVariant.secondary,
+                    expand: true,
+                    onPressed: () =>
+                        _openTimetableManagementPopup(buttonContext),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// 璇捐〃绠＄悊锛氫互寮圭獥褰㈠紡鎵撳紑锛堟弧灞?Dialog锛夛紝鑰屼笉鏄帹杩涚鐞嗗瓙椤靛鑸爤銆?
+  void _openTimetableManagementPopup(BuildContext buttonContext) {
+    final navigator = Navigator.of(buttonContext);
+    final sheetRoute = ModalRoute.of(buttonContext);
+    unawaited(
+      showDialog<void>(
+        context: buttonContext,
+        useRootNavigator: false,
+        builder: (_) =>
+            const Dialog.fullscreen(child: TimetableProfilesScreen()),
+      ),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (sheetRoute != null && sheetRoute.isActive) {
+        navigator.removeRoute(sheetRoute);
+      }
+    });
+  }
+
+  Future<void> _showCoupleTimetableHistory(BuildContext sheetContext) async {
+    final provider = context.read<TimetableProvider>();
+    final session = context.read<WithuCoupleSessionProvider>();
+    final withuService = WithuCoupleTimetableService(
+      authService: session.authService,
+    );
+    final entry = await showCoupleTimetableHistorySheet(
+      context: sheetContext,
+      onLoadEntries: withuService.fetchMyHistory,
+    );
+    if (!mounted || entry == null) {
+      return;
+    }
+
+    final result = await withuService.rollbackMyTimetable(
+      provider: provider,
+      historyId: entry.id,
+    );
+    final restored = result.status != WithuCouplePullStatus.failed;
+    if (!mounted) {
+      return;
+    }
+    if (restored) {
+      showAppToast(
+        context,
+        message: AppLocalizations.of(context)!.coupleHistoryRestored,
+        kind: AppToastKind.success,
+      );
+    }
   }
 
   Future<void> _showTopActionsSheet() async {
@@ -8325,10 +9046,10 @@ class _TimetableScreenState extends State<TimetableScreen>
           )
         : Colors.black;
 
-    // 菜单形态由设置分流：「八宫格」是 v2.0.5.5 已发布版本的底部弹层，
-    // 「列表」是当前的锚定弹窗。两种形态共享同一份自定义排列
-    // （homeGridMenuActions），统一以入口 id 回传，再经目录分发到
-    // 全应用任意二级页面/功能。
+    // 鑿滃崟褰㈡€佺敱璁剧疆鍒嗘祦锛氥€屽叓瀹牸銆嶆槸 v2.0.5.5 宸插彂甯冪増鏈殑搴曢儴寮瑰眰锛?
+    // 銆屽垪琛ㄣ€嶆槸褰撳墠鐨勯敋瀹氬脊绐椼€備袱绉嶅舰鎬佸叡浜悓涓€浠借嚜瀹氫箟鎺掑垪
+    // 锛坔omeGridMenuActions锛夛紝缁熶竴浠ュ叆鍙?id 鍥炰紶锛屽啀缁忕洰褰曞垎鍙戝�?
+    // 鍏ㄥ簲鐢ㄤ换鎰忎簩绾ч〉闈?鍔熻兘銆?
     final menuEntries = resolveHomeTopMenuEntries(settings);
     final String? selectedId;
     if (settings.homeMenuStyle == HomeMenuStyle.grid) {
@@ -8357,7 +9078,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
 
     switch (selectedId) {
-      // 添加课程依赖首页宿主上下文带日视图选中日期弹层；其余全部走目录分发。
+      // 娣诲姞璇剧▼渚濊禆棣栭〉瀹夸富涓婁笅鏂囧甫鏃ヨ鍥鹃€変腑鏃ユ湡寮瑰眰锛涘叾浣欏叏閮ㄨ蛋鐩綍鍒嗗彂�?
       case 'addCourse':
         await _navigateToAddCourse(context);
       default:
@@ -8704,7 +9425,7 @@ class _TimetableHomeScrollBehavior extends ScrollBehavior {
     Widget child,
     ScrollableDetails details,
   ) {
-    // No Material stretch / glow — keep the grid hard-edged.
+    // No Material stretch / glow ? keep the grid hard-edged.
     return child;
   }
 }

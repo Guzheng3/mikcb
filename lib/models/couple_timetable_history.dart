@@ -1,14 +1,8 @@
 import 'package:flutter/foundation.dart';
 
-/// 情侣历史课表的角色：我的 / 对方的。
 enum CoupleTimetableRole { mine, hers }
 
-/// 一条历史课表快照。
-///
-/// 「往期」的粒度是学期：同一角色下，同一 [semesterAnchor]（学期开学日）
-/// 只保留一条，新快照覆盖旧快照（写入侧负责 upsert，见
-/// CoupleTimetableHistoryService）。恢复时按 [snapshot] 还原课程、
-/// 当前周与学期开学日。
+/// Metadata for one cloud timetable history entry.
 @immutable
 class CoupleTimetableHistoryEntry {
   const CoupleTimetableHistoryEntry({
@@ -19,20 +13,18 @@ class CoupleTimetableHistoryEntry {
     required this.courseCount,
     required this.savedAt,
     required this.snapshot,
+    this.changeType = 'manual',
   });
 
   final String id;
   final CoupleTimetableRole role;
-
-  /// 快照所属学期的开学日（去重键）；课表未配置开学日时为 null。
   final DateTime? semesterAnchor;
-
-  /// 快照时的课表名（展示用）。
   final String name;
   final int courseCount;
   final DateTime savedAt;
+  final String changeType;
 
-  /// 可还原的课表数据：{name, currentWeek, semesterStartDate, courses}。
+  /// Cloud history is rollback metadata only; this remains for legacy JSON.
   final Map<String, dynamic> snapshot;
 
   Map<String, dynamic> toJson() => {
@@ -42,6 +34,7 @@ class CoupleTimetableHistoryEntry {
     'name': name,
     'courseCount': courseCount,
     'savedAt': savedAt.toIso8601String(),
+    'changeType': changeType,
     'snapshot': snapshot,
   };
 
@@ -49,8 +42,7 @@ class CoupleTimetableHistoryEntry {
     final rawSnapshot = json['snapshot'];
     return CoupleTimetableHistoryEntry(
       id: json['id'] as String? ?? '',
-      role:
-          (json['role'] as String?) == CoupleTimetableRole.hers.name
+      role: (json['role'] as String?) == CoupleTimetableRole.hers.name
           ? CoupleTimetableRole.hers
           : CoupleTimetableRole.mine,
       semesterAnchor: DateTime.tryParse(
@@ -61,10 +53,29 @@ class CoupleTimetableHistoryEntry {
       savedAt:
           DateTime.tryParse(json['savedAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
-      snapshot:
-          rawSnapshot is Map
-              ? Map<String, dynamic>.from(rawSnapshot)
-              : const <String, dynamic>{},
+      changeType: json['changeType'] as String? ?? 'manual',
+      snapshot: rawSnapshot is Map
+          ? Map<String, dynamic>.from(rawSnapshot)
+          : const <String, dynamic>{},
+    );
+  }
+
+  factory CoupleTimetableHistoryEntry.fromServerJson(
+    Map<String, dynamic> json,
+  ) {
+    return CoupleTimetableHistoryEntry(
+      id: (json['id'] as num?)?.toInt().toString() ?? '',
+      role: CoupleTimetableRole.mine,
+      semesterAnchor: DateTime.tryParse(
+        json['semesterStartDate'] as String? ?? '',
+      ),
+      name: json['profileName'] as String? ?? '',
+      courseCount: (json['courseCount'] as num?)?.toInt() ?? 0,
+      savedAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0),
+      changeType: json['changeType'] as String? ?? 'manual',
+      snapshot: const <String, dynamic>{},
     );
   }
 }

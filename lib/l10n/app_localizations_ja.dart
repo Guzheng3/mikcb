@@ -339,7 +339,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get withuCoupleConnect => 'withU に接続';
 
   @override
-  String get withuCoupleDisconnect => '接続を切断';
+  String get withuCoupleDisconnect => 'ログアウト';
 
   @override
   String get withuCouplePullNow => '相手の時間割を今すぐ取得';
@@ -5774,27 +5774,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get courseActionConflictSwitchAction => '切替';
-
-  @override
-  String courseActionCoupleRelatedCount(int count) {
-    return 'あと$countコマのペア時間割授業';
-  }
-
-  @override
-  String get courseActionCoupleExpandHint =>
-      '展開して相手の授業や一緒の授業を表示します。タップでプレビューを切り替えできます';
-
-  @override
-  String get courseActionCoupleCollapseHint => 'タップでペア時間割の授業リストを閉じます';
-
-  @override
-  String courseActionMixedRelatedCount(int count) {
-    return 'あと$countコマの関連授業';
-  }
-
-  @override
-  String get courseActionPartnerReadOnlyNotice =>
-      'これは相手の時間割の授業で、閲覧のみで編集・振替はできません';
 
   @override
   String get suspendSheetTitle => '授業停止';

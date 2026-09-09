@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:university_timetable/services/import_random_color_preferences.dart';
 import 'package:university_timetable/utils/course_color_palette.dart';
 import 'package:university_timetable/utils/hex_color.dart';
 
@@ -55,6 +56,34 @@ void main() {
   });
 
   group('kCourseColorGroups', () {
+    test('活泼系/马卡龙系默认且不含灰黑色', () {
+      expect(ImportRandomColorPreferences.defaultGroupId, 'vibrant');
+
+      const neutralHexes = <String>{
+        '#CBD5E1',
+        '#94A3B8',
+        '#607D8B',
+        '#64748B',
+        '#475569',
+        '#334155',
+        '#D6D3D1',
+        '#A8A29E',
+        '#78716C',
+        '#795548',
+        '#57534E',
+        '#44403C',
+      };
+      const colorGroups = <List<String>>[
+        kPastelCourseColorGroupHexes,
+        kVibrantCourseColorGroupHexes,
+      ];
+      for (final groupHexes in colorGroups) {
+        for (final hex in groupHexes) {
+          expect(neutralHexes, isNot(contains(hex)), reason: '$hex 是灰黑色');
+        }
+      }
+    });
+
     test('组 id 唯一且不占用「全部颜色」保留 id', () {
       final ids = kCourseColorGroups.map((group) => group.id).toSet();
       expect(ids, hasLength(kCourseColorGroups.length));
@@ -66,15 +95,24 @@ void main() {
           .map((hex) => hex.toUpperCase())
           .toSet();
       for (final group in kCourseColorGroups) {
-        expect(group.hexes.length, greaterThanOrEqualTo(15),
-            reason: '${group.id} 色数过少');
+        expect(
+          group.hexes.length,
+          greaterThanOrEqualTo(15),
+          reason: '${group.id} 色数过少',
+        );
         final seenInGroup = <String>{};
         for (final hex in group.hexes) {
           final key = hex.toUpperCase();
-          expect(fullPalette, contains(key),
-              reason: '${group.id} 的 $hex 不在全量色板中');
-          expect(seenInGroup.add(key), isTrue,
-              reason: '${group.id} 组内重复: $hex');
+          expect(
+            fullPalette,
+            contains(key),
+            reason: '${group.id} 的 $hex 不在全量色板中',
+          );
+          expect(
+            seenInGroup.add(key),
+            isTrue,
+            reason: '${group.id} 组内重复: $hex',
+          );
         }
       }
     });
@@ -84,7 +122,10 @@ void main() {
         courseColorGroupPalette(kCourseColorGroupAllId),
         same(kPresetCourseColorHexes),
       );
-      expect(courseColorGroupPalette('nonexistent'), same(kPresetCourseColorHexes));
+      expect(
+        courseColorGroupPalette('nonexistent'),
+        same(kPresetCourseColorHexes),
+      );
       for (final group in kCourseColorGroups) {
         expect(courseColorGroupPalette(group.id), same(group.hexes));
       }
@@ -101,16 +142,30 @@ void main() {
     /// 灰调（slate/stone 全阶）与土棕/橄榄调（琥珀黄青柠的 600-700 深阶）——
     /// 用户明确反感「屎色」，鲜艳组一律不得掺入这些观感发脏的阶位。
     const muddyHexes = <String>{
-      '#CBD5E1', '#94A3B8', '#607D8B', '#64748B', '#475569', '#334155',
-      '#D6D3D1', '#A8A29E', '#78716C', '#795548', '#57534E', '#44403C',
-      '#CA8A04', '#A16207', '#65A30D', '#4D7C0F', '#B45309', '#D97706',
+      '#CBD5E1',
+      '#94A3B8',
+      '#607D8B',
+      '#64748B',
+      '#475569',
+      '#334155',
+      '#D6D3D1',
+      '#A8A29E',
+      '#78716C',
+      '#795548',
+      '#57534E',
+      '#44403C',
+      '#CA8A04',
+      '#A16207',
+      '#65A30D',
+      '#4D7C0F',
+      '#B45309',
+      '#D97706',
     };
 
     test('不掺灰调/土棕/橄榄等发脏颜色', () {
       vividGroups.forEach((id, hexes) {
         for (final hex in hexes) {
-          expect(muddyHexes, isNot(contains(hex)),
-              reason: '$id 掺入发脏色: $hex');
+          expect(muddyHexes, isNot(contains(hex)), reason: '$id 掺入发脏色: $hex');
         }
       });
     });

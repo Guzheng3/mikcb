@@ -15,7 +15,7 @@ double _contrastRatio(Color a, Color b) {
 bool _greenDominant(Color c) => c.g > c.r && c.g > c.b;
 
 void main() {
-  // 情侣课表「共同空闲」强调色（CoupleTimetableLogic.freeSlotColorHex）。
+  // 情侣课表「共同空闲」强调绿（#4CAF50）。
   const freeGreen = Color(0xFF4CAF50);
 
   group('readableAccentOnCardInk', () {

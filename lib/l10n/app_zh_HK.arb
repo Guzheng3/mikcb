@@ -5634,7 +5634,7 @@
   "withuCoupleServerHint": "伺服器：{url}",
   "withuCoupleLastPulledAt": "上次拉取：{time}",
   "withuCoupleConnect": "連接 withU",
-  "withuCoupleDisconnect": "中斷連接",
+  "withuCoupleDisconnect": "登出",
   "withuCouplePullNow": "立即拉取對方課表",
   "withuCoupleUploadForPartner": "上傳我的課表",
   "withuCoupleLoginSheetTitle": "連接 withU（情侶課表）",
@@ -5768,25 +5768,6 @@
   "courseNoteTileSubtitleBoth": "課程簡介與本節課均有備註",
   "courseNoteReadOnlyNotice": "對方課程僅可查看備註，無法編輯。",
   "courseNoteDoneEditingAction": "完成",
-  "@courseActionCoupleRelatedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "courseActionCoupleRelatedCount": "還有 {count} 節情侶課表課程",
-  "courseActionCoupleExpandHint": "展開查看對方的課或一起上課，點擊可切換預覽",
-  "courseActionCoupleCollapseHint": "點擊收起情侶課表課程列表",
-  "@courseActionMixedRelatedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "courseActionMixedRelatedCount": "還有 {count} 節相關課程",
-  "courseActionPartnerReadOnlyNotice": "這是對方課表中的課程，僅供查看，無法編輯或調課",
   "homeNavigationTitle": "首頁與導覽",
   "homeMenuCustomizeSectionTitle": "右上角選單",
   "homeNavigationSubtitle": "底欄形態、選單與首頁標題",

@@ -61,10 +61,10 @@ abstract class BaseQingyuWidgetProvider : AppWidgetProvider() {
      * 每次刷新时按系统当前 widget id 对账，清掉已不存在的绑定与专属快照。
      */
     private fun pruneStaleBindings(context: Context) {
-        val manager = AppWidgetManager.getInstance(context)
-        val liveIds = manager
-            .getAppWidgetIds(ComponentName(context, providerClass()))
-            .toSet()
+        // 绑定档案全局共享、且只有今日系列卡片会写，必须用「所有支持绑定的卡片
+        // id 全集」对账。按当前 Provider 的 id 对账会让统计/考试卡片的 onUpdate
+        // （添加卡片、应用更新都会触发）误删今日卡片的绑定。
+        val liveIds = TodayWidgetSupport.liveBindingWidgetIds(context)
         for (appWidgetId in WidgetBindingStore.allBindings(context).keys) {
             if (appWidgetId !in liveIds) {
                 WidgetBindingStore.remove(context, appWidgetId)

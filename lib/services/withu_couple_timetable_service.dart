@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
 import '../models/timetable_profile.dart';
+import '../models/couple_timetable_history.dart';
 import '../providers/timetable_provider.dart';
 import 'data_transfer_service.dart';
 import 'withu_couple_auth_service.dart';
@@ -218,6 +219,64 @@ class WithuCoupleTimetableService {
     }
   }
 
+  Future<List<CoupleTimetableHistoryEntry>> fetchMyHistory() async {
+    if (await _authService.loadSession() == null) {
+      return const [];
+    }
+
+    try {
+      final payload = await _authService.getJson('history');
+      final rows = payload['history'];
+      if (rows is! List) {
+        return const [];
+      }
+      return rows
+          .whereType<Map<dynamic, dynamic>>()
+          .map(
+            (row) => CoupleTimetableHistoryEntry.fromServerJson(
+              Map<String, dynamic>.from(row),
+            ),
+          )
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  Future<WithuCouplePullResult> rollbackMyTimetable({
+    required TimetableProvider provider,
+    required String historyId,
+  }) async {
+    if (await _authService.loadSession() == null) {
+      return const WithuCouplePullResult(
+        status: WithuCouplePullStatus.failed,
+        errorCode: 'withu_couple_not_connected',
+      );
+    }
+
+    try {
+      final id = int.tryParse(historyId);
+      if (id == null || id <= 0) {
+        return const WithuCouplePullResult(
+          status: WithuCouplePullStatus.failed,
+          errorCode: 'withu_invalid_history_entry',
+        );
+      }
+      await _authService.postJson('rollback', {'historyId': id});
+      return pullMyTimetable(provider: provider);
+    } on WithuCoupleApiException catch (error) {
+      return WithuCouplePullResult(
+        status: WithuCouplePullStatus.failed,
+        errorCode: error.code,
+      );
+    } catch (_) {
+      return const WithuCouplePullResult(
+        status: WithuCouplePullStatus.failed,
+        errorCode: 'withu_request_failed',
+      );
+    }
+  }
+
   Future<WithuCouplePullResult> syncAfterLogin({
     required TimetableProvider provider,
   }) async {
@@ -284,6 +343,16 @@ class WithuCoupleTimetableService {
     }
   }
 
+  Future<String?> currentMyTimetableContentHash(
+    TimetableProvider provider,
+  ) async {
+    final package = await _buildMyTimetablePackage(provider);
+    if (package == null) {
+      return null;
+    }
+    return _myTimetableContentHash(package.content);
+  }
+
   Future<String?> uploadPersonalSettings({
     required TimetableProvider provider,
   }) async {
@@ -318,7 +387,8 @@ class WithuCoupleTimetableService {
   }) async {
     await provider.initialize();
     // Conflict checks and uploads always target "mine", even while the UI
-    // is showing the partner timetable.
+    // Upload always targets the signed-in user's timetable, even while
+    // the UI is displaying the partner timetable.
     final myProfile = provider.myTimetableProfile;
     if (myProfile == null) {
       return null;
@@ -350,15 +420,25 @@ class WithuCoupleTimetableService {
     if (syncedContent == null) {
       return;
     }
+    final syncedHash = _myTimetableContentHash(syncedContent);
     final config = await _configStore.load();
     await _configStore.save(
       config.copyWith(
-        lastMyTimetableHash: sha256
-            .convert(utf8.encode(syncedContent))
-            .toString(),
+        lastMyTimetableHash: syncedHash,
         lastMyTimetableSyncedAt: DateTime.now(),
       ),
     );
+  }
+
+  String _myTimetableContentHash(String content) {
+    final decoded = jsonDecode(content);
+    if (decoded is Map) {
+      final payload = Map<String, dynamic>.from(decoded)
+        ..remove('packageId')
+        ..remove('exportedAt');
+      return sha256.convert(utf8.encode(jsonEncode(payload))).toString();
+    }
+    return sha256.convert(utf8.encode(content)).toString();
   }
 
   bool _cloudIsNewerThanLocal({

@@ -71,9 +71,10 @@ internal object CoupleTimetableDisplayBuilder {
             compareBy({ it.startTime }, { it.startSection }, { it.id })
         )
         val nowMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
-        val hasRemainingCourse = today.any {
+        val remainingToday = today.filter {
             parseClockMinutes(it.endTime)?.let { it > nowMinutes } == true
         }
+        val hasRemainingCourse = remainingToday.isNotEmpty()
         val remainingCount = today.count {
             parseClockMinutes(it.endTime)?.let { it > nowMinutes } == true
         }
@@ -85,7 +86,7 @@ internal object CoupleTimetableDisplayBuilder {
             else -> context.getString(R.string.widget_couple_no_course_today)
         }
 
-        val shownCourses = if (hasRemainingCourse) today else tomorrow
+        val shownCourses = if (hasRemainingCourse) remainingToday else tomorrow
         val items = if (!hasRemainingCourse && tomorrow.isEmpty()) {
             emptyList()
         } else {
@@ -149,7 +150,7 @@ internal object CoupleTimetableSizingSupport {
     private const val HEADER_HEIGHT_DP = 20f
     private const val HEADER_TOP_MARGIN_DP = 5f
     private const val FOOTER_HEIGHT_DP = 13f
-    private const val MIN_COURSE_ROW_DP = 34f
+    private const val COURSE_ROW_HEIGHT_DP = 52f
     private const val DIVIDER_TOTAL_DP = 5f
 
     fun calculate(
@@ -172,7 +173,7 @@ internal object CoupleTimetableSizingSupport {
             }
             (maxCourseCount downTo 1).firstOrNull { count ->
                 val dividerCount = if (hasNotice) count else (count - 1).coerceAtLeast(0)
-                val requiredHeightPx = count * MIN_COURSE_ROW_DP * density +
+                val requiredHeightPx = count * COURSE_ROW_HEIGHT_DP * density +
                     dividerCount * DIVIDER_TOTAL_DP * density
                 courseAreaHeightPx >= requiredHeightPx
             } ?: 0
@@ -191,8 +192,7 @@ internal object CoupleTimetableSizingSupport {
             } else {
                 availableHeightPx
             }
-            ((courseAreaHeightPx - dividerHeightPx) / courseCount)
-                .coerceAtLeast(MIN_COURSE_ROW_DP * density)
+            COURSE_ROW_HEIGHT_DP * density
         }
         val noticeHeightPx = if (hasNotice) availableHeightPx / 2f else 0f
         return CoupleTimetableSizing(
@@ -212,12 +212,9 @@ internal object CoupleTimetableSizingSupport {
     ): CoupleTimetableSizing {
         val current = calculate(context, appWidgetManager, appWidgetId, display)
         val opposite = calculate(context, appWidgetManager, appWidgetId, oppositeDisplay)
-        val sharedRowHeightPx = listOf(
-            current.courseRowHeightPx.takeIf { it > 0f },
-            opposite.courseRowHeightPx.takeIf { it > 0f },
-        ).filterNotNull().minOrNull() ?: return current
-
         val density = context.resources.displayMetrics.density
+        val sharedRowHeightPx = COURSE_ROW_HEIGHT_DP * density
+
         val availableHeightPx = availableListHeightPx(context, appWidgetManager, appWidgetId)
         val maxCourseCount = display.items.count { it is CoupleWidgetDisplayItem.Course }
         val hasNotice = display.items.any { it is CoupleWidgetDisplayItem.Notice }
@@ -505,7 +502,7 @@ class CoupleTimetableViewsService : RemoteViewsService() {
             views.setInt(
                 R.id.widget_couple_course_indicator,
                 "setColorFilter",
-                accentColor
+                parseCourseColor(course.color, accentColor)
             )
             if (item.isOngoing) {
                 views.setInt(
@@ -531,6 +528,15 @@ class CoupleTimetableViewsService : RemoteViewsService() {
                 views.setViewVisibility(R.id.widget_couple_course_progress, View.GONE)
             }
             return views
+        }
+
+        private fun parseCourseColor(value: String?, fallback: Int): Int {
+            if (value.isNullOrBlank()) return fallback
+            return try {
+                Color.parseColor(value)
+            } catch (_: IllegalArgumentException) {
+                fallback
+            }
         }
 
         private fun renderNotice(text: String): RemoteViews {

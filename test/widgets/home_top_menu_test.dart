@@ -181,6 +181,60 @@ void main() {
     expect(await menuResult, 'withuCoupleLogin');
   });
 
+  testWidgets('stored couple session menu row shows paired avatars', (
+    tester,
+  ) async {
+    final anchorKey = GlobalKey();
+    final sessionProvider = WithuCoupleSessionProvider()
+      ..hasStoredSession = true
+      ..serverBaseUrl = 'https://withu.example.com'
+      ..userAvatarPath = 'cached-me.png'
+      ..partnerAvatarPath = 'cached-partner.svg';
+    final entries = [
+      coupleLoginHomeMenuEntry,
+      HomeMenuEntry(
+        id: 'overview',
+        title: (_) => 'Overview',
+        icon: Icons.dashboard_rounded,
+        category: HomeMenuEntryCategory.features,
+        open: (_) async {},
+      ),
+    ];
+
+    await tester.pumpWidget(
+      TestApp(
+        sessionProvider: sessionProvider,
+        home: Builder(
+          builder: (context) {
+            return Center(
+              child: ElevatedButton(
+                key: anchorKey,
+                onPressed: () {
+                  showHomeTopMenuSheet(
+                    context,
+                    entries: entries,
+                    anchorKey: anchorKey,
+                  );
+                },
+                child: const Text('Open'),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(
+      find.byKey(const ValueKey('withu_couple_login_menu_avatar')),
+      findsOneWidget,
+    );
+    expect(find.text('\u8d26\u53f7\u767b\u5f55'), findsNothing);
+  });
+
   testWidgets('logged-in couple menu action opens the couple center', (
     tester,
   ) async {

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="splash_background">#FFFFFFFF</color>
+    <color name="widget_loading_bg">#F8FAFC</color>
+    <color name="widget_loading_text">#5D6D7E</color>
+    <color name="widget_loading_indicator">#3B82F6</color>
     <color name="widget_couple_bg">#FEF7FF</color>
     <color name="widget_couple_current_bg">#F3F7FE</color>
     <color name="widget_couple_text_primary">#2C3E50</color>
