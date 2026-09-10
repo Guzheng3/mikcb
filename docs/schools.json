@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-08-31T07:26:58+00:00",
+  "updatedAt": "2026-09-10T06:23:14+00:00",
   "source": "https://github.com/Mutx163/qingyu_warehouse",
   "sourceRef": "main",
   "counts": {
-    "total": 162,
-    "schools": 157,
+    "total": 206,
+    "schools": 201,
     "generic": 5
   },
   "schools": [
@@ -51,10 +51,24 @@
       "category": "school"
     },
     {
+      "id": "AEPU",
+      "name": "安徽电气工程职业技术学院",
+      "initial": "A",
+      "resourceFolder": "AEPU",
+      "category": "school"
+    },
+    {
       "id": "AUFE",
       "name": "安徽财经大学",
       "initial": "A",
       "resourceFolder": "AUFE",
+      "category": "school"
+    },
+    {
+      "id": "BTBU",
+      "name": "北京工商大学",
+      "initial": "B",
+      "resourceFolder": "BTBU",
       "category": "school"
     },
     {
@@ -72,10 +86,31 @@
       "category": "school"
     },
     {
+      "id": "BBGU",
+      "name": "北部湾大学",
+      "initial": "B",
+      "resourceFolder": "BBGU",
+      "category": "school"
+    },
+    {
+      "id": "CCZU",
+      "name": "常州大学",
+      "initial": "C",
+      "resourceFolder": "CCZU",
+      "category": "school"
+    },
+    {
       "id": "CZIMT",
       "name": "常州机电职业技术学院",
       "initial": "C",
       "resourceFolder": "CZIMT",
+      "category": "school"
+    },
+    {
+      "id": "CDUTCM",
+      "name": "成都中医药大学",
+      "initial": "C",
+      "resourceFolder": "CDUTCM",
       "category": "school"
     },
     {
@@ -142,6 +177,13 @@
       "category": "school"
     },
     {
+      "id": "CQTBI",
+      "name": "重庆工商职业学院",
+      "initial": "C",
+      "resourceFolder": "CQTBI",
+      "category": "school"
+    },
+    {
       "id": "CQIE",
       "name": "重庆工程学院",
       "initial": "C",
@@ -160,6 +202,13 @@
       "name": "重庆电子科技职业大学",
       "initial": "C",
       "resourceFolder": "CQUET",
+      "category": "school"
+    },
+    {
+      "id": "CQEPC",
+      "name": "重庆航天职业技术学院",
+      "initial": "C",
+      "resourceFolder": "CQEPC",
       "category": "school"
     },
     {
@@ -226,10 +275,24 @@
       "category": "school"
     },
     {
+      "id": "DLUTCI",
+      "name": "大连工程学院",
+      "initial": "D",
+      "resourceFolder": "DLUTCI",
+      "category": "school"
+    },
+    {
       "id": "DLMU",
       "name": "大连海事大学",
       "initial": "D",
       "resourceFolder": "DLMU",
+      "category": "school"
+    },
+    {
+      "id": "DZU",
+      "name": "德州学院",
+      "initial": "D",
+      "resourceFolder": "DZU",
       "category": "school"
     },
     {
@@ -247,6 +310,13 @@
       "category": "school"
     },
     {
+      "id": "FIT",
+      "name": "福州理工学院",
+      "initial": "F",
+      "resourceFolder": "FIT",
+      "category": "school"
+    },
+    {
       "id": "FAFU",
       "name": "福建农林大学",
       "initial": "F",
@@ -261,6 +331,13 @@
       "category": "school"
     },
     {
+      "id": "GDUT",
+      "name": "广东工业大学",
+      "initial": "G",
+      "resourceFolder": "GDUT",
+      "category": "school"
+    },
+    {
       "id": "GPNU",
       "name": "广东技术师范大学",
       "initial": "G",
@@ -272,6 +349,13 @@
       "name": "广东海洋大学",
       "initial": "G",
       "resourceFolder": "GDOU",
+      "category": "school"
+    },
+    {
+      "id": "GDIT",
+      "name": "广东科学技术职业学院",
+      "initial": "G",
+      "resourceFolder": "GDIT",
       "category": "school"
     },
     {
@@ -296,6 +380,13 @@
       "category": "school"
     },
     {
+      "id": "HUALIXY",
+      "name": "广州华立学院",
+      "initial": "G",
+      "resourceFolder": "HUALIXY",
+      "category": "school"
+    },
+    {
       "id": "GZST",
       "name": "广州松田职业学院",
       "initial": "G",
@@ -307,6 +398,20 @@
       "name": "广州航海学院",
       "initial": "G",
       "resourceFolder": "GZMTU",
+      "category": "school"
+    },
+    {
+      "id": "GXMU",
+      "name": "广西医科大学",
+      "initial": "G",
+      "resourceFolder": "GXMU",
+      "category": "school"
+    },
+    {
+      "id": "GXCME",
+      "name": "广西机电职业技术学院",
+      "initial": "G",
+      "resourceFolder": "GXCME",
       "category": "school"
     },
     {
@@ -373,6 +478,13 @@
       "category": "school"
     },
     {
+      "id": "SCNU",
+      "name": "华南师范大学",
+      "initial": "H",
+      "resourceFolder": "SCNU",
+      "category": "school"
+    },
+    {
       "id": "SCUT",
       "name": "华南理工大学",
       "initial": "H",
@@ -394,6 +506,20 @@
       "category": "school"
     },
     {
+      "id": "HIT",
+      "name": "哈尔滨工业大学",
+      "initial": "H",
+      "resourceFolder": "HIT",
+      "category": "school"
+    },
+    {
+      "id": "HRBEU",
+      "name": "哈尔滨工程大学",
+      "initial": "H",
+      "resourceFolder": "HRBEU",
+      "category": "school"
+    },
+    {
       "id": "HHTC",
       "name": "怀化学院",
       "initial": "H",
@@ -405,6 +531,13 @@
       "name": "河北地质大学华信学院",
       "initial": "H",
       "resourceFolder": "HBGUHX",
+      "category": "school"
+    },
+    {
+      "id": "HUEB",
+      "name": "河北经贸大学",
+      "initial": "H",
+      "resourceFolder": "HUEB",
       "category": "school"
     },
     {
@@ -429,6 +562,27 @@
       "category": "school"
     },
     {
+      "id": "HPU",
+      "name": "河南理工大学",
+      "initial": "H",
+      "resourceFolder": "HPU",
+      "category": "school"
+    },
+    {
+      "id": "HAUST",
+      "name": "河南科技大学",
+      "initial": "H",
+      "resourceFolder": "HAUST",
+      "category": "school"
+    },
+    {
+      "id": "HIST",
+      "name": "河南科技学院",
+      "initial": "H",
+      "resourceFolder": "HIST",
+      "category": "school"
+    },
+    {
       "id": "HNZY",
       "name": "河南职业技术学院",
       "initial": "H",
@@ -447,6 +601,13 @@
       "name": "淮北理工学院",
       "initial": "H",
       "resourceFolder": "HBLGXY",
+      "category": "school"
+    },
+    {
+      "id": "HNNU",
+      "name": "淮南师范学院",
+      "initial": "H",
+      "resourceFolder": "HNNU",
       "category": "school"
     },
     {
@@ -597,6 +758,13 @@
       "category": "school"
     },
     {
+      "id": "JNMC",
+      "name": "济宁医学院",
+      "initial": "J",
+      "resourceFolder": "JNMC",
+      "category": "school"
+    },
+    {
       "id": "JYVTC",
       "name": "济源职业技术学院",
       "initial": "J",
@@ -611,10 +779,38 @@
       "category": "school"
     },
     {
+      "id": "LYU",
+      "name": "临沂大学",
+      "initial": "L",
+      "resourceFolder": "LYU",
+      "category": "school"
+    },
+    {
+      "id": "LZU",
+      "name": "兰州大学",
+      "initial": "L",
+      "resourceFolder": "LZU",
+      "category": "school"
+    },
+    {
       "id": "LUT",
       "name": "兰州理工大学",
       "initial": "L",
       "resourceFolder": "LUT",
+      "category": "school"
+    },
+    {
+      "id": "LIT",
+      "name": "洛阳理工学院",
+      "initial": "L",
+      "resourceFolder": "LIT",
+      "category": "school"
+    },
+    {
+      "id": "LCUDCC",
+      "name": "聊城大学东昌学院",
+      "initial": "L",
+      "resourceFolder": "LCUDCC",
       "category": "school"
     },
     {
@@ -632,10 +828,31 @@
       "category": "school"
     },
     {
+      "id": "MYSY",
+      "name": "绵阳师范学院",
+      "initial": "M",
+      "resourceFolder": "MYSY",
+      "category": "school"
+    },
+    {
       "id": "MMPT",
       "name": "茂名职业技术学院",
       "initial": "M",
       "resourceFolder": "MMPT",
+      "category": "school"
+    },
+    {
+      "id": "MKU",
+      "name": "闽南科技学院",
+      "initial": "M",
+      "resourceFolder": "MKU",
+      "category": "school"
+    },
+    {
+      "id": "MASU",
+      "name": "马鞍山学院",
+      "initial": "M",
+      "resourceFolder": "MASU",
       "category": "school"
     },
     {
@@ -650,6 +867,13 @@
       "name": "内蒙古工业大学",
       "initial": "N",
       "resourceFolder": "IMUT",
+      "category": "school"
+    },
+    {
+      "id": "NUIST",
+      "name": "南京信息工程大学",
+      "initial": "N",
+      "resourceFolder": "NUIST",
       "category": "school"
     },
     {
@@ -688,6 +912,27 @@
       "category": "school"
     },
     {
+      "id": "SUSTECH",
+      "name": "南方科技大学",
+      "initial": "N",
+      "resourceFolder": "SUSTECH",
+      "category": "school"
+    },
+    {
+      "id": "THDM",
+      "name": "南昌科技职业大学",
+      "initial": "N",
+      "resourceFolder": "THDM",
+      "category": "school"
+    },
+    {
+      "id": "NCHU",
+      "name": "南昌航空大学",
+      "initial": "N",
+      "resourceFolder": "NCHU",
+      "category": "school"
+    },
+    {
       "id": "STCNCHU",
       "name": "南昌航空大学科技学院",
       "initial": "N",
@@ -699,6 +944,13 @@
       "name": "南通大学",
       "initial": "N",
       "resourceFolder": "NTU",
+      "category": "school"
+    },
+    {
+      "id": "NYNU",
+      "name": "南阳师范学院",
+      "initial": "N",
+      "resourceFolder": "NYNU",
       "category": "school"
     },
     {
@@ -730,6 +982,13 @@
       "category": "school"
     },
     {
+      "id": "QHNU",
+      "name": "青海师范大学",
+      "initial": "Q",
+      "resourceFolder": "QHNU",
+      "category": "school"
+    },
+    {
       "id": "QQHRU",
       "name": "齐齐哈尔大学",
       "initial": "Q",
@@ -748,6 +1007,13 @@
       "name": "三峡大学",
       "initial": "S",
       "resourceFolder": "CTGU",
+      "category": "school"
+    },
+    {
+      "id": "SMXY",
+      "name": "三明学院",
+      "initial": "S",
+      "resourceFolder": "SMXY",
       "category": "school"
     },
     {
@@ -842,6 +1108,13 @@
       "category": "school"
     },
     {
+      "id": "SHXY",
+      "name": "绥化学院",
+      "initial": "S",
+      "resourceFolder": "SHXY",
+      "category": "school"
+    },
+    {
       "id": "SUDA",
       "name": "苏州大学",
       "initial": "S",
@@ -926,6 +1199,13 @@
       "category": "school"
     },
     {
+      "id": "WUST",
+      "name": "武汉科技大学",
+      "initial": "W",
+      "resourceFolder": "WUST",
+      "category": "school"
+    },
+    {
       "id": "WHCB",
       "name": "武汉船舶职业技术学院",
       "initial": "W",
@@ -989,10 +1269,24 @@
       "category": "school"
     },
     {
+      "id": "XJTU",
+      "name": "西安交通大学",
+      "initial": "X",
+      "resourceFolder": "XJTU",
+      "category": "school"
+    },
+    {
       "id": "XATU",
       "name": "西安工业大学",
       "initial": "X",
       "resourceFolder": "XATU",
+      "category": "school"
+    },
+    {
+      "id": "XAUAT",
+      "name": "西安建筑科技大学",
+      "initial": "X",
+      "resourceFolder": "XAUAT",
       "category": "school"
     },
     {
@@ -1049,6 +1343,13 @@
       "name": "中南民族大学",
       "initial": "Z",
       "resourceFolder": "SCUEC",
+      "category": "school"
+    },
+    {
+      "id": "CUG",
+      "name": "中国地质大学（武汉）",
+      "initial": "Z",
+      "resourceFolder": "CUG",
       "category": "school"
     },
     {
@@ -1126,6 +1427,13 @@
       "name": "浙江工业大学",
       "initial": "Z",
       "resourceFolder": "ZJUT",
+      "category": "school"
+    },
+    {
+      "id": "ZZU",
+      "name": "郑州大学",
+      "initial": "Z",
+      "resourceFolder": "ZZU",
       "category": "school"
     },
     {
