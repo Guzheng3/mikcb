@@ -1,5 +1,27 @@
 {
-  "releaseCount": 0,
-  "stable": null,
-  "prerelease": null
+  "releaseCount": 1,
+  "stable": {
+    "channelLabel": "预发布",
+    "version": "5.2.0.1",
+    "title": "v5.2.0.1",
+    "publishedAt": "2026-09-10T01:30:54Z",
+    "body": "Automated release for v5.2.0.1",
+    "releaseUrl": "https://github.com/Guzheng3/mikcb/releases/tag/v5.2.0.1",
+    "downloadUrl": "https://github.com/Guzheng3/mikcb/releases/download/v5.2.0.1/mikcb-5.2.0.1-arm64-v8a.apk",
+    "assetName": "mikcb-5.2.0.1-arm64-v8a.apk",
+    "assetCount": 1,
+    "assetDownloadCount": 0
+  },
+  "prerelease": {
+    "channelLabel": "预发布",
+    "version": "5.2.0.1",
+    "title": "v5.2.0.1",
+    "publishedAt": "2026-09-10T01:30:54Z",
+    "body": "Automated release for v5.2.0.1",
+    "releaseUrl": "https://github.com/Guzheng3/mikcb/releases/tag/v5.2.0.1",
+    "downloadUrl": "https://github.com/Guzheng3/mikcb/releases/download/v5.2.0.1/mikcb-5.2.0.1-arm64-v8a.apk",
+    "assetName": "mikcb-5.2.0.1-arm64-v8a.apk",
+    "assetCount": 1,
+    "assetDownloadCount": 0
+  }
 }
