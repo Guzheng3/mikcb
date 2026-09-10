@@ -611,6 +611,8 @@ class TestMiuiLiveActivitiesService extends MiuiLiveActivitiesService {
   int stopLiveUpdateCallCount = 0;
   int startLiveUpdateCallCount = 0;
   int syncScheduleSnapshotCallCount = 0;
+  /// 最近一次同步给原生侧的快照课程（含解析后的时间），供断言使用。
+  List<Course>? lastSyncedCourses;
 
   @override
   Future<void> stopLiveUpdate() async {
@@ -686,6 +688,7 @@ class TestMiuiLiveActivitiesService extends MiuiLiveActivitiesService {
     String? isHolidayDate,
   }) async {
     syncScheduleSnapshotCallCount++;
+    lastSyncedCourses = List<Course>.unmodifiable(courses);
     return true;
   }
 
