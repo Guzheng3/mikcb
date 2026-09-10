@@ -325,6 +325,8 @@ class _TimetableScreenState extends State<TimetableScreen>
   bool _isCommittingWeek = false;
   late int _visibleWeek;
   late final ValueNotifier<int> _visibleWeekListenable;
+  /// 周网格的纵向滚动位移：时间轴与网格同属一份滚动内容，轴按它平移跟随。
+  final ValueNotifier<double> _weekGridScrollOffset = ValueNotifier<double>(0);
   final GlobalKey _timetableSurfaceKey = GlobalKey();
 
   /// Anchor for the top-right "more" menu popup (positioned below this key).
@@ -585,6 +587,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     _coupleBeamController.dispose();
     _profileSwitchController.dispose();
     _visibleWeekListenable.dispose();
+    _weekGridScrollOffset.dispose();
     _dayAgendaProgressTimer?.cancel();
     _dayAgendaProgressTick.dispose();
     _dayHeaderPreview.dispose();
@@ -1047,6 +1050,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
     _visibleWeek = week;
     _visibleWeekListenable.value = week;
+    // 换周后网格回到顶部，轴跟随位移同步归零。
+    _weekGridScrollOffset.value = 0;
     if ((rebuild || shouldSyncDayView) && mounted) {
       setState(() {
         if (shouldSyncDayView) {
@@ -3296,13 +3301,20 @@ class _TimetableScreenState extends State<TimetableScreen>
     required TimetableSettings settings,
     required double sectionHeight,
     required int maxWeek,
+    double followOffset = 0,
   }) {
     // The week swipe is a z-stack reveal (see _buildWeekPagerDeck). The
     // fixed rail below only paints while the deck is idle; during the swipe
     // each deck card carries its own copy of the time column (inside
     // _buildWeekDeckCard) so the rail slides and scales together with the
     // timetable instead of staying parked.
-    return _buildFixedTimeColumn(settings, sectionHeight, followOffset: 0);
+    // 纵向滚动时轴与网格是同一份内容：由调用方传入滚动位移，轴随课程行
+    // 一起上下移动，保证节次刻度始终对齐。
+    return _buildFixedTimeColumn(
+      settings,
+      sectionHeight,
+      followOffset: followOffset,
+    );
   }
 
   /// One-shot "incoming card" reveal matching [_buildPagerCardTransition]:
@@ -3988,6 +4000,8 @@ class _TimetableScreenState extends State<TimetableScreen>
             animation: Listenable.merge([
               _weekPageController,
               _weekDeckReleaseTick,
+              _visibleWeekListenable,
+              _weekGridScrollOffset,
             ]),
             builder: (context, _) {
               // When the settle rebuild exposes the real PageView, its week
@@ -4009,6 +4023,8 @@ class _TimetableScreenState extends State<TimetableScreen>
                         settings: settings,
                         sectionHeight: fixedTimeColumnSectionHeight,
                         maxWeek: settings.semesterWeekCount,
+                        // 负的滚动位移让轴随课程行一起上移。
+                        followOffset: -_weekGridScrollOffset.value,
                       ),
                     ),
                   ),
@@ -4019,6 +4035,11 @@ class _TimetableScreenState extends State<TimetableScreen>
         ),
         NotificationListener<ScrollNotification>(
           onNotification: (notification) {
+            if (notification.metrics.axis == Axis.vertical) {
+              // 时间轴与网格同一滚动内容：记录位移让轴跟随课程行。
+              _weekGridScrollOffset.value = notification.metrics.pixels;
+              return false;
+            }
             if (notification.metrics.axis == Axis.horizontal) {
               if (notification is ScrollStartNotification &&
                   notification.dragDetails != null) {

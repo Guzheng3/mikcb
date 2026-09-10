@@ -115,9 +115,10 @@ void main() {
       final viewportCenter = tester.getCenter(pageViewFinder);
       final outgoingDeck = find.byKey(const ValueKey('week-page-1')).last;
       final incomingDeck = find.byKey(const ValueKey('week-page-2')).last;
+      // 前向滑动：当前页随手势 1:1 位移（累计 64+48=112），目标页在视口中心原位揭示。
       expect(
         tester.getCenter(outgoingDeck).dx,
-        closeTo(viewportCenter.dx, 1.0),
+        closeTo(viewportCenter.dx - 112, 1.0),
       );
       expect(
         tester.getCenter(incomingDeck).dx,
@@ -188,7 +189,11 @@ void main() {
       final incoming = find.byKey(const ValueKey('week-page-2')).last;
       expect(outgoing, findsOneWidget);
       expect(incoming, findsOneWidget);
-      expect(tester.getCenter(outgoing).dx, closeTo(viewportCenter.dx, 1.0));
+      // 前向滑动：当前页随手势位移 400，目标页在中心原位揭示。
+      expect(
+        tester.getCenter(outgoing).dx,
+        closeTo(viewportCenter.dx - 400, 1.0),
+      );
       expect(tester.getCenter(incoming).dx, closeTo(viewportCenter.dx, 1.0));
       final viewportSize = tester.getRect(pageViewFinder).size;
       final outgoingSize = tester.getRect(outgoing).size;
@@ -331,20 +336,30 @@ void main() {
     expect(outgoing, findsOneWidget);
     expect(incoming, findsOneWidget);
     expect(tester.getCenter(outgoing).dx, closeTo(viewportCenter.dx, 1.0));
-    expect(tester.getCenter(incoming).dx, closeTo(viewportCenter.dx, 1.0));
+    // 仅当前页保持居中；后向滑动时左邻页按 pager 位移（-页宽 + 手势 200）。
+    expect(
+      tester.getCenter(incoming).dx,
+      closeTo(
+        viewportCenter.dx - tester.getRect(pageViewFinder).size.width + 200,
+        1.0,
+      ),
+    );
     final viewportSize = tester.getRect(pageViewFinder).size;
     final outgoingSize = tester.getRect(outgoing).size;
     final incomingSize = tester.getRect(incoming).size;
     expect(outgoingSize.width / viewportSize.width, closeTo(0.967, 0.03));
     expect(outgoingSize.height / viewportSize.height, closeTo(0.967, 0.03));
-    expect(incomingSize.width / viewportSize.width, closeTo(1.0, 0.02));
-    expect(incomingSize.height / viewportSize.height, closeTo(1.0, 0.02));
+    // 后向滑动时左邻页缩小到 ~0.87 并随 pager 位移（当前页保持居中全尺寸）。
+    expect(incomingSize.width / viewportSize.width, closeTo(0.87, 0.03));
+    expect(incomingSize.height / viewportSize.height, closeTo(0.87, 0.03));
 
     await gesture.up();
     await tester.pump(const Duration(seconds: 2));
+    // 手势仅 200px（<页宽一半），释放后 pager 回弹到当前页，
+    // 左邻页保持缩放态而非放大到满宽。
     expect(
       tester.getRect(incoming).width / viewportSize.width,
-      closeTo(1.0, 0.02),
+      closeTo(0.87, 0.03),
     );
   });
 }

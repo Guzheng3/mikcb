@@ -149,7 +149,15 @@ void main() {
     final anchorRect = tester.getRect(
       find.byKey(const ValueKey('timetable-day-view-panel')),
     );
-    expect(anchorRect.left, closeTo(0, 1), reason: '日期栏路径不应有横向滑动位移');
+    // 日视图面板现在是居中的内缩卡片（左右等宽留白），断言「左右对称」
+    // 即等价于「无横向滑动位移」，且不绑定具体留白数值。
+    final surfaceWidth =
+        tester.view.physicalSize.width / tester.view.devicePixelRatio;
+    expect(
+      anchorRect.left,
+      closeTo(surfaceWidth - anchorRect.right, 1),
+      reason: '日期栏路径不应有横向滑动位移（面板应居中）',
+    );
     expect(
       find.byWidgetPredicate(
         (w) => w is Align && w.widthFactor != null && w.widthFactor! < 0.9,

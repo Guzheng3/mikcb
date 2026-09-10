@@ -313,12 +313,14 @@ void main() {
       final provider = await createInitializedTestProvider(tester);
       await _pumpDarkHome(tester, provider, wallpaper!.path);
 
-      // Light band → the default dark-mode ink (white) must NOT stay: the
-      // wallpaper luminance flips it to dark so text never reads white-on-
-      // white under a dark theme.
+      // Light band → the header chrome (logo) flips to dark ink so it never
+      // reads white-on-white under a dark theme.
       expect(_textColor(tester, '轻屿课表'), homePageChromeForegroundOnLight);
-      expect(_textColor(tester, '周一'), homePageChromeForegroundOnLight);
-      expect(_keyTextColor(tester, const ValueKey('timetable-week-number-1')), homePageChromeForegroundOnLight);
+      // 周栏保留自身默认墨色（homePageOverWallpaperInk 的
+      // keepDefaultColorOverWallpaper 分支）：默认色不随壁纸亮度翻转，
+      // 仅用户自定义色在对比度不足时才回落。深色模式下默认色即白。
+      expect(_textColor(tester, '周一'), homePageChromeForegroundOnDark);
+      expect(_keyTextColor(tester, const ValueKey('timetable-week-number-1')), homePageChromeForegroundOnDark);
       await tester.binding.setSurfaceSize(null);
     },
   );
