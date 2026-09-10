@@ -67,6 +67,9 @@
     <string name="debug_promoted_permission_not_declared">App has not declared promoted notification permission</string>
     <string name="debug_system_denied_promoted">System denied promoted notifications</string>
     <string name="debug_notification_not_promotable">Notification does not meet promotion requirements</string>
+    <string name="debug_os_not_supported_coloros">Fluid Cloud needs Android 16 (ColorOS 16) or later. Please update your system</string>
+    <string name="debug_system_denied_promoted_coloros">System denied Fluid Cloud. Enable promoted notifications for this app in system settings</string>
+    <string name="debug_notification_not_promotable_coloros">Notification does not meet Fluid Cloud promotion requirements</string>
 
     <string name="stop_service_start_failed">Live service failed to start</string>
     <string name="stop_service_destroyed">Native live service destroyed</string>

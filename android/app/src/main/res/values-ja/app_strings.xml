@@ -67,6 +67,9 @@
     <string name="debug_promoted_permission_not_declared">昇格通知権限が宣言されていません</string>
     <string name="debug_system_denied_promoted">システムが昇格通知を許可していません</string>
     <string name="debug_notification_not_promotable">通知が昇格表示の条件を満たしていません</string>
+    <string name="debug_os_not_supported_coloros">流体云には Android 16（ColorOS 16）以降が必要です。システムを更新してください</string>
+    <string name="debug_system_denied_promoted_coloros">システムが流体云を許可していません。設定で本アプリの「昇格通知」を有効にしてください</string>
+    <string name="debug_notification_not_promotable_coloros">通知が流体云の昇格条件を満たしていません</string>
 
     <string name="stop_service_start_failed">リアルタイムサービスの起動に失敗</string>
     <string name="stop_service_destroyed">ネイティブリアルタイムサービスが破棄されました</string>

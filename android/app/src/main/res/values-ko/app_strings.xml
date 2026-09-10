@@ -67,6 +67,9 @@
     <string name="debug_promoted_permission_not_declared">승격 알림 권한이 선언되지 않음</string>
     <string name="debug_system_denied_promoted">시스템이 승격 알림을 허용하지 않음</string>
     <string name="debug_notification_not_promotable">알림이 승격 표시 조건을 충족하지 않음</string>
+    <string name="debug_os_not_supported_coloros">플루이드 클라우드는 Android 16(ColorOS 16) 이상이 필요합니다. 시스템을 업데이트하세요</string>
+    <string name="debug_system_denied_promoted_coloros">시스템이 플루이드 클라우드를 허용하지 않음. 설정에서 이 앱의 승격 알림을 켜세요</string>
+    <string name="debug_notification_not_promotable_coloros">알림이 플루이드 클라우드 승격 조건을 충족하지 않음</string>
 
     <string name="stop_service_start_failed">실시간 서비스 시작 실패</string>
     <string name="stop_service_destroyed">네이티브 실시간 서비스가 종료됨</string>

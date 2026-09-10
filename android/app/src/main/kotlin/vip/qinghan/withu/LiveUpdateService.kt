@@ -223,14 +223,8 @@ class LiveUpdateService : Service() {
             return powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true
         }
 
-        private fun isXiaomiFamilyDeviceCompat(): Boolean {
-            val brand = Build.BRAND.lowercase()
-            val manufacturer = Build.MANUFACTURER.lowercase()
-            return manufacturer.contains("xiaomi") ||
-                brand.contains("xiaomi") ||
-                brand.contains("redmi") ||
-                brand.contains("poco")
-        }
+        private fun isXiaomiFamilyDeviceCompat(): Boolean =
+            liveSurfaceBrand(Build.MANUFACTURER, Build.BRAND) == LiveSurfaceBrand.XIAOMI
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -1100,14 +1094,8 @@ class LiveUpdateService : Service() {
         return enableDuringClass && (promoteDuringClass || showNotificationDuringClass)
     }
 
-    private fun isXiaomiFamilyDevice(): Boolean {
-        val brand = Build.BRAND.lowercase()
-        val manufacturer = Build.MANUFACTURER.lowercase()
-        return manufacturer.contains("xiaomi") ||
-            brand.contains("xiaomi") ||
-            brand.contains("redmi") ||
-            brand.contains("poco")
-    }
+    private fun isXiaomiFamilyDevice(): Boolean =
+        liveSurfaceBrand(Build.MANUFACTURER, Build.BRAND) == LiveSurfaceBrand.XIAOMI
 
     private fun dp(value: Float): Float =
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, resources.displayMetrics)
@@ -1915,7 +1903,10 @@ class LiveUpdateService : Service() {
                     Notification.CATEGORY_PROGRESS
                 }
             )
-            setColorized(false)
+            // 提升帧必须置 true：hasPromotableCharacteristics() 对非 CallStyle 通知
+            // 要求 isColorizedRequested()，否则流体云等标准提升面永远拿不到
+            // FLAG_PROMOTED_ONGOING。详见 liveShouldRequestColorizedForPromotion。
+            setColorized(liveShouldRequestColorizedForPromotion(shouldPromote))
             setShowWhen(!shouldPromote)
             setWhen(if (isUpcoming) startAtMillis else endAtMillis)
             setUsesChronometer(false)
@@ -2018,6 +2009,13 @@ class LiveUpdateService : Service() {
             isMiuiFocusIslandReady -> true
             else -> false
         }
+        // 平台能力类原因在 OPPO / realme / 一加上改用「流体云」措辞：ColorOS 16 完整
+        // 接入了 Android 16 的标准提升通知通道，这些文案最该把他们引导到正确开关上。
+        val surfaceBrand = liveSurfaceBrand(Build.MANUFACTURER, Build.BRAND)
+        fun surfaceReason(colorosResId: Int, genericResId: Int): String = getString(
+            if (surfaceBrand == LiveSurfaceBrand.COLOROS) colorosResId else genericResId,
+        )
+
         val notIslandReason = when {
             !hasStartedForeground -> getString(R.string.debug_foreground_not_started)
             stage == null -> getString(R.string.debug_stage_not_displayable)
@@ -2031,13 +2029,22 @@ class LiveUpdateService : Service() {
             Build.VERSION.SDK_INT >= 36 && !isPromotedPermissionDeclaredCompat(this) ->
                 getString(R.string.debug_promoted_permission_not_declared)
             Build.VERSION.SDK_INT >= 36 && !canPostPromoted && !isMiuiFocusIslandReady ->
-                getString(R.string.debug_system_denied_promoted)
+                surfaceReason(
+                    R.string.debug_system_denied_promoted_coloros,
+                    R.string.debug_system_denied_promoted,
+                )
             Build.VERSION.SDK_INT >= 36 && hasPromotableCharacteristics == false && !isMiuiFocusIslandReady ->
-                getString(R.string.debug_notification_not_promotable)
+                surfaceReason(
+                    R.string.debug_notification_not_promotable_coloros,
+                    R.string.debug_notification_not_promotable,
+                )
             isXiaomiFamilyDevice() && miuiFocusParam == null ->
                 getString(R.string.debug_miui_focus_param_missing)
             Build.VERSION.SDK_INT < 36 && !isXiaomiFamilyDevice() ->
-                getString(R.string.debug_os_not_supported)
+                surfaceReason(
+                    R.string.debug_os_not_supported_coloros,
+                    R.string.debug_os_not_supported,
+                )
             else -> getString(R.string.debug_try_return_home)
         }
 

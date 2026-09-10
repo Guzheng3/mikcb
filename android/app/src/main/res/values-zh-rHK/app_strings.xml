@@ -67,6 +67,9 @@
     <string name="debug_promoted_permission_not_declared">應用未聲明提升通知權限</string>
     <string name="debug_system_denied_promoted">系統未允許提升通知</string>
     <string name="debug_notification_not_promotable">當前通知不滿足系統提升特徵</string>
+    <string name="debug_os_not_supported_coloros">流體雲需要 Android 16（ColorOS 16）或以上，請先升級系統</string>
+    <string name="debug_system_denied_promoted_coloros">系統未允許流體雲，請在系統設定中開啟本應用的「提升通知」</string>
+    <string name="debug_notification_not_promotable_coloros">當前通知不滿足流體雲的提升條件</string>
 
     <string name="stop_service_start_failed">即時服務啟動失敗</string>
     <string name="stop_service_destroyed">原生即時服務已銷毀</string>
