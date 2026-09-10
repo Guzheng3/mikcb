@@ -646,4 +646,88 @@ class LiveUpdateSchedulerLogicTest {
             ),
         )
     }
+
+    @Test
+    fun findActiveSelectionNeverFallsBackToFinishedCourseWhenNextIsInSession() {
+        val semesterStart = calendarOf(2026, Calendar.MARCH, 2, 8, 0).timeInMillis
+        val snapshot = LiveSchedulerTestSnapshot(
+            currentWeek = 5,
+            semesterStartMillis = semesterStart,
+            courses = listOf(
+                LiveSchedulerTestCourse(
+                    id = "course-a",
+                    dayOfWeek = 1,
+                    startSection = 1,
+                    endSection = 2,
+                    startTime = "08:00",
+                    endTime = "09:40",
+                    startWeek = 1,
+                    endWeek = 16,
+                ),
+                LiveSchedulerTestCourse(
+                    id = "course-b",
+                    dayOfWeek = 1,
+                    startSection = 3,
+                    endSection = 4,
+                    startTime = "09:50",
+                    endTime = "11:30",
+                    startWeek = 1,
+                    endWeek = 16,
+                ),
+            ),
+        )
+        // 用户场景：A 已下课 20 分钟，B 已上课 10 分钟 → 必须选中 B，绝不能回落到 A。
+        val duringSecondClass = calendarOf(2026, Calendar.MARCH, 30, 10, 0).timeInMillis
+        assertEquals(
+            LiveSchedulerActiveSelection("course-b", "duringClass"),
+            liveSchedulerFindActiveSelection(snapshot, duringSecondClass),
+        )
+    }
+
+    @Test
+    fun findActiveSelectionPicksSecondClassStatusBarStageWhenReminderWindowConfigured() {
+        val semesterStart = calendarOf(2026, Calendar.MARCH, 2, 8, 0).timeInMillis
+        val snapshot = LiveSchedulerTestSnapshot(
+            currentWeek = 5,
+            semesterStartMillis = semesterStart,
+            settings = LiveSchedulerTestSettings(
+                liveShowBeforeClassMinutes = 20,
+                liveClassReminderStartMinutes = 5,
+                liveEnableBeforeClass = true,
+                liveEnableDuringClass = true,
+                liveEnableBeforeEnd = true,
+                livePromoteDuringClass = true,
+                liveShowDuringClassNotification = true,
+            ),
+            courses = listOf(
+                LiveSchedulerTestCourse(
+                    id = "course-a",
+                    dayOfWeek = 1,
+                    startSection = 1,
+                    endSection = 2,
+                    startTime = "08:00",
+                    endTime = "09:40",
+                    startWeek = 1,
+                    endWeek = 16,
+                ),
+                LiveSchedulerTestCourse(
+                    id = "course-b",
+                    dayOfWeek = 1,
+                    startSection = 3,
+                    endSection = 4,
+                    startTime = "09:50",
+                    endTime = "11:30",
+                    startWeek = 1,
+                    endWeek = 16,
+                ),
+            ),
+        )
+        // B 已上课 10 分钟，且配置了课中提醒窗口（最后 5 分钟才上岛）→
+        // B 处于仅状态栏阶段，选中的也必须是 B，而不是已下课的 A。
+        val duringSecondClass = calendarOf(2026, Calendar.MARCH, 30, 10, 0).timeInMillis
+        assertEquals(
+            LiveSchedulerActiveSelection("course-b", "duringClassStatusBar"),
+            liveSchedulerFindActiveSelection(snapshot, duringSecondClass),
+        )
+    }
 }

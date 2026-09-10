@@ -1073,6 +1073,175 @@ void main() {
     expect(client.requests, isEmpty);
   });
 
+  test('flushPendingSync uploads without waiting for the debounce', () async {
+    final storage = _MemorySecureStorage();
+    await StorageService().setMigratedAppLogsDefault(true);
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _saveUrl: _jsonResponse({'success': true}),
+      _saveSettingsUrl: _jsonResponse({'success': true}),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final autoSync = WithuCoupleAutoSyncService(
+      timetableService: WithuCoupleTimetableService(authService: auth),
+      // 防抖窗口故意拉到 1 小时：只有 flush 才会立即上传。
+      debounceDelay: const Duration(hours: 1),
+      pullOnBind: false,
+    );
+    final provider = _provider();
+    await provider.initialize();
+    autoSync.bind(provider);
+    addTearDown(autoSync.dispose);
+
+    await provider.addCourse(
+      Course(
+        id: 'course-flush',
+        name: 'Math',
+        teacher: 'Teacher',
+        location: 'A101',
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        startTime: '08:00',
+        endTime: '09:40',
+      ),
+    );
+    await _flushAutoSync();
+
+    expect(
+      client.requests.where(
+        (request) => request.url.queryParameters['action'] == 'save',
+      ),
+      isEmpty,
+    );
+
+    await autoSync.flushPendingSync();
+
+    expect(
+      client.requests.where(
+        (request) => request.url.queryParameters['action'] == 'save',
+      ),
+      hasLength(1),
+    );
+  });
+
+  test(
+    'cold start uploads the timetable change left by the previous session',
+    () async {
+      final storage = _MemorySecureStorage();
+      await StorageService().setMigratedAppLogsDefault(true);
+      final client = _FakeClient({
+        _loginUrl: _loginResponse(),
+        _saveUrl: _jsonResponse({'success': true}),
+        _saveSettingsUrl: _jsonResponse({'success': true}),
+      });
+      final auth = await _connectedAuthService(client, storage);
+      final service = WithuCoupleTimetableService(authService: auth);
+      final provider = _provider();
+      await provider.initialize();
+      await provider.addCourse(
+        Course(
+          id: 'course-1',
+          name: 'Math',
+          teacher: 'Teacher',
+          location: 'A101',
+          dayOfWeek: 1,
+          startSection: 1,
+          endSection: 2,
+          startTime: '08:00',
+          endTime: '09:40',
+        ),
+      );
+      expect(
+        await service.uploadMyTimetableForPartner(provider: provider),
+        isNull,
+      );
+
+      // 上个进程在防抖窗口里被杀：本地又改了，但没机会上传。
+      await provider.addCourse(
+        Course(
+          id: 'course-2',
+          name: 'Physics',
+          teacher: 'Teacher',
+          location: 'A102',
+          dayOfWeek: 2,
+          startSection: 3,
+          endSection: 4,
+          startTime: '10:00',
+          endTime: '11:40',
+        ),
+      );
+
+      final autoSync = WithuCoupleAutoSyncService(
+        timetableService: service,
+        debounceDelay: const Duration(hours: 1),
+        pullOnBind: false,
+      );
+      autoSync.bind(provider);
+      addTearDown(autoSync.dispose);
+      await _flushAutoSync();
+
+      expect(
+        client.requests.where(
+          (request) => request.url.queryParameters['action'] == 'save',
+        ),
+        hasLength(2),
+      );
+    },
+  );
+
+  test('failed upload keeps the change pending for the next sync', () async {
+    final storage = _MemorySecureStorage();
+    await StorageService().setMigratedAppLogsDefault(true);
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      // 故意不提供 _saveUrl：首次上传 404 失败。
+      _saveSettingsUrl: _jsonResponse({'success': true}),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final autoSync = WithuCoupleAutoSyncService(
+      timetableService: WithuCoupleTimetableService(authService: auth),
+      debounceDelay: Duration.zero,
+      pullOnBind: false,
+    );
+    final provider = _provider();
+    await provider.initialize();
+    autoSync.bind(provider);
+    addTearDown(autoSync.dispose);
+
+    await provider.addCourse(
+      Course(
+        id: 'course-retry',
+        name: 'Math',
+        teacher: 'Teacher',
+        location: 'A101',
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        startTime: '08:00',
+        endTime: '09:40',
+      ),
+    );
+    await _flushAutoSync();
+    expect(
+      client.requests.where(
+        (request) => request.url.queryParameters['action'] == 'save',
+      ),
+      hasLength(1),
+    );
+
+    // 网络恢复：下一次同步（周期兜底 tick 走同一条路径）必须重试。
+    client.responses[_saveUrl] = _jsonResponse({'success': true});
+    await autoSync.syncNow();
+
+    expect(
+      client.requests.where(
+        (request) => request.url.queryParameters['action'] == 'save',
+      ),
+      hasLength(2),
+    );
+  });
+
   test('maps login 401 and authenticated 403 responses', () async {
     final storage = _MemorySecureStorage();
     final client = _FakeClient({

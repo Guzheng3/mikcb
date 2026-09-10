@@ -711,6 +711,15 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       unawaited(refreshHyperosMotionFromAndroid());
       unawaited(_handleAppResumed());
       unawaited(_checkWithuAppUpdate());
+    } else {
+      // 退到后台/被切走：把还在防抖窗口里的本地改动立刻上传——系统随时可能
+      // 回收进程，等不到 3s 防抖这次改动就只剩冷启动补传了。
+      if (state == AppLifecycleState.inactive ||
+          state == AppLifecycleState.hidden ||
+          state == AppLifecycleState.paused ||
+          state == AppLifecycleState.detached) {
+        unawaited(_withuAutoSyncService.handleAppPaused());
+      }
     }
   }
 
