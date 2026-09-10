@@ -1,7 +1,32 @@
 {
-  "generatedAt": "2026-09-10T04:52:11.640Z",
-  "releaseCount": 1,
+  "generatedAt": "2026-09-10T07:08:45.749Z",
+  "releaseCount": 2,
   "releases": [
+    {
+      "channelLabel": "预发布",
+      "version": "5.2.0.2",
+      "title": "v5.2.0.2",
+      "prerelease": true,
+      "publishedAt": "2026-09-10T07:08:28Z",
+      "description": "优化 桌面情侣卡片：双栏课程行字号上调（课程名 15.2sp，地点与时间 13sp），课表信息更清晰易读。 · 优化 情侣课表自动同步：退到后台或进程被回收前立即补传本地改动，冷启动自动补传上一进程未上传的内容；连续编辑设有 15 秒上传上限，上传失败由周期兜底自动重试，离线或服务端抖动不再把改动一直卡在本地。 · 优化 实时活动：提升通知准入判定改为单一事…",
+      "highlights": [
+        {
+          "type": "优化",
+          "text": "优化 桌面情侣卡片：双栏课程行字号上调（课程名 15.2sp，地点与时间 13sp），课表信息更清晰易读。"
+        },
+        {
+          "type": "优化",
+          "text": "优化 情侣课表自动同步：退到后台或进程被回收前立即补传本地改动，冷启动自动补传上一进程未上传的内容；连续编辑设有 15 秒上传上限，上传失败由周期兜底自动重试，离线或服务端抖动不再把改动一直卡在本地。"
+        },
+        {
+          "type": "优化",
+          "text": "优化 实时活动：提升通知准入判定改为单一事实来源，OPPO / realme / 一加（流体云）不再因色化标记恒定关闭而无法出卡片，自检失败原因按品牌分叉给出针对性提示。"
+        }
+      ],
+      "releaseUrl": "https://github.com/Guzheng3/mikcb/releases/tag/v5.2.0.2",
+      "downloadUrl": "https://github.com/Guzheng3/mikcb/releases/download/v5.2.0.2/mikcb-5.2.0.2-arm64-v8a.apk",
+      "assetName": "mikcb-5.2.0.2-arm64-v8a.apk"
+    },
     {
       "channelLabel": "预发布",
       "version": "5.2.0.1",
