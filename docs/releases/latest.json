@@ -10,7 +10,7 @@
     "downloadUrl": "https://github.com/Guzheng3/mikcb/releases/download/v5.2.0.2/mikcb-5.2.0.2-arm64-v8a.apk",
     "assetName": "mikcb-5.2.0.2-arm64-v8a.apk",
     "assetCount": 1,
-    "assetDownloadCount": 0
+    "assetDownloadCount": 12
   },
   "prerelease": {
     "channelLabel": "预发布",
@@ -22,6 +22,6 @@
     "downloadUrl": "https://github.com/Guzheng3/mikcb/releases/download/v5.2.0.2/mikcb-5.2.0.2-arm64-v8a.apk",
     "assetName": "mikcb-5.2.0.2-arm64-v8a.apk",
     "assetCount": 1,
-    "assetDownloadCount": 0
+    "assetDownloadCount": 12
   }
 }
