@@ -1,10 +1,114 @@
 part of '../timetable_provider.dart';
 
+/// 灵动岛/超级岛、原生课程快照与上课·考试提醒共同依据的课表数据域。
+///
+/// 这三个界面服务的是「用户自己的课」，与「主界面正在浏览哪份课表」不是
+/// 同一件事。桌面情侣卡片右半会把当前课表切到 TA（见 `WidgetLaunchRouter`），
+/// 若这些界面继续跟随 [TimetableProvider.activeProfile]，只要看一眼对方的
+/// 课表，自己的上课提醒与岛就被换成对方的。
+///
+/// 因此统一取 [TimetableProvider.myTimetableProfile]：
+/// - 当前课表就是我的课表时两者等价，且优先取内存态字段（课程可能有尚未
+///   flush 回 profile 列表的编辑），与原 active 路径逐字一致；
+/// - 当前课表是 TA 时，改用「我的课表」自身持久化的课程/设置/周次。
+class _MyTimetableScope {
+  const _MyTimetableScope({
+    required this.profile,
+    required this.settings,
+    required this.courses,
+    required this.exams,
+    required this.scheduleItems,
+    required this.currentWeek,
+    required this.currentCalendarWeek,
+  });
+
+  final TimetableProfile profile;
+  final TimetableSettings settings;
+  final List<Course> courses;
+  final List<Exam> exams;
+  final List<ScheduleItem> scheduleItems;
+  final int currentWeek;
+  final int currentCalendarWeek;
+
+  int calendarWeekFor(DateTime date, {int? fallbackWeek}) =>
+      WeekCalculator.calendarWeekForDate(
+        date,
+        semesterStart: settings.semesterStartDate,
+        fallback: fallbackWeek ?? currentCalendarWeek,
+      );
+
+  List<Course> coursesForDay(
+    int dayOfWeek,
+    int week, {
+    required bool activeOnly,
+  }) {
+    return courses
+        .where(
+          (course) =>
+              course.dayOfWeek == dayOfWeek &&
+              (activeOnly
+                  ? course.isActiveInWeek(week)
+                  : course.isInWeek(week)),
+        )
+        .toList()
+      ..sort((a, b) => a.startSection.compareTo(b.startSection));
+  }
+}
+
+/// 构建「我的课表」数据域；无可用课表时返回 null。
+_MyTimetableScope? _liveMyTimetableScope(TimetableProvider host) {
+  final profile = host.myTimetableProfile;
+  if (profile == null) {
+    return null;
+  }
+  if (profile.id == host._activeProfileId) {
+    return _MyTimetableScope(
+      profile: profile,
+      settings: host._settings,
+      courses: host._courses,
+      exams: host._exams,
+      scheduleItems: host._scheduleItems,
+      currentWeek: host._currentWeek,
+      currentCalendarWeek: host._currentCalendarWeek,
+    );
+  }
+  return _MyTimetableScope(
+    profile: profile,
+    settings: profile.settings,
+    courses: profile.courses,
+    exams: profile.exams,
+    scheduleItems: host._sortScheduleItems(
+      List<ScheduleItem>.from(profile.scheduleItems),
+    ),
+    currentWeek: profile.currentWeek,
+    currentCalendarWeek: WeekCalculator.calendarWeekForDate(
+      DateTime.now(),
+      semesterStart: profile.settings.semesterStartDate,
+      fallback: profile.currentWeek,
+    ),
+  );
+}
+
+/// 与 [TimetableProvider.isHoliday] 同口径，但使用给定数据域的假期开关。
+bool _liveScopeIsHoliday(
+  TimetableProvider host,
+  _MyTimetableScope scope,
+  DateTime date,
+) {
+  return HolidayResolver.isHoliday(
+    date,
+    data: host._holidayData,
+    overrideEnabled: scope.settings.holidayOverrideEnabled,
+    markingEnabled: scope.settings.enableHolidayMarking,
+  );
+}
+
 String _liveResolveRealTime(
   TimetableProvider host,
   Course course,
-  bool isStart,
-) {
+  bool isStart, {
+  required TimetableSettings settings,
+}) {
   // Diagnostic fixtures intentionally carry temporary free-form clocks. They
   // must exercise the production selection path without mutating a user's
   // active time scheme.
@@ -18,12 +122,16 @@ String _liveResolveRealTime(
   return LiveActivityLogic.resolveRealTime(
     course,
     isStart,
-    host._resolveSectionsForCourse(course, onDate: onDate),
+    host._resolveSectionsForCourse(course, settings: settings, onDate: onDate),
   );
 }
 
-DateTime _liveApplyTimeCorrection(TimetableProvider host, DateTime dateTime) {
-  final correctionSeconds = host._settings.liveTimeCorrectionSeconds;
+DateTime _liveApplyTimeCorrection(
+  TimetableProvider host,
+  DateTime dateTime, {
+  required TimetableSettings settings,
+}) {
+  final correctionSeconds = settings.liveTimeCorrectionSeconds;
   if (correctionSeconds == 0) {
     return dateTime;
   }
@@ -33,21 +141,23 @@ DateTime _liveApplyTimeCorrection(TimetableProvider host, DateTime dateTime) {
 DateTime? _liveBuildCorrectedCourseDateTime(
   TimetableProvider host,
   DateTime date,
-  String courseTime,
-) {
+  String courseTime, {
+  required TimetableSettings settings,
+}) {
   final base = LiveActivityLogic.buildCourseDateTime(date, courseTime);
   if (base == null) {
     return null;
   }
-  return _liveApplyTimeCorrection(host, base);
+  return _liveApplyTimeCorrection(host, base, settings: settings);
 }
 
 DateTime? _liveResolveBeforeClassBlockedUntil(
   TimetableProvider host,
   List<Course> todayCourses,
   int courseIndex,
-  DateTime referenceDate,
-) {
+  DateTime referenceDate, {
+  required TimetableSettings settings,
+}) {
   if (courseIndex <= 0 || courseIndex >= todayCourses.length) {
     return null;
   }
@@ -56,7 +166,8 @@ DateTime? _liveResolveBeforeClassBlockedUntil(
   final courseStartTime = _liveBuildCorrectedCourseDateTime(
     host,
     referenceDate,
-    _liveResolveRealTime(host, course, true),
+    _liveResolveRealTime(host, course, true, settings: settings),
+    settings: settings,
   );
   if (courseStartTime == null) {
     return null;
@@ -68,12 +179,14 @@ DateTime? _liveResolveBeforeClassBlockedUntil(
     final previousStartTime = _liveBuildCorrectedCourseDateTime(
       host,
       referenceDate,
-      _liveResolveRealTime(host, previousCourse, true),
+      _liveResolveRealTime(host, previousCourse, true, settings: settings),
+      settings: settings,
     );
     final previousEndTime = _liveBuildCorrectedCourseDateTime(
       host,
       referenceDate,
-      _liveResolveRealTime(host, previousCourse, false),
+      _liveResolveRealTime(host, previousCourse, false, settings: settings),
+      settings: settings,
     );
     if (previousStartTime == null || previousEndTime == null) {
       continue;
@@ -89,8 +202,11 @@ DateTime? _liveResolveBeforeClassBlockedUntil(
   return blockedUntil;
 }
 
-List<String> _liveBuildHolidayDatesForSnapshot(TimetableProvider host) {
-  if (!host._settings.enableHolidayMarking || host._holidayData == null) {
+List<String> _liveBuildHolidayDatesForSnapshot(
+  TimetableProvider host, {
+  required TimetableSettings settings,
+}) {
+  if (!settings.enableHolidayMarking || host._holidayData == null) {
     return const [];
   }
   // Full HolidayData.isHoliday semantics (custom makeup beats statutory hide).
@@ -180,17 +296,20 @@ int _liveCompareByResolvedStart(
   TimetableProvider host,
   DateTime referenceDate,
   Course a,
-  Course b,
-) {
+  Course b, {
+  required TimetableSettings settings,
+}) {
   final aStart = _liveBuildCorrectedCourseDateTime(
     host,
     referenceDate,
-    _liveResolveRealTime(host, a, true),
+    _liveResolveRealTime(host, a, true, settings: settings),
+    settings: settings,
   );
   final bStart = _liveBuildCorrectedCourseDateTime(
     host,
     referenceDate,
-    _liveResolveRealTime(host, b, true),
+    _liveResolveRealTime(host, b, true, settings: settings),
+    settings: settings,
   );
   if (aStart == null || bStart == null) {
     if (aStart == null && bStart == null) {
@@ -206,18 +325,29 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
   DateTime? now,
   bool allowUpcomingFallback = false,
   int? week,
+  _MyTimetableScope? scope,
 }) {
+  final activeScope = scope ?? _liveMyTimetableScope(host);
+  if (activeScope == null) {
+    return null;
+  }
+  final settings = activeScope.settings;
   final currentTime = now ?? DateTime.now();
   // Selection must honor holiday semantics; do not rely solely on the stop
   // branch in _liveUpdateActivityBody (tick/stage paths call selection first).
-  if (host.isHoliday(currentTime)) {
+  if (_liveScopeIsHoliday(host, activeScope, currentTime)) {
     return null;
   }
-  final targetWeek = week ??
-      host._calculateCalendarWeekForDate(currentTime, fallbackWeek: host._currentWeek);
-  var todayCourses = host.getActiveCoursesForDay(
+  final targetWeek =
+      week ??
+      activeScope.calendarWeekFor(
+        currentTime,
+        fallbackWeek: activeScope.currentWeek,
+      );
+  var todayCourses = activeScope.coursesForDay(
     currentTime.weekday,
-    week: targetWeek,
+    targetWeek,
+    activeOnly: true,
   );
   final fixtureCourses = host._liveTestFixtureOverlayCourses
       .where(
@@ -229,7 +359,15 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
   if (fixtureCourses.isNotEmpty) {
     // 自检预设课与真实课同场竞争：按解析后的开始时间统一排序，真实课照常优先。
     todayCourses = [...todayCourses, ...fixtureCourses]
-      ..sort((a, b) => _liveCompareByResolvedStart(host, currentTime, a, b));
+      ..sort(
+        (a, b) => _liveCompareByResolvedStart(
+          host,
+          currentTime,
+          a,
+          b,
+          settings: settings,
+        ),
+      );
   }
   if (todayCourses.isEmpty) {
     return null;
@@ -240,25 +378,28 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
     final startTime = _liveBuildCorrectedCourseDateTime(
       host,
       currentTime,
-      _liveResolveRealTime(host, course, true),
+      _liveResolveRealTime(host, course, true, settings: settings),
+      settings: settings,
     );
     final endTime = _liveBuildCorrectedCourseDateTime(
       host,
       currentTime,
-      _liveResolveRealTime(host, course, false),
+      _liveResolveRealTime(host, course, false, settings: settings),
+      settings: settings,
     );
     if (startTime == null || endTime == null) {
       continue;
     }
 
     final aheadTime = startTime.subtract(
-      Duration(minutes: host._settings.liveShowBeforeClassMinutes),
+      Duration(minutes: settings.liveShowBeforeClassMinutes),
     );
     final blockedUntil = _liveResolveBeforeClassBlockedUntil(
       host,
       todayCourses,
       i,
       currentTime,
+      settings: settings,
     );
     final effectiveAheadTime =
         blockedUntil != null && blockedUntil.isAfter(aheadTime)
@@ -269,7 +410,7 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
       startTime: startTime,
       endTime: endTime,
       aheadTime: effectiveAheadTime,
-      settings: host._settings,
+      settings: settings,
       endReminderWindow: TimetableProvider._liveEndReminderWindow,
     );
     if (stage != null) {
@@ -277,16 +418,22 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
           ? todayCourses[i + 1]
           : null;
       return LiveActivityCourseSelection(
-        currentCourse: host.resolveCourseDisplayName(course),
+        currentCourse: host.resolveCourseDisplayName(
+          course,
+          peers: activeScope.courses,
+        ),
         nextCourse: nextCourse == null
             ? null
-            : host.resolveCourseDisplayName(nextCourse),
+            : host.resolveCourseDisplayName(
+                nextCourse,
+                peers: activeScope.courses,
+              ),
         stage: stage,
       );
     }
   }
 
-  if (!allowUpcomingFallback || !host._settings.liveEnableBeforeClass) {
+  if (!allowUpcomingFallback || !settings.liveEnableBeforeClass) {
     return null;
   }
 
@@ -295,7 +442,8 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
     final startTime = _liveBuildCorrectedCourseDateTime(
       host,
       currentTime,
-      _liveResolveRealTime(host, course, true),
+      _liveResolveRealTime(host, course, true, settings: settings),
+      settings: settings,
     );
     if (startTime == null || !startTime.isAfter(currentTime)) {
       continue;
@@ -305,6 +453,7 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
       todayCourses,
       i,
       currentTime,
+      settings: settings,
     );
     if (blockedUntil != null && currentTime.isBefore(blockedUntil)) {
       continue;
@@ -312,10 +461,16 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
 
     final nextCourse = i + 1 < todayCourses.length ? todayCourses[i + 1] : null;
     return LiveActivityCourseSelection(
-      currentCourse: host.resolveCourseDisplayName(course),
+      currentCourse: host.resolveCourseDisplayName(
+        course,
+        peers: activeScope.courses,
+      ),
       nextCourse: nextCourse == null
           ? null
-          : host.resolveCourseDisplayName(nextCourse),
+          : host.resolveCourseDisplayName(
+              nextCourse,
+              peers: activeScope.courses,
+            ),
       stage: LiveActivityStage.beforeClass,
     );
   }
@@ -326,10 +481,18 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
 LiveActivityCourseSelection? _liveGetTestActivityCourseSelection(
   TimetableProvider host, {
   DateTime? now,
+  _MyTimetableScope? scope,
 }) {
+  final activeScope = scope ?? _liveMyTimetableScope(host);
+  if (activeScope == null) {
+    return null;
+  }
+  final settings = activeScope.settings;
   final currentTime = now ?? DateTime.now();
-  final targetWeek =
-      host._calculateCalendarWeekForDate(currentTime, fallbackWeek: host._currentWeek);
+  final targetWeek = activeScope.calendarWeekFor(
+    currentTime,
+    fallbackWeek: activeScope.currentWeek,
+  );
   final immediateSelection = host.getLiveActivityCourseSelection(
     now: currentTime,
     allowUpcomingFallback: true,
@@ -340,9 +503,9 @@ LiveActivityCourseSelection? _liveGetTestActivityCourseSelection(
   }
 
   final today = DateTime(currentTime.year, currentTime.month, currentTime.day);
-  final maxWeek = host._courses.isEmpty
+  final maxWeek = activeScope.courses.isEmpty
       ? targetWeek
-      : host._courses
+      : activeScope.courses
             .map((course) => course.endWeek)
             .reduce((a, b) => a > b ? a : b);
 
@@ -350,7 +513,7 @@ LiveActivityCourseSelection? _liveGetTestActivityCourseSelection(
   DateTime? bestStartTime;
   int? bestWeek;
 
-  for (final course in host._courses) {
+  for (final course in activeScope.courses) {
     for (var week = targetWeek; week <= maxWeek; week++) {
       if (!course.isInWeek(week)) {
         continue;
@@ -366,7 +529,8 @@ LiveActivityCourseSelection? _liveGetTestActivityCourseSelection(
       final candidateStart = _liveBuildCorrectedCourseDateTime(
         host,
         candidateDate,
-        _liveResolveRealTime(host, course, true),
+        _liveResolveRealTime(host, course, true, settings: settings),
+        settings: settings,
       );
       if (candidateStart == null || !candidateStart.isAfter(currentTime)) {
         continue;
@@ -381,14 +545,14 @@ LiveActivityCourseSelection? _liveGetTestActivityCourseSelection(
     }
   }
 
-  final fallbackStage = LiveActivityLogic.preferredTestStage(host._settings);
+  final fallbackStage = LiveActivityLogic.preferredTestStage(settings);
   if (bestCourse == null || bestWeek == null || fallbackStage == null) {
     return null;
   }
   final resolvedWeek = bestWeek;
 
   final sameDayCourses =
-      host._courses
+      activeScope.courses
           .where(
             (course) =>
                 course.dayOfWeek == bestCourse!.dayOfWeek &&
@@ -405,10 +569,16 @@ LiveActivityCourseSelection? _liveGetTestActivityCourseSelection(
       : null;
 
   return LiveActivityCourseSelection(
-    currentCourse: host.resolveCourseDisplayName(bestCourse),
+    currentCourse: host.resolveCourseDisplayName(
+      bestCourse,
+      peers: activeScope.courses,
+    ),
     nextCourse: nextCourse == null
         ? null
-        : host.resolveCourseDisplayName(nextCourse),
+        : host.resolveCourseDisplayName(
+            nextCourse,
+            peers: activeScope.courses,
+          ),
     stage: fallbackStage,
   );
 }
@@ -653,6 +823,7 @@ Future<void> _liveRunLatestActivityBody(
 Future<void> _liveUpdateActivityBody(
   TimetableProvider host, {
   bool syncScheduleSnapshot = true,
+  _MyTimetableScope? scope,
 }) async {
   // 自检预设课全部结束后立刻摘除覆盖层，让随后的快照同步与选课回到纯真实数据。
   host.disarmLiveTestFixtureCoursesIfFinished(DateTime.now());
@@ -669,23 +840,26 @@ Future<void> _liveUpdateActivityBody(
     host._liveActivitySuspendedUntil = null;
   }
 
+  // 岛与原生课程快照一律按「我的课表」计算：当前课表切到 TA 时不能跟着走。
+  final activeScope = scope ?? _liveMyTimetableScope(host);
   if (syncScheduleSnapshot) {
-    await _liveSyncScheduleSnapshot(host);
+    await _liveSyncScheduleSnapshot(host, scope: activeScope);
   }
 
-  if (host.isHoliday(DateTime.now())) {
+  if (activeScope == null ||
+      _liveScopeIsHoliday(host, activeScope, DateTime.now())) {
     host._currentLiveCourseId = null;
     host._lastLiveActivityStageKey = null;
     await host._liveActivitiesService.stopLiveUpdate();
     return;
   }
 
-  final selection = host.getLiveActivityCourseSelection();
+  final selection = _liveGetActivityCourseSelection(host, scope: activeScope);
   final liveCourse = selection?.currentCourse;
 
   if (liveCourse != null) {
     final activeSelection = selection!;
-    final settings = host._settings;
+    final settings = activeScope.settings;
     final displaySettings =
         activeSelection.stage == LiveActivityStage.beforeClass
         ? settings.beforeClassDisplaySettings
@@ -701,25 +875,48 @@ Future<void> _liveUpdateActivityBody(
     }
 
     final displayCourse = liveCourse.copyWith(
-      startTime: _liveResolveRealTime(host, liveCourse, true),
-      endTime: _liveResolveRealTime(host, liveCourse, false),
+      startTime: _liveResolveRealTime(
+        host,
+        liveCourse,
+        true,
+        settings: settings,
+      ),
+      endTime: _liveResolveRealTime(
+        host,
+        liveCourse,
+        false,
+        settings: settings,
+      ),
     );
     final displayNextCourse = activeSelection.nextCourse?.copyWith(
-      startTime: _liveResolveRealTime(host, activeSelection.nextCourse!, true),
-      endTime: _liveResolveRealTime(host, activeSelection.nextCourse!, false),
+      startTime: _liveResolveRealTime(
+        host,
+        activeSelection.nextCourse!,
+        true,
+        settings: settings,
+      ),
+      endTime: _liveResolveRealTime(
+        host,
+        activeSelection.nextCourse!,
+        false,
+        settings: settings,
+      ),
     );
     final startAtMillis = _liveBuildCorrectedCourseDateTime(
       host,
       DateTime.now(),
-      _liveResolveRealTime(host, displayCourse, true),
+      _liveResolveRealTime(host, displayCourse, true, settings: settings),
+      settings: settings,
     )?.millisecondsSinceEpoch;
     final endAtMillis = _liveBuildCorrectedCourseDateTime(
       host,
       DateTime.now(),
-      _liveResolveRealTime(host, displayCourse, false),
+      _liveResolveRealTime(host, displayCourse, false, settings: settings),
+      settings: settings,
     )?.millisecondsSinceEpoch;
     final sections = host._resolveSectionsForCourse(
       displayCourse,
+      settings: settings,
       onDate: DateTime.now(),
     );
     final progressMilestones = LiveActivityLogic.buildLiveProgressMilestones(
@@ -799,11 +996,14 @@ Future<void> _liveUpdateActivityBody(
   }
 }
 
-Future<void> _liveSyncScheduleSnapshot(TimetableProvider host) async {
-  final activeProfile = host.activeProfile;
+Future<void> _liveSyncScheduleSnapshot(
+  TimetableProvider host, {
+  _MyTimetableScope? scope,
+}) async {
+  final activeScope = scope ?? _liveMyTimetableScope(host);
   final overlayCourses = host._liveTestFixtureOverlayCourses;
-  if (activeProfile == null ||
-      (host._courses.isEmpty && overlayCourses.isEmpty)) {
+  if (activeScope == null ||
+      (activeScope.courses.isEmpty && overlayCourses.isEmpty)) {
     if (host._lastLiveSnapshotSignature != null) {
       final cleared = await host._liveActivitiesService.clearScheduleSnapshot();
       if (cleared) {
@@ -813,32 +1013,36 @@ Future<void> _liveSyncScheduleSnapshot(TimetableProvider host) async {
     return;
   }
 
+  final settings = activeScope.settings;
   // 自检预设课随覆盖层一并进入原生快照：原生侧的校验与续排都以此为准。
   final displayCourses = [
-    ...host._courses,
+    ...activeScope.courses,
     ...overlayCourses,
-  ].map(host.resolveCourseDisplayName).toList(growable: false);
+  ].map((course) => host.resolveCourseDisplayName(course, peers: activeScope.courses)).toList(growable: false);
   final now = DateTime.now();
   // Use calendar week (not UI browse week) so native schedule matches live
   // course selection even when the user has scrolled the timetable.
-  final scheduleWeek = host._calculateCalendarWeekForDate(now);
+  final scheduleWeek = activeScope.calendarWeekFor(now);
   final todayKey =
       '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-  final todayIsHoliday = host.isHoliday(now);
-  final holidayDates = _liveBuildHolidayDatesForSnapshot(host);
+  final todayIsHoliday = _liveScopeIsHoliday(host, activeScope, now);
+  final holidayDates = _liveBuildHolidayDatesForSnapshot(
+    host,
+    settings: settings,
+  );
   final adjustedWorkdayDates = _liveBuildAdjustedWorkdayDatesForSnapshot(host);
   final snapshotSignature = jsonEncode({
-    'profileId': activeProfile.id,
+    'profileId': activeScope.profile.id,
     'currentWeek': scheduleWeek,
     'semesterStartDate':
-        host._settings.semesterStartDate?.millisecondsSinceEpoch,
+        settings.semesterStartDate?.millisecondsSinceEpoch,
     'isHoliday': todayIsHoliday,
     'isHolidayDate': todayKey,
     'holidayDates': holidayDates,
     'adjustedWorkdayDates': adjustedWorkdayDates,
-    'holidayOverrideEnabled': host._settings.holidayOverrideEnabled,
-    'enableHolidayMarking': host._settings.enableHolidayMarking,
-    'settings': host._settings.toJson(),
+    'holidayOverrideEnabled': settings.holidayOverrideEnabled,
+    'enableHolidayMarking': settings.enableHolidayMarking,
+    'settings': settings.toJson(),
     'courses': displayCourses.map((course) => course.toJson()).toList(),
   });
   if (host._lastLiveSnapshotSignature == snapshotSignature) {
@@ -847,17 +1051,17 @@ Future<void> _liveSyncScheduleSnapshot(TimetableProvider host) async {
 
   final synced = await host._liveActivitiesService.syncScheduleSnapshot(
     courses: displayCourses,
-    settings: host._settings,
+    settings: settings,
     currentWeek: scheduleWeek,
-    semesterStartDate: host._settings.semesterStartDate,
+    semesterStartDate: settings.semesterStartDate,
     endReminderLeadMillis:
         TimetableProvider._liveEndReminderWindow.inMilliseconds,
     isHoliday: todayIsHoliday,
     isHolidayDate: todayKey,
     holidayDates: holidayDates,
     adjustedWorkdayDates: adjustedWorkdayDates,
-    holidayOverrideEnabled: host._settings.holidayOverrideEnabled,
-    enableHolidayMarking: host._settings.enableHolidayMarking,
+    holidayOverrideEnabled: settings.holidayOverrideEnabled,
+    enableHolidayMarking: settings.enableHolidayMarking,
   );
   if (synced) {
     host._lastLiveSnapshotSignature = snapshotSignature;

@@ -3511,17 +3511,23 @@ class TimetableProvider with ChangeNotifier {
 
   Future<void> _syncExamRemindersImpl() async {
     try {
+      // 上课/考试提醒是「我的课」的提醒，与主界面正在浏览哪份课表无关：
+      // 当前课表切到 TA 后仍按「我的课表」排程，否则点开对方的课表看一眼
+      // 就会把自己的提醒换成对方的。
+      final scope = _liveMyTimetableScope(this);
+      final scopeCourses = scope?.courses ?? courses;
+      final reminderSettings = scope?.settings ?? settings;
       final coursesById = <String, Course>{
-        for (final course in courses) course.id: course,
+        for (final course in scopeCourses) course.id: course,
       };
       await _examReminderService.reconcile(
-        exams: _exams,
-        resolveCourse: getCourseForExam,
-        scheduleItems: _scheduleItems,
+        exams: scope?.exams ?? _exams,
+        resolveCourse: (exam) => coursesById[exam.courseId],
+        scheduleItems: scope?.scheduleItems ?? _scheduleItems,
         // 单节课提醒与考试/日程共用同一原生调度管线：全量重建，
         // 课程被删、日期已过或条目非法都会在这里被自然过滤。
         additionalFires: ClassReminderService.buildFires(
-          entries: settings.classReminders,
+          entries: reminderSettings.classReminders,
           resolveCourse: (courseId) => coursesById[courseId],
         ),
       );
@@ -4489,7 +4495,7 @@ class TimetableProvider with ChangeNotifier {
     return value;
   }
 
-  String? resolveCourseShortName(Course course) {
+  String? resolveCourseShortName(Course course, {List<Course>? peers}) {
     final directShortName = _normalizeShortName(course.shortName);
     if (directShortName != null) {
       return directShortName;
@@ -4500,7 +4506,7 @@ class TimetableProvider with ChangeNotifier {
       return null;
     }
 
-    for (final candidate in _courses) {
+    for (final candidate in peers ?? _courses) {
       if (candidate.id == course.id) {
         continue;
       }
@@ -4517,8 +4523,10 @@ class TimetableProvider with ChangeNotifier {
     return null;
   }
 
-  Course resolveCourseDisplayName(Course course) {
-    final resolvedShortName = resolveCourseShortName(course);
+  /// 课程显示名。同名课程的简称回退只在 [peers] 范围内查找：超级岛按
+  /// 「我的课表」计算时，不能拿当前正在展示的 TA 课表里的同名课当参照。
+  Course resolveCourseDisplayName(Course course, {List<Course>? peers}) {
+    final resolvedShortName = resolveCourseShortName(course, peers: peers);
     if (resolvedShortName == null || resolvedShortName == course.shortName) {
       return course;
     }
@@ -4612,7 +4620,13 @@ class TimetableProvider with ChangeNotifier {
   /// 超级岛选课实际使用的「今天日历周」，与 [getLiveActivityCourseSelection]
   /// 同源（学期未设时回落 [_currentWeek]，学期开始前为 0）。供自检预设课
   /// 按同一周次规则生成。
-  int get liveSelectionCalendarWeek => _resolveCurrentCalendarWeek();
+  int get liveSelectionCalendarWeek {
+    final scope = _liveMyTimetableScope(this);
+    // 与 [myTimetableProfile] 同域，但仍按「今天」现算：当前课表是本域时
+    // 该式与 [_resolveCurrentCalendarWeek] 完全等价。
+    return scope?.calendarWeekFor(DateTime.now()) ??
+        _resolveCurrentCalendarWeek();
+  }
 
   bool get hasLiveTestFixtureCourses =>
       _liveTestFixtureOverlayCourses.isNotEmpty;
@@ -4643,11 +4657,14 @@ class TimetableProvider with ChangeNotifier {
     if (_liveTestFixtureOverlayCourses.isEmpty) {
       return false;
     }
+    // 与岛同域：自检预设课的收尾判定也要用「我的课表」的时间校正。
+    final settings = _liveMyTimetableScope(this)?.settings ?? _settings;
     for (final course in _liveTestFixtureOverlayCourses) {
       final endTime = _liveBuildCorrectedCourseDateTime(
         this,
         now,
-        _liveResolveRealTime(this, course, false),
+        _liveResolveRealTime(this, course, false, settings: settings),
+        settings: settings,
       );
       if (endTime == null || !endTime.isBefore(now)) {
         return false;
