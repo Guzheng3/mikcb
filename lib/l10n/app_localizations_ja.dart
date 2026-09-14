@@ -389,6 +389,16 @@ class AppLocalizationsJa extends AppLocalizations {
       'デスクトップカードの授業をタップすると、時間割を開いてその授業の詳細を展開します';
 
   @override
+  String get coupleTimetableLiveSurfaceTitle => 'ライブ島とリマインダー';
+
+  @override
+  String get coupleTimetableLiveSurfaceSwitchTitle => '現在の時間割に連動';
+
+  @override
+  String get coupleTimetableLiveSurfaceSwitchSubtitle =>
+      'オフの場合、ライブ島・授業リマインダー・ウィジェットは常に自分の時間割に従います。オンの場合、現在選択している時間割（相手の時間割を含む）に従います。';
+
+  @override
   String get coupleTimetableDesktopCardPlaceholder =>
       'デスクトップカードは今後提供予定です。この領域は予約されています';
 

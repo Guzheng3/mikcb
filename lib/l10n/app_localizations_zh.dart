@@ -382,6 +382,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coupleTimetableDetailCardSubtitle => '点击桌面卡片的课程时，打开课表并直接展开该课程的详情';
 
   @override
+  String get coupleTimetableLiveSurfaceTitle => '超级岛与提醒归属';
+
+  @override
+  String get coupleTimetableLiveSurfaceSwitchTitle => '跟随当前课表';
+
+  @override
+  String get coupleTimetableLiveSurfaceSwitchSubtitle =>
+      '关闭时，超级岛、上课提醒与桌面组件始终按「我的课表」；开启后跟随你当前切换到的那份课表（含对方课表）。';
+
+  @override
   String get coupleTimetableDesktopCardPlaceholder => '桌面卡片功能开发中，当前仅供预留';
 
   @override
@@ -10073,6 +10083,16 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get coupleTimetableDetailCardSubtitle => '點擊桌面卡片的課程時，開啟課表並直接展開該課程的詳情';
+
+  @override
+  String get coupleTimetableLiveSurfaceTitle => '超級島與提醒歸屬';
+
+  @override
+  String get coupleTimetableLiveSurfaceSwitchTitle => '跟隨目前課表';
+
+  @override
+  String get coupleTimetableLiveSurfaceSwitchSubtitle =>
+      '關閉時，超級島、上課提醒與桌面小工具一律依「我的課表」；開啟後跟隨你目前切換到的那份課表（含對方課表）。';
 
   @override
   String get coupleTimetableDesktopCardPlaceholder => '桌面卡片功能開發中，目前僅作預留';
@@ -19804,6 +19824,16 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get coupleTimetableDetailCardSubtitle => '點擊桌面卡片的課程時，打開課表並直接展開該課程的詳情';
+
+  @override
+  String get coupleTimetableLiveSurfaceTitle => '超級島與提醒歸屬';
+
+  @override
+  String get coupleTimetableLiveSurfaceSwitchTitle => '跟隨目前課表';
+
+  @override
+  String get coupleTimetableLiveSurfaceSwitchSubtitle =>
+      '關閉時，超級島、上課提醒與桌面小工具一律依「我的課表」；開啟後跟隨你目前切換到的那份課表（含對方課表）。';
 
   @override
   String get coupleTimetableDesktopCardPlaceholder => '桌面卡片功能開發中，目前僅供預留';

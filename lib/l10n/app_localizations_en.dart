@@ -404,6 +404,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tapping a course on the desktop card opens the timetable with that course\'s details expanded';
 
   @override
+  String get coupleTimetableLiveSurfaceTitle => 'Live Island and reminders';
+
+  @override
+  String get coupleTimetableLiveSurfaceSwitchTitle =>
+      'Follow the current timetable';
+
+  @override
+  String get coupleTimetableLiveSurfaceSwitchSubtitle =>
+      'Off: the Live Island, class reminders and widgets always follow your own timetable. On: they follow whichever timetable is currently selected, including your partner\'s.';
+
+  @override
   String get coupleTimetableDesktopCardPlaceholder =>
       'Desktop cards are coming later; this section is reserved';
 

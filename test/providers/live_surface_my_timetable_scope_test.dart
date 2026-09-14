@@ -93,6 +93,8 @@ void main() {
     await provider.switchProfile(PartnerTimetableService.partnerProfileId);
     // 前置成立：当前课表确实已经是 TA 的了。
     expect(provider.activeProfile?.isPartnerImported, isTrue);
+    // 默认关闭「跟随当前课表」。
+    expect(provider.liveSurfaceFollowsActiveTimetable, isFalse);
 
     await provider.updateLiveActivityForTesting();
 
@@ -139,6 +141,43 @@ void main() {
         .toList(growable: false);
     expect(names, contains('我的高数'));
     expect(names, isNot(contains('TA的英语')));
+  });
+
+  test('开启「跟随当前课表」后，切到 TA 时岛与快照按当前课表', () async {
+    final fake = TestMiuiLiveActivitiesService();
+    final day = DateTime.now();
+    final provider = await createProviderWithPartner(fake, day: day);
+
+    await provider.setLiveSurfaceFollowsActiveTimetable(true);
+    expect(provider.liveSurfaceFollowsActiveTimetable, isTrue);
+    // 写的是全局显示设置：设备级偏好，不随课表各存一份。
+    expect(provider.globalSettings?.liveFollowActiveTimetable, isTrue);
+
+    await provider.switchProfile(PartnerTimetableService.partnerProfileId);
+    await provider.updateLiveActivityForTesting();
+
+    final names = fake.lastSyncedCourses
+        ?.map((course) => course.name)
+        .toList(growable: false);
+    expect(names, contains('TA的英语'));
+    expect(names, isNot(contains('我的高数')));
+
+    final snapshot = provider.buildHomeWidgetSnapshot();
+    expect(snapshot?.profileId, PartnerTimetableService.partnerProfileId);
+  });
+
+  test('关掉「跟随当前课表」后，岛重新回到「我的课表」', () async {
+    final fake = TestMiuiLiveActivitiesService();
+    final day = DateTime.now();
+    final provider = await createProviderWithPartner(fake, day: day);
+    final myProfileId = provider.activeProfileId;
+
+    await provider.setLiveSurfaceFollowsActiveTimetable(true);
+    await provider.switchProfile(PartnerTimetableService.partnerProfileId);
+    await provider.setLiveSurfaceFollowsActiveTimetable(false);
+
+    final snapshot = provider.buildHomeWidgetSnapshot();
+    expect(snapshot?.profileId, myProfileId);
   });
 
   test('切到 TA 课表后，单节课提醒仍按「我的课表」排程', () async {

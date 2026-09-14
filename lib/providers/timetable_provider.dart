@@ -390,6 +390,19 @@ class TimetableProvider with ChangeNotifier {
     });
   }
 
+  /// 灵动岛/提醒/桌面小组件是否跟随当前课表。
+  ///
+  /// 默认 false：这些界面一律按「我的课表」计算，桌面情侣卡片右半只是切主界面
+  /// 显示，不会把自己的上课提醒与岛换成 TA 的。确需长期用另一份课表驱动提醒
+  /// 时（含 TA），用户显式开启。
+  bool get liveSurfaceFollowsActiveTimetable =>
+      settings.liveFollowActiveTimetable;
+
+  /// 开启/关闭「跟随当前课表」，并立即按新归属重算岛、提醒与桌面组件。
+  /// 实现见 [_liveSetFollowActiveTimetable]。
+  Future<void> setLiveSurfaceFollowsActiveTimetable(bool value) =>
+      _liveSetFollowActiveTimetable(this, value);
+
   /// 清除全局显示设置：所有课表回到各自（或默认）的设置。
   Future<void> clearGlobalTimetableSettings() {
     return _runMutation(() async {
@@ -3514,7 +3527,7 @@ class TimetableProvider with ChangeNotifier {
       // 上课/考试提醒是「我的课」的提醒，与主界面正在浏览哪份课表无关：
       // 当前课表切到 TA 后仍按「我的课表」排程，否则点开对方的课表看一眼
       // 就会把自己的提醒换成对方的。
-      final scope = _liveMyTimetableScope(this);
+      final scope = _liveSurfaceScope(this);
       final scopeCourses = scope?.courses ?? courses;
       final reminderSettings = scope?.settings ?? settings;
       final coursesById = <String, Course>{
@@ -4575,7 +4588,7 @@ class TimetableProvider with ChangeNotifier {
   /// 与超级岛同域：按「我的课表」计算，当前课表切到 TA 时不跟着走；
   /// 需要固定展示某份课表的卡片走 [buildHomeWidgetSnapshotForProfile]。
   HomeWidgetSnapshot? buildHomeWidgetSnapshot({DateTime? now}) {
-    final scope = _liveMyTimetableScope(this);
+    final scope = _liveSurfaceScope(this);
     return scope == null
         ? null
         : _liveBuildHomeWidgetSnapshot(this, scope, now: now);
@@ -4629,7 +4642,7 @@ class TimetableProvider with ChangeNotifier {
   /// 同源（学期未设时回落 [_currentWeek]，学期开始前为 0）。供自检预设课
   /// 按同一周次规则生成。
   int get liveSelectionCalendarWeek {
-    final scope = _liveMyTimetableScope(this);
+    final scope = _liveSurfaceScope(this);
     // 与 [myTimetableProfile] 同域，但仍按「今天」现算：当前课表是本域时
     // 该式与 [_resolveCurrentCalendarWeek] 完全等价。
     return scope?.calendarWeekFor(DateTime.now()) ??
@@ -4666,7 +4679,7 @@ class TimetableProvider with ChangeNotifier {
       return false;
     }
     // 与岛同域：自检预设课的收尾判定也要用「我的课表」的时间校正。
-    final settings = _liveMyTimetableScope(this)?.settings ?? _settings;
+    final settings = _liveSurfaceScope(this)?.settings ?? _settings;
     for (final course in _liveTestFixtureOverlayCourses) {
       final endTime = _liveBuildCorrectedCourseDateTime(
         this,

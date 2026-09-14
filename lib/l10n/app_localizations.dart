@@ -806,6 +806,24 @@ abstract class AppLocalizations {
   /// **'点击桌面卡片的课程时，打开课表并直接展开该课程的详情'**
   String get coupleTimetableDetailCardSubtitle;
 
+  /// No description provided for @coupleTimetableLiveSurfaceTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'超级岛与提醒归属'**
+  String get coupleTimetableLiveSurfaceTitle;
+
+  /// No description provided for @coupleTimetableLiveSurfaceSwitchTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'跟随当前课表'**
+  String get coupleTimetableLiveSurfaceSwitchTitle;
+
+  /// No description provided for @coupleTimetableLiveSurfaceSwitchSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭时，超级岛、上课提醒与桌面组件始终按「我的课表」；开启后跟随你当前切换到的那份课表（含对方课表）。'**
+  String get coupleTimetableLiveSurfaceSwitchSubtitle;
+
   /// No description provided for @coupleTimetableDesktopCardPlaceholder.
   ///
   /// In zh, this message translates to:

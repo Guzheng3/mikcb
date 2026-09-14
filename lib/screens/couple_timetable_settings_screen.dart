@@ -212,6 +212,27 @@ class _CoupleTimetableSettingsScreenState
             ),
           ],
           const HyperosSectionGap(),
+          HyperosSectionLabel(text: l10n.coupleTimetableLiveSurfaceTitle),
+          HyperosControlCard(
+            edgeToEdge: true,
+            child: HyperosControlCardRowScope(
+              isFirst: true,
+              isLast: true,
+              child: HyperosSwitchTile(
+                icon: Icons.notifications_active_outlined,
+                iconAccent: provider.liveSurfaceFollowsActiveTimetable
+                    ? HyperosIconColors.orange
+                    : HyperosIconColors.blue,
+                title: l10n.coupleTimetableLiveSurfaceSwitchTitle,
+                subtitle: l10n.coupleTimetableLiveSurfaceSwitchSubtitle,
+                value: provider.liveSurfaceFollowsActiveTimetable,
+                onChanged: (value) => unawaited(
+                  provider.setLiveSurfaceFollowsActiveTimetable(value),
+                ),
+              ),
+            ),
+          ),
+          const HyperosSectionGap(),
           HyperosSectionLabel(text: l10n.coupleTimetableTitle),
           HyperosControlCard(
             child: HyperosControlCardInset(

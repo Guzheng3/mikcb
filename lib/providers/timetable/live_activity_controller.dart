@@ -1,18 +1,20 @@
 part of '../timetable_provider.dart';
 
-/// 灵动岛/超级岛、原生课程快照与上课·考试提醒共同依据的课表数据域。
+/// 灵动岛/超级岛、原生课程快照、上课·考试提醒与今日/统计小组件共同依据的
+/// 课表数据域（下称「直播面」）。
 ///
-/// 这三个界面服务的是「用户自己的课」，与「主界面正在浏览哪份课表」不是
-/// 同一件事。桌面情侣卡片右半会把当前课表切到 TA（见 `WidgetLaunchRouter`），
-/// 若这些界面继续跟随 [TimetableProvider.activeProfile]，只要看一眼对方的
-/// 课表，自己的上课提醒与岛就被换成对方的。
+/// 这些界面服务的是「用户自己的课」，与「主界面正在浏览哪份课表」不是同一件
+/// 事。桌面情侣卡片右半会把当前课表切到 TA（见 `WidgetLaunchRouter`），若这些
+/// 界面跟随 [TimetableProvider.activeProfile]，只要看一眼对方的课表，自己的
+/// 上课提醒与岛就被换成对方的。
 ///
-/// 因此统一取 [TimetableProvider.myTimetableProfile]：
-/// - 当前课表就是我的课表时两者等价，且优先取内存态字段（课程可能有尚未
-///   flush 回 profile 列表的编辑），与原 active 路径逐字一致；
-/// - 当前课表是 TA 时，改用「我的课表」自身持久化的课程/设置/周次。
-class _MyTimetableScope {
-  const _MyTimetableScope({
+/// 因此默认取 [TimetableProvider.myTimetableProfile]；只有用户显式打开
+/// `liveFollowActiveTimetable`（确需长期用另一份课表驱动提醒时）才跟随当前课表：
+/// - 本域就是当前课表时两者等价，且优先取内存态字段（课程可能有尚未 flush 回
+///   profile 列表的编辑），与原 active 路径逐字一致；
+/// - 当前课表是别的一份时，改用该课表自身持久化的课程/设置/周次。
+class _LiveSurfaceScope {
+  const _LiveSurfaceScope({
     required this.profile,
     required this.settings,
     required this.courses,
@@ -55,14 +57,19 @@ class _MyTimetableScope {
   }
 }
 
-/// 构建「我的课表」数据域；无可用课表时返回 null。
-_MyTimetableScope? _liveMyTimetableScope(TimetableProvider host) {
-  final profile = host.myTimetableProfile;
+/// 构建直播面数据域；无可用课表时返回 null。
+///
+/// 默认=「我的课表」；用户开启 `liveFollowActiveTimetable` 后=当前课表
+/// （此时点桌面卡片切到 TA 也会跟着走，属用户显式选择）。
+_LiveSurfaceScope? _liveSurfaceScope(TimetableProvider host) {
+  final profile = host.liveSurfaceFollowsActiveTimetable
+      ? host.activeProfile
+      : host.myTimetableProfile;
   if (profile == null) {
     return null;
   }
   if (profile.id == host._activeProfileId) {
-    return _MyTimetableScope(
+    return _LiveSurfaceScope(
       profile: profile,
       settings: host._settings,
       courses: host._courses,
@@ -72,7 +79,7 @@ _MyTimetableScope? _liveMyTimetableScope(TimetableProvider host) {
       currentCalendarWeek: host._currentCalendarWeek,
     );
   }
-  return _MyTimetableScope(
+  return _LiveSurfaceScope(
     profile: profile,
     settings: profile.settings,
     courses: profile.courses,
@@ -89,10 +96,32 @@ _MyTimetableScope? _liveMyTimetableScope(TimetableProvider host) {
   );
 }
 
+/// 开启/关闭「直播面跟随当前课表」并立即按新归属重算岛、提醒与桌面组件。
+///
+/// 写的是全局显示设置：这是设备级偏好（「本机提醒该按哪份课表」），不该各课表
+/// 各持一份，否则在 A 课表打开、切到 B 课表看又变回关闭。故意不列入
+/// [_profileOwnedSettingKeys]，全局值才能真的生效。
+Future<void> _liveSetFollowActiveTimetable(
+  TimetableProvider host,
+  bool value,
+) async {
+  if (host.settings.liveFollowActiveTimetable == value) {
+    return;
+  }
+  await host.updateGlobalTimetableSettings(
+    (host._globalSettings ?? host.settings).copyWith(
+      liveFollowActiveTimetable: value,
+    ),
+  );
+  // 归属换了一份课表，提醒要重排；updateGlobalTimetableSettings 只重挂了岛。
+  await host._syncExamReminders();
+  await host._updateLiveActivity();
+}
+
 /// 与 [TimetableProvider.isHoliday] 同口径，但使用给定数据域的假期开关。
 bool _liveScopeIsHoliday(
   TimetableProvider host,
-  _MyTimetableScope scope,
+  _LiveSurfaceScope scope,
   DateTime date,
 ) {
   return HolidayResolver.isHoliday(
@@ -325,9 +354,9 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
   DateTime? now,
   bool allowUpcomingFallback = false,
   int? week,
-  _MyTimetableScope? scope,
+  _LiveSurfaceScope? scope,
 }) {
-  final activeScope = scope ?? _liveMyTimetableScope(host);
+  final activeScope = scope ?? _liveSurfaceScope(host);
   if (activeScope == null) {
     return null;
   }
@@ -481,9 +510,9 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
 LiveActivityCourseSelection? _liveGetTestActivityCourseSelection(
   TimetableProvider host, {
   DateTime? now,
-  _MyTimetableScope? scope,
+  _LiveSurfaceScope? scope,
 }) {
-  final activeScope = scope ?? _liveMyTimetableScope(host);
+  final activeScope = scope ?? _liveSurfaceScope(host);
   if (activeScope == null) {
     return null;
   }
@@ -585,7 +614,7 @@ LiveActivityCourseSelection? _liveGetTestActivityCourseSelection(
 
 HomeWidgetSnapshot? _liveBuildHomeWidgetSnapshot(
   TimetableProvider host,
-  _MyTimetableScope scope, {
+  _LiveSurfaceScope scope, {
   DateTime? now,
 }) {
   final profile = scope.profile;
@@ -831,12 +860,12 @@ Future<void> _liveRunLatestActivityBody(
 Future<void> _liveUpdateActivityBody(
   TimetableProvider host, {
   bool syncScheduleSnapshot = true,
-  _MyTimetableScope? scope,
+  _LiveSurfaceScope? scope,
 }) async {
   // 自检预设课全部结束后立刻摘除覆盖层，让随后的快照同步与选课回到纯真实数据。
   host.disarmLiveTestFixtureCoursesIfFinished(DateTime.now());
   // 岛与原生课程快照一律按「我的课表」计算：当前课表切到 TA 时不能跟着走。
-  final activeScope = scope ?? _liveMyTimetableScope(host);
+  final activeScope = scope ?? _liveSurfaceScope(host);
   await _liveSyncHomeWidgetSnapshot(host, scope: activeScope);
   if (!host._enableLiveActivitySync) {
     return;
@@ -1006,9 +1035,9 @@ Future<void> _liveUpdateActivityBody(
 
 Future<void> _liveSyncScheduleSnapshot(
   TimetableProvider host, {
-  _MyTimetableScope? scope,
+  _LiveSurfaceScope? scope,
 }) async {
-  final activeScope = scope ?? _liveMyTimetableScope(host);
+  final activeScope = scope ?? _liveSurfaceScope(host);
   final overlayCourses = host._liveTestFixtureOverlayCourses;
   if (activeScope == null ||
       (activeScope.courses.isEmpty && overlayCourses.isEmpty)) {
@@ -1078,13 +1107,13 @@ Future<void> _liveSyncScheduleSnapshot(
 
 Future<void> _liveSyncHomeWidgetSnapshot(
   TimetableProvider host, {
-  _MyTimetableScope? scope,
+  _LiveSurfaceScope? scope,
 }) async {
   // 统计小组件与今日小组件共用这一入口：冷启动、回前台、课表变更都会走到，
   // 否则用户不进统计页时桌面统计组件永远读不到快照。
   // 今日/统计小组件与超级岛同域（「我的课表」）：绑定指定课表的卡片另有
   // [_liveSyncBoundWidgetSnapshots] 单独处理，不受这里影响。
-  final activeScope = scope ?? _liveMyTimetableScope(host);
+  final activeScope = scope ?? _liveSurfaceScope(host);
   await _liveSyncStatsWidgetSnapshot(host, scope: activeScope);
   await _liveSyncCoupleWidgetSnapshot(host);
   if (activeScope == null) {
@@ -1326,9 +1355,9 @@ Future<void> _liveSyncCoupleWidgetSnapshot(TimetableProvider host) async {
 
 Future<void> _liveSyncStatsWidgetSnapshot(
   TimetableProvider host, {
-  _MyTimetableScope? scope,
+  _LiveSurfaceScope? scope,
 }) async {
-  final activeScope = scope ?? _liveMyTimetableScope(host);
+  final activeScope = scope ?? _liveSurfaceScope(host);
   final snapshot = activeScope == null
       ? null
       : StatsWidgetSnapshot.fromCourses(

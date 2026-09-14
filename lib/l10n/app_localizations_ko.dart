@@ -388,6 +388,16 @@ class AppLocalizationsKo extends AppLocalizations {
       '데스크톱 카드의 수업을 탭하면 시간표를 열고 해당 수업의 상세 정보를 펼칩니다';
 
   @override
+  String get coupleTimetableLiveSurfaceTitle => '라이브 아일랜드와 알림';
+
+  @override
+  String get coupleTimetableLiveSurfaceSwitchTitle => '현재 시간표에 연동';
+
+  @override
+  String get coupleTimetableLiveSurfaceSwitchSubtitle =>
+      '끄면 라이브 아일랜드·수업 알림·위젯이 항상 내 시간표를 따릅니다. 켜면 현재 선택한 시간표(상대방 시간표 포함)를 따릅니다.';
+
+  @override
   String get coupleTimetableDesktopCardPlaceholder =>
       '데스크톱 카드는 준비 중이며 이 영역은 예약되어 있습니다';
 

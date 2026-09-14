@@ -1250,6 +1250,15 @@ class TimetableSettings {
   final bool livePromoteDuringClass;
   final bool liveShowDuringClassNotification;
   final bool liveUseShortName;
+
+  /// 灵动岛/提醒/桌面小组件是否跟随当前课表。
+  ///
+  /// 默认 false：这些界面始终按「我的课表」计算。桌面情侣卡片右半会把当前
+  /// 课表切到 TA，若跟随当前课表，点一下对方的卡片就会把自己的上课提醒与岛
+  /// 换成对方的。确需长期用另一份课表（含 TA）驱动提醒时，用户显式开启。
+  /// 属全局偏好：[TimetableProvider.updateGlobalTimetableSettings] 写入，
+  /// 故意不列入 profile 专属字段，避免各课表各自持有一份而开关失效。
+  final bool liveFollowActiveTimetable;
   final bool liveHidePrefixText;
   final LiveDuringClassTimeDisplayMode liveDuringClassTimeDisplayMode;
   final bool liveEnableMiuiIslandLabelImage;
@@ -1463,6 +1472,7 @@ class TimetableSettings {
     this.livePromoteDuringClass = true,
     this.liveShowDuringClassNotification = true,
     this.liveUseShortName = true,
+    this.liveFollowActiveTimetable = false,
     this.liveHidePrefixText = true,
     this.liveDuringClassTimeDisplayMode =
         LiveDuringClassTimeDisplayMode.nearest,
@@ -1665,6 +1675,7 @@ class TimetableSettings {
       'livePromoteDuringClass': livePromoteDuringClass,
       'liveShowDuringClassNotification': liveShowDuringClassNotification,
       'liveUseShortName': liveUseShortName,
+      'liveFollowActiveTimetable': liveFollowActiveTimetable,
       'liveHidePrefixText': liveHidePrefixText,
       'liveDuringClassTimeDisplayMode': liveDuringClassTimeDisplayMode.value,
       'liveEnableMiuiIslandLabelImage': liveEnableMiuiIslandLabelImage,
@@ -1987,6 +1998,8 @@ class TimetableSettings {
       liveShowDuringClassNotification:
           json['liveShowDuringClassNotification'] as bool? ?? true,
       liveUseShortName: json['liveUseShortName'] as bool? ?? true,
+      liveFollowActiveTimetable:
+          json['liveFollowActiveTimetable'] as bool? ?? false,
       liveHidePrefixText: json['liveHidePrefixText'] as bool? ?? true,
       liveDuringClassTimeDisplayMode: LiveDuringClassTimeDisplayModeX.fromValue(
         json['liveDuringClassTimeDisplayMode'] as String?,
@@ -2345,6 +2358,7 @@ class TimetableSettings {
     bool? livePromoteDuringClass,
     bool? liveShowDuringClassNotification,
     bool? liveUseShortName,
+    bool? liveFollowActiveTimetable,
     bool? liveHidePrefixText,
     LiveDuringClassTimeDisplayMode? liveDuringClassTimeDisplayMode,
     bool? liveEnableMiuiIslandLabelImage,
@@ -2593,6 +2607,8 @@ class TimetableSettings {
           liveShowDuringClassNotification ??
           this.liveShowDuringClassNotification,
       liveUseShortName: liveUseShortName ?? this.liveUseShortName,
+      liveFollowActiveTimetable:
+          liveFollowActiveTimetable ?? this.liveFollowActiveTimetable,
       liveHidePrefixText: liveHidePrefixText ?? this.liveHidePrefixText,
       liveDuringClassTimeDisplayMode:
           liveDuringClassTimeDisplayMode ?? this.liveDuringClassTimeDisplayMode,
