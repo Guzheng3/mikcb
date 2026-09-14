@@ -960,6 +960,7 @@
   "liveIslandPreviewStageBeforeClass": "もうすぐ授業",
   "liveIslandPreviewStageInClass": "授業中",
   "liveIslandPreviewStageBeforeEnd": "終了リマインダー",
+  "liveIslandPreviewAboutToEnd": "まもなく終了",
   "liveIslandPreviewUntilClassStart": "授業まで{time}",
   "@liveIslandPreviewUntilClassStart": {
     "placeholders": {
@@ -5646,6 +5647,8 @@
   "withuCoupleServerLabel": "withU サーバー",
   "coupleTimetableSwitchSubtitle": "時間割を重ねて表示し、右上メニューの先頭にログインを表示します",
   "coupleTimetableDesktopCardTitle": "デスクトップカード設定",
+  "coupleTimetableDetailCardTitle": "詳細カード",
+  "coupleTimetableDetailCardSubtitle": "デスクトップカードの授業をタップすると、時間割を開いてその授業の詳細を展開します",
   "coupleTimetableDesktopCardPlaceholder": "デスクトップカードは今後提供予定です。この領域は予約されています",
   "withuCoupleLoginPageTitle": "withU にログイン",
   "withuCoupleLoginPageSubtitle": "withU のペアアカウントでログインすると、相手の時間割を自動的に取得します",

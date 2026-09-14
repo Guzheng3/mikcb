@@ -382,6 +382,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get coupleTimetableDesktopCardTitle => 'デスクトップカード設定';
 
   @override
+  String get coupleTimetableDetailCardTitle => '詳細カード';
+
+  @override
+  String get coupleTimetableDetailCardSubtitle =>
+      'デスクトップカードの授業をタップすると、時間割を開いてその授業の詳細を展開します';
+
+  @override
   String get coupleTimetableDesktopCardPlaceholder =>
       'デスクトップカードは今後提供予定です。この領域は予約されています';
 
@@ -2083,6 +2090,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get liveIslandPreviewStageBeforeEnd => '終了リマインダー';
+
+  @override
+  String get liveIslandPreviewAboutToEnd => 'まもなく終了';
 
   @override
   String liveIslandPreviewUntilClassStart(String time) {

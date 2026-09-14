@@ -176,6 +176,8 @@
   "withuCoupleServerLabel": "withU server",
   "coupleTimetableSwitchSubtitle": "Overlay both timetables and put sign-in first in the top-right menu",
   "coupleTimetableDesktopCardTitle": "Desktop card settings",
+  "coupleTimetableDetailCardTitle": "Detail card",
+  "coupleTimetableDetailCardSubtitle": "Tapping a course on the desktop card opens the timetable with that course's details expanded",
   "coupleTimetableDesktopCardPlaceholder": "Desktop cards are coming later; this section is reserved",
   "withuCoupleLoginPageTitle": "Sign in to withU",
   "withuCoupleLoginPageSubtitle": "Use your withU couple account, then pull your partner's timetable automatically",
@@ -1165,6 +1167,7 @@
   "liveIslandPreviewStageBeforeClass": "Before class",
   "liveIslandPreviewStageInClass": "In class",
   "liveIslandPreviewStageBeforeEnd": "Before end",
+  "liveIslandPreviewAboutToEnd": "Ending soon",
   "liveIslandPreviewUntilClassStart": "Starts in {time}",
   "@liveIslandPreviewUntilClassStart": {
     "placeholders": {

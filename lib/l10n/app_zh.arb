@@ -181,6 +181,8 @@
   "withuCoupleServerLabel": "withU 服务器",
   "coupleTimetableSwitchSubtitle": "开启后在课表中叠加双方课程，并在右上角菜单优先显示登录",
   "coupleTimetableDesktopCardTitle": "桌面卡片配置",
+  "coupleTimetableDetailCardTitle": "详情卡片",
+  "coupleTimetableDetailCardSubtitle": "点击桌面卡片的课程时，打开课表并直接展开该课程的详情",
   "coupleTimetableDesktopCardPlaceholder": "桌面卡片功能开发中，当前仅供预留",
   "withuCoupleLoginPageTitle": "登录 withU",
   "withuCoupleLoginPageSubtitle": "使用 withU 情侣账号登录，登录后自动拉取对方课表",
@@ -1139,6 +1141,7 @@
   "liveIslandPreviewStageBeforeClass": "即将上课",
   "liveIslandPreviewStageInClass": "上课中",
   "liveIslandPreviewStageBeforeEnd": "下课提醒",
+  "liveIslandPreviewAboutToEnd": "即将下课",
   "liveIslandPreviewUntilClassStart": "距上课{time}",
   "@liveIslandPreviewUntilClassStart": {
     "placeholders": {

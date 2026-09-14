@@ -397,6 +397,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get coupleTimetableDesktopCardTitle => 'Desktop card settings';
 
   @override
+  String get coupleTimetableDetailCardTitle => 'Detail card';
+
+  @override
+  String get coupleTimetableDetailCardSubtitle =>
+      'Tapping a course on the desktop card opens the timetable with that course\'s details expanded';
+
+  @override
   String get coupleTimetableDesktopCardPlaceholder =>
       'Desktop cards are coming later; this section is reserved';
 
@@ -2172,6 +2179,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get liveIslandPreviewStageBeforeEnd => 'Before end';
+
+  @override
+  String get liveIslandPreviewAboutToEnd => 'Ending soon';
 
   @override
   String liveIslandPreviewUntilClassStart(String time) {

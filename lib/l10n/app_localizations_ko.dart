@@ -381,6 +381,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get coupleTimetableDesktopCardTitle => '데스크톱 카드 설정';
 
   @override
+  String get coupleTimetableDetailCardTitle => '상세 카드';
+
+  @override
+  String get coupleTimetableDetailCardSubtitle =>
+      '데스크톱 카드의 수업을 탭하면 시간표를 열고 해당 수업의 상세 정보를 펼칩니다';
+
+  @override
   String get coupleTimetableDesktopCardPlaceholder =>
       '데스크톱 카드는 준비 중이며 이 영역은 예약되어 있습니다';
 
@@ -2097,6 +2104,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get liveIslandPreviewStageBeforeEnd => '종료 알림';
+
+  @override
+  String get liveIslandPreviewAboutToEnd => '곧 종료';
 
   @override
   String liveIslandPreviewUntilClassStart(String time) {

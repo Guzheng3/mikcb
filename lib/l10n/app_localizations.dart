@@ -794,6 +794,18 @@ abstract class AppLocalizations {
   /// **'桌面卡片配置'**
   String get coupleTimetableDesktopCardTitle;
 
+  /// No description provided for @coupleTimetableDetailCardTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'详情卡片'**
+  String get coupleTimetableDetailCardTitle;
+
+  /// No description provided for @coupleTimetableDetailCardSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击桌面卡片的课程时，打开课表并直接展开该课程的详情'**
+  String get coupleTimetableDetailCardSubtitle;
+
   /// No description provided for @coupleTimetableDesktopCardPlaceholder.
   ///
   /// In zh, this message translates to:
@@ -3843,6 +3855,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'下课提醒'**
   String get liveIslandPreviewStageBeforeEnd;
+
+  /// No description provided for @liveIslandPreviewAboutToEnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将下课'**
+  String get liveIslandPreviewAboutToEnd;
 
   /// No description provided for @liveIslandPreviewUntilClassStart.
   ///

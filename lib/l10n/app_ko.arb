@@ -960,6 +960,7 @@
   "liveIslandPreviewStageBeforeClass": "곧 수업",
   "liveIslandPreviewStageInClass": "수업 중",
   "liveIslandPreviewStageBeforeEnd": "종료 알림",
+  "liveIslandPreviewAboutToEnd": "곧 종료",
   "liveIslandPreviewUntilClassStart": "수업 시작 {time} 전",
   "@liveIslandPreviewUntilClassStart": {
     "placeholders": {
@@ -5646,6 +5647,8 @@
   "withuCoupleServerLabel": "withU 서버",
   "coupleTimetableSwitchSubtitle": "두 시간표를 겹쳐 표시하고 오른쪽 위 메뉴에 로그인을 먼저 표시합니다",
   "coupleTimetableDesktopCardTitle": "데스크톱 카드 설정",
+  "coupleTimetableDetailCardTitle": "상세 카드",
+  "coupleTimetableDetailCardSubtitle": "데스크톱 카드의 수업을 탭하면 시간표를 열고 해당 수업의 상세 정보를 펼칩니다",
   "coupleTimetableDesktopCardPlaceholder": "데스크톱 카드는 준비 중이며 이 영역은 예약되어 있습니다",
   "withuCoupleLoginPageTitle": "withU 로그인",
   "withuCoupleLoginPageSubtitle": "withU 커플 계정으로 로그인하면 상대 시간표를 자동으로 가져옵니다",

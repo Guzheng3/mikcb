@@ -376,6 +376,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coupleTimetableDesktopCardTitle => '桌面卡片配置';
 
   @override
+  String get coupleTimetableDetailCardTitle => '详情卡片';
+
+  @override
+  String get coupleTimetableDetailCardSubtitle => '点击桌面卡片的课程时，打开课表并直接展开该课程的详情';
+
+  @override
   String get coupleTimetableDesktopCardPlaceholder => '桌面卡片功能开发中，当前仅供预留';
 
   @override
@@ -2045,6 +2051,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get liveIslandPreviewStageBeforeEnd => '下课提醒';
+
+  @override
+  String get liveIslandPreviewAboutToEnd => '即将下课';
 
   @override
   String liveIslandPreviewUntilClassStart(String time) {
@@ -10178,6 +10187,12 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get coupleTimetableDesktopCardTitle => '桌面卡片配置';
 
   @override
+  String get coupleTimetableDetailCardTitle => '詳情卡片';
+
+  @override
+  String get coupleTimetableDetailCardSubtitle => '點擊桌面卡片的課程時，開啟課表並直接展開該課程的詳情';
+
+  @override
   String get coupleTimetableDesktopCardPlaceholder => '桌面卡片功能開發中，目前僅作預留';
 
   @override
@@ -11848,6 +11863,9 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get liveIslandPreviewStageBeforeEnd => '下課提醒';
+
+  @override
+  String get liveIslandPreviewAboutToEnd => '即將下課';
 
   @override
   String liveIslandPreviewUntilClassStart(String time) {
@@ -20018,6 +20036,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get coupleTimetableDesktopCardTitle => '桌面卡片設定';
 
   @override
+  String get coupleTimetableDetailCardTitle => '詳情卡片';
+
+  @override
+  String get coupleTimetableDetailCardSubtitle => '點擊桌面卡片的課程時，打開課表並直接展開該課程的詳情';
+
+  @override
   String get coupleTimetableDesktopCardPlaceholder => '桌面卡片功能開發中，目前僅供預留';
 
   @override
@@ -21688,6 +21712,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get liveIslandPreviewStageBeforeEnd => '下課提醒';
+
+  @override
+  String get liveIslandPreviewAboutToEnd => '即將下課';
 
   @override
   String liveIslandPreviewUntilClassStart(String time) {

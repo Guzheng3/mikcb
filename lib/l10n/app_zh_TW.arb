@@ -959,6 +959,7 @@
   "liveIslandPreviewStageBeforeClass": "即將上課",
   "liveIslandPreviewStageInClass": "上課中",
   "liveIslandPreviewStageBeforeEnd": "下課提醒",
+  "liveIslandPreviewAboutToEnd": "即將下課",
   "liveIslandPreviewUntilClassStart": "距上課{time}",
   "@liveIslandPreviewUntilClassStart": {
     "placeholders": {
@@ -5638,6 +5639,8 @@
   "withuCoupleServerLabel": "withU 伺服器",
   "coupleTimetableSwitchSubtitle": "開啟後會在課表中疊加雙方課程，並在右上角選單優先顯示登入",
   "coupleTimetableDesktopCardTitle": "桌面卡片設定",
+  "coupleTimetableDetailCardTitle": "詳情卡片",
+  "coupleTimetableDetailCardSubtitle": "點擊桌面卡片的課程時，打開課表並直接展開該課程的詳情",
   "coupleTimetableDesktopCardPlaceholder": "桌面卡片功能開發中，目前僅供預留",
   "withuCoupleLoginPageTitle": "登入 withU",
   "withuCoupleLoginPageSubtitle": "使用 withU 情侶帳號登入，登入後自動拉取對方課表",
