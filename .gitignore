@@ -180,3 +180,6 @@ AGENTS.md
 /wk_baseline_frames_1/
 /startup-background-frames/
 /startup-background-fixed-frames/
+
+# 改动前的一次性备份快照（如 l10n 重构前的 before-*.dart，不入库）
+/_backup_*.dart
