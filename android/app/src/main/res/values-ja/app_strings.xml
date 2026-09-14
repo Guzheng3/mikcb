@@ -27,6 +27,9 @@
     <string name="stage_in_class">授業中</string>
     <string name="stage_before_class">まもなく授業</string>
     <string name="stage_before_end">終了間近</string>
+    <string name="island_class_starting">授業開始</string>
+    <string name="island_about_to_end">まもなく終了</string>
+    <string name="island_minutes_remaining">%1$d分</string>
 
     <string name="title_before_class">まもなく授業: %1$s</string>
     <string name="title_before_end">終了間近: %1$s</string>

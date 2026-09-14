@@ -29,6 +29,9 @@
     <string name="stage_in_class">上课中</string>
     <string name="stage_before_class">即将上课</string>
     <string name="stage_before_end">下课提醒</string>
+    <string name="island_class_starting">开始上课</string>
+    <string name="island_about_to_end">即将下课</string>
+    <string name="island_minutes_remaining">%1$d分钟</string>
 
     <string name="title_before_class">即将上课: %1$s</string>
     <string name="title_before_end">下课提醒: %1$s</string>

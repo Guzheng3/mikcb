@@ -43,6 +43,12 @@ class LiveUpdateService : Service() {
         private const val CHANNEL_ID = "live_update_channel"
         private const val NOTIFICATION_ID = 2001
         private const val EXTRA_REQUEST_PROMOTED_ONGOING = "android.requestPromotedOngoing"
+
+        /** 流体云文案：临近下课窗口（大课最后 5 分钟显示「即将下课」）。 */
+        private const val ABOUT_TO_END_WINDOW_MILLIS = 5 * 60_000L
+
+        /** 流体云文案：刚上课后显示「开始上课」的时长。 */
+        private const val CLASS_STARTING_WINDOW_MILLIS = 60_000L
         private const val PREFS_NAME = "native_runtime_prefs"
         private const val KEY_HIDE_FROM_RECENTS = "hide_from_recents"
         private const val ACTION_ENABLE_SILENT_MODE =
@@ -1094,6 +1100,57 @@ class LiveUpdateService : Service() {
         return enableDuringClass && (promoteDuringClass || showNotificationDuringClass)
     }
 
+    /**
+     * 流体云摘要胶囊的右侧文案（ColorOS）。
+     *
+     * 左侧小图标槽实测放不下文字、右侧只有 6–7 个字，且秒级倒计时会让胶囊随
+     * 数字位数不断变宽变窄，所以按阶段给短文案（分钟粒度）：
+     *
+     * * 上课前 → 到上课的分钟数；
+     * * 上课中 → 「上课中」；刚开始 1 分钟内 → 「开始上课」；
+     * * 大课（多节连上）内部课间 → 到下一节上课的分钟数；
+     * * 临近下课（最后 5 分钟）→ 「即将下课」。
+     *
+     * 「大课下课后下一次上课的倒计时」不在这里处理：下一节课进入自己的课前
+     * 提醒窗口时会由 beforeClass 分支自然接管；间隔过大（11:40 下课、14:00 再
+     * 上课）时不会进入该窗口，于是自然不显示。
+     */
+    private fun buildColorosIslandText(stage: String?, now: Long): String = when (stage) {
+        "beforeClass" -> colorosMinutesText(startAtMillis - now)
+        "beforeEnd" -> if (endAtMillis - now <= ABOUT_TO_END_WINDOW_MILLIS) {
+            getString(R.string.island_about_to_end)
+        } else {
+            getString(R.string.stage_in_class)
+        }
+        "duringClass", "duringClassStatusBar" -> buildColorosDuringClassText(now)
+        else -> ""
+    }
+
+    private fun buildColorosDuringClassText(now: Long): String {
+        if (endAtMillis - now <= ABOUT_TO_END_WINDOW_MILLIS) {
+            return getString(R.string.island_about_to_end)
+        }
+        // 大课内部课间：milestone 偏移按「最近下课 / 下节上课」交替排列，
+        // 当前落在偶数下标之后（下课之后、下节上课之前）即为课间。
+        val elapsed = now - startAtMillis
+        val lastIndex = progressBreakOffsetsMillis.indexOfLast { it <= elapsed }
+        if (lastIndex >= 0 && lastIndex % 2 == 0) {
+            val nextSectionStart = progressBreakOffsetsMillis.getOrNull(lastIndex + 1)
+            if (nextSectionStart != null && nextSectionStart > elapsed) {
+                return colorosMinutesText(nextSectionStart - elapsed)
+            }
+        }
+        if (elapsed <= CLASS_STARTING_WINDOW_MILLIS) {
+            return getString(R.string.island_class_starting)
+        }
+        return getString(R.string.stage_in_class)
+    }
+
+    private fun colorosMinutesText(remainingMillis: Long): String {
+        val minutes = (remainingMillis.coerceAtLeast(0L) / 60_000L).coerceAtLeast(1L)
+        return getString(R.string.island_minutes_remaining, minutes.toInt())
+    }
+
     private fun isXiaomiFamilyDevice(): Boolean =
         liveSurfaceBrand(Build.MANUFACTURER, Build.BRAND) == LiveSurfaceBrand.XIAOMI
 
@@ -1673,6 +1730,7 @@ class LiveUpdateService : Service() {
             else -> nameToUse
         }
         val miuiIslandLabelBitmap = resolveIslandLabelBitmap(miuiIslandLabelText)
+        val surfaceBrand = liveSurfaceBrand(Build.MANUFACTURER, Build.BRAND)
 
         val stageTitle = when (stage) {
             "beforeClass" -> getString(R.string.stage_before_class)
@@ -1844,12 +1902,17 @@ class LiveUpdateService : Service() {
             visibleStatusText
         }
 
-        val islandCriticalText = if (shouldPromote && !showCourseNameInIsland && !showLocationInIsland) {
-            islandCriticalStatusText
-        } else {
-            listOf(islandCourseName, islandLocation, islandCriticalStatusText)
-                .filter { it.isNotBlank() }
-                .joinToString(" ")
+        val islandCriticalText = when {
+            // 流体云胶囊：左侧是通知 smallIcon 的圆形图标位（实测放不下文字），
+            // 右侧宽度只有 6–7 个字，秒级倒计时还会让胶囊随数字位数不断变宽变窄。
+            // 因此按阶段给短文案，见 buildColorosIslandText。
+            surfaceBrand == LiveSurfaceBrand.COLOROS -> buildColorosIslandText(stage, now)
+            shouldPromote && !showCourseNameInIsland && !showLocationInIsland ->
+                islandCriticalStatusText
+            else ->
+                listOf(islandCourseName, islandLocation, islandCriticalStatusText)
+                    .filter { it.isNotBlank() }
+                    .joinToString(" ")
         }
 
         val iconRes = when (stage) {
@@ -1903,9 +1966,8 @@ class LiveUpdateService : Service() {
                     Notification.CATEGORY_PROGRESS
                 }
             )
-            // 提升帧必须置 true：hasPromotableCharacteristics() 对非 CallStyle 通知
-            // 要求 isColorizedRequested()，否则流体云等标准提升面永远拿不到
-            // FLAG_PROMOTED_ONGOING。详见 liveShouldRequestColorizedForPromotion。
+            // 恒为 false：ColorOS 上置 true 会让通知失去提升资格，
+            // 详见 LiveUpdatePromotionGate 里的实机回归记录。
             setColorized(liveShouldRequestColorizedForPromotion(shouldPromote))
             setShowWhen(!shouldPromote)
             setWhen(if (isUpcoming) startAtMillis else endAtMillis)
@@ -2011,7 +2073,6 @@ class LiveUpdateService : Service() {
         }
         // 平台能力类原因在 OPPO / realme / 一加上改用「流体云」措辞：ColorOS 16 完整
         // 接入了 Android 16 的标准提升通知通道，这些文案最该把他们引导到正确开关上。
-        val surfaceBrand = liveSurfaceBrand(Build.MANUFACTURER, Build.BRAND)
         fun surfaceReason(colorosResId: Int, genericResId: Int): String = getString(
             if (surfaceBrand == LiveSurfaceBrand.COLOROS) colorosResId else genericResId,
         )

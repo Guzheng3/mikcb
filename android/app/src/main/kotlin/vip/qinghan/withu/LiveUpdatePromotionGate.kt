@@ -22,18 +22,20 @@ package vip.qinghan.withu
  * 「通知不具备可提升特征」，看不出真正原因。小米侧因为有 `miui.focus.param`
  * 私有通道兜底，症状被掩盖，问题才一直没暴露。
  *
- * ⚠️ 与官方文档的冲突：官方《Create live update notifications》的准入清单里
- * 写的是 “Must NOT `setColorized` to `TRUE`”，与上面这段 AOSP 实现相反。
- * 此处以实机真正执行的代码为准，放行 `setColorized(true)`。风险已被限制在两处：
+ * ⚠️ 与官方文档的冲突（2026-09-11 已定论）：官方《Create live update notifications》
+ * 的准入清单写的是 “Must NOT `setColorized` to `TRUE`”，与上面这段 AOSP 实现相反。
+ * 实机回归证明以官方文档为准——放行 `true` 会让通知彻底失去提升资格，
+ * 详见下方 @return 的记录。
  *
- * 1. 本函数未伴随 `setColor(int)`，`color` 仍为 `COLOR_DEFAULT`；
- *    `Notification.isColorized()` 的注释明确 “the actual appearance of the
- *    notification may not be 'colorized'”，故**外观不变**；
- * 2. 若后续证实文档为准，回退点只有本函数一处。
+ * @param shouldPromote 入参保留以固定调用点签名；回退后不再影响返回值。
+ * @return 传给 `Notification.Builder.setColorized(...)` 的值，恒为 `false`。
  *
- * @param shouldPromote 本帧是否请求提升。`false` 时保持旧的不可着色语义，
- *   把改动面收敛到「原本就该提升却没提升」的那一帧上。
- * @return 传给 `Notification.Builder.setColorized(...)` 的值。
+ * ⚠️ 实机回归（2026-09-11，OPPO PLA110 / ColorOS 16.1 / Android 16）：
+ * 置 `true` 后流体云反而**不出卡片**，自检页报 `hasPromotableCharacteristics() == false`；
+ * 而同机 v5.2.0.1（此处恒为 `false`）可正常上岛。可见 ColorOS 上官方文档
+ * “Must NOT `setColorized` to `TRUE`” 才是实际生效的判据，AOSP 源码那套
+ * `isColorizedRequested()` 推导在本机不成立。故回退为 `false`，不再按帧置 true。
  */
-internal fun liveShouldRequestColorizedForPromotion(shouldPromote: Boolean): Boolean =
-    shouldPromote
+internal fun liveShouldRequestColorizedForPromotion(
+    @Suppress("UNUSED_PARAMETER") shouldPromote: Boolean,
+): Boolean = false

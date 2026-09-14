@@ -27,6 +27,9 @@
     <string name="stage_in_class">In class</string>
     <string name="stage_before_class">Class starting soon</string>
     <string name="stage_before_end">Class ending soon</string>
+    <string name="island_class_starting">Class started</string>
+    <string name="island_about_to_end">Ending soon</string>
+    <string name="island_minutes_remaining">%1$d min</string>
 
     <string name="title_before_class">Starting soon: %1$s</string>
     <string name="title_before_end">Ending soon: %1$s</string>

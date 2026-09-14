@@ -125,18 +125,12 @@ class LiveUpdateServiceLogicTest {
     }
 
     @Test
-    fun promotedFrameRequestsColorizedSoNotificationIsPromotable() {
-        // AOSP 准入：hasPromotableCharacteristics() =
-        // isColorizedRequested() && hasPromotableStyle()。置 false 会让
-        // 非 CallStyle 的提升帧永远拿不到 FLAG_PROMOTED_ONGOING，
-        // OPPO 流体云等标准提升面收不到卡片。
-        assertTrue(liveShouldRequestColorizedForPromotion(shouldPromote = true))
-    }
-
-    @Test
-    fun nonPromotedFrameKeepsUncolorizedSemantics() {
-        // 仅状态栏 / 上课中不请求提升的帧：维持改动前的不可着色语义，
-        // 把改动面收敛在「本该提升却没提升」的那一帧上。
+    fun promotionFramesStayUncolorizedAfterColorOsRegression() {
+        // 2026-09-11 实机回归（OPPO PLA110 / ColorOS 16.1 / Android 16）：
+        // 置 true 后 hasPromotableCharacteristics() 反而返回 false，流体云彻底
+        // 不出卡片；而同机 v5.2.0.1（恒 false）可正常上岛。以官方文档
+        // “Must NOT setColorized to TRUE” 为准，提升帧与非提升帧一律保持 false。
+        assertFalse(liveShouldRequestColorizedForPromotion(shouldPromote = true))
         assertFalse(liveShouldRequestColorizedForPromotion(shouldPromote = false))
     }
 
