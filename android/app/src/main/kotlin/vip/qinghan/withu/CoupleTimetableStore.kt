@@ -82,11 +82,20 @@ object CoupleTimetableStore {
     fun readSnapshot(context: Context): CoupleTimetableWidgetSnapshot? {
         val payload = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .getString(KEY_SNAPSHOT_JSON, null) ?: return null
-        return try {
+        val stored = try {
             parseSnapshot(JSONObject(payload))
         } catch (_: Exception) {
             null
+        } ?: return null
+        // 快照里的 today/tomorrow 是 Flutter 同步那一刻按当时日期烘焙好的具体列表，
+        // App 不打开时跨天、跨周都不会翻转。状态/昵称/配色原生无从得知，继续取快照；
+        // 只有当天课程按当前日期与周次在原生侧重算。重算不可用（档案缺失或损坏）时
+        // 保留快照列表，退化成旧行为，不会画出空卡。
+        if (stored.status != CoupleWidgetStatus.OK) {
+            return stored
         }
+        val rebuilt = CoupleWidgetNativeSource.rebuild(context) ?: return stored
+        return stored.copy(mine = rebuilt.mine, partner = rebuilt.partner)
     }
 
     private fun parseSnapshot(json: JSONObject): CoupleTimetableWidgetSnapshot {
