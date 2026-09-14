@@ -15,6 +15,11 @@ import 'package:university_timetable/services/storage_service.dart';
 ///   判定「上一节课还没结束」，流体云于是持续显示上一节课。
 ///
 /// 本测试断言快照里的课程时间必须是**当前作息表解析值**，而非持久化字符串。
+///
+/// 前置条件必须走 `updateTimeScheme`（改当前生效的时间模板）：节次表归模板
+/// 所有，往 `updateTimetableSettings` 里传 sections 会被 `_normalizeSettingsWithTimeScheme`
+/// 归一化回模板值（设置页也是先把 sections 钉回当前值再提交），拿它造前置
+/// 只会得到一个没被改动的作息表，断言注定失败。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -32,18 +37,7 @@ void main() {
     );
     await provider.initialize();
 
-    // 当前作息表：第 1-2 节实际为 07:50-09:30。
-    await provider.updateTimetableSettings(
-      provider.settings.copyWith(
-        semesterStartDate: DateTime(2026, 2, 23),
-        sections: const [
-          SectionTime(startTime: '07:50', endTime: '08:35'),
-          SectionTime(startTime: '08:45', endTime: '09:30'),
-        ],
-      ),
-    );
-
-    // 课程持久化的是旧作息表时钟（08:00-09:40），与当前作息表不一致。
+    // 课程按导入时的旧作息表落库：第 1-2 节 08:00-09:40。
     await provider.addCourse(
       Course(
         id: 'stale-clock-course',
@@ -55,12 +49,27 @@ void main() {
         endSection: 2,
         startTime: '08:00',
         endTime: '09:40',
-        startWeek: 1,
-        endWeek: 16,
       ),
     );
+    expect(provider.courses.single.startTime, '08:00');
 
-    await provider.updateLiveActivityForTesting(syncScheduleSnapshot: true);
+    // 之后当前作息表被改成第 1-2 节 07:50-09:30。
+    final scheme = provider.timeSchemes.firstWhere(
+      (item) => item.id == provider.settings.activeTimeSchemeId,
+    );
+    final message = await provider.updateTimeScheme(
+      schemeId: scheme.id,
+      name: scheme.name,
+      sections: const [
+        SectionTime(startTime: '07:50', endTime: '08:35'),
+        SectionTime(startTime: '08:45', endTime: '09:30'),
+      ],
+    );
+    expect(message, isNull);
+    // 改作息表必须把内存课程的钟点一并重算，否则课表页与上课闹钟也会用旧时钟。
+    expect(provider.courses.single.startTime, '07:50');
+
+    await provider.updateLiveActivityForTesting();
 
     expect(fake.syncScheduleSnapshotCallCount, greaterThanOrEqualTo(1));
     final synced = fake.lastSyncedCourses;
