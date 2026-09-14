@@ -510,11 +510,20 @@ class _TimetableScreenState extends State<TimetableScreen>
     return _weekGridScrollControllers.putIfAbsent(week, ScrollController.new);
   }
 
+  /// 桌面卡片点击课程后的待展开请求：监听 provider 通知，首页挂载/收到
+  /// 请求时弹出对应课程详情弹窗（见 [WidgetLaunchRouter]）。
+  TimetableProvider? _courseDetailProvider;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     final provider = context.read<TimetableProvider>();
+    _courseDetailProvider = provider;
+    provider.addListener(_maybeShowPendingCourseDetail);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeShowPendingCourseDetail();
+    });
     final initialWeek = provider.currentWeek;
     _visibleWeek = initialWeek;
     _pendingSettledWeek = initialWeek;
@@ -571,8 +580,39 @@ class _TimetableScreenState extends State<TimetableScreen>
     _restoreViewStateFromProvider(provider);
   }
 
+  /// 桌面情侣卡片点击课程后，展开该课程的详情弹窗。
+  ///
+  /// provider 的待展开请求在启动早期（首页尚未挂载）就可能到达，故除监听
+  /// 通知外 initState 里也补一次；请求消费即清空，重复通知不会重复弹。
+  void _maybeShowPendingCourseDetail() {
+    if (!mounted) {
+      return;
+    }
+    final provider = _courseDetailProvider;
+    if (provider == null || !provider.hasPendingCourseDetail) {
+      return;
+    }
+    final courseId = provider.consumePendingCourseDetailCourseId();
+    if (courseId == null) {
+      return;
+    }
+    final course = provider.getCourseById(courseId);
+    if (course == null) {
+      return;
+    }
+    final week = provider.currentWeek;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      unawaited(_showCourseActions(course, week));
+    });
+  }
+
   @override
   void dispose() {
+    _courseDetailProvider?.removeListener(_maybeShowPendingCourseDetail);
+    _courseDetailProvider = null;
     WidgetsBinding.instance.removeObserver(this);
     _homePullQuickImportCancel?.call();
     _homePullSettleSpring?.dispose();

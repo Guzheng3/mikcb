@@ -4576,6 +4576,30 @@ class TimetableProvider with ChangeNotifier {
   Future<void> syncCoupleTimetableWidgetSnapshot() =>
       _liveSyncCoupleWidgetSnapshot(this);
 
+  /// 桌面情侣卡片点击课程后，请求首页展开该课程的详情弹窗。
+  ///
+  /// 原生行点击只把 courseId 递进来（见 [WidgetLaunchRouter]），弹出由
+  /// [TimetableScreen] 消费：启动早期首页尚未挂载时请求会保留，待首页
+  /// 挂载后由监听者补弹，不会丢。
+  String? _pendingCourseDetailCourseId;
+
+  bool get hasPendingCourseDetail => _pendingCourseDetailCourseId != null;
+
+  void requestCourseDetailOpen(String courseId) {
+    final trimmed = courseId.trim();
+    if (trimmed.isEmpty) {
+      return;
+    }
+    _pendingCourseDetailCourseId = trimmed;
+    notifyListeners();
+  }
+
+  String? consumePendingCourseDetailCourseId() {
+    final courseId = _pendingCourseDetailCourseId;
+    _pendingCourseDetailCourseId = null;
+    return courseId;
+  }
+
   void suspendLiveActivitySyncFor(Duration duration) {
     _liveActivitySuspendedUntil = DateTime.now().add(duration);
   }

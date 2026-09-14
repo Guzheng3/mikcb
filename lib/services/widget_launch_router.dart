@@ -44,6 +44,17 @@ class WidgetLaunchRouter {
     }
     await provider.initialize();
 
+    final outcome = await _resolveOutcome(provider, launch, bindingService);
+    // 课表切换完成后才请求详情：此时 getCourseById 才能命中目标课表的课程。
+    _maybeRequestCourseDetailOpen(provider, launch.courseId);
+    return outcome;
+  }
+
+  static Future<WidgetLaunchOutcome> _resolveOutcome(
+    TimetableProvider provider,
+    PendingHomeWidgetLaunch launch,
+    HomeWidgetBindingService bindingService,
+  ) async {
     if (launch.side == 'right') {
       return _switchToPartnerTimetable(provider);
     }
@@ -75,6 +86,24 @@ class WidgetLaunchRouter {
     // switchProfile 自带守卫：课表不存在时静默不动。
     await provider.switchProfile(boundProfileId);
     return WidgetLaunchOutcome.switchedProfile;
+  }
+
+  /// 详情卡片开关开启、且点击的是具体课程行时，请求首页展开该课程详情。
+  /// 课程不在当前生效课表（如绑定已失效）则忽略，回落普通打开。
+  static void _maybeRequestCourseDetailOpen(
+    TimetableProvider provider,
+    String? courseId,
+  ) {
+    if (courseId == null) {
+      return;
+    }
+    if (!provider.settings.coupleTimetableDetailCardEnabled) {
+      return;
+    }
+    if (provider.getCourseById(courseId) == null) {
+      return;
+    }
+    provider.requestCourseDetailOpen(courseId);
   }
 
   static Future<WidgetLaunchOutcome> _switchToPartnerTimetable(

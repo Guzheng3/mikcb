@@ -1227,6 +1227,10 @@ class TimetableSettings {
 
   /// Whether couple-timetable overlay (header heart) was last left on.
   final bool coupleTimetableOverlayEnabled;
+
+  /// Whether tapping a course on the desktop couple card opens the timetable
+  /// with that course's detail sheet expanded.
+  final bool coupleTimetableDetailCardEnabled;
   final SectionTimeDisplayMode timetableSectionTimeDisplayMode;
   final bool timetableHideWeekends;
   final bool timetableVerticalScrollEffectEnabled;
@@ -1441,6 +1445,7 @@ class TimetableSettings {
     this.timetableFloatingBackToCurrentWeekButtonOpacity = 0.96,
     this.timetableLastViewedDayOfWeek = 1,
     this.coupleTimetableOverlayEnabled = true,
+    this.coupleTimetableDetailCardEnabled = true,
     this.timetableSectionTimeDisplayMode = SectionTimeDisplayMode.startAndEnd,
     this.timetableHideWeekends = false,
     this.timetableVerticalScrollEffectEnabled = false,
@@ -1641,6 +1646,7 @@ class TimetableSettings {
           timetableFloatingBackToCurrentWeekButtonOpacity,
       'timetableLastViewedDayOfWeek': timetableLastViewedDayOfWeek,
       'coupleTimetableOverlayEnabled': coupleTimetableOverlayEnabled,
+      'coupleTimetableDetailCardEnabled': coupleTimetableDetailCardEnabled,
       'timetableSectionTimeDisplayMode': timetableSectionTimeDisplayMode.value,
       'timetableHideWeekends': timetableHideWeekends,
       'timetableVerticalScrollEffectEnabled':
@@ -1946,6 +1952,8 @@ class TimetableSettings {
           ),
       coupleTimetableOverlayEnabled:
           json['coupleTimetableOverlayEnabled'] as bool? ?? true,
+      coupleTimetableDetailCardEnabled:
+          json['coupleTimetableDetailCardEnabled'] as bool? ?? true,
       timetableSectionTimeDisplayMode: SectionTimeDisplayModeX.fromValue(
         json['timetableSectionTimeDisplayMode'] as String?,
       ),
@@ -2319,6 +2327,7 @@ class TimetableSettings {
     double? timetableFloatingBackToCurrentWeekButtonOpacity,
     int? timetableLastViewedDayOfWeek,
     bool? coupleTimetableOverlayEnabled,
+    bool? coupleTimetableDetailCardEnabled,
     SectionTimeDisplayMode? timetableSectionTimeDisplayMode,
     bool? timetableHideWeekends,
     bool? timetableVerticalScrollEffectEnabled,
@@ -2551,6 +2560,9 @@ class TimetableSettings {
               .clamp(1, 7),
       coupleTimetableOverlayEnabled:
           coupleTimetableOverlayEnabled ?? this.coupleTimetableOverlayEnabled,
+      coupleTimetableDetailCardEnabled:
+          coupleTimetableDetailCardEnabled ??
+          this.coupleTimetableDetailCardEnabled,
       timetableSectionTimeDisplayMode:
           timetableSectionTimeDisplayMode ??
           this.timetableSectionTimeDisplayMode,

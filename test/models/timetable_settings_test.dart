@@ -1189,4 +1189,23 @@ void main() {
       );
     });
   });
+
+  group('情侣详情卡片开关', () {
+    test('默认开启，copyWith 与 JSON 往返保持', () {
+      final defaults = TimetableSettings.defaults();
+      expect(defaults.coupleTimetableDetailCardEnabled, isTrue);
+
+      final off = defaults.copyWith(coupleTimetableDetailCardEnabled: false);
+      expect(off.coupleTimetableDetailCardEnabled, isFalse);
+
+      final restored = TimetableSettings.fromJson(off.toJson());
+      expect(restored.coupleTimetableDetailCardEnabled, isFalse);
+
+      // 旧配置缺 key 时回落到默认开启。
+      expect(
+        TimetableSettings.fromJson(const {}).coupleTimetableDetailCardEnabled,
+        isTrue,
+      );
+    });
+  });
 }

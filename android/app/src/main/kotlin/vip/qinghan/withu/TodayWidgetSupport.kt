@@ -151,6 +151,9 @@ object TodayWidgetSupport {
     const val EXTRA_WIDGET_LAUNCH_APP_WIDGET_ID = "widget_launch_app_widget_id"
     const val EXTRA_WIDGET_LAUNCH_SIDE = "widget_launch_side"
 
+    /** 点击卡片上的具体课程行时携带的课程 id；整卡/空白区点击不带。 */
+    const val EXTRA_WIDGET_LAUNCH_COURSE_ID = "widget_launch_course_id"
+
     fun readSnapshot(context: Context): TodayWidgetSnapshotInfo? {
         // Prefer real-time computed snapshot (state reflects current time).
         // The stored snapshot from Flutter has a stale `state` that doesn't

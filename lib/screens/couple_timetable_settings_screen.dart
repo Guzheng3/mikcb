@@ -170,6 +170,32 @@ class _CoupleTimetableSettingsScreenState
             const HyperosSectionGap(),
             HyperosSectionLabel(text: l10n.coupleTimetableDesktopCardTitle),
             HyperosControlCard(
+              edgeToEdge: true,
+              child: HyperosControlCardRowScope(
+                isFirst: true,
+                isLast: true,
+                child: HyperosSwitchTile(
+                  icon: Icons.article_outlined,
+                  iconAccent:
+                      provider.settings.coupleTimetableDetailCardEnabled
+                      ? HyperosIconColors.orange
+                      : HyperosIconColors.blue,
+                  title: l10n.coupleTimetableDetailCardTitle,
+                  subtitle: l10n.coupleTimetableDetailCardSubtitle,
+                  value: provider.settings.coupleTimetableDetailCardEnabled,
+                  onChanged: (value) {
+                    unawaited(
+                      provider.updateSettings(
+                        provider.settings.copyWith(
+                          coupleTimetableDetailCardEnabled: value,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            HyperosControlCard(
               title: l10n.coupleTimetableDesktopCardTitle,
               child: HyperosControlCardInset(
                 child: HyperosButton(

@@ -27,6 +27,7 @@ void main() {
             : {
                 'appWidgetId': pendingLaunch!.appWidgetId,
                 'side': pendingLaunch!.side,
+                'courseId': pendingLaunch!.courseId,
               };
       case 'getWidgetBinding':
         return bindings[(call.arguments as Map)['appWidgetId'] as int];
@@ -221,5 +222,80 @@ void main() {
 
     expect(outcome, WidgetLaunchOutcome.switchedProfile);
     expect(provider.activeProfileId, before);
+  });
+
+  test('详情卡片开启 + 命中课程 → 请求展开该课程详情', () async {
+    final provider = await createProvider();
+    const courseId = 'detail-course';
+    await provider.addCourse(
+      Course(
+        id: courseId,
+        name: '高数',
+        teacher: '张老师',
+        location: 'A101',
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        startTime: '08:00',
+        endTime: '09:40',
+      ),
+    );
+    expect(provider.settings.coupleTimetableDetailCardEnabled, isTrue);
+
+    pendingLaunch = const PendingHomeWidgetLaunch(
+      appWidgetId: 50,
+      side: 'left',
+      courseId: courseId,
+    );
+    final outcome = await WidgetLaunchRouter.handleWith(provider: provider);
+
+    expect(outcome, WidgetLaunchOutcome.none);
+    expect(provider.hasPendingCourseDetail, isTrue);
+    expect(provider.consumePendingCourseDetailCourseId(), courseId);
+    expect(provider.hasPendingCourseDetail, isFalse);
+  });
+
+  test('详情卡片关闭 → 命中课程也不请求展开', () async {
+    final provider = await createProvider();
+    const courseId = 'detail-course-off';
+    await provider.addCourse(
+      Course(
+        id: courseId,
+        name: '线代',
+        teacher: '李老师',
+        location: 'B202',
+        dayOfWeek: 2,
+        startSection: 3,
+        endSection: 4,
+        startTime: '10:00',
+        endTime: '11:40',
+      ),
+    );
+    await provider.updateSettings(
+      provider.settings.copyWith(coupleTimetableDetailCardEnabled: false),
+    );
+
+    pendingLaunch = const PendingHomeWidgetLaunch(
+      appWidgetId: 51,
+      side: 'left',
+      courseId: courseId,
+    );
+    await WidgetLaunchRouter.handleWith(provider: provider);
+
+    expect(provider.hasPendingCourseDetail, isFalse);
+  });
+
+  test('courseId 不在当前课表（绑定已失效）→ 不请求展开', () async {
+    final provider = await createProvider();
+
+    pendingLaunch = const PendingHomeWidgetLaunch(
+      appWidgetId: 52,
+      side: 'left',
+      courseId: 'missing-course',
+    );
+    final outcome = await WidgetLaunchRouter.handleWith(provider: provider);
+
+    expect(outcome, WidgetLaunchOutcome.none);
+    expect(provider.hasPendingCourseDetail, isFalse);
   });
 }

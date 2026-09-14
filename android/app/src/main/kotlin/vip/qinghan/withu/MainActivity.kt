@@ -79,6 +79,7 @@ class MainActivity : FlutterActivity() {
     private data class PendingWidgetLaunch(
         val appWidgetId: Int,
         val side: String?,
+        val courseId: String? = null,
     )
 
     private var pendingExternalImport: PendingExternalImport? = null
@@ -737,6 +738,7 @@ class MainActivity : FlutterActivity() {
                                 mapOf(
                                     "appWidgetId" to it.appWidgetId,
                                     "side" to it.side,
+                                    "courseId" to it.courseId,
                                 )
                             }
                         )
@@ -1173,6 +1175,7 @@ class MainActivity : FlutterActivity() {
         pendingWidgetLaunch = PendingWidgetLaunch(
             appWidgetId = appWidgetId,
             side = intent.getStringExtra(TodayWidgetSupport.EXTRA_WIDGET_LAUNCH_SIDE),
+            courseId = intent.getStringExtra(TodayWidgetSupport.EXTRA_WIDGET_LAUNCH_COURSE_ID),
         )
         notifyWidgetLaunchReceived()
     }

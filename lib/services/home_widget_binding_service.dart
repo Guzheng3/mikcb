@@ -62,9 +62,13 @@ class PendingHomeWidgetLaunch {
   /// `left` / `right` for side-aware widgets; null keeps the legacy flow.
   final String? side;
 
+  /// Course id when a specific course row was tapped; null for whole-card taps.
+  final String? courseId;
+
   const PendingHomeWidgetLaunch({
     required this.appWidgetId,
     required this.side,
+    this.courseId,
   });
 
   factory PendingHomeWidgetLaunch.fromChannel(Object? raw) {
@@ -73,9 +77,11 @@ class PendingHomeWidgetLaunch {
     }
     final map = raw as Map<Object?, Object?>?;
     final side = map?['side'] as String?;
+    final courseId = (map?['courseId'] as String?)?.trim();
     return PendingHomeWidgetLaunch(
       appWidgetId: (map?['appWidgetId'] as num?)?.toInt() ?? -1,
       side: side == 'left' || side == 'right' ? side : null,
+      courseId: courseId == null || courseId.isEmpty ? null : courseId,
     );
   }
 }

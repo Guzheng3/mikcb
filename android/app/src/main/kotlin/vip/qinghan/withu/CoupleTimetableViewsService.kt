@@ -435,7 +435,7 @@ class CoupleTimetableViewsService : RemoteViewsService() {
         override fun getViewAt(position: Int): RemoteViews {
             return when (val item = items.getOrNull(position)) {
                 is CoupleWidgetDisplayItem.Course -> renderCourse(item).apply {
-                    attachSideTap(R.id.widget_couple_course_root)
+                    attachSideTap(R.id.widget_couple_course_root, item.course.id)
                 }
                 is CoupleWidgetDisplayItem.Notice ->
                     renderNotice(item.text).apply {
@@ -465,15 +465,17 @@ class CoupleTimetableViewsService : RemoteViewsService() {
         }
 
         // 行点击随 PendingIntentTemplate 派发到对应一侧；不挂 fill intent
-        // 的行不会触发模板，导致课程行区域成为点击死区。
-        private fun RemoteViews.attachSideTap(rootId: Int) {
-            setOnClickFillInIntent(
-                rootId,
-                Intent().putExtra(
-                    TodayWidgetSupport.EXTRA_WIDGET_LAUNCH_SIDE,
-                    if (isLeft) "left" else "right"
-                )
+        // 的行不会触发模板，导致课程行区域成为点击死区。课程行额外带上
+        // course id，Flutter 侧据此决定是否展开该课程的详情弹窗。
+        private fun RemoteViews.attachSideTap(rootId: Int, courseId: String? = null) {
+            val fillIn = Intent().putExtra(
+                TodayWidgetSupport.EXTRA_WIDGET_LAUNCH_SIDE,
+                if (isLeft) "left" else "right"
             )
+            if (!courseId.isNullOrBlank()) {
+                fillIn.putExtra(TodayWidgetSupport.EXTRA_WIDGET_LAUNCH_COURSE_ID, courseId)
+            }
+            setOnClickFillInIntent(rootId, fillIn)
         }
 
         private fun renderCourse(item: CoupleWidgetDisplayItem.Course): RemoteViews {
