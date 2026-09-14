@@ -142,9 +142,9 @@ void main() {
 
     expect(result.format, SpreadsheetImportService.formatMikcb);
     expect(result.warnings, isEmpty);
-    expect(result.courses, hasLength(3));
-    expect(result.courses.first.name, '高等数学');
-    expect(result.courses[2].customWeeks, [1, 2, 3, 4, 5, 7, 9, 11]);
+    expect(result.courses, hasLength(6));
+    expect(result.courses.first.name, '概率论与数理统计');
+    expect(result.courses[4].customWeeks, [1, 2, 3, 4, 5, 7, 9, 11]);
   });
 
   test('warns when custom weeks exceed semester week count', () {
