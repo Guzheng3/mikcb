@@ -584,58 +584,66 @@ LiveActivityCourseSelection? _liveGetTestActivityCourseSelection(
 }
 
 HomeWidgetSnapshot? _liveBuildHomeWidgetSnapshot(
-  TimetableProvider host, {
+  TimetableProvider host,
+  _MyTimetableScope scope, {
   DateTime? now,
 }) {
-  final profile = host.activeProfile;
-  if (profile == null) {
-    return null;
-  }
-
+  final profile = scope.profile;
+  final settings = scope.settings;
   final currentTime = now ?? DateTime.now();
   // Must use calendar week (no semesterWeekCount clamp). Clamping to the last
   // teaching week after the term ends would revive endWeek=N courses forever.
-  final targetWeek =
-      host._calculateCalendarWeekForDate(currentTime, fallbackWeek: host._currentWeek);
-  final originalTodayCount = host
-      .getCoursesForDay(currentTime.weekday, week: targetWeek)
+  final targetWeek = scope.calendarWeekFor(
+    currentTime,
+    fallbackWeek: scope.currentWeek,
+  );
+  final originalTodayCount = scope
+      .coursesForDay(currentTime.weekday, targetWeek, activeOnly: false)
       .length;
-  final todayIsHoliday = host.isHoliday(currentTime);
+  final todayIsHoliday = _liveScopeIsHoliday(host, scope, currentTime);
   final todayCourses = todayIsHoliday
       ? const <Course>[]
-      : host
-            .getActiveCoursesForDay(currentTime.weekday, week: targetWeek)
-            .map(host.resolveCourseDisplayName)
+      : scope
+            .coursesForDay(currentTime.weekday, targetWeek, activeOnly: true)
+            .map(
+              (course) =>
+                  host.resolveCourseDisplayName(course, peers: scope.courses),
+            )
             .toList(growable: false);
 
   final tomorrow = currentTime.add(const Duration(days: 1));
-  final tomorrowWeek = host._calculateCalendarWeekForDate(tomorrow);
-  final tomorrowIsHoliday = host.isHoliday(tomorrow);
+  final tomorrowWeek = scope.calendarWeekFor(tomorrow);
+  final tomorrowIsHoliday = _liveScopeIsHoliday(host, scope, tomorrow);
   final tomorrowCourses = tomorrowIsHoliday
       ? const <Course>[]
-      : host
-            .getActiveCoursesForDay(tomorrow.weekday, week: tomorrowWeek)
-            .map(host.resolveCourseDisplayName)
+      : scope
+            .coursesForDay(tomorrow.weekday, tomorrowWeek, activeOnly: true)
+            .map(
+              (course) =>
+                  host.resolveCourseDisplayName(course, peers: scope.courses),
+            )
             .toList(growable: false);
 
   final holidayEntry = host.getHolidayForDate(currentTime);
+  final upcomingExams = scope.exams.where((exam) => !exam.isExpired).toList()
+    ..sort(Exam.compareByStart);
 
   return host._homeWidgetSnapshotService.build(
     profileId: profile.id,
     profileName: profile.name,
     currentWeek: targetWeek,
-    settings: host._settings,
+    settings: settings,
     todayCourses: todayCourses,
     now: currentTime,
-    countdownLeadMinutes: host._settings.widgetCountdownLeadMinutes,
-    countdownTextStyle: host._settings.widgetCountdownTextStyle.value,
-    nextExam: host.getNextExam(),
+    countdownLeadMinutes: settings.widgetCountdownLeadMinutes,
+    countdownTextStyle: settings.widgetCountdownTextStyle.value,
+    nextExam: upcomingExams.isEmpty ? null : upcomingExams.first,
     isHoliday: todayIsHoliday,
     holidayName: todayIsHoliday ? holidayEntry?.name : null,
     tomorrowCourses: tomorrowCourses,
     tomorrowWeek: tomorrowWeek,
     tomorrowDayOfWeek: tomorrow.weekday,
-    showTomorrowCourses: host._settings.widgetShowTomorrowCourses,
+    showTomorrowCourses: settings.widgetShowTomorrowCourses,
     originalTodayCourseCount: todayIsHoliday ? 0 : originalTodayCount,
   );
 }
@@ -827,7 +835,9 @@ Future<void> _liveUpdateActivityBody(
 }) async {
   // 自检预设课全部结束后立刻摘除覆盖层，让随后的快照同步与选课回到纯真实数据。
   host.disarmLiveTestFixtureCoursesIfFinished(DateTime.now());
-  await _liveSyncHomeWidgetSnapshot(host);
+  // 岛与原生课程快照一律按「我的课表」计算：当前课表切到 TA 时不能跟着走。
+  final activeScope = scope ?? _liveMyTimetableScope(host);
+  await _liveSyncHomeWidgetSnapshot(host, scope: activeScope);
   if (!host._enableLiveActivitySync) {
     return;
   }
@@ -840,8 +850,6 @@ Future<void> _liveUpdateActivityBody(
     host._liveActivitySuspendedUntil = null;
   }
 
-  // 岛与原生课程快照一律按「我的课表」计算：当前课表切到 TA 时不能跟着走。
-  final activeScope = scope ?? _liveMyTimetableScope(host);
   if (syncScheduleSnapshot) {
     await _liveSyncScheduleSnapshot(host, scope: activeScope);
   }
@@ -1068,13 +1076,28 @@ Future<void> _liveSyncScheduleSnapshot(
   }
 }
 
-Future<void> _liveSyncHomeWidgetSnapshot(TimetableProvider host) async {
+Future<void> _liveSyncHomeWidgetSnapshot(
+  TimetableProvider host, {
+  _MyTimetableScope? scope,
+}) async {
   // 统计小组件与今日小组件共用这一入口：冷启动、回前台、课表变更都会走到，
   // 否则用户不进统计页时桌面统计组件永远读不到快照。
-  await _liveSyncStatsWidgetSnapshot(host);
+  // 今日/统计小组件与超级岛同域（「我的课表」）：绑定指定课表的卡片另有
+  // [_liveSyncBoundWidgetSnapshots] 单独处理，不受这里影响。
+  final activeScope = scope ?? _liveMyTimetableScope(host);
+  await _liveSyncStatsWidgetSnapshot(host, scope: activeScope);
   await _liveSyncCoupleWidgetSnapshot(host);
+  if (activeScope == null) {
+    if (host._lastHomeWidgetSnapshotSignature != null) {
+      final cleared = await host._homeWidgetService.clearSnapshot();
+      if (cleared) {
+        host._lastHomeWidgetSnapshotSignature = null;
+      }
+    }
+    return;
+  }
   final now = DateTime.now();
-  final snapshot = host.buildHomeWidgetSnapshot();
+  final snapshot = _liveBuildHomeWidgetSnapshot(host, activeScope, now: now);
   if (snapshot == null) {
     if (host._lastHomeWidgetSnapshotSignature != null) {
       final cleared = await host._homeWidgetService.clearSnapshot();
@@ -1095,14 +1118,16 @@ Future<void> _liveSyncHomeWidgetSnapshot(TimetableProvider host) async {
   final triggerAtMillis = snapshot.state == HomeWidgetSnapshotState.holiday
       ? <int>[]
       : host._homeWidgetSnapshotService.buildRefreshTriggers(
-          todayCourses: host.getActiveCoursesForDay(
+          todayCourses: activeScope.coursesForDay(
             now.weekday,
-            week: snapshot.currentWeek,
+            snapshot.currentWeek,
+            activeOnly: true,
           ),
           now: now,
           showCountdown: snapshot.showCountdown,
           state: snapshot.state.value,
-          countdownLeadMinutes: host._settings.widgetCountdownLeadMinutes,
+          countdownLeadMinutes:
+              activeScope.settings.widgetCountdownLeadMinutes,
         );
   // 绑定卡片：各自课表的专属快照 + 刷新触发点并入并集，
   // 否则 TA 第三节课开始时闹钟仍按当前课表的时间没响。
@@ -1299,13 +1324,19 @@ Future<void> _liveSyncCoupleWidgetSnapshot(TimetableProvider host) async {
   await CoupleTimetableWidgetService.syncSnapshot(snapshot);
 }
 
-Future<void> _liveSyncStatsWidgetSnapshot(TimetableProvider host) async {
-  final snapshot = StatsWidgetSnapshot.fromCourses(
-    courses: host.courses,
-    currentWeek: host.currentWeek,
-    semesterWeekCount: host._settings.semesterWeekCount,
-    profileName: host.activeProfile?.name ?? '',
-  );
+Future<void> _liveSyncStatsWidgetSnapshot(
+  TimetableProvider host, {
+  _MyTimetableScope? scope,
+}) async {
+  final activeScope = scope ?? _liveMyTimetableScope(host);
+  final snapshot = activeScope == null
+      ? null
+      : StatsWidgetSnapshot.fromCourses(
+          courses: activeScope.courses,
+          currentWeek: activeScope.currentWeek,
+          semesterWeekCount: activeScope.settings.semesterWeekCount,
+          profileName: activeScope.profile.name,
+        );
   if (snapshot == null) {
     await StatsWidgetService.clearSnapshot();
     return;

@@ -4570,8 +4570,16 @@ class TimetableProvider with ChangeNotifier {
     DateTime? now,
   }) => _liveGetTestActivityCourseSelection(this, now: now);
 
-  HomeWidgetSnapshot? buildHomeWidgetSnapshot({DateTime? now}) =>
-      _liveBuildHomeWidgetSnapshot(this, now: now);
+  /// 今日小组件默认快照（未绑定指定课表的卡片读它）。
+  ///
+  /// 与超级岛同域：按「我的课表」计算，当前课表切到 TA 时不跟着走；
+  /// 需要固定展示某份课表的卡片走 [buildHomeWidgetSnapshotForProfile]。
+  HomeWidgetSnapshot? buildHomeWidgetSnapshot({DateTime? now}) {
+    final scope = _liveMyTimetableScope(this);
+    return scope == null
+        ? null
+        : _liveBuildHomeWidgetSnapshot(this, scope, now: now);
+  }
 
   HomeWidgetSnapshot? buildHomeWidgetSnapshotForProfile(
     TimetableProfile profile, {

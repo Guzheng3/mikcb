@@ -122,6 +122,25 @@ void main() {
     expect(selection?.currentCourse.name, '我的高数');
   });
 
+  test('切到 TA 课表后，今日小组件默认快照仍是「我的课表」', () async {
+    final fake = TestMiuiLiveActivitiesService();
+    final day = DateTime.now();
+    final provider = await createProviderWithPartner(fake, day: day);
+    final myProfileId = provider.activeProfileId;
+
+    await provider.switchProfile(PartnerTimetableService.partnerProfileId);
+
+    final snapshot = provider.buildHomeWidgetSnapshot();
+    expect(snapshot, isNotNull);
+    // 未绑定指定课表的卡片读这份默认快照，必须还是我的课表。
+    expect(snapshot!.profileId, myProfileId);
+    final names = snapshot.todayCourses
+        .map((course) => course.name)
+        .toList(growable: false);
+    expect(names, contains('我的高数'));
+    expect(names, isNot(contains('TA的英语')));
+  });
+
   test('切到 TA 课表后，单节课提醒仍按「我的课表」排程', () async {
     final fake = TestMiuiLiveActivitiesService();
     final day = DateTime.now();
