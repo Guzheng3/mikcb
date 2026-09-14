@@ -42,7 +42,6 @@
 - 应用形态可选：经典界面 / 玻璃坞（液态玻璃底部导航）
 - 自定义壁纸与液态玻璃质感，课程卡片支持真折射玻璃样式
 - 课程统计：学期/周双视图、趋势、热力图、教师与教室排行、成就与多课表对比
-- 二维码面对面传输（喷泉码多帧，无需网络）
 - 教务系统网页登录导入、`.ics` 导入与导出、完整备份导出、恢复为当前课表或新课表
 - 界面支持简体中文、繁体中文（台湾 / 香港）、英文、日文、韩文
 - 关于页读取 GitHub Releases，支持应用内更新检测
@@ -132,7 +131,7 @@ flutter build apk --release --flavor prod --target-platform android-arm64
 - liquid_glass_widgets（液态玻璃界面）
 - fl_chart（统计图表）
 - flutter_miuix（HyperOS 风格组件）
-- mobile_scanner / fountain_codes（二维码传输）
+- qr_flutter（统计导出二维码）
 - Android Notification / Foreground Service / AlarmClock
 - GitHub Actions
 - GitHub Releases

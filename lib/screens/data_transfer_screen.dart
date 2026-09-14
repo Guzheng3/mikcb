@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
@@ -15,10 +14,6 @@ import '../services/transfer_package.dart';
 import '../services/transfer_undo_service.dart';
 import '../services/unified_transfer_service.dart';
 import 'ics_export_screen.dart';
-import '../services/qr_transfer/qr_transfer_codec.dart';
-import '../services/qr_transfer/qr_transfer_session.dart';
-import 'qr_transfer_send_screen.dart';
-import 'qr_transfer_scan_screen.dart';
 import 'transfer_preview_dialog.dart';
 import '../utils/app_toast.dart';
 import '../ui/hyperos/hyperos.dart';
@@ -33,7 +28,6 @@ class DataTransferScreen extends StatefulWidget {
 class _DataTransferScreenState extends State<DataTransferScreen> {
   bool _isExporting = false;
   bool _isImporting = false;
-  bool _qrImportInFlight = false;
   final UnifiedTransferService _transferService = UnifiedTransferService();
 
   @override
@@ -93,49 +87,6 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
                 variant: HyperosButtonVariant.secondary,
                 loading: _isImporting,
                 onPressed: _isImporting ? null : _confirmAndImport,
-              ),
-            ),
-          ),
-          const HyperosSectionGap(),
-          HyperosSectionLabel(text: l10n.qrTransferSectionTitle),
-          HyperosControlCard(
-            child: HyperosControlCardInset(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    l10n.qrTransferSectionSubtitle,
-                    style: HyperosTypography.listDetail(context),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.qrTransferPlaintextWarning,
-                    style: HyperosTypography.listDetail(
-                      context,
-                    ).copyWith(color: HyperosColors.error(context)),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      HyperosButton(
-                        label: l10n.qrTransferSendCurrent,
-                        onPressed: _isExporting ? null : _qrSendCurrent,
-                      ),
-                      HyperosButton(
-                        label: l10n.qrTransferSendAll,
-                        variant: HyperosButtonVariant.secondary,
-                        onPressed: _isExporting ? null : _qrSendAll,
-                      ),
-                      HyperosButton(
-                        label: l10n.qrTransferScanReceive,
-                        variant: HyperosButtonVariant.secondary,
-                        onPressed: _isImporting ? null : _qrReceive,
-                      ),
-                    ],
-                  ),
-                ],
               ),
             ),
           ),
@@ -388,141 +339,6 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
     }
   }
 
-  Future<void> _qrSendCurrent() async {
-    final provider = context.read<TimetableProvider>();
-    final l10n = AppLocalizations.of(context)!;
-    final scope = await _chooseQrScope();
-    if (scope == null || !mounted) {
-      return;
-    }
-    Set<String> selectedCourseIds = const {};
-    if (scope == TransferScope.selectedCourses ||
-        scope == TransferScope.selectedCourse) {
-      final selected = await _chooseCoursesForQr(provider);
-      if (selected == null || selected.isEmpty || !mounted) {
-        return;
-      }
-      selectedCourseIds = selected;
-    }
-    try {
-      final package = _transferService.buildCurrentPackage(
-        provider: provider,
-        channel: TransferChannel.qr,
-        scope: scope,
-        selectedCourseIds: selectedCourseIds,
-      );
-      final content = package.encode();
-      await _openQrSender(
-        Uint8List.fromList(utf8.encode(content)),
-        l10n.qrTransferSendCurrent,
-      );
-    } catch (error) {
-      _showTransferSendError(l10n, error);
-    }
-  }
-
-  Future<void> _qrSendAll() async {
-    final provider = context.read<TimetableProvider>();
-    final l10n = AppLocalizations.of(context)!;
-    try {
-      final content = _transferService
-          .buildFullPackage(provider: provider, channel: TransferChannel.qr)
-          .encode();
-      await _openQrSender(
-        Uint8List.fromList(utf8.encode(content)),
-        l10n.qrTransferSendAll,
-      );
-    } catch (error) {
-      _showTransferSendError(l10n, error);
-    }
-  }
-
-  Future<void> _openQrSender(Uint8List payloadBytes, String title) async {
-    try {
-      QrTransferEncoder.preflight(payloadBytes);
-    } on QrTransferLimitException {
-      if (mounted) {
-        showAppToast(
-          context,
-          message: AppLocalizations.of(context)!.qrTransferResourceLimit,
-          kind: AppToastKind.error,
-        );
-      }
-      return;
-    }
-    if (!mounted) {
-      return;
-    }
-    await HyperosNavigation.pushWidget<void>(
-      context,
-      QrTransferSendScreen(payloadBytes: payloadBytes, title: title),
-    );
-  }
-
-  void _qrReceive() {
-    if (_isImporting || _qrImportInFlight) {
-      return;
-    }
-    HyperosNavigation.pushWidget<void>(
-      context,
-      QrTransferScanScreen(onComplete: _handleQrReceivedBytes),
-    );
-  }
-
-  Future<void> _handleQrReceivedBytes(Uint8List bytes) async {
-    if (!mounted || _qrImportInFlight) {
-      return;
-    }
-    _qrImportInFlight = true;
-    setState(() {
-      _isImporting = true;
-    });
-
-    final l10n = AppLocalizations.of(context)!;
-    try {
-      late final String content;
-      try {
-        final decoded = StringBuffer();
-        final sink = utf8.decoder.startChunkedConversion(
-          StringConversionSink.withCallback(decoded.write),
-        );
-        sink.add(bytes);
-        sink.close();
-        content = decoded.toString();
-      } on FormatException {
-        throw const FormatException('qr_transfer_invalid_utf8');
-      }
-      await _previewAndApply(content, TransferChannel.qr);
-    } on FormatException catch (error) {
-      if (!mounted) {
-        return;
-      }
-      showAppToast(
-        context,
-        message: error.message == 'qr_transfer_invalid_utf8'
-            ? l10n.importFailedInvalidFile
-            : localizeServiceMessage(l10n, error.message),
-        kind: AppToastKind.error,
-      );
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      showAppToast(
-        context,
-        message: l10n.importFailedInvalidFile,
-        kind: AppToastKind.error,
-      );
-    } finally {
-      _qrImportInFlight = false;
-      if (mounted) {
-        setState(() {
-          _isImporting = false;
-        });
-      }
-    }
-  }
-
   Future<void> _previewAndApply(String content, TransferChannel channel) async {
     if (!mounted) {
       return;
@@ -606,145 +422,6 @@ class _DataTransferScreenState extends State<DataTransferScreen> {
           ? l10n.dataTransferUndoSuccess
           : l10n.dataTransferUndoFailed,
       kind: success ? AppToastKind.success : AppToastKind.error,
-    );
-  }
-
-  Future<TransferScope?> _chooseQrScope() {
-    final l10n = AppLocalizations.of(context)!;
-    return showHyperosDialog<TransferScope>(
-      context: context,
-      title: l10n.qrTransferSendCurrent,
-      // 说明文字用主文本墨色：默认 message 样式是次级灰，液态玻璃弹窗
-      // 通透材质上几乎不可见（用户反馈）。
-      body: Text(
-        l10n.qrTransferSectionSubtitle,
-        textAlign: TextAlign.center,
-        style: HyperosTypography.listDetail(context).copyWith(
-          color: HyperosColors.primaryText(context),
-        ),
-      ),
-      actions: [
-        HyperosDialogAction(
-          label: l10n.cancelAction,
-          onPressed: () => Navigator.pop(context),
-        ),
-        HyperosDialogAction(
-          label: l10n.qrTransferShareWeek,
-          onPressed: () => Navigator.pop(context, TransferScope.weekTimetable),
-        ),
-        HyperosDialogAction(
-          label: l10n.qrTransferShareSelectedCourses,
-          onPressed: () =>
-              Navigator.pop(context, TransferScope.selectedCourses),
-        ),
-        HyperosDialogAction(
-          label: l10n.qrTransferShareTimeTemplate,
-          onPressed: () => Navigator.pop(context, TransferScope.timeTemplate),
-        ),
-        HyperosDialogAction(
-          label: l10n.qrTransferSendCurrent,
-          isPrimary: true,
-          onPressed: () =>
-              Navigator.pop(context, TransferScope.currentTimetable),
-        ),
-      ],
-    );
-  }
-
-  /// 多选课程弹窗。内容必须包在 [HyperosSheetFrame] 里：showHyperosSheet
-  /// 只提供压暗层与浮层定位，面板背景（磨砂/液态玻璃）由 Frame 绘制，
-  /// 裸列表会渲染成全透明浮层（无 Material、无背景）。课程按
-  /// courseGroups（科目）聚合勾选，避免同一科目多次出现逐条列出。
-  Future<Set<String>?> _chooseCoursesForQr(TimetableProvider provider) {
-    final selected = <String>{};
-    final l10n = AppLocalizations.of(context)!;
-    final courseGroups = provider.courseGroups;
-    return showHyperosSheet<Set<String>>(
-      context: context,
-      // 列表可滚动时禁用下拉关闭，避免拖拽关闭手势与列表滚动竞争。
-      enableDrag: false,
-      builder: (sheetContext) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            final maxListHeight = MediaQuery.sizeOf(context).height * 0.52;
-            return HyperosSheetFrame(
-              chrome: HyperosSheetChrome.floating,
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    l10n.qrTransferShareSelectedCourses,
-                    textAlign: TextAlign.center,
-                    style: HyperosTypography.sheetTitle(context),
-                  ),
-                  const SizedBox(height: 12),
-                  if (courseGroups.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 32),
-                      child: Text(
-                        l10n.noCoursesInCurrentProfile,
-                        textAlign: TextAlign.center,
-                        style: HyperosTypography.sectionDescription(context),
-                      ),
-                    )
-                  else
-                    ConstrainedBox(
-                      constraints: BoxConstraints(maxHeight: maxListHeight),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            for (final group in courseGroups)
-                              HyperosChoiceTile(
-                                variant: HyperosChoiceVariant.dialog,
-                                title: group.name,
-                                subtitle: group.teacher.isNotEmpty
-                                    ? Text(
-                                        group.teacher,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      )
-                                    : null,
-                                selected: group.courses.any(
-                                  (course) => selected.contains(course.id),
-                                ),
-                                highlightSelectedText: true,
-                                onTap: () {
-                                  setModalState(() {
-                                    final groupIds = group.courses
-                                        .map((course) => course.id)
-                                        .toSet();
-                                    final allSelected = groupIds.every(
-                                      selected.contains,
-                                    );
-                                    if (allSelected) {
-                                      selected.removeAll(groupIds);
-                                    } else {
-                                      selected.addAll(groupIds);
-                                    }
-                                  });
-                                },
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: 12),
-                  HyperosButton(
-                    label: l10n.qrTransferSelectCoursesDone,
-                    expand: true,
-                    onPressed: () => Navigator.pop(
-                      sheetContext,
-                      Set<String>.from(selected),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
     );
   }
 

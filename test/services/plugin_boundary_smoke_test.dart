@@ -1,73 +1,13 @@
-import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:university_timetable/screens/qr_transfer_scan_screen.dart';
 import 'package:university_timetable/services/app_migration_service.dart';
-import 'package:university_timetable/services/qr_transfer/qr_transfer_codec.dart';
 import 'package:university_timetable/utils/managed_image_storage.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 // ignore: depend_on_referenced_packages
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
-
-import '../helpers_test_app.dart';
-
-class _FakeMobileScannerPlatform extends MobileScannerPlatform {
-  final StreamController<BarcodeCapture?> _barcodes =
-      StreamController<BarcodeCapture?>.broadcast();
-  final StreamController<TorchState> _torch =
-      StreamController<TorchState>.broadcast();
-  final StreamController<double> _zoom = StreamController<double>.broadcast();
-  int startCalls = 0;
-  int stopCalls = 0;
-  int disposeCalls = 0;
-  StartOptions? lastStartOptions;
-
-  @override
-  Stream<BarcodeCapture?> get barcodesStream => _barcodes.stream;
-
-  @override
-  Stream<TorchState> get torchStateStream => _torch.stream;
-
-  @override
-  Stream<double> get zoomScaleStateStream => _zoom.stream;
-
-  @override
-  Widget buildCameraView() => const SizedBox.expand();
-
-  @override
-  Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
-    startCalls++;
-    lastStartOptions = startOptions;
-    return const MobileScannerViewAttributes(
-      cameraDirection: CameraFacing.back,
-      currentTorchMode: TorchState.off,
-      numberOfCameras: 1,
-      size: Size(640, 480),
-    );
-  }
-
-  @override
-  Future<void> stop() async {
-    stopCalls++;
-  }
-
-  @override
-  Future<void> dispose() async {
-    disposeCalls++;
-    await _barcodes.close();
-    await _torch.close();
-    await _zoom.close();
-  }
-
-  void emit(BarcodeCapture capture) {
-    _barcodes.add(capture);
-  }
-}
 
 class _FakeWebViewController extends PlatformWebViewController {
   // ignore: use_super_parameters, the platform interface requires a named protected constructor.
@@ -134,72 +74,6 @@ class _FakeWebViewPlatform extends WebViewPlatform {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  late MobileScannerPlatform previousScannerPlatform;
-
-  setUp(() {
-    previousScannerPlatform = MobileScannerPlatform.instance;
-  });
-
-  tearDown(() {
-    MobileScannerPlatform.instance = previousScannerPlatform;
-    MobileScannerController.resetPlatformSessionOwner();
-  });
-
-  testWidgets('QR scan imports a complete stream and tears down the camera', (
-    tester,
-  ) async {
-    final fakePlatform = _FakeMobileScannerPlatform();
-    MobileScannerPlatform.instance = fakePlatform;
-
-    Uint8List? imported;
-    await tester.pumpWidget(
-      TestApp(
-        home: QrTransferScanScreen(
-          onComplete: (bytes) async {
-            imported = bytes;
-          },
-        ),
-      ),
-    );
-    await tester.pump();
-
-    expect(fakePlatform.startCalls, 1);
-    expect(
-      fakePlatform.lastStartOptions?.formats,
-      contains(BarcodeFormat.qrCode),
-    );
-
-    final original = Uint8List.fromList(
-      List<int>.generate(800, (index) => (index * 37 + 11) & 0xff),
-    );
-    final encoder = QrTransferEncoder.prepare(original);
-    final frames = List<String>.generate(
-      encoder.info.sourceSymbolCount * 8,
-      encoder.frameTextFor,
-    )..shuffle(Random(7));
-
-    for (final frame in frames) {
-      fakePlatform.emit(BarcodeCapture(barcodes: [Barcode(rawValue: frame)]));
-      await tester.pump();
-      if (imported != null) {
-        break;
-      }
-    }
-    await tester.runAsync(() async {
-      for (var i = 0; i < 50 && imported == null; i++) {
-        await Future<void>.delayed(const Duration(milliseconds: 100));
-      }
-    });
-    await tester.pump();
-
-    expect(imported, orderedEquals(original));
-    expect(fakePlatform.stopCalls, greaterThanOrEqualTo(1));
-
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-    expect(fakePlatform.disposeCalls, greaterThanOrEqualTo(1));
-  });
 
   test(
     'photo picker cancellation and byte reads use the platform seam',
