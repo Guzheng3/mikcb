@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
@@ -263,7 +264,16 @@ class QrTransferEncoder {
   }
 
   /// 用原始（未压缩）字节构建编码器；空数据不允许传输。
-  factory QrTransferEncoder.prepare(Uint8List rawBytes) {
+  ///
+  /// [degreeRandom] 仅供测试注入：LT 每帧的度数由 `fountain_codes` 的
+  /// `RobustSoliton` 从随机源采样，而该随机源默认无种子，同一份数据在不同
+  /// 进程会产出不同的帧序列。丢包模拟测试要让「固定丢包 pattern」作用在
+  /// 同一串帧上、结果可复现，就必须钉住它。生产路径不传，度数序列保持随机
+  /// ——这正是喷泉码抗丢包的来源。
+  factory QrTransferEncoder.prepare(
+    Uint8List rawBytes, {
+    Random? degreeRandom,
+  }) {
     final prepared = _preparePayload(rawBytes);
     final compressedPayload = prepared.compressedPayload;
     final symbolSize = pickSymbolSize(compressedPayload.length);
@@ -280,6 +290,7 @@ class QrTransferEncoder {
       maxDegree: QrTransferLimits.maxDegreeForSourceSymbolCount(
         sourceSymbolCount,
       ),
+      random: degreeRandom,
     )..setSourceData(compressedPayload);
 
     return QrTransferEncoder._(info: info, codec: codec);

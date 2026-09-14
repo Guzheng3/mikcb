@@ -7,6 +7,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:university_timetable/services/qr_transfer/qr_transfer_codec.dart';
 import 'package:university_timetable/services/qr_transfer/qr_transfer_session.dart';
 
+/// 编码端帧度数序列的种子。
+///
+/// LT 每帧的度数由 `fountain_codes` 的 `RobustSoliton` 从一个默认无种子的
+/// 随机源采样，因此同一份数据在不同进程会产出不同的帧序列。本文件断言的是
+/// 「固定丢包 pattern 下仍能还原」，帧序列一变结论就可能翻转：实测 300 条
+/// 度数序列里 40 条（13%）在 3× 帧预算内无法完成——k=3 这种小 k 下喷泉码
+/// 是重尾分布，收满预算也拿不到满秩。所以单次随机序列的断言必然偶发失败，
+/// 必须钉住序列。
+///
+/// 种子 17 取的是完成提交数的中位数（300 条里能完成的：min 3 / p50 4 /
+/// p90 5 / max 6，预算 9），即一个有代表性、且留有余量的场景，而不是恰好
+/// 3 帧就完成的幸运序列。
+const int _degreeSeed = 17;
+
 /// 模拟一轮「发送端逐帧播放，接收端扫码」：
 /// 打乱帧序、丢弃一部分帧、重复若干帧（模拟反复扫同一屏），
 /// 返回解码完成的帧数，供测试断言。
@@ -89,7 +103,10 @@ void main() {
       }),
     );
 
-    final encoder = QrTransferEncoder.prepare(original);
+    final encoder = QrTransferEncoder.prepare(
+      original,
+      degreeRandom: Random(_degreeSeed),
+    );
     expect(encoder.info.sourceSymbolCount, greaterThan(1));
 
     final decoder = QrTransferDecoder();
@@ -111,6 +128,23 @@ void main() {
 
     expect(decoder.isComplete, isTrue);
     expect(qrTransferDecompress(decoder.decodedPayload!), original);
+  });
+
+  test('注入固定度随机源后帧序列可复现', () {
+    // 度随机源没接进编码器时，两次 prepare 会各自采一套度数，帧文本必然不同。
+    final original = utf8Bytes('可复现性检查' * 30);
+    final first = QrTransferEncoder.prepare(
+      original,
+      degreeRandom: Random(_degreeSeed),
+    );
+    final second = QrTransferEncoder.prepare(
+      original,
+      degreeRandom: Random(_degreeSeed),
+    );
+
+    for (var i = 0; i < 8; i++) {
+      expect(first.nextFrame(), second.nextFrame());
+    }
   });
 
   test('帧文本可放入二维码且可解析', () {
