@@ -16,12 +16,19 @@ class WithuCoupleConfig {
   final String? lastMyTimetableHash;
   final DateTime? lastMyTimetableSyncedAt;
 
+  /// [lastMyTimetableHash] / [lastMyTimetableSyncedAt] 所属的 withU 账号。
+  ///
+  /// 同步点只在同账号下才有意义：换账号后沿用旧同步点，会把本地课表误判成
+  /// 「已同步」，于是跳过拉取、甚至把本地内容覆盖到新账号的云端。
+  final String? lastMyTimetableAccount;
+
   const WithuCoupleConfig({
     this.baseUrl = defaultBaseUrl,
     this.lastPulledAt,
     this.lastRemoteContentHash,
     this.lastMyTimetableHash,
     this.lastMyTimetableSyncedAt,
+    this.lastMyTimetableAccount,
   });
 
   static bool isBuiltInHost(String host) {
@@ -106,6 +113,7 @@ class WithuCoupleConfig {
     String? lastRemoteContentHash,
     String? lastMyTimetableHash,
     DateTime? lastMyTimetableSyncedAt,
+    String? lastMyTimetableAccount,
     bool clearLastPulledAt = false,
     bool clearLastRemoteContentHash = false,
     bool clearLastMyTimetableHash = false,
@@ -125,6 +133,8 @@ class WithuCoupleConfig {
       lastMyTimetableSyncedAt: clearLastMyTimetableSyncedAt
           ? null
           : (lastMyTimetableSyncedAt ?? this.lastMyTimetableSyncedAt),
+      lastMyTimetableAccount:
+          lastMyTimetableAccount ?? this.lastMyTimetableAccount,
     );
   }
 
@@ -134,6 +144,7 @@ class WithuCoupleConfig {
     'lastRemoteContentHash': lastRemoteContentHash,
     'lastMyTimetableHash': lastMyTimetableHash,
     'lastMyTimetableSyncedAt': lastMyTimetableSyncedAt?.toIso8601String(),
+    'lastMyTimetableAccount': lastMyTimetableAccount,
   };
 
   factory WithuCoupleConfig.fromJson(Map<String, dynamic> json) {
@@ -145,6 +156,7 @@ class WithuCoupleConfig {
       lastMyTimetableSyncedAt: DateTime.tryParse(
         json['lastMyTimetableSyncedAt'] as String? ?? '',
       ),
+      lastMyTimetableAccount: json['lastMyTimetableAccount'] as String?,
     );
   }
 }

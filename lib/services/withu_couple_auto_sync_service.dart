@@ -92,7 +92,7 @@ class WithuCoupleAutoSyncService {
       final timetableHash = _timetableHash(provider);
       final settingsHash = _settingsHash(provider);
       final syncedTimetableHash =
-          (await _timetableService.loadConfig()).lastMyTimetableHash;
+          (await _timetableService.myTimetableSyncPoint()).hash;
       var shouldUploadTimetable =
           forceTimetableUpload || timetableHash != _lastTimetableHash;
       if (shouldUploadTimetable) {
@@ -216,8 +216,7 @@ class WithuCoupleAutoSyncService {
     if (!await _hasSavedSession()) {
       return;
     }
-    final config = await _timetableService.loadConfig();
-    final syncedHash = config.lastMyTimetableHash;
+    final syncedHash = (await _timetableService.myTimetableSyncPoint()).hash;
     if (syncedHash == null) {
       return;
     }

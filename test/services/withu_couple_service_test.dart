@@ -807,7 +807,39 @@ void main() {
     expect(history.single.name, 'Default');
     expect(history.single.courseCount, 2);
     expect(history.single.savedAt, DateTime(2026, 9, 8, 10, 20, 30));
+    expect(history.single.semesterAnchor, DateTime(2026, 3, 2));
     expect(history.single.snapshot, isEmpty);
+  });
+
+  test('history reads the millisecond semester start the server sends', () async {
+    final storage = _MemorySecureStorage();
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _historyUrl: _jsonResponse({
+        'success': true,
+        'max_entries': 13,
+        'history': [
+          {
+            'id': 41,
+            'changeType': 'save',
+            'profileName': 'Default',
+            'courseCount': 2,
+            'currentWeek': 3,
+            // 真实回传里这一列是毫秒时间戳字符串，与管理台的
+            // withu_tt_millis_date 同口径，而不是 ISO 日期。
+            'semesterStartDate':
+                '${DateTime(2026, 3, 2).millisecondsSinceEpoch}',
+            'createdAt': '2026-09-08 10:20:30',
+          },
+        ],
+      }),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+
+    final history = await service.fetchMyHistory();
+
+    expect(history.single.semesterAnchor, DateTime(2026, 3, 2));
   });
 
   test('rollback restores cloud history and does not overwrite it', () async {
@@ -1189,6 +1221,48 @@ void main() {
       );
     },
   );
+
+  test('sync point is dropped once the withU account changes', () async {
+    final storage = _MemorySecureStorage();
+    await StorageService().setMigratedAppLogsDefault(true);
+    final client = _FakeClient({
+      _loginUrl: _loginResponse(),
+      _saveUrl: _jsonResponse({'success': true}),
+    });
+    final auth = await _connectedAuthService(client, storage);
+    final service = WithuCoupleTimetableService(authService: auth);
+    final provider = _provider();
+    await provider.initialize();
+    await provider.addCourse(
+      Course(
+        id: 'course-1',
+        name: 'Math',
+        teacher: 'Teacher',
+        location: 'A101',
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        startTime: '08:00',
+        endTime: '09:40',
+      ),
+    );
+
+    expect(
+      await service.uploadMyTimetableForPartner(provider: provider),
+      isNull,
+    );
+    expect((await service.myTimetableSyncPoint()).hash, isNotNull);
+
+    const store = WithuCoupleConfigStore();
+    final config = await store.load();
+    expect(config.lastMyTimetableAccount, 'alice');
+
+    // 换成别的账号后旧同步点必须失效：否则本地课表会被误判成「已同步」，
+    // 同步时跳过拉取，反而把本地内容覆盖到新账号的云端。
+    await store.save(config.copyWith(lastMyTimetableAccount: 'bob'));
+
+    expect(await service.myTimetableSyncPoint(), (hash: null, syncedAt: null));
+  });
 
   test('failed upload keeps the change pending for the next sync', () async {
     final storage = _MemorySecureStorage();

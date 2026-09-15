@@ -42,12 +42,14 @@ class WithuCoupleTimetableService {
   Future<void> disconnect() async {
     await _authService.disconnect();
     final config = await _configStore.load();
+    // 只清「对方课表」的拉取标记，重新连接后需要无条件重拉一次。
+    // 「我的课表」同步点要留着：它记录本机上传到哪个进度，清掉的话重连后
+    // 自动同步会把本地未上传的改动判成落后版本，直接被云端内容覆盖。
+    // 换账号的安全性交给 [myTimetableSyncPoint] 的账号校验。
     await _configStore.save(
       config.copyWith(
         clearLastPulledAt: true,
         clearLastRemoteContentHash: true,
-        clearLastMyTimetableHash: true,
-        clearLastMyTimetableSyncedAt: true,
       ),
     );
   }
@@ -174,12 +176,12 @@ class WithuCoupleTimetableService {
       final localHash = localContent == null
           ? null
           : sha256.convert(utf8.encode(localContent)).toString();
-      final config = await loadConfig();
+      final syncPoint = await myTimetableSyncPoint();
       final localChanged =
-          localHash == null || localHash != config.lastMyTimetableHash;
+          localHash == null || localHash != syncPoint.hash;
       final localIsNewer =
           localChanged &&
-          !_cloudIsNewerThanLocal(config: config, payload: payload);
+          !_cloudIsNewerThanLocal(syncedAt: syncPoint.syncedAt, payload: payload);
       if (localContent != null &&
           _jsonEquals(jsonDecode(localContent), cloudContent)) {
         return const WithuCouplePullResult(
@@ -353,6 +355,23 @@ class WithuCoupleTimetableService {
     return _myTimetableContentHash(package.content);
   }
 
+  /// 本机「我的课表」的同步点：上次上传成功的内容哈希与时间。
+  ///
+  /// 只有当前登录账号与 [WithuCoupleConfig.lastMyTimetableAccount] 一致时才
+  /// 返回它。配置里没记账号（老版本写入的配置）同样视为无效，退回
+  /// [_cloudIsNewerThanLocal] 的时间戳判断，避免把别的账号的进度当成自己的。
+  Future<({String? hash, DateTime? syncedAt})> myTimetableSyncPoint() async {
+    final config = await _configStore.load();
+    final session = await _authService.loadSession();
+    if (session == null || config.lastMyTimetableAccount != session.username) {
+      return (hash: null, syncedAt: null);
+    }
+    return (
+      hash: config.lastMyTimetableHash,
+      syncedAt: config.lastMyTimetableSyncedAt,
+    );
+  }
+
   Future<String?> uploadPersonalSettings({
     required TimetableProvider provider,
   }) async {
@@ -421,11 +440,17 @@ class WithuCoupleTimetableService {
       return;
     }
     final syncedHash = _myTimetableContentHash(syncedContent);
+    // 会话可能在请求途中过期并被清掉，没有账号就无法给同步点归属，宁可不记。
+    final session = await _authService.loadSession();
+    if (session == null) {
+      return;
+    }
     final config = await _configStore.load();
     await _configStore.save(
       config.copyWith(
         lastMyTimetableHash: syncedHash,
         lastMyTimetableSyncedAt: DateTime.now(),
+        lastMyTimetableAccount: session.username,
       ),
     );
   }
@@ -442,10 +467,9 @@ class WithuCoupleTimetableService {
   }
 
   bool _cloudIsNewerThanLocal({
-    required WithuCoupleConfig config,
+    required DateTime? syncedAt,
     required Map<String, dynamic> payload,
   }) {
-    final syncedAt = config.lastMyTimetableSyncedAt;
     if (syncedAt == null) {
       return true;
     }

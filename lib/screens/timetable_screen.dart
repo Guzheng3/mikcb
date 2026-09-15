@@ -9114,16 +9114,29 @@ class _TimetableScreenState extends State<TimetableScreen>
       provider: provider,
       historyId: entry.id,
     );
-    final restored = result.status != WithuCouplePullStatus.failed;
     if (!mounted) {
       return;
     }
-    if (restored) {
-      showAppToast(
-        context,
-        message: AppLocalizations.of(context)!.coupleHistoryRestored,
-        kind: AppToastKind.success,
-      );
+
+    // 回滚本身只在服务端换版本，本地是否真的变了取决于紧随其后的拉取：
+    // unchanged 意味着本地已是目标内容（或本地改动待上传），不该报「已恢复」。
+    final l10n = AppLocalizations.of(context)!;
+    switch (result.status) {
+      case WithuCouplePullStatus.imported:
+      case WithuCouplePullStatus.updated:
+        showAppToast(
+          context,
+          message: l10n.coupleHistoryRestored,
+          kind: AppToastKind.success,
+        );
+      case WithuCouplePullStatus.failed:
+        showAppToast(
+          context,
+          message: l10n.coupleHistoryRestoreFailed,
+          kind: AppToastKind.error,
+        );
+      case WithuCouplePullStatus.unchanged:
+        break;
     }
   }
 

@@ -66,9 +66,7 @@ class CoupleTimetableHistoryEntry {
     return CoupleTimetableHistoryEntry(
       id: (json['id'] as num?)?.toInt().toString() ?? '',
       role: CoupleTimetableRole.mine,
-      semesterAnchor: DateTime.tryParse(
-        json['semesterStartDate'] as String? ?? '',
-      ),
+      semesterAnchor: _parseSemesterAnchor(json['semesterStartDate']),
       name: json['profileName'] as String? ?? '',
       courseCount: (json['courseCount'] as num?)?.toInt() ?? 0,
       savedAt:
@@ -77,5 +75,33 @@ class CoupleTimetableHistoryEntry {
       changeType: json['changeType'] as String? ?? 'manual',
       snapshot: const <String, dynamic>{},
     );
+  }
+
+  /// 服务端回传的开学日期是**毫秒时间戳**（与 `TimetableSettings.toJson`
+  /// 写出的 `millisecondsSinceEpoch` 同口径，管理台的 `withu_tt_millis_date`
+  /// 也按毫秒解析），但后台允许手工粘贴任意 JSON，因此日期字符串也要认。
+  /// 只走 [DateTime.tryParse] 的话，毫秒串一律解析失败，开学日期恒为空。
+  static DateTime? _parseSemesterAnchor(Object? raw) {
+    if (raw is num) {
+      return _fromMillis(raw.toInt());
+    }
+    if (raw is! String) {
+      return null;
+    }
+    final trimmed = raw.trim();
+    final millis = int.tryParse(trimmed);
+    if (millis != null) {
+      return _fromMillis(millis);
+    }
+    return DateTime.tryParse(trimmed);
+  }
+
+  /// 0 与负数视为「未设置」，沿用管理台的 `$millis <= 0` 判定，
+  /// 避免把空值渲染成 1970-01-01。
+  static DateTime? _fromMillis(int? millis) {
+    if (millis == null || millis <= 0) {
+      return null;
+    }
+    return DateTime.fromMillisecondsSinceEpoch(millis);
   }
 }
