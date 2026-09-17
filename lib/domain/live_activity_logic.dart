@@ -23,7 +23,6 @@ enum LiveActivityStage {
   beforeClass,
   duringClassStatusBar,
   duringClass,
-  beforeEnd,
 }
 
 /// Pure live-activity helpers extracted from [TimetableProvider].
@@ -197,8 +196,6 @@ class LiveActivityLogic {
         return settings.liveEnableDuringClass &&
             (settings.livePromoteDuringClass ||
                 settings.liveShowDuringClassNotification);
-      case LiveActivityStage.beforeEnd:
-        return settings.liveEnableBeforeEnd;
     }
   }
 
@@ -209,19 +206,7 @@ class LiveActivityLogic {
     if (canDisplayStage(LiveActivityStage.duringClass, settings)) {
       return LiveActivityStage.duringClass;
     }
-    if (canDisplayStage(LiveActivityStage.beforeEnd, settings)) {
-      return LiveActivityStage.beforeEnd;
-    }
     return null;
-  }
-
-  static DateTime resolveEndReminderStart(
-    DateTime startTime,
-    DateTime endTime,
-    Duration endReminderWindow,
-  ) {
-    final endReminderStart = endTime.subtract(endReminderWindow);
-    return endReminderStart.isBefore(startTime) ? startTime : endReminderStart;
   }
 
   static LiveActivityStage? resolveLiveActivityStage({
@@ -230,7 +215,6 @@ class LiveActivityLogic {
     required DateTime endTime,
     required DateTime aheadTime,
     required TimetableSettings settings,
-    required Duration endReminderWindow,
   }) {
     if (currentTime.isBefore(aheadTime) || !currentTime.isBefore(endTime)) {
       return null;
@@ -255,30 +239,8 @@ class LiveActivityLogic {
       return null;
     }
 
-    if (startMinutes > 0) {
-      if (canDisplayStage(LiveActivityStage.beforeEnd, settings)) {
-        return LiveActivityStage.beforeEnd;
-      }
-      return canDisplayStage(LiveActivityStage.duringClass, settings)
-          ? LiveActivityStage.duringClass
-          : null;
-    }
-
-    final endReminderStart = resolveEndReminderStart(
-      startTime,
-      endTime,
-      endReminderWindow,
-    );
-    if (!currentTime.isBefore(endReminderStart)) {
-      if (canDisplayStage(LiveActivityStage.beforeEnd, settings)) {
-        return LiveActivityStage.beforeEnd;
-      }
-      if (canDisplayStage(LiveActivityStage.duringClass, settings)) {
-        return LiveActivityStage.duringClass;
-      }
-      return null;
-    }
-
+    // 下课提醒（beforeEnd）阶段已移除：过了重点提醒起点后一律课中，
+    // 直到 endTime 结束。
     return canDisplayStage(LiveActivityStage.duringClass, settings)
         ? LiveActivityStage.duringClass
         : null;

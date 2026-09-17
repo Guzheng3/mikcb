@@ -941,58 +941,12 @@
       }
     }
   },
-  "liveIslandVisualTitle": "Left Icon & Expanded View",
   "liveIslandVisualSubtitle": "The left text icon, expanded large icon, and custom image are all stored separately for the current stage",
-  "liveMiuiLabelImageTitle": "Xiaomi Island Left Text Icon",
-  "liveMiuiLabelImageSubtitle": "Only effective on Xiaomi-style island layouts. It renders course name or location into the left icon slot",
-  "liveMiuiLabelContentLabel": "Left Text Content",
-  "liveMiuiLabelStyleLabel": "Left Icon Style",
-  "liveMiuiLabelLogoTitle": "Left Icon Logo",
-  "liveMiuiLabelLogoSubtitle": "Only applies to the icon + text style. If not selected, the app icon remains the fallback",
-  "liveMiuiLabelLogoCornerRadiusLabel": "Left Icon Corner Radius {value}",
-  "@liveMiuiLabelLogoCornerRadiusLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
   "liveMiuiLabelLogoCornerRadiusTitle": "Left icon corner radius",
-  "liveMiuiLabelFontSizeLabel": "Left Text Size {value}",
-  "@liveMiuiLabelFontSizeLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
   "liveMiuiLabelFontSizeTitle": "Left text size",
-  "liveMiuiLabelOffsetXLabel": "Left Text Horizontal Offset {value}",
-  "@liveMiuiLabelOffsetXLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
   "liveMiuiLabelOffsetXTitle": "Left text horizontal offset",
-  "liveMiuiLabelOffsetYLabel": "Left Text Vertical Offset {value}",
-  "@liveMiuiLabelOffsetYLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
   "liveMiuiLabelOffsetYTitle": "Left text vertical offset",
-  "liveMiuiLabelFontWeightLabel": "Left Text Weight",
-  "liveMiuiLabelRenderQualityLabel": "Left Text Render Quality",
-  "liveMiuiExpandedIconLabel": "Expanded Large Icon",
-  "selectImageAction": "Choose Image",
-  "replaceImageAction": "Replace Image",
-  "liveDisplayConfigModeTitle": "Configuration Mode",
   "liveDisplayConfigModeSubtitle": "When enabled, during-class and before-end reminders fully follow the before-class display settings, and the controls below become read-only",
-  "followBeforeClassDisplayTitle": "Follow Before-class Display Settings",
   "liveKeepAliveTitle": "Keep Alive",
   "liveKeepAliveOptionsTitle": "Keep-alive Options",
   "liveKeepAliveOptionsSubtitle": "Used to improve island and reminder stability in background scenarios",
@@ -1017,7 +971,6 @@
   "liveKeepAliveEntrySubtitle": "Hide from recents, accessibility keep-alive helper, and permission shortcuts",
   "liveTestingEntryTitle": "Testing & Diagnostics",
   "liveTestingEntrySubtitle": "Send test notifications and inspect island diagnostics logs",
-  "followBeforeClassSetting": "Follow Before-class Settings",
   "liveReminderTimingTitle": "Reminder Timing",
   "liveReminderSwitchesTitle": "Reminder Switches",
   "liveReminderSwitchesSubtitle": "Different reminder windows can be combined freely; these switches do not replace each other",
@@ -1050,6 +1003,8 @@
   "duringClassStatusNotificationPersistent": "Keep a regular during-class notification, then switch before class ends",
   "enableIslandDisplayTitle": "Show Island",
   "enableIslandDisplaySubtitle": "Disable this if you never want the app to trigger system island presentation",
+  "livePermanentNotificationTitle": "Persistent notification",
+  "livePermanentNotificationSubtitle": "Keep the notification in the shade even with no class, showing the couple card content",
   "liveTimeThresholdTitle": "Timing Thresholds",
   "liveTimeThresholdSubtitle": "Controls when reminders appear, when highlighted reminders start, and when to switch to second-level countdown",
   "beforeClassPopupLabel": "Before-class trigger",
@@ -1057,15 +1012,6 @@
   "@beforeClassMinutesOption": {
     "placeholders": {
       "minutes": {
-        "type": "int"
-      }
-    }
-  },
-  "beforeEndSecondsLabel": "Before-end second-level threshold",
-  "beforeEndSecondsOption": "{seconds} sec",
-  "@beforeEndSecondsOption": {
-    "placeholders": {
-      "seconds": {
         "type": "int"
       }
     }
@@ -1082,25 +1028,10 @@
   "timeCorrectionHelp": "If the school bell is early, shift earlier. If the bell is late, shift later.",
   "duringEndTimeDisplayLabel": "During-class / before-end time style",
   "duringEndTimeDisplayHelp": "Choose whether compact reminders show nearest time or the total remaining time.",
-  "liveDisplayContentTitle": "Display Content",
   "liveDisplayContentSubtitle": "These settings only affect the current stage and do not change the other reminder stage",
   "showCourseNameTitle": "Show Course Name",
-  "preferShortNameTitle": "Prefer Short Course Name",
-  "preferShortNameSubtitle": "Short names work best within 3 characters",
-  "showLocationTitle": "Show Location",
-  "showCountdownTitle": "Show Countdown",
-  "countdownFormatLabel": "Countdown Format",
   "countdownFormatHelp": "Minute-only styles refresh by minute; second-based styles refresh by second.",
-  "showStageTextTitle": "Show Stage Label",
-  "showStageTextSubtitle": "If countdown is hidden, you can still show labels like before class / in class / before end",
-  "hidePrefixTextTitle": "Hide Prefix Text",
-  "hidePrefixTextSubtitle": "For example, hide prefixes like “before class”",
   "liveIslandPreviewTitle": "Super Island preview",
-  "liveIslandPreviewFollowBadge": "Following before-class display settings; adjust those to preview changes",
-  "liveIslandPreviewStageBeforeClass": "Before class",
-  "liveIslandPreviewStageInClass": "In class",
-  "liveIslandPreviewStageBeforeEnd": "Before end",
-  "liveIslandPreviewAboutToEnd": "Ending soon",
   "liveIslandPreviewUntilClassStart": "Starts in {time}",
   "@liveIslandPreviewUntilClassStart": {
     "placeholders": {
@@ -1437,47 +1368,6 @@
       }
     }
   },
-  "liveClassReminderLeadSummaryImmediate": "Switch to the focused reminder as soon as class starts, then show second-level countdown in the last {seconds}s before class ends",
-  "@liveClassReminderLeadSummaryImmediate": {
-    "placeholders": {
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "liveClassReminderLeadSummaryKeepNormal": "Keep the normal in-class notification first, switch to focused / class-end reminder {minutes} minutes before class ends, then show second-level countdown in the last {seconds}s",
-  "@liveClassReminderLeadSummaryKeepNormal": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "liveClassReminderLeadSummaryIsland": "Switch to the Island and focused reminder {minutes} minutes before class ends, then show second-level countdown in the last {seconds}s",
-  "@liveClassReminderLeadSummaryIsland": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "liveClassReminderLeadSummaryFocused": "Start the focused reminder {minutes} minutes before class ends, then show second-level countdown in the last {seconds}s",
-  "@liveClassReminderLeadSummaryFocused": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
   "liveSettingsEntrySubtitle": "Reminder timing, Island display, notification bar, and display content",
   "timetableProfilesEntrySubtitle": "Create, switch, duplicate, rename, and delete timetables",
   "homeTitleSectionTitle": "Home title",
@@ -1535,7 +1425,6 @@
   "appearanceTextColorsSectionSubtitle": "Customize course card, weekday bar, and time axis text colors",
   "defaultTimetablePreviewName": "Default timetable",
   "beforeClassDisplaySettingsTitle": "Before-class reminder display",
-  "duringEndDisplaySettingsTitle": "In-class / end reminder display",
   "liveDisplaySummaryShortName": "Short name",
   "liveDisplaySummaryCourseName": "Course name",
   "liveDisplaySummaryLocation": "Location",
@@ -3935,20 +3824,6 @@
   "liveCountdownTextStyleSecondOnlyCn": "Seconds only (5 s)",
   "liveCountdownTextStyleSecondOnlyShort": "s (5s)",
   "liveCountdownTextStyleSecondOnlySlash": "/s (5/s)",
-  "miuiIslandLabelStyleTextOnly": "Text only",
-  "miuiIslandLabelStyleIconAndText": "Icon + text",
-  "miuiIslandLabelContentCourseName": "Course name",
-  "miuiIslandLabelContentLocation": "Room",
-  "miuiIslandLabelContentCourseNameAndLocation": "Course + room",
-  "miuiIslandLabelFontWeightRegular": "Regular",
-  "miuiIslandLabelFontWeightMedium": "Medium",
-  "miuiIslandLabelFontWeightBold": "Bold",
-  "miuiIslandLabelRenderQualityStandard": "Standard",
-  "miuiIslandLabelRenderQualityHigh": "High",
-  "miuiIslandLabelRenderQualityUltra": "Ultra",
-  "miuiIslandExpandedIconAppIcon": "App icon",
-  "miuiIslandExpandedIconCustomImage": "Custom image",
-  "miuiIslandExpandedIconHidden": "Hidden",
   "liveBeforeClassQuickActionNone": "Hidden",
   "liveBeforeClassQuickActionSilent": "Turn on silent mode",
   "liveBeforeClassQuickActionDoNotDisturb": "Turn on Do Not Disturb",
@@ -5039,6 +4914,7 @@
   "logLiveUpdateSnapshotSyncFailed": "Failed to sync Live Island timetable snapshot",
   "logLiveUpdateSnapshotClearFailed": "Failed to clear Live Island timetable snapshot",
   "logLiveUpdateSuspendTriggersFailed": "Failed to suspend Live Island schedule triggers",
+  "logLiveUpdatePermanentNotificationFailed": "Failed to sync the persistent notification switch",
   "logLiveUpdateTestRequested": "User requested manual Live Island test notification",
   "logLiveUpdateTestNoSelection": "Manual Live Island test: no course available",
   "logLiveUpdateTestSelectionReady": "Manual Live Island test: target course resolved",
@@ -5046,16 +4922,13 @@
   "logLiveUpdateTestStarting": "Manual Live Island test: starting native Live Island",
   "logLiveUpdateTestStarted": "Manual Live Island test: native Live Island requested successfully",
   "logLiveUpdateTestFailed": "Manual Live Island test: failed before Live Island appeared",
-  "logLiveUpdateSettingsSynced": "Flutter Live Island settings synced: beforeClass={beforeClass}, duringClass={duringClass}, beforeEnd={beforeEnd}, promote={promote}, notification={notification}, countdown={countdown}, courseName={courseName}, location={location}",
+  "logLiveUpdateSettingsSynced": "Flutter Live Island settings synced: beforeClass={beforeClass}, duringClass={duringClass}, promote={promote}, notification={notification}, countdown={countdown}, courseName={courseName}, location={location}",
   "@logLiveUpdateSettingsSynced": {
     "placeholders": {
       "beforeClass": {
         "type": "String"
       },
       "duringClass": {
-        "type": "String"
-      },
-      "beforeEnd": {
         "type": "String"
       },
       "promote": {
@@ -5107,7 +4980,6 @@
   "logFieldAutoStartStatus": "auto Start Status",
   "logFieldLiveEnableBeforeClass": "live Enable Before Class",
   "logFieldLiveEnableDuringClass": "live Enable During Class",
-  "logFieldLiveEnableBeforeEnd": "live Enable Before End",
   "logFieldLivePromoteDuringClass": "live Promote During Class",
   "logFieldLiveShowDuringClassNotification": "live Show During Class Notification",
   "logFieldLiveShowCountdown": "live Show Countdown",
@@ -5129,7 +5001,6 @@
   "logFieldLiveMiuiIslandExpandedIconMode": "live Miui Island Expanded Icon Mode",
   "logFieldLiveShowBeforeClassMinutes": "live Show Before Class Minutes",
   "logFieldLiveClassReminderStartMinutes": "live Class Reminder Start Minutes",
-  "logFieldLiveEndSecondsCountdownThreshold": "live End Seconds Countdown Threshold",
   "logFieldState": "state",
   "logFieldRoute": "route",
   "logFieldPreviousRoute": "previous Route",
@@ -5866,5 +5737,63 @@
   "globalSettingsDescriptionBody": "Display options set here apply to all timetables. Items changed in a specific timetable still follow that timetable's own setting. Timetable-specific content such as semester and periods (time scheme) is not part of the global settings.",
   "globalSettingsClearTitle": "Clear global display settings",
   "globalSettingsClearConfirm": "After clearing, all timetables will use their own settings again.",
-  "globalSettingsCleared": "Global display settings cleared"
+  "globalSettingsCleared": "Global display settings cleared",
+  "liveIslandVisualTitle": "Left Icon & Expanded View",
+  "liveMiuiExpandedIconLabel": "Expanded Large Icon",
+  "liveMiuiLabelContentLabel": "Left Text Content",
+  "liveMiuiLabelFontSizeLabel": "Left Text Size {value}",
+  "@liveMiuiLabelFontSizeLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelFontWeightLabel": "Left Text Weight",
+  "liveMiuiLabelImageSubtitle": "Only effective on Xiaomi-style island layouts. It renders course name or location into the left icon slot",
+  "liveMiuiLabelImageTitle": "Xiaomi Island Left Text Icon",
+  "liveMiuiLabelLogoCornerRadiusLabel": "Left Icon Corner Radius {value}",
+  "@liveMiuiLabelLogoCornerRadiusLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelLogoSubtitle": "Only applies to the icon + text style. If not selected, the app icon remains the fallback",
+  "liveMiuiLabelLogoTitle": "Left Icon Logo",
+  "liveMiuiLabelOffsetXLabel": "Left Text Horizontal Offset {value}",
+  "@liveMiuiLabelOffsetXLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelOffsetYLabel": "Left Text Vertical Offset {value}",
+  "@liveMiuiLabelOffsetYLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelRenderQualityLabel": "Left Text Render Quality",
+  "liveMiuiLabelStyleLabel": "Left Icon Style",
+  "miuiIslandExpandedIconAppIcon": "App icon",
+  "miuiIslandExpandedIconCustomImage": "Custom image",
+  "miuiIslandExpandedIconHidden": "Hidden",
+  "miuiIslandLabelContentCourseName": "Course name",
+  "miuiIslandLabelContentCourseNameAndLocation": "Course + room",
+  "miuiIslandLabelContentLocation": "Room",
+  "miuiIslandLabelFontWeightBold": "Bold",
+  "miuiIslandLabelFontWeightMedium": "Medium",
+  "miuiIslandLabelFontWeightRegular": "Regular",
+  "miuiIslandLabelRenderQualityHigh": "High",
+  "miuiIslandLabelRenderQualityStandard": "Standard",
+  "miuiIslandLabelRenderQualityUltra": "Ultra",
+  "miuiIslandLabelStyleIconAndText": "Icon + text",
+  "miuiIslandLabelStyleTextOnly": "Text only",
+  "replaceImageAction": "Replace Image",
+  "selectImageAction": "Choose Image"
 }

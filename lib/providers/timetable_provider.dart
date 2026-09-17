@@ -205,8 +205,6 @@ class ScheduleDateRuleSaveResult {
 /// - 拆分按阶段 3 的顺序进行（Theme → Holiday → Partner → LiveSurface → …），
 ///   完成一个从表中划掉一个；本类最终降级为纯 Facade。
 class TimetableProvider with ChangeNotifier {
-  static const Duration _liveEndReminderWindow = Duration(minutes: 10);
-
   final StorageService _storageService;
 
   /// Profile 持久化收口（阶段 2）：所有 profile 读写统一走仓储，

@@ -1401,7 +1401,7 @@ class ContributorsScreen extends StatefulWidget {
 
 class _ContributorsScreenState extends State<ContributorsScreen> {
   static const WarehouseRepositorySource _warehouseSource =
-      WarehouseRepositorySource(owner: 'Mutx163', repo: 'qingyu_warehouse');
+      WarehouseRepositorySource();
   static const String _maintainersCacheKey = 'warehouse_maintainers_cache_v1';
 
   final WarehouseRepositoryService _repositoryService =

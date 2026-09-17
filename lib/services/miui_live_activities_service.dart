@@ -56,6 +56,23 @@ class MiuiLiveActivitiesService {
     }
   }
 
+  /// 是否小米系设备（Redmi / POCO 同族）。
+  ///
+  /// 岛左侧文字标签这类能力原生只对小米系下发（另见 ColorOS 走标准提升通知
+  /// 通道），界面据此隐藏对自己无效的设置项。判据与原生 `liveSurfaceBrand`
+  /// 共用一份，避免两边品牌规则漂移。
+  /// 刻意不做 `Platform.isAndroid` 短路：非 Android 上 `invokeMethod` 会抛
+  /// MissingPluginException，下面的 catch 已兜底返回 false；留着短路会让测试
+  /// 无法 mock 通道、覆盖不到小米分支。
+  Future<bool> isXiaomiFamilyDevice() async {
+    try {
+      final result = await _channel.invokeMethod('isXiaomiFamilyDevice');
+      return result == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<bool> checkNotificationPermission() async {
     if (!Platform.isAndroid) return true;
     try {
@@ -172,6 +189,27 @@ class MiuiLiveActivitiesService {
     await UmengAnalyticsService.setLiveDiagnosticsEnabled(value);
   }
 
+  /// 同步「常驻通知」开关到原生侧。
+  ///
+  /// 必须独立于 startLiveUpdate 下发：无课程会话时 Flutter 根本不会启动会话，
+  /// 用户在这个时刻关掉开关的话，原生落盘值会一直停在 true，下一次开机或启动
+  /// 就会把常驻通知又挂回来。
+  Future<void> setPermanentNotification(bool value) async {
+    if (!Platform.isAndroid) return;
+    try {
+      await _channel.invokeMethod('setPermanentNotification', value);
+    } catch (e) {
+      unawaited(
+        AppLogService.instance.warn(
+          'live_permanent_notification_failed',
+          AppLogMessages.liveUpdatePermanentNotificationFailed,
+          extras: {'error': '$e', 'value': value},
+        ),
+      );
+      appDebugLog('MiuiLive', '更新常驻通知开关失败：$e');
+    }
+  }
+
   Future<void> recordDiagnosticEvent(
     String category,
     String message, {
@@ -259,14 +297,11 @@ class MiuiLiveActivitiesService {
     int beforeClassLeadMillis = 0,
     int? startAtMillis,
     int? endAtMillis,
-    int? endReminderLeadMillis,
     int liveClassReminderStartMinutes = 0,
-    int endSecondsCountdownThreshold = 60,
     bool promoteDuringClass = true,
     bool showNotificationDuringClass = true,
     bool enableBeforeClass = true,
     bool enableDuringClass = true,
-    bool enableBeforeEnd = true,
     bool showCountdown = true,
     LiveCountdownTextStyle countdownTextStyle = LiveCountdownTextStyle.smart,
     bool showStageText = true,
@@ -300,6 +335,7 @@ class MiuiLiveActivitiesService {
     List<String> progressMilestoneLabels = const [],
     List<String> progressMilestoneTimeTexts = const [],
     bool validateAgainstSchedule = false,
+    bool permanentNotification = true,
   }) async {
     await initialize();
     try {
@@ -312,14 +348,11 @@ class MiuiLiveActivitiesService {
         validateAgainstSchedule: validateAgainstSchedule,
         startAtMillis: startAtMillis,
         endAtMillis: endAtMillis,
-        endReminderLeadMillis: endReminderLeadMillis,
         liveClassReminderStartMinutes: liveClassReminderStartMinutes,
-        endSecondsCountdownThreshold: endSecondsCountdownThreshold,
         promoteDuringClass: promoteDuringClass,
         showNotificationDuringClass: showNotificationDuringClass,
         enableBeforeClass: enableBeforeClass,
         enableDuringClass: enableDuringClass,
-        enableBeforeEnd: enableBeforeEnd,
         showCountdown: showCountdown,
         countdownTextStyle: countdownTextStyle,
         showStageText: showStageText,
@@ -346,6 +379,7 @@ class MiuiLiveActivitiesService {
         progressBreakOffsetsMillis: progressBreakOffsetsMillis,
         progressMilestoneLabels: progressMilestoneLabels,
         progressMilestoneTimeTexts: progressMilestoneTimeTexts,
+        permanentNotification: permanentNotification,
       );
       await _channel.invokeMethod('startLiveUpdate', data);
     } catch (e, stackTrace) {
@@ -404,14 +438,11 @@ class MiuiLiveActivitiesService {
     int beforeClassLeadMillis = 0,
     int? startAtMillis,
     int? endAtMillis,
-    int? endReminderLeadMillis,
     int liveClassReminderStartMinutes = 0,
-    int endSecondsCountdownThreshold = 60,
     bool promoteDuringClass = true,
     bool showNotificationDuringClass = true,
     bool enableBeforeClass = true,
     bool enableDuringClass = true,
-    bool enableBeforeEnd = true,
     bool showCountdown = true,
     LiveCountdownTextStyle countdownTextStyle = LiveCountdownTextStyle.smart,
     bool showStageText = true,
@@ -445,24 +476,23 @@ class MiuiLiveActivitiesService {
     List<String> progressMilestoneLabels = const [],
     List<String> progressMilestoneTimeTexts = const [],
     bool validateAgainstSchedule = false,
+    bool permanentNotification = true,
   }) {
     final data = <String, dynamic>{
       'autoDismissAfterStartMinutes': autoDismissAfterStartMinutes,
       'stage': stage,
       'beforeClassLeadMillis': beforeClassLeadMillis,
       'validateAgainstSchedule': validateAgainstSchedule,
+      'permanentNotification': permanentNotification,
       'startAtMillis': startAtMillis,
       'endAtMillis': endAtMillis,
-      'endReminderLeadMillis': endReminderLeadMillis,
       'liveClassReminderStartMinutes': liveClassReminderStartMinutes,
-      'endSecondsCountdownThreshold': endSecondsCountdownThreshold,
       'beforeClassQuickAction': beforeClassQuickAction.value,
       'beforeClassQuickActionAutoMinutes': beforeClassQuickActionAutoMinutes,
       'promoteDuringClass': promoteDuringClass,
       'showNotificationDuringClass': showNotificationDuringClass,
       'enableBeforeClass': enableBeforeClass,
       'enableDuringClass': enableDuringClass,
-      'enableBeforeEnd': enableBeforeEnd,
       'showCountdown': showCountdown,
       'countdownTextStyle': countdownTextStyle.value,
       'showStageText': showStageText,
@@ -518,7 +548,6 @@ class MiuiLiveActivitiesService {
     required TimetableSettings settings,
     required int currentWeek,
     DateTime? semesterStartDate,
-    required int endReminderLeadMillis,
     bool isHoliday = false,
     List<String> holidayDates = const [],
     List<String> adjustedWorkdayDates = const [],
@@ -531,7 +560,6 @@ class MiuiLiveActivitiesService {
       final snapshotJson = jsonEncode({
         'currentWeek': currentWeek,
         'semesterStartMillis': semesterStartDate?.millisecondsSinceEpoch,
-        'endReminderLeadMillis': endReminderLeadMillis,
         'isHoliday': isHoliday,
         'isHolidayDate': isHolidayDate,
         'holidayDates': holidayDates,
@@ -547,7 +575,6 @@ class MiuiLiveActivitiesService {
         AppLogMessages.liveUpdateSettingsSynced(
           beforeClass: settings.liveEnableBeforeClass,
           duringClass: settings.liveEnableDuringClass,
-          beforeEnd: settings.liveEnableBeforeEnd,
           promote: settings.livePromoteDuringClass,
           notification: settings.liveShowDuringClassNotification,
           countdown: settings.liveShowCountdown,
@@ -628,14 +655,11 @@ class TestMiuiLiveActivitiesService extends MiuiLiveActivitiesService {
     int beforeClassLeadMillis = 0,
     int? startAtMillis,
     int? endAtMillis,
-    int? endReminderLeadMillis,
     int liveClassReminderStartMinutes = 0,
-    int endSecondsCountdownThreshold = 60,
     bool promoteDuringClass = true,
     bool showNotificationDuringClass = true,
     bool enableBeforeClass = true,
     bool enableDuringClass = true,
-    bool enableBeforeEnd = true,
     bool showCountdown = true,
     LiveCountdownTextStyle countdownTextStyle = LiveCountdownTextStyle.smart,
     bool showStageText = true,
@@ -669,6 +693,7 @@ class TestMiuiLiveActivitiesService extends MiuiLiveActivitiesService {
     List<String> progressMilestoneLabels = const [],
     List<String> progressMilestoneTimeTexts = const [],
     bool validateAgainstSchedule = false,
+    bool permanentNotification = true,
   }) async {
     startLiveUpdateCallCount++;
   }
@@ -679,7 +704,6 @@ class TestMiuiLiveActivitiesService extends MiuiLiveActivitiesService {
     required TimetableSettings settings,
     required int currentWeek,
     DateTime? semesterStartDate,
-    required int endReminderLeadMillis,
     bool isHoliday = false,
     List<String> holidayDates = const [],
     List<String> adjustedWorkdayDates = const [],

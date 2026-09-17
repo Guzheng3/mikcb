@@ -29,7 +29,6 @@ Course buildCourse({
 TimetableSettings settingsWithLive({
   bool beforeClass = true,
   bool duringClass = true,
-  bool beforeEnd = true,
   bool showDuringNotification = true,
   bool promoteDuringClass = true,
   int classReminderStartMinutes = 0,
@@ -41,7 +40,6 @@ TimetableSettings settingsWithLive({
     ],
     liveEnableBeforeClass: beforeClass,
     liveEnableDuringClass: duringClass,
-    liveEnableBeforeEnd: beforeEnd,
     liveShowDuringClassNotification: showDuringNotification,
     livePromoteDuringClass: promoteDuringClass,
     liveClassReminderStartMinutes: classReminderStartMinutes,
@@ -190,7 +188,6 @@ void main() {
     test('canDisplayStage respects live toggles', () {
       final settings = settingsWithLive(
         beforeClass: false,
-        beforeEnd: false,
         showDuringNotification: false,
       );
 
@@ -216,13 +213,6 @@ void main() {
         ),
         isFalse,
       );
-      expect(
-        LiveActivityLogic.canDisplayStage(
-          LiveActivityStage.beforeEnd,
-          settings,
-        ),
-        isFalse,
-      );
     });
 
     test('preferredTestStage picks first enabled stage', () {
@@ -238,49 +228,19 @@ void main() {
         ),
         LiveActivityStage.duringClass,
       );
+      // 课中与课前都关掉后没有可展示阶段（下课提醒已移除）。
       expect(
         LiveActivityLogic.preferredTestStage(
           settingsWithLive(
             beforeClass: false,
             duringClass: false,
-          ),
-        ),
-        LiveActivityStage.beforeEnd,
-      );
-      expect(
-        LiveActivityLogic.preferredTestStage(
-          settingsWithLive(
-            beforeClass: false,
-            duringClass: false,
-            beforeEnd: false,
           ),
         ),
         isNull,
       );
     });
 
-    test('resolveEndReminderStart never starts before class start', () {
-      final start = DateTime(2026, 4, 16, 8);
-      final end = DateTime(2026, 4, 16, 8, 20);
-      expect(
-        LiveActivityLogic.resolveEndReminderStart(
-          start,
-          end,
-          const Duration(minutes: 30),
-        ),
-        start,
-      );
-      expect(
-        LiveActivityLogic.resolveEndReminderStart(
-          start,
-          end,
-          const Duration(minutes: 5),
-        ),
-        DateTime(2026, 4, 16, 8, 15),
-      );
-    });
-
-    test('resolveLiveActivityStage covers before / during / beforeEnd', () {
+    test('resolveLiveActivityStage covers before / during', () {
       final settings = settingsWithLive();
       final start = DateTime(2026, 4, 16, 8);
       final end = DateTime(2026, 4, 16, 9, 40);
@@ -293,7 +253,6 @@ void main() {
           endTime: end,
           aheadTime: ahead,
           settings: settings,
-          endReminderWindow: const Duration(minutes: 10),
         ),
         isNull,
       );
@@ -305,7 +264,6 @@ void main() {
           endTime: end,
           aheadTime: ahead,
           settings: settings,
-          endReminderWindow: const Duration(minutes: 10),
         ),
         LiveActivityStage.beforeClass,
       );
@@ -317,11 +275,11 @@ void main() {
           endTime: end,
           aheadTime: ahead,
           settings: settings,
-          endReminderWindow: const Duration(minutes: 10),
         ),
         LiveActivityStage.duringClass,
       );
 
+      // 下课提醒已移除：临近下课仍是课中，直到 endTime 才结束。
       expect(
         LiveActivityLogic.resolveLiveActivityStage(
           currentTime: end.subtract(const Duration(minutes: 5)),
@@ -329,9 +287,8 @@ void main() {
           endTime: end,
           aheadTime: ahead,
           settings: settings,
-          endReminderWindow: const Duration(minutes: 10),
         ),
-        LiveActivityStage.beforeEnd,
+        LiveActivityStage.duringClass,
       );
 
       expect(
@@ -341,7 +298,6 @@ void main() {
           endTime: end,
           aheadTime: ahead,
           settings: settings,
-          endReminderWindow: const Duration(minutes: 10),
         ),
         isNull,
       );
@@ -361,12 +317,11 @@ void main() {
           endTime: end,
           aheadTime: ahead,
           settings: settings,
-          endReminderWindow: const Duration(minutes: 10),
         ),
         LiveActivityStage.duringClassStatusBar,
       );
 
-      // Inside the configured end-of-class reminder window.
+      // Inside the configured switch window: 课中接管（下课提醒已移除）。
       expect(
         LiveActivityLogic.resolveLiveActivityStage(
           currentTime: end.subtract(const Duration(minutes: 10)),
@@ -374,9 +329,8 @@ void main() {
           endTime: end,
           aheadTime: ahead,
           settings: settings,
-          endReminderWindow: const Duration(minutes: 10),
         ),
-        LiveActivityStage.beforeEnd,
+        LiveActivityStage.duringClass,
       );
     });
   });

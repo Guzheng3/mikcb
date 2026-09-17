@@ -289,15 +289,16 @@ Future<LiveTestingTriggerResult> triggerLiveUpdateCourseTest({
           : 0,
       startAtMillis: start.millisecondsSinceEpoch,
       endAtMillis: end.millisecondsSinceEpoch,
-      endReminderLeadMillis: 0,
-      endSecondsCountdownThreshold: settings.liveEndSecondsCountdownThreshold,
       // 展示开关按阶段强制放开：测试的目的是「看到岛的显示」，不能被用户
       // 关掉的课上/课下开关吞掉；显示样式仍取用户自己的阶段显示设置。
       promoteDuringClass: !isBeforeClass,
       showNotificationDuringClass: !isBeforeClass,
       enableBeforeClass: isBeforeClass,
       enableDuringClass: !isBeforeClass,
-      enableBeforeEnd: false,
+      // 测试会话强制非常驻：夹具课程不在课表快照里，会话一结束它就会被判成
+      // 「没有活跃课程」。常驻打开的话通知会转成情侣卡片形态留在状态栏，测试结束后
+      // 反而清不掉 —— 测试要的是「看到这一档的显示」，不是留下一张卡。
+      permanentNotification: false,
       showCountdown: displaySettings.showCountdown,
       countdownTextStyle: displaySettings.countdownTextStyle,
       showStageText: displaySettings.showStageText,

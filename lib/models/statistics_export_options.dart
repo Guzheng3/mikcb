@@ -48,8 +48,8 @@ class StatisticsExportOptions {
 
 /// Brand URLs shown on the export-only header / footer.
 abstract final class StatisticsExportBrand {
-  static const websiteUrl = 'https://163366.xyz/';
-  static const websiteDisplay = '163366.xyz';
-  static const githubUrl = 'https://github.com/Mutx163/mikcb';
-  static const githubDisplay = 'github.com/Mutx163/mikcb';
+  static const websiteUrl = 'https://gzr.xjy.xn--6qq986b3xl/';
+  static const websiteDisplay = 'gzr.xjy.我爱你';
+  static const githubUrl = 'https://github.com/Guzheng3/mikcb';
+  static const githubDisplay = 'github.com/Guzheng3/mikcb';
 }

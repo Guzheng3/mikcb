@@ -23,19 +23,15 @@
     <string name="action_close">Close</string>
 
     <string name="prefix_until_class_start">Starts in </string>
-    <string name="prefix_until_class_end">Ends in </string>
     <string name="stage_in_class">In class</string>
     <string name="stage_before_class">Class starting soon</string>
-    <string name="stage_before_end">Class ending soon</string>
     <string name="island_class_starting">Class started</string>
     <string name="island_about_to_end">Ending soon</string>
     <string name="island_minutes_remaining">%1$d min</string>
 
     <string name="title_before_class">Starting soon: %1$s</string>
-    <string name="title_before_end">Ending soon: %1$s</string>
 
     <string name="label_class_start_time">Start time: %1$s</string>
-    <string name="label_class_end_time">End time: %1$s</string>
     <string name="label_location">Location: %1$s</string>
 
     <string name="detail_short_name">Short name: %1$s</string>
@@ -48,7 +44,6 @@
     <string name="detail_note">Note: %1$s</string>
 
     <string name="remaining_until_class_start">Starts in %1$s</string>
-    <string name="remaining_until_class_end">Ends in %1$s</string>
     <string name="final_dismiss_with_time">Class ends %1$s</string>
 
     <string name="milestone_recent_end">Recent break</string>

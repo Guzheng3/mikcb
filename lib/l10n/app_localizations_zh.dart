@@ -1791,9 +1791,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get liveTestingEntrySubtitle => '发送测试通知，检查超级岛和本地诊断日志';
 
   @override
-  String get followBeforeClassSetting => '跟随上课前提醒';
-
-  @override
   String get liveReminderTimingTitle => '提醒时段';
 
   @override
@@ -1852,6 +1849,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enableIslandDisplaySubtitle => '关闭后不触发系统超级岛';
 
   @override
+  String get livePermanentNotificationTitle => '常驻通知';
+
+  @override
+  String get livePermanentNotificationSubtitle => '没有课程时也让通知留在通知栏，显示情侣卡片的内容';
+
+  @override
   String get liveTimeThresholdTitle => '时间阈值';
 
   @override
@@ -1863,14 +1866,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String beforeClassMinutesOption(int minutes) {
     return '$minutes 分钟';
-  }
-
-  @override
-  String get beforeEndSecondsLabel => '下课前秒级阈值';
-
-  @override
-  String beforeEndSecondsOption(int seconds) {
-    return '$seconds 秒';
   }
 
   @override
@@ -1891,61 +1886,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get duringEndTimeDisplayHelp => '紧凑提醒显示最近时间或总时长';
 
   @override
-  String get liveDisplayContentTitle => '显示内容';
-
-  @override
   String get liveDisplayContentSubtitle => '这组设置只影响当前阶段，不会改动另一组提醒显示';
 
   @override
   String get showCourseNameTitle => '显示课程名';
 
   @override
-  String get preferShortNameTitle => '优先显示课程简称';
-
-  @override
-  String get preferShortNameSubtitle => '建议简称控制在 3 个字以内';
-
-  @override
-  String get showLocationTitle => '显示地点';
-
-  @override
-  String get showCountdownTitle => '显示倒计时';
-
-  @override
-  String get countdownFormatLabel => '倒计时格式';
-
-  @override
   String get countdownFormatHelp => '纯分钟样式按分钟刷新，带秒样式按秒刷新';
 
   @override
-  String get showStageTextTitle => '显示阶段状态文案';
-
-  @override
-  String get showStageTextSubtitle => '关闭倒计时后，可继续显示“即将上课 / 上课中 / 下课提醒”';
-
-  @override
-  String get hidePrefixTextTitle => '隐藏前缀文案';
-
-  @override
-  String get hidePrefixTextSubtitle => '例如隐藏“即将上课”这类前缀';
-
-  @override
   String get liveIslandPreviewTitle => '超级岛预览';
-
-  @override
-  String get liveIslandPreviewFollowBadge => '正在跟随“课前提醒显示”设置，调整课前提醒即可生效';
-
-  @override
-  String get liveIslandPreviewStageBeforeClass => '即将上课';
-
-  @override
-  String get liveIslandPreviewStageInClass => '上课中';
-
-  @override
-  String get liveIslandPreviewStageBeforeEnd => '下课提醒';
-
-  @override
-  String get liveIslandPreviewAboutToEnd => '即将下课';
 
   @override
   String liveIslandPreviewUntilClassStart(String time) {
@@ -1994,85 +1944,23 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get liveIslandVisualTitle => '左侧图标与展开态';
-
-  @override
   String get liveIslandVisualSubtitle => '左侧文字图、展开态大图标和自定义图片都按当前阶段单独保存';
-
-  @override
-  String get liveMiuiLabelImageTitle => '小米岛左侧文字图标';
-
-  @override
-  String get liveMiuiLabelImageSubtitle => '仅小米手机样式生效，会把课程名或地点生成到左侧图标位';
-
-  @override
-  String get liveMiuiLabelContentLabel => '左侧文字内容';
-
-  @override
-  String get liveMiuiLabelStyleLabel => '左侧图标样式';
-
-  @override
-  String get liveMiuiLabelLogoTitle => '左侧图标 Logo';
-
-  @override
-  String get liveMiuiLabelLogoSubtitle => '仅在“图标+文字”样式下生效；未选择时继续使用应用图标';
-
-  @override
-  String liveMiuiLabelLogoCornerRadiusLabel(String value) {
-    return '左侧图标圆角 $value';
-  }
 
   @override
   String get liveMiuiLabelLogoCornerRadiusTitle => '左侧图标圆角';
 
   @override
-  String liveMiuiLabelFontSizeLabel(String value) {
-    return '左侧文字大小 $value';
-  }
-
-  @override
   String get liveMiuiLabelFontSizeTitle => '左侧文字大小';
-
-  @override
-  String liveMiuiLabelOffsetXLabel(String value) {
-    return '左侧文字水平偏移 $value';
-  }
 
   @override
   String get liveMiuiLabelOffsetXTitle => '左侧文字水平偏移';
 
   @override
-  String liveMiuiLabelOffsetYLabel(String value) {
-    return '左侧文字垂直偏移 $value';
-  }
-
-  @override
   String get liveMiuiLabelOffsetYTitle => '左侧文字垂直偏移';
-
-  @override
-  String get liveMiuiLabelFontWeightLabel => '左侧文字粗细';
-
-  @override
-  String get liveMiuiLabelRenderQualityLabel => '左侧文字清晰度';
-
-  @override
-  String get liveMiuiExpandedIconLabel => '展开态大图标';
-
-  @override
-  String get selectImageAction => '选择图片';
-
-  @override
-  String get replaceImageAction => '更换图片';
-
-  @override
-  String get liveDisplayConfigModeTitle => '配置方式';
 
   @override
   String get liveDisplayConfigModeSubtitle =>
       '打开后，课中和下课提醒会完全跟随上课前提醒显示，下面的独立设置暂时不可编辑';
-
-  @override
-  String get followBeforeClassDisplayTitle => '跟随上课前提醒设置';
 
   @override
   String get liveKeepAliveTitle => '后台保活';
@@ -2590,26 +2478,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String liveClassReminderLeadSummaryImmediate(int seconds) {
-    return '一上课进入重点提醒，下课前 $seconds 秒秒级倒数';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryKeepNormal(int minutes, int seconds) {
-    return '课中普通通知，下课前 $minutes 分钟重点提醒';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryIsland(int minutes, int seconds) {
-    return '下课前 $minutes 分钟切到超级岛与重点提醒';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryFocused(int minutes, int seconds) {
-    return '下课前 $minutes 分钟开始重点提醒';
-  }
-
-  @override
   String get liveSettingsEntrySubtitle => '提醒时段、岛展示、通知栏和显示内容';
 
   @override
@@ -2783,9 +2651,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get beforeClassDisplaySettingsTitle => '上课前提醒显示';
-
-  @override
-  String get duringEndDisplaySettingsTitle => '课中/下课提醒显示';
 
   @override
   String get liveDisplaySummaryShortName => '简称';
@@ -6637,48 +6502,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get liveCountdownTextStyleSecondOnlySlash => '/s（5/s）';
 
   @override
-  String get miuiIslandLabelStyleTextOnly => '仅文字';
-
-  @override
-  String get miuiIslandLabelStyleIconAndText => '图标+文字';
-
-  @override
-  String get miuiIslandLabelContentCourseName => '课程名';
-
-  @override
-  String get miuiIslandLabelContentLocation => '教室';
-
-  @override
-  String get miuiIslandLabelContentCourseNameAndLocation => '课程名+教室';
-
-  @override
-  String get miuiIslandLabelFontWeightRegular => '常规';
-
-  @override
-  String get miuiIslandLabelFontWeightMedium => '中等';
-
-  @override
-  String get miuiIslandLabelFontWeightBold => '加粗';
-
-  @override
-  String get miuiIslandLabelRenderQualityStandard => '标准';
-
-  @override
-  String get miuiIslandLabelRenderQualityHigh => '高清';
-
-  @override
-  String get miuiIslandLabelRenderQualityUltra => '超高清';
-
-  @override
-  String get miuiIslandExpandedIconAppIcon => '应用图标';
-
-  @override
-  String get miuiIslandExpandedIconCustomImage => '自定义图片';
-
-  @override
-  String get miuiIslandExpandedIconHidden => '不显示';
-
-  @override
   String get liveBeforeClassQuickActionNone => '不显示';
 
   @override
@@ -7982,6 +7805,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logLiveUpdateSuspendTriggersFailed => '挂起超级岛课表调度失败';
 
   @override
+  String get logLiveUpdatePermanentNotificationFailed => '同步常驻通知开关失败';
+
+  @override
   String get logLiveUpdateTestRequested => '用户请求手动超级岛测试通知';
 
   @override
@@ -8006,14 +7832,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String logLiveUpdateSettingsSynced(
     String beforeClass,
     String duringClass,
-    String beforeEnd,
     String promote,
     String notification,
     String countdown,
     String courseName,
     String location,
   ) {
-    return 'Flutter 超级岛设置已同步：课前=$beforeClass，课中=$duringClass，下课前=$beforeEnd，提升=$promote，通知=$notification，倒计时=$countdown，课程名=$courseName，地点=$location';
+    return 'Flutter 超级岛设置已同步：课前=$beforeClass，课中=$duringClass，提升=$promote，通知=$notification，倒计时=$countdown，课程名=$courseName，地点=$location';
   }
 
   @override
@@ -8113,9 +7938,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logFieldLiveEnableDuringClass => '课中超级岛';
 
   @override
-  String get logFieldLiveEnableBeforeEnd => '下课前超级岛';
-
-  @override
   String get logFieldLivePromoteDuringClass => '课中提升通知';
 
   @override
@@ -8177,9 +7999,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get logFieldLiveClassReminderStartMinutes => '上课提醒开始分钟';
-
-  @override
-  String get logFieldLiveEndSecondsCountdownThreshold => '下课秒倒计时阈值';
 
   @override
   String get logFieldState => '状态';
@@ -9720,6 +9539,104 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get globalSettingsCleared => '已清除全局显示设置';
+
+  @override
+  String get liveIslandVisualTitle => '左侧图标与展开态';
+
+  @override
+  String get liveMiuiExpandedIconLabel => '展开态大图标';
+
+  @override
+  String get liveMiuiLabelContentLabel => '左侧文字内容';
+
+  @override
+  String liveMiuiLabelFontSizeLabel(String value) {
+    return '左侧文字大小 $value';
+  }
+
+  @override
+  String get liveMiuiLabelFontWeightLabel => '左侧文字粗细';
+
+  @override
+  String get liveMiuiLabelImageSubtitle => '仅小米手机样式生效，会把课程名或地点生成到左侧图标位';
+
+  @override
+  String get liveMiuiLabelImageTitle => '小米岛左侧文字图标';
+
+  @override
+  String liveMiuiLabelLogoCornerRadiusLabel(String value) {
+    return '左侧图标圆角 $value';
+  }
+
+  @override
+  String get liveMiuiLabelLogoSubtitle => '仅在“图标+文字”样式下生效；未选择时继续使用应用图标';
+
+  @override
+  String get liveMiuiLabelLogoTitle => '左侧图标 Logo';
+
+  @override
+  String liveMiuiLabelOffsetXLabel(String value) {
+    return '左侧文字水平偏移 $value';
+  }
+
+  @override
+  String liveMiuiLabelOffsetYLabel(String value) {
+    return '左侧文字垂直偏移 $value';
+  }
+
+  @override
+  String get liveMiuiLabelRenderQualityLabel => '左侧文字清晰度';
+
+  @override
+  String get liveMiuiLabelStyleLabel => '左侧图标样式';
+
+  @override
+  String get miuiIslandExpandedIconAppIcon => '应用图标';
+
+  @override
+  String get miuiIslandExpandedIconCustomImage => '自定义图片';
+
+  @override
+  String get miuiIslandExpandedIconHidden => '不显示';
+
+  @override
+  String get miuiIslandLabelContentCourseName => '课程名';
+
+  @override
+  String get miuiIslandLabelContentCourseNameAndLocation => '课程名+教室';
+
+  @override
+  String get miuiIslandLabelContentLocation => '教室';
+
+  @override
+  String get miuiIslandLabelFontWeightBold => '加粗';
+
+  @override
+  String get miuiIslandLabelFontWeightMedium => '中等';
+
+  @override
+  String get miuiIslandLabelFontWeightRegular => '常规';
+
+  @override
+  String get miuiIslandLabelRenderQualityHigh => '高清';
+
+  @override
+  String get miuiIslandLabelRenderQualityStandard => '标准';
+
+  @override
+  String get miuiIslandLabelRenderQualityUltra => '超高清';
+
+  @override
+  String get miuiIslandLabelStyleIconAndText => '图标+文字';
+
+  @override
+  String get miuiIslandLabelStyleTextOnly => '仅文字';
+
+  @override
+  String get replaceImageAction => '更换图片';
+
+  @override
+  String get selectImageAction => '选择图片';
 }
 
 /// The translations for Chinese, as used in Hong Kong (`zh_HK`).
@@ -11494,9 +11411,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get liveTestingEntrySubtitle => '發送測試通知，檢查超級島和本地診斷日誌';
 
   @override
-  String get followBeforeClassSetting => '跟隨上課前提醒';
-
-  @override
   String get liveReminderTimingTitle => '提醒時段';
 
   @override
@@ -11556,6 +11470,12 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get enableIslandDisplaySubtitle => '關閉後不會再嘗試觸發系統超級島';
 
   @override
+  String get livePermanentNotificationTitle => '常駐通知';
+
+  @override
+  String get livePermanentNotificationSubtitle => '沒有課程時也讓通知留在通知欄，顯示情侶卡片的內容';
+
+  @override
   String get liveTimeThresholdTitle => '時間阈值';
 
   @override
@@ -11567,14 +11487,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   @override
   String beforeClassMinutesOption(int minutes) {
     return '$minutes 分鐘';
-  }
-
-  @override
-  String get beforeEndSecondsLabel => '下課前秒級提醒阈值';
-
-  @override
-  String beforeEndSecondsOption(int seconds) {
-    return '$seconds 秒';
   }
 
   @override
@@ -11595,61 +11507,16 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get duringEndTimeDisplayHelp => '控製緊湊提醒裡顯示最近時間還是整段總時間';
 
   @override
-  String get liveDisplayContentTitle => '顯示內容';
-
-  @override
   String get liveDisplayContentSubtitle => '這組設定只蠅響目前階段，不會改動另一組提醒顯示';
 
   @override
   String get showCourseNameTitle => '顯示課程名';
 
   @override
-  String get preferShortNameTitle => '優先顯示課程簡稱';
-
-  @override
-  String get preferShortNameSubtitle => '建議簡稱控製在 3 個字以內';
-
-  @override
-  String get showLocationTitle => '顯示地點';
-
-  @override
-  String get showCountdownTitle => '顯示倒計時';
-
-  @override
-  String get countdownFormatLabel => '倒計時格式';
-
-  @override
   String get countdownFormatHelp => '純分鐘樣式按分鐘刷新，帶秒樣式按秒刷新';
 
   @override
-  String get showStageTextTitle => '顯示階段狀態文案';
-
-  @override
-  String get showStageTextSubtitle => '關閉倒計時後，可繼續顯示“即將上課 / 上課中 / 下課提醒”';
-
-  @override
-  String get hidePrefixTextTitle => '隱藏前綴文案';
-
-  @override
-  String get hidePrefixTextSubtitle => '例如隱藏“即將上課”這類前綴';
-
-  @override
   String get liveIslandPreviewTitle => '超級島預覽';
-
-  @override
-  String get liveIslandPreviewFollowBadge => '正在跟隨「課前提醒顯示」設定，調整課前提醒即可生效';
-
-  @override
-  String get liveIslandPreviewStageBeforeClass => '即將上課';
-
-  @override
-  String get liveIslandPreviewStageInClass => '上課中';
-
-  @override
-  String get liveIslandPreviewStageBeforeEnd => '下課提醒';
-
-  @override
-  String get liveIslandPreviewAboutToEnd => '即將下課';
 
   @override
   String liveIslandPreviewUntilClassStart(String time) {
@@ -11698,85 +11565,23 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   }
 
   @override
-  String get liveIslandVisualTitle => '左側圖示與展開態';
-
-  @override
   String get liveIslandVisualSubtitle => '左側文字圖、展開態大圖示和自定義圖片都按目前階段單獨保存';
-
-  @override
-  String get liveMiuiLabelImageTitle => '小米島左側文字圖示';
-
-  @override
-  String get liveMiuiLabelImageSubtitle => '僅小米手機樣式生效，會把課程名或地點生成到左側圖示位';
-
-  @override
-  String get liveMiuiLabelContentLabel => '左側文字內容';
-
-  @override
-  String get liveMiuiLabelStyleLabel => '左側圖示樣式';
-
-  @override
-  String get liveMiuiLabelLogoTitle => '左側圖示 Logo';
-
-  @override
-  String get liveMiuiLabelLogoSubtitle => '僅在「圖示+文字」樣式下生效；未選擇時會繼續使用應用圖示';
-
-  @override
-  String liveMiuiLabelLogoCornerRadiusLabel(String value) {
-    return '左側圖示圓角 $value';
-  }
 
   @override
   String get liveMiuiLabelLogoCornerRadiusTitle => '左側圖示圓角';
 
   @override
-  String liveMiuiLabelFontSizeLabel(String value) {
-    return '左側文字大小 $value';
-  }
-
-  @override
   String get liveMiuiLabelFontSizeTitle => '左側文字大小';
-
-  @override
-  String liveMiuiLabelOffsetXLabel(String value) {
-    return '左側文字水平偏移 $value';
-  }
 
   @override
   String get liveMiuiLabelOffsetXTitle => '左側文字水平偏移';
 
   @override
-  String liveMiuiLabelOffsetYLabel(String value) {
-    return '左側文字垂直偏移 $value';
-  }
-
-  @override
   String get liveMiuiLabelOffsetYTitle => '左側文字垂直偏移';
-
-  @override
-  String get liveMiuiLabelFontWeightLabel => '左側文字粗細';
-
-  @override
-  String get liveMiuiLabelRenderQualityLabel => '左側文字清晰度';
-
-  @override
-  String get liveMiuiExpandedIconLabel => '展開態大圖示';
-
-  @override
-  String get selectImageAction => '選擇圖片';
-
-  @override
-  String get replaceImageAction => '更換圖片';
-
-  @override
-  String get liveDisplayConfigModeTitle => '配置方式';
 
   @override
   String get liveDisplayConfigModeSubtitle =>
       '打開後，課中和下課提醒會完全跟隨上課前提醒顯示，下面的獨立設定暫時不可編輯';
-
-  @override
-  String get followBeforeClassDisplayTitle => '跟隨上課前提醒設定';
 
   @override
   String get liveKeepAliveTitle => '後台保活';
@@ -12294,26 +12099,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   }
 
   @override
-  String liveClassReminderLeadSummaryImmediate(int seconds) {
-    return '從上課開始就進入重點提醒顯示，並在距離下課 $seconds 秒切到秒級倒數';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryKeepNormal(int minutes, int seconds) {
-    return '上課後先保留普通課中通知，在距離下課前 $minutes 分鐘切到重點提醒 / 下課提醒，並在最後 $seconds 秒切到秒級倒數';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryIsland(int minutes, int seconds) {
-    return '在距離下課前 $minutes 分鐘切到超級島與重點提醒，並在最後 $seconds 秒切到秒級倒數';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryFocused(int minutes, int seconds) {
-    return '在距離下課前 $minutes 分鐘開始顯示重點提醒，並在最後 $seconds 秒切到秒級倒數';
-  }
-
-  @override
   String get liveSettingsEntrySubtitle => '提醒時段、島顯示、通知欄和顯示內容';
 
   @override
@@ -12486,9 +12271,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get beforeClassDisplaySettingsTitle => '上課前提醒顯示';
-
-  @override
-  String get duringEndDisplaySettingsTitle => '課中／下課提醒顯示';
 
   @override
   String get liveDisplaySummaryShortName => '簡稱';
@@ -16339,48 +16121,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get liveCountdownTextStyleSecondOnlySlash => '/s（5/s）';
 
   @override
-  String get miuiIslandLabelStyleTextOnly => '僅文字';
-
-  @override
-  String get miuiIslandLabelStyleIconAndText => '圖標+文字';
-
-  @override
-  String get miuiIslandLabelContentCourseName => '課程名';
-
-  @override
-  String get miuiIslandLabelContentLocation => '教室';
-
-  @override
-  String get miuiIslandLabelContentCourseNameAndLocation => '課程名+教室';
-
-  @override
-  String get miuiIslandLabelFontWeightRegular => '常規';
-
-  @override
-  String get miuiIslandLabelFontWeightMedium => '中等';
-
-  @override
-  String get miuiIslandLabelFontWeightBold => '加粗';
-
-  @override
-  String get miuiIslandLabelRenderQualityStandard => '標準';
-
-  @override
-  String get miuiIslandLabelRenderQualityHigh => '高清';
-
-  @override
-  String get miuiIslandLabelRenderQualityUltra => '超高清';
-
-  @override
-  String get miuiIslandExpandedIconAppIcon => '應用圖標';
-
-  @override
-  String get miuiIslandExpandedIconCustomImage => '自定義圖片';
-
-  @override
-  String get miuiIslandExpandedIconHidden => '不顯示';
-
-  @override
   String get liveBeforeClassQuickActionNone => '不顯示';
 
   @override
@@ -17723,6 +17463,9 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get logLiveUpdateSuspendTriggersFailed => '掛起超級島課表調度失敗';
 
   @override
+  String get logLiveUpdatePermanentNotificationFailed => '同步常駐通知開關失敗';
+
+  @override
   String get logLiveUpdateTestRequested => '用戶請求手動超級島測試通知';
 
   @override
@@ -17747,14 +17490,13 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String logLiveUpdateSettingsSynced(
     String beforeClass,
     String duringClass,
-    String beforeEnd,
     String promote,
     String notification,
     String countdown,
     String courseName,
     String location,
   ) {
-    return 'Flutter 超級島設置已同步：課前=$beforeClass，課中=$duringClass，下課前=$beforeEnd，提升=$promote，通知=$notification，倒計時=$countdown，課程名=$courseName，地點=$location';
+    return 'Flutter 超級島設置已同步：課前=$beforeClass，課中=$duringClass，提升=$promote，通知=$notification，倒計時=$countdown，課程名=$courseName，地點=$location';
   }
 
   @override
@@ -17854,9 +17596,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get logFieldLiveEnableDuringClass => '課中超級島';
 
   @override
-  String get logFieldLiveEnableBeforeEnd => '下課前超級島';
-
-  @override
   String get logFieldLivePromoteDuringClass => '課中提升通知';
 
   @override
@@ -17918,9 +17657,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get logFieldLiveClassReminderStartMinutes => '上課提醒開始分鐘';
-
-  @override
-  String get logFieldLiveEndSecondsCountdownThreshold => '下課秒倒計時阈值';
 
   @override
   String get logFieldState => '壯態';
@@ -19461,6 +19197,104 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get globalSettingsCleared => '已清除全域顯示設定';
+
+  @override
+  String get liveIslandVisualTitle => '左側圖示與展開態';
+
+  @override
+  String get liveMiuiExpandedIconLabel => '展開態大圖示';
+
+  @override
+  String get liveMiuiLabelContentLabel => '左側文字內容';
+
+  @override
+  String liveMiuiLabelFontSizeLabel(String value) {
+    return '左側文字大小 $value';
+  }
+
+  @override
+  String get liveMiuiLabelFontWeightLabel => '左側文字粗細';
+
+  @override
+  String get liveMiuiLabelImageSubtitle => '僅小米手機樣式生效，會把課程名或地點生成到左側圖示位';
+
+  @override
+  String get liveMiuiLabelImageTitle => '小米島左側文字圖示';
+
+  @override
+  String liveMiuiLabelLogoCornerRadiusLabel(String value) {
+    return '左側圖示圓角 $value';
+  }
+
+  @override
+  String get liveMiuiLabelLogoSubtitle => '僅在「圖示+文字」樣式下生效；未選擇時會繼續使用應用圖示';
+
+  @override
+  String get liveMiuiLabelLogoTitle => '左側圖示 Logo';
+
+  @override
+  String liveMiuiLabelOffsetXLabel(String value) {
+    return '左側文字水平偏移 $value';
+  }
+
+  @override
+  String liveMiuiLabelOffsetYLabel(String value) {
+    return '左側文字垂直偏移 $value';
+  }
+
+  @override
+  String get liveMiuiLabelRenderQualityLabel => '左側文字清晰度';
+
+  @override
+  String get liveMiuiLabelStyleLabel => '左側圖示樣式';
+
+  @override
+  String get miuiIslandExpandedIconAppIcon => '應用圖標';
+
+  @override
+  String get miuiIslandExpandedIconCustomImage => '自定義圖片';
+
+  @override
+  String get miuiIslandExpandedIconHidden => '不顯示';
+
+  @override
+  String get miuiIslandLabelContentCourseName => '課程名';
+
+  @override
+  String get miuiIslandLabelContentCourseNameAndLocation => '課程名+教室';
+
+  @override
+  String get miuiIslandLabelContentLocation => '教室';
+
+  @override
+  String get miuiIslandLabelFontWeightBold => '加粗';
+
+  @override
+  String get miuiIslandLabelFontWeightMedium => '中等';
+
+  @override
+  String get miuiIslandLabelFontWeightRegular => '常規';
+
+  @override
+  String get miuiIslandLabelRenderQualityHigh => '高清';
+
+  @override
+  String get miuiIslandLabelRenderQualityStandard => '標準';
+
+  @override
+  String get miuiIslandLabelRenderQualityUltra => '超高清';
+
+  @override
+  String get miuiIslandLabelStyleIconAndText => '圖標+文字';
+
+  @override
+  String get miuiIslandLabelStyleTextOnly => '僅文字';
+
+  @override
+  String get replaceImageAction => '更換圖片';
+
+  @override
+  String get selectImageAction => '選擇圖片';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -21235,9 +21069,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get liveTestingEntrySubtitle => '發送測試通知，檢查超級島和本地診斷日誌';
 
   @override
-  String get followBeforeClassSetting => '跟隨上課前提醒';
-
-  @override
   String get liveReminderTimingTitle => '提醒時段';
 
   @override
@@ -21297,6 +21128,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get enableIslandDisplaySubtitle => '關閉後不會再尝試觸發系統超級島';
 
   @override
+  String get livePermanentNotificationTitle => '常駐通知';
+
+  @override
+  String get livePermanentNotificationSubtitle => '沒有課程時也讓通知留在通知欄，顯示情侶卡片的內容';
+
+  @override
   String get liveTimeThresholdTitle => '時間阈值';
 
   @override
@@ -21308,14 +21145,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String beforeClassMinutesOption(int minutes) {
     return '$minutes 分鐘';
-  }
-
-  @override
-  String get beforeEndSecondsLabel => '下課前秒級提醒阈值';
-
-  @override
-  String beforeEndSecondsOption(int seconds) {
-    return '$seconds 秒';
   }
 
   @override
@@ -21336,61 +21165,16 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get duringEndTimeDisplayHelp => '控製緊湊提醒裡顯示最近時間還是整段總時間';
 
   @override
-  String get liveDisplayContentTitle => '顯示內容';
-
-  @override
   String get liveDisplayContentSubtitle => '這組設定只影響目前階段，不會改動另一組提醒顯示';
 
   @override
   String get showCourseNameTitle => '顯示課程名';
 
   @override
-  String get preferShortNameTitle => '優先顯示課程簡稱';
-
-  @override
-  String get preferShortNameSubtitle => '建議簡稱控製在 3 個字以內';
-
-  @override
-  String get showLocationTitle => '顯示地點';
-
-  @override
-  String get showCountdownTitle => '顯示倒計時';
-
-  @override
-  String get countdownFormatLabel => '倒計時格式';
-
-  @override
   String get countdownFormatHelp => '純分鐘樣式按分鐘刷新，帶秒樣式按秒刷新';
 
   @override
-  String get showStageTextTitle => '顯示階段狀態文案';
-
-  @override
-  String get showStageTextSubtitle => '關閉倒計時後，可繼續顯示“即將上課 / 上課中 / 下課提醒”';
-
-  @override
-  String get hidePrefixTextTitle => '隱藏前綴文案';
-
-  @override
-  String get hidePrefixTextSubtitle => '例如隱藏“即將上課”這類前綴';
-
-  @override
   String get liveIslandPreviewTitle => '超級島預覽';
-
-  @override
-  String get liveIslandPreviewFollowBadge => '正在跟隨「課前提醒顯示」設定，調整課前提醒即可生效';
-
-  @override
-  String get liveIslandPreviewStageBeforeClass => '即將上課';
-
-  @override
-  String get liveIslandPreviewStageInClass => '上課中';
-
-  @override
-  String get liveIslandPreviewStageBeforeEnd => '下課提醒';
-
-  @override
-  String get liveIslandPreviewAboutToEnd => '即將下課';
 
   @override
   String liveIslandPreviewUntilClassStart(String time) {
@@ -21439,85 +21223,23 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String get liveIslandVisualTitle => '左側圖示與展開態';
-
-  @override
   String get liveIslandVisualSubtitle => '左側文字圖、展開態大圖示和自定義圖片都按目前階段單独保存';
-
-  @override
-  String get liveMiuiLabelImageTitle => '小米島左側文字圖示';
-
-  @override
-  String get liveMiuiLabelImageSubtitle => '僅小米手機樣式生效，會把課程名或地點生成到左側圖示位';
-
-  @override
-  String get liveMiuiLabelContentLabel => '左側文字內容';
-
-  @override
-  String get liveMiuiLabelStyleLabel => '左側圖示樣式';
-
-  @override
-  String get liveMiuiLabelLogoTitle => '左側圖示 Logo';
-
-  @override
-  String get liveMiuiLabelLogoSubtitle => '僅在「圖示+文字」樣式下生效；未選擇時會繼續使用應用圖示';
-
-  @override
-  String liveMiuiLabelLogoCornerRadiusLabel(String value) {
-    return '左側圖示圓角 $value';
-  }
 
   @override
   String get liveMiuiLabelLogoCornerRadiusTitle => '左側圖示圓角';
 
   @override
-  String liveMiuiLabelFontSizeLabel(String value) {
-    return '左側文字大小 $value';
-  }
-
-  @override
   String get liveMiuiLabelFontSizeTitle => '左側文字大小';
-
-  @override
-  String liveMiuiLabelOffsetXLabel(String value) {
-    return '左側文字水平偏移 $value';
-  }
 
   @override
   String get liveMiuiLabelOffsetXTitle => '左側文字水平偏移';
 
   @override
-  String liveMiuiLabelOffsetYLabel(String value) {
-    return '左側文字垂直偏移 $value';
-  }
-
-  @override
   String get liveMiuiLabelOffsetYTitle => '左側文字垂直偏移';
-
-  @override
-  String get liveMiuiLabelFontWeightLabel => '左側文字粗細';
-
-  @override
-  String get liveMiuiLabelRenderQualityLabel => '左側文字清晰度';
-
-  @override
-  String get liveMiuiExpandedIconLabel => '展開態大圖示';
-
-  @override
-  String get selectImageAction => '選擇圖片';
-
-  @override
-  String get replaceImageAction => '更換圖片';
-
-  @override
-  String get liveDisplayConfigModeTitle => '配置方式';
 
   @override
   String get liveDisplayConfigModeSubtitle =>
       '打開後，課中和下課提醒會完全跟隨上課前提醒顯示，下面的独立設定暫時不可編輯';
-
-  @override
-  String get followBeforeClassDisplayTitle => '跟隨上課前提醒設定';
 
   @override
   String get liveKeepAliveTitle => '後台保活';
@@ -22035,26 +21757,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String liveClassReminderLeadSummaryImmediate(int seconds) {
-    return '從上課開始就進入重點提醒顯示，並在距離下課 $seconds 秒切到秒級倒數';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryKeepNormal(int minutes, int seconds) {
-    return '上課後先保留普通課中通知，在距離下課前 $minutes 分鐘切到重點提醒 / 下課提醒，並在最後 $seconds 秒切到秒級倒數';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryIsland(int minutes, int seconds) {
-    return '在距離下課前 $minutes 分鐘切到超級島與重點提醒，並在最後 $seconds 秒切到秒級倒數';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryFocused(int minutes, int seconds) {
-    return '在距離下課前 $minutes 分鐘開始顯示重點提醒，並在最後 $seconds 秒切到秒級倒數';
-  }
-
-  @override
   String get liveSettingsEntrySubtitle => '提醒時段、島顯示、通知欄和顯示內容';
 
   @override
@@ -22227,9 +21929,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get beforeClassDisplaySettingsTitle => '上課前提醒顯示';
-
-  @override
-  String get duringEndDisplaySettingsTitle => '課中／下課提醒顯示';
 
   @override
   String get liveDisplaySummaryShortName => '簡稱';
@@ -26080,48 +25779,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get liveCountdownTextStyleSecondOnlySlash => '/s（5/s）';
 
   @override
-  String get miuiIslandLabelStyleTextOnly => '仅文字';
-
-  @override
-  String get miuiIslandLabelStyleIconAndText => '图标+文字';
-
-  @override
-  String get miuiIslandLabelContentCourseName => '课程名';
-
-  @override
-  String get miuiIslandLabelContentLocation => '教室';
-
-  @override
-  String get miuiIslandLabelContentCourseNameAndLocation => '课程名+教室';
-
-  @override
-  String get miuiIslandLabelFontWeightRegular => '常规';
-
-  @override
-  String get miuiIslandLabelFontWeightMedium => '中等';
-
-  @override
-  String get miuiIslandLabelFontWeightBold => '加粗';
-
-  @override
-  String get miuiIslandLabelRenderQualityStandard => '标准';
-
-  @override
-  String get miuiIslandLabelRenderQualityHigh => '高清';
-
-  @override
-  String get miuiIslandLabelRenderQualityUltra => '超高清';
-
-  @override
-  String get miuiIslandExpandedIconAppIcon => '应用图标';
-
-  @override
-  String get miuiIslandExpandedIconCustomImage => '自定义图片';
-
-  @override
-  String get miuiIslandExpandedIconHidden => '不显示';
-
-  @override
   String get liveBeforeClassQuickActionNone => '不显示';
 
   @override
@@ -27464,6 +27121,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get logLiveUpdateSuspendTriggersFailed => '挂起超级岛课表调度失败';
 
   @override
+  String get logLiveUpdatePermanentNotificationFailed => '同步常駐通知開關失敗';
+
+  @override
   String get logLiveUpdateTestRequested => '用户请求手动超级岛测试通知';
 
   @override
@@ -27488,14 +27148,13 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String logLiveUpdateSettingsSynced(
     String beforeClass,
     String duringClass,
-    String beforeEnd,
     String promote,
     String notification,
     String countdown,
     String courseName,
     String location,
   ) {
-    return 'Flutter 超级岛设置已同步：课前=$beforeClass，课中=$duringClass，下课前=$beforeEnd，提升=$promote，通知=$notification，倒计时=$countdown，课程名=$courseName，地点=$location';
+    return 'Flutter 超级岛设置已同步：课前=$beforeClass，课中=$duringClass，提升=$promote，通知=$notification，倒计时=$countdown，课程名=$courseName，地点=$location';
   }
 
   @override
@@ -27595,9 +27254,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get logFieldLiveEnableDuringClass => '课中超级岛';
 
   @override
-  String get logFieldLiveEnableBeforeEnd => '下课前超级岛';
-
-  @override
   String get logFieldLivePromoteDuringClass => '课中提升通知';
 
   @override
@@ -27659,9 +27315,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get logFieldLiveClassReminderStartMinutes => '上课提醒开始分钟';
-
-  @override
-  String get logFieldLiveEndSecondsCountdownThreshold => '下课秒倒计时阈值';
 
   @override
   String get logFieldState => '状态';
@@ -29202,4 +28855,102 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get globalSettingsCleared => '已清除全域顯示設定';
+
+  @override
+  String get liveIslandVisualTitle => '左側圖示與展開態';
+
+  @override
+  String get liveMiuiExpandedIconLabel => '展開態大圖示';
+
+  @override
+  String get liveMiuiLabelContentLabel => '左側文字內容';
+
+  @override
+  String liveMiuiLabelFontSizeLabel(String value) {
+    return '左側文字大小 $value';
+  }
+
+  @override
+  String get liveMiuiLabelFontWeightLabel => '左側文字粗細';
+
+  @override
+  String get liveMiuiLabelImageSubtitle => '僅小米手機樣式生效，會把課程名或地點生成到左側圖示位';
+
+  @override
+  String get liveMiuiLabelImageTitle => '小米島左側文字圖示';
+
+  @override
+  String liveMiuiLabelLogoCornerRadiusLabel(String value) {
+    return '左側圖示圓角 $value';
+  }
+
+  @override
+  String get liveMiuiLabelLogoSubtitle => '僅在「圖示+文字」樣式下生效；未選擇時會繼續使用應用圖示';
+
+  @override
+  String get liveMiuiLabelLogoTitle => '左側圖示 Logo';
+
+  @override
+  String liveMiuiLabelOffsetXLabel(String value) {
+    return '左側文字水平偏移 $value';
+  }
+
+  @override
+  String liveMiuiLabelOffsetYLabel(String value) {
+    return '左側文字垂直偏移 $value';
+  }
+
+  @override
+  String get liveMiuiLabelRenderQualityLabel => '左側文字清晰度';
+
+  @override
+  String get liveMiuiLabelStyleLabel => '左側圖示樣式';
+
+  @override
+  String get miuiIslandExpandedIconAppIcon => '应用图标';
+
+  @override
+  String get miuiIslandExpandedIconCustomImage => '自定义图片';
+
+  @override
+  String get miuiIslandExpandedIconHidden => '不显示';
+
+  @override
+  String get miuiIslandLabelContentCourseName => '课程名';
+
+  @override
+  String get miuiIslandLabelContentCourseNameAndLocation => '课程名+教室';
+
+  @override
+  String get miuiIslandLabelContentLocation => '教室';
+
+  @override
+  String get miuiIslandLabelFontWeightBold => '加粗';
+
+  @override
+  String get miuiIslandLabelFontWeightMedium => '中等';
+
+  @override
+  String get miuiIslandLabelFontWeightRegular => '常规';
+
+  @override
+  String get miuiIslandLabelRenderQualityHigh => '高清';
+
+  @override
+  String get miuiIslandLabelRenderQualityStandard => '标准';
+
+  @override
+  String get miuiIslandLabelRenderQualityUltra => '超高清';
+
+  @override
+  String get miuiIslandLabelStyleIconAndText => '图标+文字';
+
+  @override
+  String get miuiIslandLabelStyleTextOnly => '仅文字';
+
+  @override
+  String get replaceImageAction => '更換圖片';
+
+  @override
+  String get selectImageAction => '選擇圖片';
 }

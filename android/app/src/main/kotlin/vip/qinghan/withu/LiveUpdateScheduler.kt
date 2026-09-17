@@ -130,10 +130,8 @@ internal fun liveSchedulerResolveStage(
     blockedUntilMillis: Long?,
     liveShowBeforeClassMinutes: Int,
     liveClassReminderStartMinutes: Int,
-    endReminderLeadMillis: Long,
     liveEnableBeforeClass: Boolean,
     liveEnableDuringClass: Boolean,
-    liveEnableBeforeEnd: Boolean,
     livePromoteDuringClass: Boolean,
     liveShowDuringClassNotification: Boolean,
 ): String? {
@@ -160,38 +158,7 @@ internal fun liveSchedulerResolveStage(
             null
         }
     }
-    if (liveClassReminderStartMinutes > 0) {
-        if (liveEnableBeforeEnd) {
-            return "beforeEnd"
-        }
-        return if (
-            liveSchedulerCanDisplayDuring(
-                liveEnableDuringClass,
-                livePromoteDuringClass,
-                liveShowDuringClassNotification,
-            )
-        ) {
-            "duringClass"
-        } else {
-            null
-        }
-    }
-    val endReminderStart = maxOf(startAtMillis, endAtMillis - endReminderLeadMillis)
-    if (nowMillis >= endReminderStart) {
-        if (liveEnableBeforeEnd) {
-            return "beforeEnd"
-        }
-        if (
-            liveSchedulerCanDisplayDuring(
-                liveEnableDuringClass,
-                livePromoteDuringClass,
-                liveShowDuringClassNotification,
-            )
-        ) {
-            return "duringClass"
-        }
-        return null
-    }
+    // 下课提醒（beforeEnd）已移除：过了重点提醒起点后一律课中，直到下课。
     return if (
         liveSchedulerCanDisplayDuring(
             liveEnableDuringClass,
@@ -225,7 +192,6 @@ internal data class LiveSchedulerTestSettings(
     val liveClassReminderStartMinutes: Int = 0,
     val liveEnableBeforeClass: Boolean = true,
     val liveEnableDuringClass: Boolean = true,
-    val liveEnableBeforeEnd: Boolean = true,
     val livePromoteDuringClass: Boolean = true,
     val liveShowDuringClassNotification: Boolean = true,
     val liveTimeCorrectionSeconds: Int = 0,
@@ -234,7 +200,6 @@ internal data class LiveSchedulerTestSettings(
 internal data class LiveSchedulerTestSnapshot(
     val currentWeek: Int,
     val semesterStartMillis: Long?,
-    val endReminderLeadMillis: Long = 600_000L,
     val holidayDates: Set<String> = emptySet(),
     val adjustedWorkdayDates: Set<String> = emptySet(),
     val holidayOverrideEnabled: Boolean = false,
@@ -323,10 +288,8 @@ internal fun liveSchedulerFindActiveSelection(
             blockedUntilMillis = blockedUntilMillis,
             liveShowBeforeClassMinutes = snapshot.settings.liveShowBeforeClassMinutes,
             liveClassReminderStartMinutes = snapshot.settings.liveClassReminderStartMinutes,
-            endReminderLeadMillis = snapshot.endReminderLeadMillis,
             liveEnableBeforeClass = snapshot.settings.liveEnableBeforeClass,
             liveEnableDuringClass = snapshot.settings.liveEnableDuringClass,
-            liveEnableBeforeEnd = snapshot.settings.liveEnableBeforeEnd,
             livePromoteDuringClass = snapshot.settings.livePromoteDuringClass,
             liveShowDuringClassNotification = snapshot.settings.liveShowDuringClassNotification,
         ) ?: continue
@@ -506,7 +469,6 @@ private data class NativeLiveSettings(
     val liveShowStageText: Boolean,
     val liveEnableBeforeClass: Boolean,
     val liveEnableDuringClass: Boolean,
-    val liveEnableBeforeEnd: Boolean,
     val livePromoteDuringClass: Boolean,
     val liveShowDuringClassNotification: Boolean,
     val liveUseShortName: Boolean,
@@ -549,16 +511,16 @@ private data class NativeLiveSettings(
     val liveDuringEndMiuiIslandExpandedIconPath: String?,
     val liveShowBeforeClassMinutes: Int,
     val liveClassReminderStartMinutes: Int,
-    val liveEndSecondsCountdownThreshold: Int,
     val liveTimeCorrectionSeconds: Int,
     val liveBeforeClassQuickAction: String,
     val liveBeforeClassQuickActionAutoMinutes: Int,
+    /** 常驻开关：无课程会话时通知是否留在状态栏（见 LiveUpdateService.buildIdleNotification）。 */
+    val livePermanentNotificationEnabled: Boolean,
 )
 
 private data class NativeScheduleSnapshot(
     val currentWeek: Int,
     val semesterStartMillis: Long?,
-    val endReminderLeadMillis: Long,
     val isHoliday: Boolean,
     /** Date (yyyy-MM-dd) the [isHoliday] flag was computed for; flag is only valid on that day. */
     val isHolidayDate: String?,
@@ -636,12 +598,9 @@ private data class LiveUpdatePayload(
     val startAtMillis: Long,
     val endAtMillis: Long,
     val beforeClassLeadMillis: Long,
-    val endReminderLeadMillis: Long,
     val liveClassReminderStartMinutes: Int,
-    val endSecondsCountdownThreshold: Int,
     val enableBeforeClass: Boolean,
     val enableDuringClass: Boolean,
-    val enableBeforeEnd: Boolean,
     val promoteDuringClass: Boolean,
     val showNotificationDuringClass: Boolean,
     val showCountdown: Boolean,
@@ -672,6 +631,12 @@ private data class LiveUpdatePayload(
     val progressMilestoneTimeTexts: List<String>,
     /** When true, ticker re-validates against the schedule snapshot (scheduler path). */
     val validateAgainstSchedule: Boolean = true,
+    /**
+     * 常驻开关。打开时服务在无课程会话时不摘通知，改显示情侣卡片形态。
+     *
+     * 缺省 true：Flutter 与本字段同版本发布，老负载（测试夹具）也按新的常驻语义走。
+     */
+    val permanentNotification: Boolean = true,
 )
 
 private fun normalizeNullableText(value: String?): String? {
@@ -740,7 +705,6 @@ object LiveUpdateScheduler {
                     message = DiagnosticLogMessages.LIVE_UPDATE_SNAPSHOT_SETTINGS,
                     extras = mapOf(
                         "liveEnableDuringClass" to settingsJson.optBoolean("liveEnableDuringClass", true),
-                        "liveEnableBeforeEnd" to settingsJson.optBoolean("liveEnableBeforeEnd", true),
                         "liveEnableBeforeClass" to settingsJson.optBoolean("liveEnableBeforeClass", true),
                         "livePromoteDuringClass" to settingsJson.optBoolean("livePromoteDuringClass", true),
                     )
@@ -828,11 +792,45 @@ object LiveUpdateScheduler {
         context.stopService(Intent(context, LiveUpdateService::class.java))
     }
 
+    /**
+     * 常驻模式下在开机 / App 启动时把前台服务拉起来。
+     *
+     * 与 [handleBootReschedule] 的分工：那条路径只在「此刻正好有课」时才起服务，而
+     * 常驻通知在无课时也必须存在。这里发一个**不带课程负载**的 intent，服务的
+     * onStartCommand 会读落盘的常驻开关并进入情侣卡片形态（见 buildIdleNotification）。
+     *
+     * 幂等且不会打断进行中的会话：服务收到空负载时，若当前阶段仍然有效就原样保留。
+     * 已经在跑的话这里直接跳过，省掉一次多余的 onStartCommand。
+     */
+    fun ensurePermanentNotificationRunning(context: Context) {
+        val appContext = context.applicationContext
+        if (!LiveUpdateService.isPermanentNotificationEnabled(appContext)) {
+            return
+        }
+        if (LiveUpdateService.isRunning()) {
+            return
+        }
+        try {
+            ContextCompat.startForegroundService(
+                appContext,
+                Intent(appContext, LiveUpdateService::class.java)
+            )
+        } catch (e: Exception) {
+            // 后台启动前台服务可能被系统拒绝（机型策略、省电模式）。这不是致命错误：
+            // 下一次闹钟或 15 分钟兜底 Worker 会再试一次。
+            Log.w(TAG, DiagnosticLogMessages.LOG_START_LIVE_UPDATE_SERVICE_FAILED, e)
+        }
+    }
+
     fun handleBootReschedule(context: Context) {
         val appContext = context.applicationContext
         BeforeClassQuickActionRestore.restoreOnBoot(appContext)
         AppStartupCoordinator.rescheduleFallbackWorkers(appContext)
-        reschedule(appContext, allowImmediateStart = true, stopStaleSessions = true)
+        val startedSession = reschedule(appContext, allowImmediateStart = true, stopStaleSessions = true)
+        if (!startedSession) {
+            // 开机时没有课程会话：常驻开关打开的话也要把通知挂上去。
+            ensurePermanentNotificationRunning(appContext)
+        }
     }
 
     fun handleTimeReschedule(context: Context) {
@@ -873,15 +871,10 @@ object LiveUpdateScheduler {
             startAtMillis = (data["startAtMillis"] as? Number)?.toLong() ?: 0L,
             endAtMillis = (data["endAtMillis"] as? Number)?.toLong() ?: 0L,
             beforeClassLeadMillis = (data["beforeClassLeadMillis"] as? Number)?.toLong() ?: 0L,
-            endReminderLeadMillis = (data["endReminderLeadMillis"] as? Number)?.toLong()
-                ?: 600_000L,
             liveClassReminderStartMinutes =
                 (data["liveClassReminderStartMinutes"] as? Number)?.toInt() ?: 0,
-            endSecondsCountdownThreshold =
-                (data["endSecondsCountdownThreshold"] as? Number)?.toInt() ?: 60,
             enableBeforeClass = data["enableBeforeClass"] as? Boolean ?: true,
             enableDuringClass = data["enableDuringClass"] as? Boolean ?: true,
-            enableBeforeEnd = data["enableBeforeEnd"] as? Boolean ?: true,
             promoteDuringClass = data["promoteDuringClass"] as? Boolean ?: true,
             showNotificationDuringClass =
                 data["showNotificationDuringClass"] as? Boolean ?: true,
@@ -934,6 +927,10 @@ object LiveUpdateScheduler {
             // their fixture course is intentionally absent from the snapshot.
             validateAgainstSchedule =
                 data["validateAgainstSchedule"] as? Boolean ?: false,
+            // 常驻开关：Flutter 每次都下发；缺省沿用落盘值，避免老负载把开关翻回默认。
+            permanentNotification =
+                data["permanentNotification"] as? Boolean
+                    ?: LiveUpdateService.isPermanentNotificationEnabled(context),
         )
         return buildServiceIntent(context, payload)
     }
@@ -943,6 +940,12 @@ object LiveUpdateScheduler {
         allowImmediateStart: Boolean,
         stopStaleSessions: Boolean = false,
     ): Boolean {
+        // 常驻开关打开时，任何来源的重排都不许收掉常驻通知：无课时它要留在状态栏继续
+        // 显示情侣卡片形态。在这里统一降级，调用方（闹钟、开机、时间变更、15 分钟兜底
+        // Worker、服务的 ticker）就都不必各自判断 —— 否则 Worker 每 15 分钟来一次
+        // handleAlarm，就会把常驻通知收掉，然后下次闹钟才回来。
+        val shouldStopStaleSessions =
+            stopStaleSessions && !LiveUpdateService.isPermanentNotificationEnabled(context)
         cancelScheduledAlarm(context)
         val suspendUntil = suspendedUntilMillis(context)
         if (suspendUntil > System.currentTimeMillis()) {
@@ -952,12 +955,12 @@ object LiveUpdateScheduler {
             return false
         }
         val snapshot = loadSnapshot(context) ?: run {
-            if (stopStaleSessions) {
+            if (shouldStopStaleSessions) {
                 stopRunningLiveUpdate(context)
             }
             return false
         }
-        if (stopStaleSessions && snapshot.semesterStartMillis == null) {
+        if (shouldStopStaleSessions && snapshot.semesterStartMillis == null) {
             stopRunningLiveUpdate(context)
             UmengDiagnosticReporter.record(
                 context = context.applicationContext,
@@ -971,7 +974,7 @@ object LiveUpdateScheduler {
         if (isLegacyHolidayFlagActive(snapshot, nowCalendar) ||
             isDateHoliday(snapshot, nowCalendar)
         ) {
-            if (stopStaleSessions) {
+            if (shouldStopStaleSessions) {
                 stopRunningLiveUpdate(context)
             }
             UmengDiagnosticReporter.record(
@@ -1006,7 +1009,7 @@ object LiveUpdateScheduler {
                 }
                 return started
             }
-            if (stopStaleSessions) {
+            if (shouldStopStaleSessions) {
                 stopRunningLiveUpdate(context)
                 UmengDiagnosticReporter.record(
                     context = context.applicationContext,
@@ -1201,7 +1204,6 @@ object LiveUpdateScheduler {
             liveShowStageText = settingsJson.optBoolean("liveShowStageText", true),
             liveEnableBeforeClass = settingsJson.optBoolean("liveEnableBeforeClass", true),
             liveEnableDuringClass = settingsJson.optBoolean("liveEnableDuringClass", true),
-            liveEnableBeforeEnd = settingsJson.optBoolean("liveEnableBeforeEnd", true),
             livePromoteDuringClass = settingsJson.optBoolean("livePromoteDuringClass", true),
             liveShowDuringClassNotification =
                 settingsJson.optBoolean("liveShowDuringClassNotification", true),
@@ -1345,14 +1347,14 @@ object LiveUpdateScheduler {
             liveShowBeforeClassMinutes = settingsJson.optInt("liveShowBeforeClassMinutes", 20),
             liveClassReminderStartMinutes =
                 settingsJson.optInt("liveClassReminderStartMinutes", 0),
-            liveEndSecondsCountdownThreshold =
-                settingsJson.optInt("liveEndSecondsCountdownThreshold", 60),
             liveTimeCorrectionSeconds =
                 settingsJson.optInt("liveTimeCorrectionSeconds", 0),
             liveBeforeClassQuickAction =
                 settingsJson.optString("liveBeforeClassQuickAction", "none"),
             liveBeforeClassQuickActionAutoMinutes =
                 settingsJson.optInt("liveBeforeClassQuickActionAutoMinutes", 0),
+            livePermanentNotificationEnabled =
+                settingsJson.optBoolean("livePermanentNotificationEnabled", true),
         )
 
         val coursesJson = json.optJSONArray("courses") ?: JSONArray()
@@ -1400,7 +1402,6 @@ object LiveUpdateScheduler {
         return NativeScheduleSnapshot(
             currentWeek = json.optInt("currentWeek", 1),
             semesterStartMillis = json.optLong("semesterStartMillis").takeIf { it > 0L },
-            endReminderLeadMillis = json.optLong("endReminderLeadMillis", 600_000L),
             isHoliday = json.optBoolean("isHoliday", false),
             isHolidayDate = json.optString("isHolidayDate").takeIf { it.isNotBlank() },
             holidayDates = holidayDates,
@@ -1423,19 +1424,14 @@ object LiveUpdateScheduler {
             putExtra("endTime", payload.currentCourse.endTime)
             putExtra("nextName", payload.nextCourse?.name ?: "")
             putExtra("autoDismissAfterStartMinutes", 0)
+            putExtra("permanentNotification", payload.permanentNotification)
             putExtra("stage", payload.stage)
             putExtra("beforeClassLeadMillis", payload.beforeClassLeadMillis)
             putExtra("startAtMillis", payload.startAtMillis)
             putExtra("endAtMillis", payload.endAtMillis)
-            putExtra("endReminderLeadMillis", payload.endReminderLeadMillis)
             putExtra("liveClassReminderStartMinutes", payload.liveClassReminderStartMinutes)
-            putExtra(
-                "endSecondsCountdownThreshold",
-                payload.endSecondsCountdownThreshold
-            )
             putExtra("enableBeforeClass", payload.enableBeforeClass)
             putExtra("enableDuringClass", payload.enableDuringClass)
-            putExtra("enableBeforeEnd", payload.enableBeforeEnd)
             putExtra("promoteDuringClass", payload.promoteDuringClass)
             putExtra(
                 "showNotificationDuringClass",
@@ -1860,14 +1856,10 @@ object LiveUpdateScheduler {
             endAtMillis = selection.endAtMillis,
             beforeClassLeadMillis =
                 snapshot.settings.liveShowBeforeClassMinutes * 60_000L,
-            endReminderLeadMillis = snapshot.endReminderLeadMillis,
             liveClassReminderStartMinutes =
                 snapshot.settings.liveClassReminderStartMinutes,
-            endSecondsCountdownThreshold =
-                snapshot.settings.liveEndSecondsCountdownThreshold,
             enableBeforeClass = snapshot.settings.liveEnableBeforeClass,
             enableDuringClass = snapshot.settings.liveEnableDuringClass,
-            enableBeforeEnd = snapshot.settings.liveEnableBeforeEnd,
             promoteDuringClass =
                 if (selection.stage == "duringClassStatusBar") {
                     false
@@ -1908,6 +1900,7 @@ object LiveUpdateScheduler {
             progressMilestoneLabels = selection.progressMilestoneLabels,
             progressMilestoneTimeTexts = selection.progressMilestoneTimeTexts,
             validateAgainstSchedule = true,
+            permanentNotification = snapshot.settings.livePermanentNotificationEnabled,
         )
     }
 
@@ -1929,7 +1922,6 @@ object LiveUpdateScheduler {
         } else {
             maxOf(startAtMillis, endAtMillis - settings.liveClassReminderStartMinutes * 60_000L)
         }
-        val endReminderStart = maxOf(startAtMillis, endAtMillis - snapshot.endReminderLeadMillis)
         val candidates = mutableListOf<FutureStageTrigger>()
         if (settings.liveEnableBeforeClass && aheadTime > nowMillis && aheadTime < startAtMillis) {
             candidates += FutureStageTrigger("beforeClass", aheadTime)
@@ -1956,13 +1948,10 @@ object LiveUpdateScheduler {
             ) {
                 candidates += FutureStageTrigger("duringClassStatusBar", startAtMillis)
             }
-            if (settings.liveEnableBeforeEnd && reminderStartMillis > nowMillis) {
-                candidates += FutureStageTrigger("beforeEnd", reminderStartMillis)
-            } else if (canDisplayDuring(settings) && reminderStartMillis > nowMillis) {
+            // 重点提醒起点即课中开始（下课提醒已移除）。
+            if (canDisplayDuring(settings) && reminderStartMillis > nowMillis) {
                 candidates += FutureStageTrigger("duringClass", reminderStartMillis)
             }
-        } else if (settings.liveEnableBeforeEnd && endReminderStart > nowMillis) {
-            candidates += FutureStageTrigger("beforeEnd", endReminderStart)
         }
         return candidates.minByOrNull { it.triggerAtMillis }
     }
@@ -1982,10 +1971,8 @@ object LiveUpdateScheduler {
             blockedUntilMillis = blockedUntilMillis,
             liveShowBeforeClassMinutes = settings.liveShowBeforeClassMinutes,
             liveClassReminderStartMinutes = settings.liveClassReminderStartMinutes,
-            endReminderLeadMillis = snapshot.endReminderLeadMillis,
             liveEnableBeforeClass = settings.liveEnableBeforeClass,
             liveEnableDuringClass = settings.liveEnableDuringClass,
-            liveEnableBeforeEnd = settings.liveEnableBeforeEnd,
             livePromoteDuringClass = settings.livePromoteDuringClass,
             liveShowDuringClassNotification = settings.liveShowDuringClassNotification,
         )

@@ -9,9 +9,9 @@
   login for course import) IS governed.
 
   Campus academic portals that only serve HTTP are enumerated below
-  (all http:// import_url hosts from the qingyu_warehouse adapter
-  repository, plus localhost/127.0.0.1 for local adapters during
-  development). Keep this list in sync with the adapter repository. IP
+  (all http:// import_url hosts declared by the bundled school adapters,
+  plus localhost/127.0.0.1 for local adapters during development).
+  Keep this list in sync with the bundled adapters. IP
   literals are fine here too: NSC domain matching is a plain string compare
   (exact or includeSubdomains suffix) in ApplicationConfig, so exact-match IP
   entries do work - but ONLY with includeSubdomains="false" (an IP can never

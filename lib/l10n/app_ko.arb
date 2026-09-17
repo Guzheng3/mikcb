@@ -808,7 +808,6 @@
   "liveKeepAliveEntrySubtitle": "숨김, 백그라운드 상주 보조 서비스 및 권한 항목",
   "liveTestingEntryTitle": "테스트 및 진단",
   "liveTestingEntrySubtitle": "테스트 알림 전송, 슈퍼아일랜드 및 로컬 진단 로그 확인",
-  "followBeforeClassSetting": "수업 전 알림에 연동",
   "liveReminderTimingTitle": "알림 시간대",
   "liveReminderSwitchesTitle": "알림 스위치",
   "liveReminderSwitchesSubtitle": "서로 다른 알림 시간대를 자유롭게 조합할 수 있습니다. 이 스위치들은 서로 대체하지 않습니다",
@@ -841,6 +840,8 @@
   "duringClassStatusNotificationPersistent": "수업 시작 후 일반 수업 중 알림을 계속 표시하고 종료 알림 전에 전환",
   "enableIslandDisplayTitle": "슈퍼아일랜드 표시",
   "enableIslandDisplaySubtitle": "끄면 시스템 슈퍼아일랜드 트리거를 중단합니다",
+  "livePermanentNotificationTitle": "상시 알림",
+  "livePermanentNotificationSubtitle": "수업이 없을 때도 알림창에 알림을 남기고 커플 카드 내용을 표시합니다",
   "liveTimeThresholdTitle": "시간 임계값",
   "liveTimeThresholdSubtitle": "수업 전 팝업, 종료 전 슈퍼아일랜드/포커스 알림 전환, 초 단위 카운트다운을 제어합니다",
   "beforeClassPopupLabel": "수업 전 팝업 시간",
@@ -848,15 +849,6 @@
   "@beforeClassMinutesOption": {
     "placeholders": {
       "minutes": {
-        "type": "int"
-      }
-    }
-  },
-  "beforeEndSecondsLabel": "종료 전 초 단위 알림 임계값",
-  "beforeEndSecondsOption": "{seconds}초",
-  "@beforeEndSecondsOption": {
-    "placeholders": {
-      "seconds": {
         "type": "int"
       }
     }
@@ -872,25 +864,10 @@
   "timeCorrectionHelp": "학교 종이 시간표보다 몇 초 빠르면 '앞당기기', 느리면 '늦추기'로 설정하세요.",
   "duringEndTimeDisplayLabel": "수업 중/종료 알림 시간 스타일",
   "duringEndTimeDisplayHelp": "컴팩트 알림에서 최근 시간을 표시할지 전체 총 시간을 표시할지 제어합니다.",
-  "liveDisplayContentTitle": "표시 내용",
   "liveDisplayContentSubtitle": "이 설정 그룹은 현재 스테이지에만 영향을 주며, 다른 알림 표시는 변경하지 않습니다",
   "showCourseNameTitle": "수업명 표시",
-  "preferShortNameTitle": "약칭 우선 표시",
-  "preferShortNameSubtitle": "약칭은 3자 이내를 권장합니다",
-  "showLocationTitle": "장소 표시",
-  "showCountdownTitle": "카운트다운 표시",
-  "countdownFormatLabel": "카운트다운 형식",
   "countdownFormatHelp": "분만 표시는 분 단위로, 초 포함 표시는 초 단위로 갱신됩니다",
-  "showStageTextTitle": "스테이지 상태 텍스트 표시",
-  "showStageTextSubtitle": "카운트다운 끈 후에도 '곧 수업/수업 중/종료 알림'을 계속 표시할 수 있습니다",
-  "hidePrefixTextTitle": "접두사 텍스트 숨기기",
-  "hidePrefixTextSubtitle": "예: '곧 수업' 같은 접두사를 숨기기",
   "liveIslandPreviewTitle": "슈퍼 아일랜드 미리보기",
-  "liveIslandPreviewFollowBadge": "'수업 전 표시' 설정을 따르며, 해당 설정을 조정하면 미리보기에 반영됩니다",
-  "liveIslandPreviewStageBeforeClass": "곧 수업",
-  "liveIslandPreviewStageInClass": "수업 중",
-  "liveIslandPreviewStageBeforeEnd": "종료 알림",
-  "liveIslandPreviewAboutToEnd": "곧 종료",
   "liveIslandPreviewUntilClassStart": "수업 시작 {time} 전",
   "@liveIslandPreviewUntilClassStart": {
     "placeholders": {
@@ -924,54 +901,8 @@
       }
     }
   },
-  "liveIslandVisualTitle": "왼쪽 아이콘 및 펼친 상태",
   "liveIslandVisualSubtitle": "왼쪽 텍스트 이미지, 펼친 상태 큰 아이콘, 사용자 정의 이미지는 모두 현재 스테이지별로 개별 저장됩니다",
-  "liveMiuiLabelImageTitle": "샤오미 아일랜드 왼쪽 텍스트 아이콘",
-  "liveMiuiLabelImageSubtitle": "샤오미 기기 스타일에서만 유효합니다. 수업명 또는 장소를 왼쪽 아이콘 위치에 생성합니다",
-  "liveMiuiLabelContentLabel": "왼쪽 텍스트 내용",
-  "liveMiuiLabelStyleLabel": "왼쪽 아이콘 스타일",
-  "liveMiuiLabelLogoTitle": "왼쪽 아이콘 로고",
-  "liveMiuiLabelLogoSubtitle": "'아이콘+텍스트' 스타일에서만 유효합니다. 미선택 시 앱 아이콘을 계속 사용합니다",
-  "liveMiuiLabelLogoCornerRadiusLabel": "왼쪽 아이콘 둥근 모서리 {value}",
-  "@liveMiuiLabelLogoCornerRadiusLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "liveMiuiLabelFontSizeLabel": "왼쪽 텍스트 크기 {value}",
-  "@liveMiuiLabelFontSizeLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "liveMiuiLabelOffsetXLabel": "왼쪽 텍스트 수평 오프셋 {value}",
-  "@liveMiuiLabelOffsetXLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "liveMiuiLabelOffsetYLabel": "왼쪽 텍스트 수직 오프셋 {value}",
-  "@liveMiuiLabelOffsetYLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "liveMiuiLabelFontWeightLabel": "왼쪽 텍스트 굵기",
-  "liveMiuiLabelRenderQualityLabel": "왼쪽 텍스트 선명도",
-  "liveMiuiExpandedIconLabel": "펼친 상태 큰 아이콘",
-  "selectImageAction": "이미지 선택",
-  "replaceImageAction": "이미지 변경",
-  "liveDisplayConfigModeTitle": "설정 모드",
   "liveDisplayConfigModeSubtitle": "켜면 수업 중 및 종료 알림이 수업 전 알림 표시를 완전히 따릅니다. 아래 개별 설정은 일시적으로 편집할 수 없습니다",
-  "followBeforeClassDisplayTitle": "수업 전 알림 설정에 연동",
   "liveKeepAliveTitle": "백그라운드 상주",
   "liveKeepAliveOptionsTitle": "상주 옵션",
   "liveKeepAliveOptionsSubtitle": "슈퍼아일랜드와 알림의 백그라운드 안정성을 향상시킵니다",
@@ -1285,47 +1216,6 @@
       }
     }
   },
-  "liveClassReminderLeadSummaryImmediate": "수업 시작과 동시에 포커스 알림 표시로 전환하고, 종료 {seconds}초 전에 초 단위 카운트다운으로 전환",
-  "@liveClassReminderLeadSummaryImmediate": {
-    "placeholders": {
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "liveClassReminderLeadSummaryKeepNormal": "수업 후 먼저 일반 수업 중 알림을 유지하고, 종료 {minutes}분 전에 포커스/종료 알림으로 전환, 마지막 {seconds}초에 초 단위 카운트다운으로 전환",
-  "@liveClassReminderLeadSummaryKeepNormal": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "liveClassReminderLeadSummaryIsland": "종료 {minutes}분 전에 슈퍼아일랜드와 포커스 알림으로 전환, 마지막 {seconds}초에 초 단위 카운트다운으로 전환",
-  "@liveClassReminderLeadSummaryIsland": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "liveClassReminderLeadSummaryFocused": "종료 {minutes}분 전에 포커스 알림 표시를 시작하고, 마지막 {seconds}초에 초 단위 카운트다운으로 전환",
-  "@liveClassReminderLeadSummaryFocused": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
   "liveSettingsEntrySubtitle": "알림 시간대, 아일랜드 표시, 알림바 및 표시 내용",
   "timetableProfilesEntrySubtitle": "새로 만들기, 전환, 복사, 이름 변경 및 삭제",
   "homeTitleSectionTitle": "홈 제목",
@@ -1337,7 +1227,6 @@
   "timetableBackgroundColorSectionSubtitle": "시간표 페이지의 큰 배경에만 적용됩니다",
   "defaultTimetablePreviewName": "기본 시간표",
   "beforeClassDisplaySettingsTitle": "수업 전 알림 표시",
-  "duringEndDisplaySettingsTitle": "수업 중/종료 알림 표시",
   "liveDisplaySummaryShortName": "약칭",
   "liveDisplaySummaryCourseName": "수업명",
   "liveDisplaySummaryLocation": "장소",
@@ -3679,20 +3568,6 @@
   "liveCountdownTextStyleSecondOnlyCn": "Seconds only (5 s)",
   "liveCountdownTextStyleSecondOnlyShort": "s (5s)",
   "liveCountdownTextStyleSecondOnlySlash": "/s (5/s)",
-  "miuiIslandLabelStyleTextOnly": "Text only",
-  "miuiIslandLabelStyleIconAndText": "Icon + text",
-  "miuiIslandLabelContentCourseName": "Course name",
-  "miuiIslandLabelContentLocation": "Room",
-  "miuiIslandLabelContentCourseNameAndLocation": "Course + room",
-  "miuiIslandLabelFontWeightRegular": "Regular",
-  "miuiIslandLabelFontWeightMedium": "Medium",
-  "miuiIslandLabelFontWeightBold": "Bold",
-  "miuiIslandLabelRenderQualityStandard": "Standard",
-  "miuiIslandLabelRenderQualityHigh": "High",
-  "miuiIslandLabelRenderQualityUltra": "Ultra",
-  "miuiIslandExpandedIconAppIcon": "App icon",
-  "miuiIslandExpandedIconCustomImage": "Custom image",
-  "miuiIslandExpandedIconHidden": "Hidden",
   "liveBeforeClassQuickActionNone": "Hidden",
   "liveBeforeClassQuickActionSilent": "Turn on silent mode",
   "liveBeforeClassQuickActionDoNotDisturb": "Turn on Do Not Disturb",
@@ -4783,6 +4658,7 @@
   "logLiveUpdateSnapshotSyncFailed": "Failed to sync Live Island timetable snapshot",
   "logLiveUpdateSnapshotClearFailed": "Failed to clear Live Island timetable snapshot",
   "logLiveUpdateSuspendTriggersFailed": "Failed to suspend Live Island schedule triggers",
+  "logLiveUpdatePermanentNotificationFailed": "상시 알림 스위치 동기화 실패",
   "logLiveUpdateTestRequested": "User requested manual Live Island test notification",
   "logLiveUpdateTestNoSelection": "Manual Live Island test: no course available",
   "logLiveUpdateTestSelectionReady": "Manual Live Island test: target course resolved",
@@ -4790,16 +4666,13 @@
   "logLiveUpdateTestStarting": "Manual Live Island test: starting native Live Island",
   "logLiveUpdateTestStarted": "Manual Live Island test: native Live Island requested successfully",
   "logLiveUpdateTestFailed": "Manual Live Island test: failed before Live Island appeared",
-  "logLiveUpdateSettingsSynced": "Flutter Live Island settings synced: beforeClass={beforeClass}, duringClass={duringClass}, beforeEnd={beforeEnd}, promote={promote}, notification={notification}, countdown={countdown}, courseName={courseName}, location={location}",
+  "logLiveUpdateSettingsSynced": "Flutter Live Island settings synced: beforeClass={beforeClass}, duringClass={duringClass}, promote={promote}, notification={notification}, countdown={countdown}, courseName={courseName}, location={location}",
   "@logLiveUpdateSettingsSynced": {
     "placeholders": {
       "beforeClass": {
         "type": "String"
       },
       "duringClass": {
-        "type": "String"
-      },
-      "beforeEnd": {
         "type": "String"
       },
       "promote": {
@@ -4851,7 +4724,6 @@
   "logFieldAutoStartStatus": "auto Start Status",
   "logFieldLiveEnableBeforeClass": "live Enable Before Class",
   "logFieldLiveEnableDuringClass": "live Enable During Class",
-  "logFieldLiveEnableBeforeEnd": "live Enable Before End",
   "logFieldLivePromoteDuringClass": "live Promote During Class",
   "logFieldLiveShowDuringClassNotification": "live Show During Class Notification",
   "logFieldLiveShowCountdown": "live Show Countdown",
@@ -4873,7 +4745,6 @@
   "logFieldLiveMiuiIslandExpandedIconMode": "live Miui Island Expanded Icon Mode",
   "logFieldLiveShowBeforeClassMinutes": "live Show Before Class Minutes",
   "logFieldLiveClassReminderStartMinutes": "live Class Reminder Start Minutes",
-  "logFieldLiveEndSecondsCountdownThreshold": "live End Seconds Countdown Threshold",
   "logFieldState": "state",
   "logFieldRoute": "route",
   "logFieldPreviousRoute": "previous Route",
@@ -5845,5 +5716,63 @@
   "globalSettingsDescriptionBody": "여기에서 설정한 표시 항목은 모든 시간표에 적용됩니다. 특정 시간표에서 변경한 항목은 해당 시간표의 자체 설정이 우선합니다. 학기, 교시(시간 템플릿) 등 시간표 고유 항목은 전역 설정 대상이 아닙니다.",
   "globalSettingsClearTitle": "전역 표시 설정 지우기",
   "globalSettingsClearConfirm": "지우면 모든 시간표가 각자의 설정을 다시 사용합니다.",
-  "globalSettingsCleared": "전역 표시 설정을 지웠습니다"
+  "globalSettingsCleared": "전역 표시 설정을 지웠습니다",
+  "liveIslandVisualTitle": "왼쪽 아이콘 및 펼친 상태",
+  "liveMiuiExpandedIconLabel": "펼친 상태 큰 아이콘",
+  "liveMiuiLabelContentLabel": "왼쪽 텍스트 내용",
+  "liveMiuiLabelFontSizeLabel": "왼쪽 텍스트 크기 {value}",
+  "@liveMiuiLabelFontSizeLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelFontWeightLabel": "왼쪽 텍스트 굵기",
+  "liveMiuiLabelImageSubtitle": "샤오미 기기 스타일에서만 유효합니다. 수업명 또는 장소를 왼쪽 아이콘 위치에 생성합니다",
+  "liveMiuiLabelImageTitle": "샤오미 아일랜드 왼쪽 텍스트 아이콘",
+  "liveMiuiLabelLogoCornerRadiusLabel": "왼쪽 아이콘 둥근 모서리 {value}",
+  "@liveMiuiLabelLogoCornerRadiusLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelLogoSubtitle": "'아이콘+텍스트' 스타일에서만 유효합니다. 미선택 시 앱 아이콘을 계속 사용합니다",
+  "liveMiuiLabelLogoTitle": "왼쪽 아이콘 로고",
+  "liveMiuiLabelOffsetXLabel": "왼쪽 텍스트 수평 오프셋 {value}",
+  "@liveMiuiLabelOffsetXLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelOffsetYLabel": "왼쪽 텍스트 수직 오프셋 {value}",
+  "@liveMiuiLabelOffsetYLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelRenderQualityLabel": "왼쪽 텍스트 선명도",
+  "liveMiuiLabelStyleLabel": "왼쪽 아이콘 스타일",
+  "miuiIslandExpandedIconAppIcon": "App icon",
+  "miuiIslandExpandedIconCustomImage": "Custom image",
+  "miuiIslandExpandedIconHidden": "Hidden",
+  "miuiIslandLabelContentCourseName": "Course name",
+  "miuiIslandLabelContentCourseNameAndLocation": "Course + room",
+  "miuiIslandLabelContentLocation": "Room",
+  "miuiIslandLabelFontWeightBold": "Bold",
+  "miuiIslandLabelFontWeightMedium": "Medium",
+  "miuiIslandLabelFontWeightRegular": "Regular",
+  "miuiIslandLabelRenderQualityHigh": "High",
+  "miuiIslandLabelRenderQualityStandard": "Standard",
+  "miuiIslandLabelRenderQualityUltra": "Ultra",
+  "miuiIslandLabelStyleIconAndText": "Icon + text",
+  "miuiIslandLabelStyleTextOnly": "Text only",
+  "replaceImageAction": "이미지 변경",
+  "selectImageAction": "이미지 선택"
 }

@@ -47,7 +47,6 @@ void main() {
     expect(settings.liveEnableMiuiIslandLabelImage, isFalse);
     expect(settings.liveHideFromRecents, isFalse);
     expect(settings.liveEnableLocalDiagnostics, isFalse);
-    expect(settings.liveDuringEndFollowBeforeClass, isTrue);
     expect(settings.liveTimeCorrectionSeconds, 0);
     expect(
       settings.liveBeforeClassQuickAction,
@@ -135,7 +134,6 @@ void main() {
     expect(restored.liveEnableMiuiIslandLabelImage, isFalse);
     expect(restored.liveHideFromRecents, isFalse);
     expect(restored.liveEnableLocalDiagnostics, isFalse);
-    expect(restored.liveDuringEndFollowBeforeClass, isTrue);
     expect(restored.liveTimeCorrectionSeconds, 0);
     expect(
       restored.liveBeforeClassQuickAction,
@@ -223,7 +221,6 @@ void main() {
       liveEnableMiuiIslandLabelImage: true,
       liveHideFromRecents: true,
       liveEnableLocalDiagnostics: true,
-      liveDuringEndFollowBeforeClass: false,
       liveTimeCorrectionSeconds: -7,
       liveBeforeClassQuickAction: LiveBeforeClassQuickAction.doNotDisturb,
       liveBeforeClassQuickActionAutoMinutes: 15,
@@ -283,7 +280,6 @@ void main() {
     expect(restored.liveEnableMiuiIslandLabelImage, isTrue);
     expect(restored.liveHideFromRecents, isTrue);
     expect(restored.liveEnableLocalDiagnostics, isTrue);
-    expect(restored.liveDuringEndFollowBeforeClass, isFalse);
     expect(restored.liveTimeCorrectionSeconds, -7);
     expect(
       restored.liveBeforeClassQuickAction,
@@ -333,89 +329,117 @@ void main() {
   });
 
   test(
-    'during and end live display settings can be customized independently',
+    'during and end live display settings always follow before class',
     () {
+      // 课中/下课没有独立配置：整套 liveDuringEnd* 字段与其序列化已删除，
+      // duringEndDisplaySettings 恒等于课前那一份。
       final settings = TimetableSettings.defaults().copyWith(
-        liveDuringEndFollowBeforeClass: false,
-        liveDuringEndShowCourseName: false,
-        liveDuringEndShowLocation: false,
-        liveDuringEndShowCountdown: false,
-        liveDuringEndShowStageText: true,
-        liveDuringEndUseShortName: false,
-        liveDuringEndHidePrefixText: false,
-        liveDuringEndCountdownTextStyle: LiveCountdownTextStyle.secondOnlyShort,
-        liveDuringEndTimeDisplayMode: LiveDuringClassTimeDisplayMode.total,
-        liveDuringEndEnableMiuiIslandLabelImage: true,
-        liveDuringEndMiuiIslandLabelStyle: MiuiIslandLabelStyle.iconAndText,
-        liveDuringEndMiuiIslandLabelContent:
-            MiuiIslandLabelContent.courseNameAndLocation,
-        liveDuringEndMiuiIslandLabelFontColor: '#BFDBFE',
-        liveDuringEndMiuiIslandLabelFontWeight:
-            MiuiIslandLabelFontWeight.medium,
-        liveDuringEndMiuiIslandLabelFontSize: 17,
-        liveDuringEndMiuiIslandLabelOffsetX: 1.2,
-        liveDuringEndMiuiIslandLabelOffsetY: -0.6,
-        liveDuringEndMiuiIslandExpandedIconMode:
-            MiuiIslandExpandedIconMode.customImage,
-        liveDuringEndMiuiIslandExpandedIconPath: '/tmp/during-end.png',
+        liveShowCourseName: false,
+        liveShowLocation: false,
+        liveCountdownTextStyle: LiveCountdownTextStyle.secondOnlyShort,
+        liveUseShortName: true,
+        liveMiuiIslandLabelFontSize: 17,
       );
 
       final restored = TimetableSettings.fromJson(settings.toJson());
       final beforeClass = restored.beforeClassDisplaySettings;
       final duringEnd = restored.duringEndDisplaySettings;
 
-      expect(beforeClass.showCourseName, isTrue);
-      expect(duringEnd.showCourseName, isFalse);
-      expect(duringEnd.showLocation, isFalse);
-      expect(duringEnd.showCountdown, isFalse);
-      expect(duringEnd.showStageText, isTrue);
-      expect(duringEnd.useShortName, isFalse);
-      expect(duringEnd.hidePrefixText, isFalse);
-      expect(
-        duringEnd.countdownTextStyle,
-        LiveCountdownTextStyle.secondOnlyShort,
-      );
+      // 课前侧按设置取值，课中/下课逐项跟随（往返后依然如此）。
+      expect(beforeClass.showCourseName, isFalse);
+      expect(beforeClass.useShortName, isTrue);
+      expect(beforeClass.miuiIslandLabelFontSize, 17);
+      expect(duringEnd.showCourseName, beforeClass.showCourseName);
+      expect(duringEnd.showLocation, beforeClass.showLocation);
+      expect(duringEnd.showCountdown, beforeClass.showCountdown);
+      expect(duringEnd.showStageText, beforeClass.showStageText);
+      expect(duringEnd.useShortName, beforeClass.useShortName);
+      expect(duringEnd.hidePrefixText, beforeClass.hidePrefixText);
+      expect(duringEnd.countdownTextStyle, beforeClass.countdownTextStyle);
       expect(
         duringEnd.duringClassTimeDisplayMode,
-        LiveDuringClassTimeDisplayMode.total,
+        beforeClass.duringClassTimeDisplayMode,
       );
-      expect(duringEnd.enableMiuiIslandLabelImage, isTrue);
-      expect(duringEnd.miuiIslandLabelStyle, MiuiIslandLabelStyle.iconAndText);
+      expect(
+        duringEnd.enableMiuiIslandLabelImage,
+        beforeClass.enableMiuiIslandLabelImage,
+      );
+      expect(duringEnd.miuiIslandLabelStyle, beforeClass.miuiIslandLabelStyle);
       expect(
         duringEnd.miuiIslandLabelContent,
-        MiuiIslandLabelContent.courseNameAndLocation,
+        beforeClass.miuiIslandLabelContent,
       );
-      expect(duringEnd.miuiIslandLabelFontColor, '#BFDBFE');
+      expect(
+        duringEnd.miuiIslandLabelFontColor,
+        beforeClass.miuiIslandLabelFontColor,
+      );
       expect(
         duringEnd.miuiIslandLabelFontWeight,
-        MiuiIslandLabelFontWeight.medium,
+        beforeClass.miuiIslandLabelFontWeight,
       );
-      expect(duringEnd.miuiIslandLabelFontSize, 17);
-      expect(duringEnd.miuiIslandLabelOffsetX, 1.2);
-      expect(duringEnd.miuiIslandLabelOffsetY, -0.6);
+      expect(
+        duringEnd.miuiIslandLabelFontSize,
+        beforeClass.miuiIslandLabelFontSize,
+      );
+      expect(
+        duringEnd.miuiIslandLabelOffsetX,
+        beforeClass.miuiIslandLabelOffsetX,
+      );
+      expect(
+        duringEnd.miuiIslandLabelOffsetY,
+        beforeClass.miuiIslandLabelOffsetY,
+      );
       expect(
         duringEnd.miuiIslandExpandedIconMode,
-        MiuiIslandExpandedIconMode.customImage,
+        beforeClass.miuiIslandExpandedIconMode,
       );
-      expect(duringEnd.miuiIslandExpandedIconPath, '/tmp/during-end.png');
+      expect(
+        duringEnd.miuiIslandExpandedIconPath,
+        beforeClass.miuiIslandExpandedIconPath,
+      );
     },
   );
 
-  test('during and end live display settings can follow before class', () {
-    final settings = TimetableSettings.defaults().copyWith(
-      liveShowCourseName: false,
-      liveShowLocation: false,
-      liveCountdownTextStyle: LiveCountdownTextStyle.minuteSecondCn,
-      liveDuringEndFollowBeforeClass: true,
-      liveDuringEndShowCourseName: true,
-      liveDuringEndShowLocation: true,
+  test('legacy during/end keys are ignored except the time display mode', () {
+    // 旧存档：follow 关掉、且各 liveDuringEnd* 字段另有取值。
+    // 这些键已不再被读取，课中/下课一律沿用课前；唯一的例外是
+    // liveDuringEndTimeDisplayMode —— 它曾是「课中时间样式」唯一的 UI，
+    // 因此迁移进课前的 liveDuringClassTimeDisplayMode，避免静默回默认。
+    final restored = TimetableSettings.fromJson({
+      'liveShowCourseName': true,
+      'liveDuringClassTimeDisplayMode':
+          LiveDuringClassTimeDisplayMode.nearest.value,
+      'liveDuringEndFollowBeforeClass': false,
+      'liveDuringEndShowCourseName': false,
+      'liveDuringEndShowLocation': false,
+      'liveDuringEndUseShortName': false,
+      'liveDuringEndTimeDisplayMode': LiveDuringClassTimeDisplayMode.total.value,
+      'liveDuringEndMiuiIslandLabelFontSize': 17,
+      'liveDuringEndMiuiIslandExpandedIconPath': '/tmp/during-end.png',
+    });
+
+    final beforeClass = restored.beforeClassDisplaySettings;
+    final duringEnd = restored.duringEndDisplaySettings;
+
+    expect(beforeClass.showCourseName, isTrue);
+    expect(beforeClass.showLocation, isTrue);
+    expect(duringEnd.showCourseName, beforeClass.showCourseName);
+    expect(duringEnd.showLocation, beforeClass.showLocation);
+    expect(duringEnd.useShortName, beforeClass.useShortName);
+    expect(duringEnd.miuiIslandLabelFontSize, beforeClass.miuiIslandLabelFontSize);
+    expect(
+      duringEnd.miuiIslandExpandedIconPath,
+      beforeClass.miuiIslandExpandedIconPath,
     );
-
-    final duringEnd = settings.duringEndDisplaySettings;
-
-    expect(duringEnd.showCourseName, isFalse);
-    expect(duringEnd.showLocation, isFalse);
-    expect(duringEnd.countdownTextStyle, LiveCountdownTextStyle.minuteSecondCn);
+    // 唯一被迁移的旧值。
+    expect(
+      restored.liveDuringClassTimeDisplayMode,
+      LiveDuringClassTimeDisplayMode.total,
+    );
+    expect(
+      duringEnd.duringClassTimeDisplayMode,
+      LiveDuringClassTimeDisplayMode.total,
+    );
   });
 
   test('legacy spacing mode migrates to numeric card gap', () {

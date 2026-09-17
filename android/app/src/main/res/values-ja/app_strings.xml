@@ -23,19 +23,15 @@
     <string name="action_close">閉じる</string>
 
     <string name="prefix_until_class_start">授業開始まで</string>
-    <string name="prefix_until_class_end">授業終了まで</string>
     <string name="stage_in_class">授業中</string>
     <string name="stage_before_class">まもなく授業</string>
-    <string name="stage_before_end">終了間近</string>
     <string name="island_class_starting">授業開始</string>
     <string name="island_about_to_end">まもなく終了</string>
     <string name="island_minutes_remaining">%1$d分</string>
 
     <string name="title_before_class">まもなく授業: %1$s</string>
-    <string name="title_before_end">終了間近: %1$s</string>
 
     <string name="label_class_start_time">開始時刻: %1$s</string>
-    <string name="label_class_end_time">終了時刻: %1$s</string>
     <string name="label_location">場所: %1$s</string>
 
     <string name="detail_short_name">略称: %1$s</string>
@@ -48,7 +44,6 @@
     <string name="detail_note">メモ: %1$s</string>
 
     <string name="remaining_until_class_start">授業開始まで%1$s</string>
-    <string name="remaining_until_class_end">授業終了まで%1$s</string>
     <string name="final_dismiss_with_time">授業終了 %1$s</string>
 
     <string name="milestone_recent_end">直前の休み</string>

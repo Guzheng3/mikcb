@@ -991,7 +991,6 @@
   "liveKeepAliveEntrySubtitle": "隐藏后台、后台保活辅助服务和权限入口",
   "liveTestingEntryTitle": "测试与诊断",
   "liveTestingEntrySubtitle": "发送测试通知，检查超级岛和本地诊断日志",
-  "followBeforeClassSetting": "跟随上课前提醒",
   "liveReminderTimingTitle": "提醒时段",
   "liveReminderSwitchesTitle": "提醒开关",
   "liveReminderSwitchesSubtitle": "可自由组合，互不影响",
@@ -1024,6 +1023,8 @@
   "duringClassStatusNotificationPersistent": "课中持续显示普通通知",
   "enableIslandDisplayTitle": "展示超级岛",
   "enableIslandDisplaySubtitle": "关闭后不触发系统超级岛",
+  "livePermanentNotificationTitle": "常驻通知",
+  "livePermanentNotificationSubtitle": "没有课程时也让通知留在通知栏，显示情侣卡片的内容",
   "liveTimeThresholdTitle": "时间阈值",
   "liveTimeThresholdSubtitle": "控制课前弹出与秒级倒计时",
   "beforeClassPopupLabel": "上课前弹出时间",
@@ -1031,15 +1032,6 @@
   "@beforeClassMinutesOption": {
     "placeholders": {
       "minutes": {
-        "type": "int"
-      }
-    }
-  },
-  "beforeEndSecondsLabel": "下课前秒级阈值",
-  "beforeEndSecondsOption": "{seconds} 秒",
-  "@beforeEndSecondsOption": {
-    "placeholders": {
-      "seconds": {
         "type": "int"
       }
     }
@@ -1056,25 +1048,10 @@
   "timeCorrectionHelp": "铃声比课表快则提前，慢则延后",
   "duringEndTimeDisplayLabel": "课中时间样式",
   "duringEndTimeDisplayHelp": "紧凑提醒显示最近时间或总时长",
-  "liveDisplayContentTitle": "显示内容",
   "liveDisplayContentSubtitle": "这组设置只影响当前阶段，不会改动另一组提醒显示",
   "showCourseNameTitle": "显示课程名",
-  "preferShortNameTitle": "优先显示课程简称",
-  "preferShortNameSubtitle": "建议简称控制在 3 个字以内",
-  "showLocationTitle": "显示地点",
-  "showCountdownTitle": "显示倒计时",
-  "countdownFormatLabel": "倒计时格式",
   "countdownFormatHelp": "纯分钟样式按分钟刷新，带秒样式按秒刷新",
-  "showStageTextTitle": "显示阶段状态文案",
-  "showStageTextSubtitle": "关闭倒计时后，可继续显示“即将上课 / 上课中 / 下课提醒”",
-  "hidePrefixTextTitle": "隐藏前缀文案",
-  "hidePrefixTextSubtitle": "例如隐藏“即将上课”这类前缀",
   "liveIslandPreviewTitle": "超级岛预览",
-  "liveIslandPreviewFollowBadge": "正在跟随“课前提醒显示”设置，调整课前提醒即可生效",
-  "liveIslandPreviewStageBeforeClass": "即将上课",
-  "liveIslandPreviewStageInClass": "上课中",
-  "liveIslandPreviewStageBeforeEnd": "下课提醒",
-  "liveIslandPreviewAboutToEnd": "即将下课",
   "liveIslandPreviewUntilClassStart": "距上课{time}",
   "@liveIslandPreviewUntilClassStart": {
     "placeholders": {
@@ -1115,58 +1092,12 @@
       }
     }
   },
-  "liveIslandVisualTitle": "左侧图标与展开态",
   "liveIslandVisualSubtitle": "左侧文字图、展开态大图标和自定义图片都按当前阶段单独保存",
-  "liveMiuiLabelImageTitle": "小米岛左侧文字图标",
-  "liveMiuiLabelImageSubtitle": "仅小米手机样式生效，会把课程名或地点生成到左侧图标位",
-  "liveMiuiLabelContentLabel": "左侧文字内容",
-  "liveMiuiLabelStyleLabel": "左侧图标样式",
-  "liveMiuiLabelLogoTitle": "左侧图标 Logo",
-  "liveMiuiLabelLogoSubtitle": "仅在“图标+文字”样式下生效；未选择时继续使用应用图标",
-  "liveMiuiLabelLogoCornerRadiusLabel": "左侧图标圆角 {value}",
-  "@liveMiuiLabelLogoCornerRadiusLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
   "liveMiuiLabelLogoCornerRadiusTitle": "左侧图标圆角",
-  "liveMiuiLabelFontSizeLabel": "左侧文字大小 {value}",
-  "@liveMiuiLabelFontSizeLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
   "liveMiuiLabelFontSizeTitle": "左侧文字大小",
-  "liveMiuiLabelOffsetXLabel": "左侧文字水平偏移 {value}",
-  "@liveMiuiLabelOffsetXLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
   "liveMiuiLabelOffsetXTitle": "左侧文字水平偏移",
-  "liveMiuiLabelOffsetYLabel": "左侧文字垂直偏移 {value}",
-  "@liveMiuiLabelOffsetYLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
   "liveMiuiLabelOffsetYTitle": "左侧文字垂直偏移",
-  "liveMiuiLabelFontWeightLabel": "左侧文字粗细",
-  "liveMiuiLabelRenderQualityLabel": "左侧文字清晰度",
-  "liveMiuiExpandedIconLabel": "展开态大图标",
-  "selectImageAction": "选择图片",
-  "replaceImageAction": "更换图片",
-  "liveDisplayConfigModeTitle": "配置方式",
   "liveDisplayConfigModeSubtitle": "打开后，课中和下课提醒会完全跟随上课前提醒显示，下面的独立设置暂时不可编辑",
-  "followBeforeClassDisplayTitle": "跟随上课前提醒设置",
   "liveKeepAliveTitle": "后台保活",
   "liveKeepAliveOptionsTitle": "保活选项",
   "liveKeepAliveOptionsSubtitle": "用于提升超级岛和提醒在后台场景下的稳定性",
@@ -1481,47 +1412,6 @@
       }
     }
   },
-  "liveClassReminderLeadSummaryImmediate": "一上课进入重点提醒，下课前 {seconds} 秒秒级倒数",
-  "@liveClassReminderLeadSummaryImmediate": {
-    "placeholders": {
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "liveClassReminderLeadSummaryKeepNormal": "课中普通通知，下课前 {minutes} 分钟重点提醒",
-  "@liveClassReminderLeadSummaryKeepNormal": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "liveClassReminderLeadSummaryIsland": "下课前 {minutes} 分钟切到超级岛与重点提醒",
-  "@liveClassReminderLeadSummaryIsland": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "liveClassReminderLeadSummaryFocused": "下课前 {minutes} 分钟开始重点提醒",
-  "@liveClassReminderLeadSummaryFocused": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
   "liveSettingsEntrySubtitle": "提醒时段、岛展示、通知栏和显示内容",
   "timetableProfilesEntrySubtitle": "新建、切换、复制、重命名和删除课表",
   "homeTitleSectionTitle": "首页标题",
@@ -1579,7 +1469,6 @@
   "appearanceTextColorsSectionSubtitle": "自定义课程卡片、星期栏与时间轴文字颜色",
   "defaultTimetablePreviewName": "默认课表",
   "beforeClassDisplaySettingsTitle": "上课前提醒显示",
-  "duringEndDisplaySettingsTitle": "课中/下课提醒显示",
   "liveDisplaySummaryShortName": "简称",
   "liveDisplaySummaryCourseName": "课程名",
   "liveDisplaySummaryLocation": "地点",
@@ -3977,20 +3866,6 @@
   "liveCountdownTextStyleSecondOnlyCn": "纯秒（5秒）",
   "liveCountdownTextStyleSecondOnlyShort": "s（5s）",
   "liveCountdownTextStyleSecondOnlySlash": "/s（5/s）",
-  "miuiIslandLabelStyleTextOnly": "仅文字",
-  "miuiIslandLabelStyleIconAndText": "图标+文字",
-  "miuiIslandLabelContentCourseName": "课程名",
-  "miuiIslandLabelContentLocation": "教室",
-  "miuiIslandLabelContentCourseNameAndLocation": "课程名+教室",
-  "miuiIslandLabelFontWeightRegular": "常规",
-  "miuiIslandLabelFontWeightMedium": "中等",
-  "miuiIslandLabelFontWeightBold": "加粗",
-  "miuiIslandLabelRenderQualityStandard": "标准",
-  "miuiIslandLabelRenderQualityHigh": "高清",
-  "miuiIslandLabelRenderQualityUltra": "超高清",
-  "miuiIslandExpandedIconAppIcon": "应用图标",
-  "miuiIslandExpandedIconCustomImage": "自定义图片",
-  "miuiIslandExpandedIconHidden": "不显示",
   "liveBeforeClassQuickActionNone": "不显示",
   "liveBeforeClassQuickActionSilent": "打开静音",
   "liveBeforeClassQuickActionDoNotDisturb": "打开免打扰",
@@ -5081,6 +4956,7 @@
   "logLiveUpdateSnapshotSyncFailed": "同步超级岛课表快照失败",
   "logLiveUpdateSnapshotClearFailed": "清空超级岛课表快照失败",
   "logLiveUpdateSuspendTriggersFailed": "挂起超级岛课表调度失败",
+  "logLiveUpdatePermanentNotificationFailed": "同步常驻通知开关失败",
   "logLiveUpdateTestRequested": "用户请求手动超级岛测试通知",
   "logLiveUpdateTestNoSelection": "手动超级岛测试：未找到可用课程",
   "logLiveUpdateTestSelectionReady": "手动超级岛测试：已解析目标课程",
@@ -5088,16 +4964,13 @@
   "logLiveUpdateTestStarting": "手动超级岛测试：正在启动原生超级岛",
   "logLiveUpdateTestStarted": "手动超级岛测试：已成功请求原生超级岛",
   "logLiveUpdateTestFailed": "手动超级岛测试：原生超级岛出现前失败",
-  "logLiveUpdateSettingsSynced": "Flutter 超级岛设置已同步：课前={beforeClass}，课中={duringClass}，下课前={beforeEnd}，提升={promote}，通知={notification}，倒计时={countdown}，课程名={courseName}，地点={location}",
+  "logLiveUpdateSettingsSynced": "Flutter 超级岛设置已同步：课前={beforeClass}，课中={duringClass}，提升={promote}，通知={notification}，倒计时={countdown}，课程名={courseName}，地点={location}",
   "@logLiveUpdateSettingsSynced": {
     "placeholders": {
       "beforeClass": {
         "type": "String"
       },
       "duringClass": {
-        "type": "String"
-      },
-      "beforeEnd": {
         "type": "String"
       },
       "promote": {
@@ -5149,7 +5022,6 @@
   "logFieldAutoStartStatus": "自启动状态",
   "logFieldLiveEnableBeforeClass": "课前超级岛",
   "logFieldLiveEnableDuringClass": "课中超级岛",
-  "logFieldLiveEnableBeforeEnd": "下课前超级岛",
   "logFieldLivePromoteDuringClass": "课中提升通知",
   "logFieldLiveShowDuringClassNotification": "课中状态栏通知",
   "logFieldLiveShowCountdown": "显示倒计时",
@@ -5171,7 +5043,6 @@
   "logFieldLiveMiuiIslandExpandedIconMode": "展开图标模式",
   "logFieldLiveShowBeforeClassMinutes": "课前显示分钟数",
   "logFieldLiveClassReminderStartMinutes": "上课提醒开始分钟",
-  "logFieldLiveEndSecondsCountdownThreshold": "下课秒倒计时阈值",
   "logFieldState": "状态",
   "logFieldRoute": "路由",
   "logFieldPreviousRoute": "先前路由",
@@ -5918,5 +5789,63 @@
   "globalSettingsDescriptionBody": "在这里设置的显示项会应用到所有课表；某份课表单独改过的项目，仍以该课表自己的设置为准。学期、节次（时间方案）等课表专属内容不参与全局设置。",
   "globalSettingsClearTitle": "清除全局显示设置",
   "globalSettingsClearConfirm": "清除后，所有课表将恢复使用各自的设置。",
-  "globalSettingsCleared": "已清除全局显示设置"
+  "globalSettingsCleared": "已清除全局显示设置",
+  "liveIslandVisualTitle": "左侧图标与展开态",
+  "liveMiuiExpandedIconLabel": "展开态大图标",
+  "liveMiuiLabelContentLabel": "左侧文字内容",
+  "liveMiuiLabelFontSizeLabel": "左侧文字大小 {value}",
+  "@liveMiuiLabelFontSizeLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelFontWeightLabel": "左侧文字粗细",
+  "liveMiuiLabelImageSubtitle": "仅小米手机样式生效，会把课程名或地点生成到左侧图标位",
+  "liveMiuiLabelImageTitle": "小米岛左侧文字图标",
+  "liveMiuiLabelLogoCornerRadiusLabel": "左侧图标圆角 {value}",
+  "@liveMiuiLabelLogoCornerRadiusLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelLogoSubtitle": "仅在“图标+文字”样式下生效；未选择时继续使用应用图标",
+  "liveMiuiLabelLogoTitle": "左侧图标 Logo",
+  "liveMiuiLabelOffsetXLabel": "左侧文字水平偏移 {value}",
+  "@liveMiuiLabelOffsetXLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelOffsetYLabel": "左侧文字垂直偏移 {value}",
+  "@liveMiuiLabelOffsetYLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelRenderQualityLabel": "左侧文字清晰度",
+  "liveMiuiLabelStyleLabel": "左侧图标样式",
+  "miuiIslandExpandedIconAppIcon": "应用图标",
+  "miuiIslandExpandedIconCustomImage": "自定义图片",
+  "miuiIslandExpandedIconHidden": "不显示",
+  "miuiIslandLabelContentCourseName": "课程名",
+  "miuiIslandLabelContentCourseNameAndLocation": "课程名+教室",
+  "miuiIslandLabelContentLocation": "教室",
+  "miuiIslandLabelFontWeightBold": "加粗",
+  "miuiIslandLabelFontWeightMedium": "中等",
+  "miuiIslandLabelFontWeightRegular": "常规",
+  "miuiIslandLabelRenderQualityHigh": "高清",
+  "miuiIslandLabelRenderQualityStandard": "标准",
+  "miuiIslandLabelRenderQualityUltra": "超高清",
+  "miuiIslandLabelStyleIconAndText": "图标+文字",
+  "miuiIslandLabelStyleTextOnly": "仅文字",
+  "replaceImageAction": "更换图片",
+  "selectImageAction": "选择图片"
 }

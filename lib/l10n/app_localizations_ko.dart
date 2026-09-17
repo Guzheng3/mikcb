@@ -1830,9 +1830,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get liveTestingEntrySubtitle => '테스트 알림 전송, 슈퍼아일랜드 및 로컬 진단 로그 확인';
 
   @override
-  String get followBeforeClassSetting => '수업 전 알림에 연동';
-
-  @override
   String get liveReminderTimingTitle => '알림 시간대';
 
   @override
@@ -1894,6 +1891,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get enableIslandDisplaySubtitle => '끄면 시스템 슈퍼아일랜드 트리거를 중단합니다';
 
   @override
+  String get livePermanentNotificationTitle => '상시 알림';
+
+  @override
+  String get livePermanentNotificationSubtitle =>
+      '수업이 없을 때도 알림창에 알림을 남기고 커플 카드 내용을 표시합니다';
+
+  @override
   String get liveTimeThresholdTitle => '시간 임계값';
 
   @override
@@ -1906,14 +1910,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String beforeClassMinutesOption(int minutes) {
     return '$minutes분';
-  }
-
-  @override
-  String get beforeEndSecondsLabel => '종료 전 초 단위 알림 임계값';
-
-  @override
-  String beforeEndSecondsOption(int seconds) {
-    return '$seconds초';
   }
 
   @override
@@ -1936,9 +1932,6 @@ class AppLocalizationsKo extends AppLocalizations {
       '컴팩트 알림에서 최근 시간을 표시할지 전체 총 시간을 표시할지 제어합니다.';
 
   @override
-  String get liveDisplayContentTitle => '표시 내용';
-
-  @override
   String get liveDisplayContentSubtitle =>
       '이 설정 그룹은 현재 스테이지에만 영향을 주며, 다른 알림 표시는 변경하지 않습니다';
 
@@ -1946,54 +1939,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get showCourseNameTitle => '수업명 표시';
 
   @override
-  String get preferShortNameTitle => '약칭 우선 표시';
-
-  @override
-  String get preferShortNameSubtitle => '약칭은 3자 이내를 권장합니다';
-
-  @override
-  String get showLocationTitle => '장소 표시';
-
-  @override
-  String get showCountdownTitle => '카운트다운 표시';
-
-  @override
-  String get countdownFormatLabel => '카운트다운 형식';
-
-  @override
   String get countdownFormatHelp => '분만 표시는 분 단위로, 초 포함 표시는 초 단위로 갱신됩니다';
 
   @override
-  String get showStageTextTitle => '스테이지 상태 텍스트 표시';
-
-  @override
-  String get showStageTextSubtitle =>
-      '카운트다운 끈 후에도 \'곧 수업/수업 중/종료 알림\'을 계속 표시할 수 있습니다';
-
-  @override
-  String get hidePrefixTextTitle => '접두사 텍스트 숨기기';
-
-  @override
-  String get hidePrefixTextSubtitle => '예: \'곧 수업\' 같은 접두사를 숨기기';
-
-  @override
   String get liveIslandPreviewTitle => '슈퍼 아일랜드 미리보기';
-
-  @override
-  String get liveIslandPreviewFollowBadge =>
-      '\'수업 전 표시\' 설정을 따르며, 해당 설정을 조정하면 미리보기에 반영됩니다';
-
-  @override
-  String get liveIslandPreviewStageBeforeClass => '곧 수업';
-
-  @override
-  String get liveIslandPreviewStageInClass => '수업 중';
-
-  @override
-  String get liveIslandPreviewStageBeforeEnd => '종료 알림';
-
-  @override
-  String get liveIslandPreviewAboutToEnd => '곧 종료';
 
   @override
   String liveIslandPreviewUntilClassStart(String time) {
@@ -2042,88 +1991,24 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get liveIslandVisualTitle => '왼쪽 아이콘 및 펼친 상태';
-
-  @override
   String get liveIslandVisualSubtitle =>
       '왼쪽 텍스트 이미지, 펼친 상태 큰 아이콘, 사용자 정의 이미지는 모두 현재 스테이지별로 개별 저장됩니다';
-
-  @override
-  String get liveMiuiLabelImageTitle => '샤오미 아일랜드 왼쪽 텍스트 아이콘';
-
-  @override
-  String get liveMiuiLabelImageSubtitle =>
-      '샤오미 기기 스타일에서만 유효합니다. 수업명 또는 장소를 왼쪽 아이콘 위치에 생성합니다';
-
-  @override
-  String get liveMiuiLabelContentLabel => '왼쪽 텍스트 내용';
-
-  @override
-  String get liveMiuiLabelStyleLabel => '왼쪽 아이콘 스타일';
-
-  @override
-  String get liveMiuiLabelLogoTitle => '왼쪽 아이콘 로고';
-
-  @override
-  String get liveMiuiLabelLogoSubtitle =>
-      '\'아이콘+텍스트\' 스타일에서만 유효합니다. 미선택 시 앱 아이콘을 계속 사용합니다';
-
-  @override
-  String liveMiuiLabelLogoCornerRadiusLabel(String value) {
-    return '왼쪽 아이콘 둥근 모서리 $value';
-  }
 
   @override
   String get liveMiuiLabelLogoCornerRadiusTitle => '왼쪽 아이콘 모서리 둥글기';
 
   @override
-  String liveMiuiLabelFontSizeLabel(String value) {
-    return '왼쪽 텍스트 크기 $value';
-  }
-
-  @override
   String get liveMiuiLabelFontSizeTitle => '왼쪽 텍스트 크기';
-
-  @override
-  String liveMiuiLabelOffsetXLabel(String value) {
-    return '왼쪽 텍스트 수평 오프셋 $value';
-  }
 
   @override
   String get liveMiuiLabelOffsetXTitle => '왼쪽 텍스트 가로 오프셋';
 
   @override
-  String liveMiuiLabelOffsetYLabel(String value) {
-    return '왼쪽 텍스트 수직 오프셋 $value';
-  }
-
-  @override
   String get liveMiuiLabelOffsetYTitle => '왼쪽 텍스트 세로 오프셋';
-
-  @override
-  String get liveMiuiLabelFontWeightLabel => '왼쪽 텍스트 굵기';
-
-  @override
-  String get liveMiuiLabelRenderQualityLabel => '왼쪽 텍스트 선명도';
-
-  @override
-  String get liveMiuiExpandedIconLabel => '펼친 상태 큰 아이콘';
-
-  @override
-  String get selectImageAction => '이미지 선택';
-
-  @override
-  String get replaceImageAction => '이미지 변경';
-
-  @override
-  String get liveDisplayConfigModeTitle => '설정 모드';
 
   @override
   String get liveDisplayConfigModeSubtitle =>
       '켜면 수업 중 및 종료 알림이 수업 전 알림 표시를 완전히 따릅니다. 아래 개별 설정은 일시적으로 편집할 수 없습니다';
-
-  @override
-  String get followBeforeClassDisplayTitle => '수업 전 알림 설정에 연동';
 
   @override
   String get liveKeepAliveTitle => '백그라운드 상주';
@@ -2650,26 +2535,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String liveClassReminderLeadSummaryImmediate(int seconds) {
-    return '수업 시작과 동시에 포커스 알림 표시로 전환하고, 종료 $seconds초 전에 초 단위 카운트다운으로 전환';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryKeepNormal(int minutes, int seconds) {
-    return '수업 후 먼저 일반 수업 중 알림을 유지하고, 종료 $minutes분 전에 포커스/종료 알림으로 전환, 마지막 $seconds초에 초 단위 카운트다운으로 전환';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryIsland(int minutes, int seconds) {
-    return '종료 $minutes분 전에 슈퍼아일랜드와 포커스 알림으로 전환, 마지막 $seconds초에 초 단위 카운트다운으로 전환';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryFocused(int minutes, int seconds) {
-    return '종료 $minutes분 전에 포커스 알림 표시를 시작하고, 마지막 $seconds초에 초 단위 카운트다운으로 전환';
-  }
-
-  @override
   String get liveSettingsEntrySubtitle => '알림 시간대, 아일랜드 표시, 알림바 및 표시 내용';
 
   @override
@@ -2850,9 +2715,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get beforeClassDisplaySettingsTitle => '수업 전 알림 표시';
-
-  @override
-  String get duringEndDisplaySettingsTitle => '수업 중/종료 알림 표시';
 
   @override
   String get liveDisplaySummaryShortName => '약칭';
@@ -6784,48 +6646,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get liveCountdownTextStyleSecondOnlySlash => '/s (5/s)';
 
   @override
-  String get miuiIslandLabelStyleTextOnly => 'Text only';
-
-  @override
-  String get miuiIslandLabelStyleIconAndText => 'Icon + text';
-
-  @override
-  String get miuiIslandLabelContentCourseName => 'Course name';
-
-  @override
-  String get miuiIslandLabelContentLocation => 'Room';
-
-  @override
-  String get miuiIslandLabelContentCourseNameAndLocation => 'Course + room';
-
-  @override
-  String get miuiIslandLabelFontWeightRegular => 'Regular';
-
-  @override
-  String get miuiIslandLabelFontWeightMedium => 'Medium';
-
-  @override
-  String get miuiIslandLabelFontWeightBold => 'Bold';
-
-  @override
-  String get miuiIslandLabelRenderQualityStandard => 'Standard';
-
-  @override
-  String get miuiIslandLabelRenderQualityHigh => 'High';
-
-  @override
-  String get miuiIslandLabelRenderQualityUltra => 'Ultra';
-
-  @override
-  String get miuiIslandExpandedIconAppIcon => 'App icon';
-
-  @override
-  String get miuiIslandExpandedIconCustomImage => 'Custom image';
-
-  @override
-  String get miuiIslandExpandedIconHidden => 'Hidden';
-
-  @override
   String get liveBeforeClassQuickActionNone => 'Hidden';
 
   @override
@@ -8211,6 +8031,9 @@ class AppLocalizationsKo extends AppLocalizations {
       'Failed to suspend Live Island schedule triggers';
 
   @override
+  String get logLiveUpdatePermanentNotificationFailed => '상시 알림 스위치 동기화 실패';
+
+  @override
   String get logLiveUpdateTestRequested =>
       'User requested manual Live Island test notification';
 
@@ -8242,14 +8065,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String logLiveUpdateSettingsSynced(
     String beforeClass,
     String duringClass,
-    String beforeEnd,
     String promote,
     String notification,
     String countdown,
     String courseName,
     String location,
   ) {
-    return 'Flutter Live Island settings synced: beforeClass=$beforeClass, duringClass=$duringClass, beforeEnd=$beforeEnd, promote=$promote, notification=$notification, countdown=$countdown, courseName=$courseName, location=$location';
+    return 'Flutter Live Island settings synced: beforeClass=$beforeClass, duringClass=$duringClass, promote=$promote, notification=$notification, countdown=$countdown, courseName=$courseName, location=$location';
   }
 
   @override
@@ -8353,9 +8175,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get logFieldLiveEnableDuringClass => 'live Enable During Class';
 
   @override
-  String get logFieldLiveEnableBeforeEnd => 'live Enable Before End';
-
-  @override
   String get logFieldLivePromoteDuringClass => 'live Promote During Class';
 
   @override
@@ -8430,10 +8249,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get logFieldLiveClassReminderStartMinutes =>
       'live Class Reminder Start Minutes';
-
-  @override
-  String get logFieldLiveEndSecondsCountdownThreshold =>
-      'live End Seconds Countdown Threshold';
 
   @override
   String get logFieldState => 'state';
@@ -10031,4 +9846,104 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get globalSettingsCleared => '전역 표시 설정을 지웠습니다';
+
+  @override
+  String get liveIslandVisualTitle => '왼쪽 아이콘 및 펼친 상태';
+
+  @override
+  String get liveMiuiExpandedIconLabel => '펼친 상태 큰 아이콘';
+
+  @override
+  String get liveMiuiLabelContentLabel => '왼쪽 텍스트 내용';
+
+  @override
+  String liveMiuiLabelFontSizeLabel(String value) {
+    return '왼쪽 텍스트 크기 $value';
+  }
+
+  @override
+  String get liveMiuiLabelFontWeightLabel => '왼쪽 텍스트 굵기';
+
+  @override
+  String get liveMiuiLabelImageSubtitle =>
+      '샤오미 기기 스타일에서만 유효합니다. 수업명 또는 장소를 왼쪽 아이콘 위치에 생성합니다';
+
+  @override
+  String get liveMiuiLabelImageTitle => '샤오미 아일랜드 왼쪽 텍스트 아이콘';
+
+  @override
+  String liveMiuiLabelLogoCornerRadiusLabel(String value) {
+    return '왼쪽 아이콘 둥근 모서리 $value';
+  }
+
+  @override
+  String get liveMiuiLabelLogoSubtitle =>
+      '\'아이콘+텍스트\' 스타일에서만 유효합니다. 미선택 시 앱 아이콘을 계속 사용합니다';
+
+  @override
+  String get liveMiuiLabelLogoTitle => '왼쪽 아이콘 로고';
+
+  @override
+  String liveMiuiLabelOffsetXLabel(String value) {
+    return '왼쪽 텍스트 수평 오프셋 $value';
+  }
+
+  @override
+  String liveMiuiLabelOffsetYLabel(String value) {
+    return '왼쪽 텍스트 수직 오프셋 $value';
+  }
+
+  @override
+  String get liveMiuiLabelRenderQualityLabel => '왼쪽 텍스트 선명도';
+
+  @override
+  String get liveMiuiLabelStyleLabel => '왼쪽 아이콘 스타일';
+
+  @override
+  String get miuiIslandExpandedIconAppIcon => 'App icon';
+
+  @override
+  String get miuiIslandExpandedIconCustomImage => 'Custom image';
+
+  @override
+  String get miuiIslandExpandedIconHidden => 'Hidden';
+
+  @override
+  String get miuiIslandLabelContentCourseName => 'Course name';
+
+  @override
+  String get miuiIslandLabelContentCourseNameAndLocation => 'Course + room';
+
+  @override
+  String get miuiIslandLabelContentLocation => 'Room';
+
+  @override
+  String get miuiIslandLabelFontWeightBold => 'Bold';
+
+  @override
+  String get miuiIslandLabelFontWeightMedium => 'Medium';
+
+  @override
+  String get miuiIslandLabelFontWeightRegular => 'Regular';
+
+  @override
+  String get miuiIslandLabelRenderQualityHigh => 'High';
+
+  @override
+  String get miuiIslandLabelRenderQualityStandard => 'Standard';
+
+  @override
+  String get miuiIslandLabelRenderQualityUltra => 'Ultra';
+
+  @override
+  String get miuiIslandLabelStyleIconAndText => 'Icon + text';
+
+  @override
+  String get miuiIslandLabelStyleTextOnly => 'Text only';
+
+  @override
+  String get replaceImageAction => '이미지 변경';
+
+  @override
+  String get selectImageAction => '이미지 선택';
 }

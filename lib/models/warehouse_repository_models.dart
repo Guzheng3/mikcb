@@ -7,67 +7,28 @@ class WarehouseRepositoryException implements Exception {
   String toString() => 'WarehouseRepositoryException: $message';
 }
 
+/// 适配资源的对外地址来源。
+///
+/// 应用当前只读取打包进 assets 的适配资源，不发起任何网络请求；这里仅用于
+/// 拼出对外可访问的脚本地址（调试页的「复制脚本地址」）。
 class WarehouseRepositorySource {
-  final String owner;
-  final String repo;
-  final String branch;
+  static const String defaultBaseUrl = 'https://gzr.xjy.xn--6qq986b3xl';
 
-  const WarehouseRepositorySource({
-    required this.owner,
-    required this.repo,
-    this.branch = 'main',
-  });
+  final String baseUrl;
 
-  factory WarehouseRepositorySource.fromGitHubUrl(
-    String url, {
-    String branch = 'main',
-  }) {
-    final uri = Uri.tryParse(url.trim());
-    if (uri == null || uri.host.isEmpty) {
-      throw const WarehouseRepositoryException('invalid_repository_url');
-    }
+  const WarehouseRepositorySource({this.baseUrl = defaultBaseUrl});
 
-    if (uri.host == 'github.com') {
-      final segments = uri.pathSegments
-          .where((item) => item.isNotEmpty)
-          .toList();
-      if (segments.length < 2) {
-        throw const WarehouseRepositoryException('incomplete_github_repo_url');
-      }
-      return WarehouseRepositorySource(
-        owner: segments[0],
-        repo: segments[1],
-        branch: branch,
-      );
-    }
-
-    if (uri.host == 'raw.githubusercontent.com') {
-      final segments = uri.pathSegments
-          .where((item) => item.isNotEmpty)
-          .toList();
-      if (segments.length < 3) {
-        throw const WarehouseRepositoryException('incomplete_raw_github_url');
-      }
-      return WarehouseRepositorySource(
-        owner: segments[0],
-        repo: segments[1],
-        branch: segments[2],
-      );
-    }
-
-    throw const WarehouseRepositoryException('github_only_supported');
-  }
-
-  Uri buildRawFileUri(String relativePath) {
+  Uri buildFileUri(String relativePath) {
     final normalizedPath = relativePath.startsWith('/')
         ? relativePath.substring(1)
         : relativePath;
-    return Uri.parse(
-      'https://raw.githubusercontent.com/$owner/$repo/$branch/$normalizedPath',
-    );
+    final base = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+    return Uri.parse('$base/$normalizedPath');
   }
 
-  String get repositoryUrl => 'https://github.com/$owner/$repo';
+  String get repositoryUrl => baseUrl;
 }
 
 class WarehouseSchoolEntry {

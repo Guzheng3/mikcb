@@ -15,10 +15,21 @@ class _LiveSettingsScreen extends StatefulWidget {
 class _LiveSettingsScreenState extends State<_LiveSettingsScreen> {
   late TimetableSettings _draft;
 
+  /// 岛左侧文字图标与展开态图标只对小米系生效：原生侧这两个能力对非小米系
+  /// 直接返回，露出来只会让用户调了没反应，所以整条入口对非小米系不显示。
+  bool _isXiaomiFamilyDevice = false;
+
   @override
   void initState() {
     super.initState();
     _draft = context.read<TimetableProvider>().settings;
+    unawaited(
+      MiuiLiveActivitiesService().isXiaomiFamilyDevice().then((value) {
+        if (mounted && value != _isXiaomiFamilyDevice) {
+          setState(() => _isXiaomiFamilyDevice = value);
+        }
+      }),
+    );
   }
 
   @override
@@ -40,9 +51,6 @@ class _LiveSettingsScreenState extends State<_LiveSettingsScreen> {
       context,
       _draft.beforeClassDisplaySettings,
     );
-    final duringEndSummary = _draft.liveDuringEndFollowBeforeClass
-        ? l10n.followBeforeClassSetting
-        : _liveDisplaySummary(context, _draft.duringEndDisplaySettings);
     // 提醒 / 显示是偏好，保活与自检是维护诊断——两种心智不该挤在同一个
     // 无名大组里（IA §3 分组可预期 + §8 隔离精神），拆成三个带标签组。
     return Column(
@@ -79,7 +87,6 @@ class _LiveSettingsScreenState extends State<_LiveSettingsScreen> {
                   context,
                   builder: (_) => LiveDisplaySettingsScreen(
                     title: l10n.beforeClassDisplaySettingsTitle,
-                    forDuringEnd: false,
                   ),
                 );
                 if (!mounted) return;
@@ -88,23 +95,20 @@ class _LiveSettingsScreenState extends State<_LiveSettingsScreen> {
                 });
               },
             ),
-            HyperosListTile(
-              title: l10n.duringEndDisplaySettingsTitle,
-              details: duringEndSummary,
-              onTap: () async {
-                await HyperosNavigation.push(
-                  context,
-                  builder: (_) => LiveDisplaySettingsScreen(
-                    title: l10n.duringEndDisplaySettingsTitle,
-                    forDuringEnd: true,
-                  ),
-                );
-                if (!mounted) return;
-                setState(() {
-                  _draft = context.read<TimetableProvider>().settings;
-                });
-              },
-            ),
+            if (_isXiaomiFamilyDevice)
+              HyperosListTile(
+                title: l10n.liveIslandVisualTitle,
+                onTap: () async {
+                  await HyperosNavigation.push(
+                    context,
+                    builder: (_) => const LiveIslandLabelSettingsScreen(),
+                  );
+                  if (!mounted) return;
+                  setState(() {
+                    _draft = context.read<TimetableProvider>().settings;
+                  });
+                },
+              ),
           ],
         ),
         const HyperosSectionGap(),

@@ -32,7 +32,7 @@ Future<bool> _nativeLaunchUrl(String url) async {
 class FeedbackScreen extends StatelessWidget {
   const FeedbackScreen({super.key});
 
-  static const String _issuesUrl = 'https://github.com/Mutx163/mikcb/issues';
+  static const String _issuesUrl = 'https://github.com/Guzheng3/mikcb/issues';
   static const String _xiaohongshuId = '4976443029';
   static const String _xiaohongshuShareUrl =
       'https://xhslink.com/m/ALcscDMw39N';

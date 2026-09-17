@@ -28,7 +28,6 @@ Future<TimetableProvider> _createLiveActivityTestProvider({
     semesterStartDate: _liveSemesterStart2026,
     liveEnableBeforeClass: true,
     liveEnableDuringClass: true,
-    liveEnableBeforeEnd: true,
     liveShowBeforeClassMinutes: 20,
     liveClassReminderStartMinutes: 0,
     enableHolidayMarking: true,
@@ -908,7 +907,6 @@ void main() {
           semesterStartDate: _liveSemesterStart2026,
           liveEnableBeforeClass: false,
           liveEnableDuringClass: true,
-          liveEnableBeforeEnd: true,
           liveClassReminderStartMinutes: 5,
           liveShowDuringClassNotification: false,
         ),
@@ -935,12 +933,12 @@ void main() {
       );
 
       expect(earlySelection, isNull);
-      expect(lateSelection?.stage, LiveActivityStage.beforeEnd);
+      expect(lateSelection?.stage, LiveActivityStage.duringClass);
     },
   );
 
   test(
-    'live activity can show status bar stage before end reminder when not immediate',
+    'live activity shows status bar stage first, then during class when not immediate',
     () async {
       final provider = TimetableProvider(
         autoInitialize: false,
@@ -953,7 +951,6 @@ void main() {
           semesterStartDate: _liveSemesterStart2026,
           liveEnableBeforeClass: false,
           liveEnableDuringClass: true,
-          liveEnableBeforeEnd: true,
           liveClassReminderStartMinutes: 5,
           liveShowDuringClassNotification: true,
         ),
@@ -980,7 +977,7 @@ void main() {
       );
 
       expect(earlySelection?.stage, LiveActivityStage.duringClassStatusBar);
-      expect(lateSelection?.stage, LiveActivityStage.beforeEnd);
+      expect(lateSelection?.stage, LiveActivityStage.duringClass);
     },
   );
 
@@ -998,7 +995,6 @@ void main() {
           semesterStartDate: _liveSemesterStart2026,
           liveEnableBeforeClass: false,
           liveEnableDuringClass: true,
-          liveEnableBeforeEnd: true,
           liveClassReminderStartMinutes: 0,
         ),
       );
@@ -1035,7 +1031,6 @@ void main() {
       provider.settings.copyWith(
         liveEnableBeforeClass: true,
         liveEnableDuringClass: false,
-        liveEnableBeforeEnd: false,
         liveShowBeforeClassMinutes: 30,
       ),
     );
@@ -1090,7 +1085,6 @@ void main() {
       provider.settings.copyWith(
         liveEnableBeforeClass: true,
         liveEnableDuringClass: false,
-        liveEnableBeforeEnd: false,
         liveShowBeforeClassMinutes: 1,
         liveTimeCorrectionSeconds: -5,
       ),
@@ -1593,7 +1587,6 @@ void main() {
         provider.settings.copyWith(
           liveEnableBeforeClass: true,
           liveEnableDuringClass: false,
-          liveEnableBeforeEnd: false,
           liveShowBeforeClassMinutes: 30,
         ),
       );
@@ -2005,7 +1998,6 @@ void main() {
         semesterStartDate: DateTime(2026, 2, 23), // 第1周周一
         liveEnableBeforeClass: true,
         liveEnableDuringClass: true,
-        liveEnableBeforeEnd: true,
       ),
     );
     await provider.setCurrentWeek(1);
@@ -2056,7 +2048,6 @@ void main() {
           semesterStartDate: DateTime(2026, 2, 23),
           liveEnableBeforeClass: true,
           liveEnableDuringClass: true,
-          liveEnableBeforeEnd: true,
         ),
       );
       await provider.addCourse(
@@ -2150,7 +2141,6 @@ void main() {
           semesterStartDate: DateTime(2026, 2, 23),
           liveEnableBeforeClass: true,
           liveEnableDuringClass: true,
-          liveEnableBeforeEnd: true,
         ),
       );
       await provider.addCourse(
@@ -2563,7 +2553,6 @@ void main() {
         endTime: endTime!,
         aheadTime: startTime.subtract(const Duration(minutes: 20)),
         settings: provider.settings,
-        endReminderWindow: const Duration(minutes: 10),
       ),
       LiveActivityStage.beforeClass,
     );
@@ -2574,7 +2563,6 @@ void main() {
         endTime: endTime,
         aheadTime: startTime.subtract(const Duration(minutes: 20)),
         settings: provider.settings,
-        endReminderWindow: const Duration(minutes: 10),
       ),
       isNull,
     );
@@ -2585,7 +2573,6 @@ void main() {
         endTime: endTime,
         aheadTime: startTime.subtract(const Duration(minutes: 20)),
         settings: provider.settings,
-        endReminderWindow: const Duration(minutes: 10),
       ),
       isNull,
     );

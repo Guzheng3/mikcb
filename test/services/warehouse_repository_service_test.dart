@@ -71,10 +71,7 @@ adapters:
   }
 
   // 服务签名仍保留 source / options，这里用最小实例保证既有调用形态可用。
-  const source = WarehouseRepositorySource(
-    owner: 'Mutx163',
-    repo: 'qingyu_warehouse',
-  );
+  const source = WarehouseRepositorySource();
 
   test('学校列表完全来自打包 assets，并包含内置学校', () async {
     final rootIndex = await defaultService().fetchRootIndex(source);

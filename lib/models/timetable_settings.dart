@@ -1246,7 +1246,6 @@ class TimetableSettings {
   final bool liveShowStageText;
   final bool liveEnableBeforeClass;
   final bool liveEnableDuringClass;
-  final bool liveEnableBeforeEnd;
   final bool livePromoteDuringClass;
   final bool liveShowDuringClassNotification;
   final bool liveUseShortName;
@@ -1262,16 +1261,6 @@ class TimetableSettings {
   final bool liveHidePrefixText;
   final LiveDuringClassTimeDisplayMode liveDuringClassTimeDisplayMode;
   final bool liveEnableMiuiIslandLabelImage;
-  final bool liveDuringEndShowCourseName;
-  final bool liveDuringEndShowLocation;
-  final bool liveDuringEndShowCountdown;
-  final LiveCountdownTextStyle liveDuringEndCountdownTextStyle;
-  final bool liveDuringEndShowStageText;
-  final bool liveDuringEndUseShortName;
-  final bool liveDuringEndHidePrefixText;
-  final bool liveDuringEndFollowBeforeClass;
-  final LiveDuringClassTimeDisplayMode liveDuringEndTimeDisplayMode;
-  final bool liveDuringEndEnableMiuiIslandLabelImage;
   final bool liveHideFromRecents;
   final bool liveEnableLocalDiagnostics;
   final MiuiIslandLabelStyle liveMiuiIslandLabelStyle;
@@ -1286,26 +1275,18 @@ class TimetableSettings {
   final double liveMiuiIslandLabelLogoCornerRadius;
   final MiuiIslandExpandedIconMode liveMiuiIslandExpandedIconMode;
   final String? liveMiuiIslandExpandedIconPath;
-  final MiuiIslandLabelStyle liveDuringEndMiuiIslandLabelStyle;
-  final MiuiIslandLabelContent liveDuringEndMiuiIslandLabelContent;
-  final String liveDuringEndMiuiIslandLabelFontColor;
-  final MiuiIslandLabelFontWeight liveDuringEndMiuiIslandLabelFontWeight;
-  final MiuiIslandLabelRenderQuality liveDuringEndMiuiIslandLabelRenderQuality;
-  final double liveDuringEndMiuiIslandLabelFontSize;
-  final double liveDuringEndMiuiIslandLabelOffsetX;
-  final double liveDuringEndMiuiIslandLabelOffsetY;
-  final String? liveDuringEndMiuiIslandLabelLogoPath;
-  final double liveDuringEndMiuiIslandLabelLogoCornerRadius;
-  final MiuiIslandExpandedIconMode liveDuringEndMiuiIslandExpandedIconMode;
-  final String? liveDuringEndMiuiIslandExpandedIconPath;
   final int liveShowBeforeClassMinutes;
   final int liveClassReminderStartMinutes;
-  final int liveEndSecondsCountdownThreshold;
   final int liveTimeCorrectionSeconds;
   final LiveBeforeClassQuickAction liveBeforeClassQuickAction;
 
   /// 上课前自动执行快捷操作的提前分钟数；0 表示不自动执行（仅保留通知按钮）。
   final int liveBeforeClassQuickActionAutoMinutes;
+
+  /// 常驻通知：没有课程会话时也让通知留在状态栏，内容显示情侣卡片（我这一列）。
+  ///
+  /// 关闭时回到「随课程起停」的旧行为 —— 无课、课上完、假期都不显示通知。
+  final bool livePermanentNotificationEnabled;
   final String themeSeedColor;
   final ForuiTheme foruiTheme;
   final String timetablePageBackgroundColor;
@@ -1468,7 +1449,6 @@ class TimetableSettings {
     this.liveShowStageText = true,
     this.liveEnableBeforeClass = true,
     this.liveEnableDuringClass = true,
-    this.liveEnableBeforeEnd = true,
     this.livePromoteDuringClass = true,
     this.liveShowDuringClassNotification = true,
     this.liveUseShortName = true,
@@ -1477,16 +1457,6 @@ class TimetableSettings {
     this.liveDuringClassTimeDisplayMode =
         LiveDuringClassTimeDisplayMode.nearest,
     this.liveEnableMiuiIslandLabelImage = false,
-    this.liveDuringEndShowCourseName = true,
-    this.liveDuringEndShowLocation = true,
-    this.liveDuringEndShowCountdown = true,
-    this.liveDuringEndCountdownTextStyle = LiveCountdownTextStyle.smart,
-    this.liveDuringEndShowStageText = true,
-    this.liveDuringEndUseShortName = true,
-    this.liveDuringEndHidePrefixText = true,
-    this.liveDuringEndFollowBeforeClass = true,
-    this.liveDuringEndTimeDisplayMode = LiveDuringClassTimeDisplayMode.nearest,
-    this.liveDuringEndEnableMiuiIslandLabelImage = false,
     this.liveHideFromRecents = false,
     this.liveEnableLocalDiagnostics = false,
     this.liveMiuiIslandLabelStyle = MiuiIslandLabelStyle.textOnly,
@@ -1502,28 +1472,12 @@ class TimetableSettings {
     this.liveMiuiIslandLabelLogoCornerRadius = 8,
     this.liveMiuiIslandExpandedIconMode = MiuiIslandExpandedIconMode.appIcon,
     this.liveMiuiIslandExpandedIconPath,
-    this.liveDuringEndMiuiIslandLabelStyle = MiuiIslandLabelStyle.textOnly,
-    this.liveDuringEndMiuiIslandLabelContent =
-        MiuiIslandLabelContent.courseName,
-    this.liveDuringEndMiuiIslandLabelFontColor = '#FFFFFF',
-    this.liveDuringEndMiuiIslandLabelFontWeight =
-        MiuiIslandLabelFontWeight.bold,
-    this.liveDuringEndMiuiIslandLabelRenderQuality =
-        MiuiIslandLabelRenderQuality.standard,
-    this.liveDuringEndMiuiIslandLabelFontSize = 14,
-    this.liveDuringEndMiuiIslandLabelOffsetX = 0,
-    this.liveDuringEndMiuiIslandLabelOffsetY = 0,
-    this.liveDuringEndMiuiIslandLabelLogoPath,
-    this.liveDuringEndMiuiIslandLabelLogoCornerRadius = 8,
-    this.liveDuringEndMiuiIslandExpandedIconMode =
-        MiuiIslandExpandedIconMode.appIcon,
-    this.liveDuringEndMiuiIslandExpandedIconPath,
     this.liveShowBeforeClassMinutes = 20,
     this.liveClassReminderStartMinutes = 0,
-    this.liveEndSecondsCountdownThreshold = 60,
     this.liveTimeCorrectionSeconds = 0,
     this.liveBeforeClassQuickAction = LiveBeforeClassQuickAction.none,
     this.liveBeforeClassQuickActionAutoMinutes = 0,
+    this.livePermanentNotificationEnabled = true,
     this.themeSeedColor = '#2563EB',
     this.foruiTheme = ForuiTheme.blue,
     this.timetablePageBackgroundColor = '#F8FAFC',
@@ -1671,7 +1625,6 @@ class TimetableSettings {
       'liveShowStageText': liveShowStageText,
       'liveEnableBeforeClass': liveEnableBeforeClass,
       'liveEnableDuringClass': liveEnableDuringClass,
-      'liveEnableBeforeEnd': liveEnableBeforeEnd,
       'livePromoteDuringClass': livePromoteDuringClass,
       'liveShowDuringClassNotification': liveShowDuringClassNotification,
       'liveUseShortName': liveUseShortName,
@@ -1679,17 +1632,6 @@ class TimetableSettings {
       'liveHidePrefixText': liveHidePrefixText,
       'liveDuringClassTimeDisplayMode': liveDuringClassTimeDisplayMode.value,
       'liveEnableMiuiIslandLabelImage': liveEnableMiuiIslandLabelImage,
-      'liveDuringEndShowCourseName': liveDuringEndShowCourseName,
-      'liveDuringEndShowLocation': liveDuringEndShowLocation,
-      'liveDuringEndShowCountdown': liveDuringEndShowCountdown,
-      'liveDuringEndCountdownTextStyle': liveDuringEndCountdownTextStyle.value,
-      'liveDuringEndShowStageText': liveDuringEndShowStageText,
-      'liveDuringEndUseShortName': liveDuringEndUseShortName,
-      'liveDuringEndHidePrefixText': liveDuringEndHidePrefixText,
-      'liveDuringEndFollowBeforeClass': liveDuringEndFollowBeforeClass,
-      'liveDuringEndTimeDisplayMode': liveDuringEndTimeDisplayMode.value,
-      'liveDuringEndEnableMiuiIslandLabelImage':
-          liveDuringEndEnableMiuiIslandLabelImage,
       'liveHideFromRecents': liveHideFromRecents,
       'liveEnableLocalDiagnostics': liveEnableLocalDiagnostics,
       'liveMiuiIslandLabelStyle': liveMiuiIslandLabelStyle.value,
@@ -1706,37 +1648,13 @@ class TimetableSettings {
           liveMiuiIslandLabelLogoCornerRadius,
       'liveMiuiIslandExpandedIconMode': liveMiuiIslandExpandedIconMode.value,
       'liveMiuiIslandExpandedIconPath': liveMiuiIslandExpandedIconPath,
-      'liveDuringEndMiuiIslandLabelStyle':
-          liveDuringEndMiuiIslandLabelStyle.value,
-      'liveDuringEndMiuiIslandLabelContent':
-          liveDuringEndMiuiIslandLabelContent.value,
-      'liveDuringEndMiuiIslandLabelFontColor':
-          liveDuringEndMiuiIslandLabelFontColor,
-      'liveDuringEndMiuiIslandLabelFontWeight':
-          liveDuringEndMiuiIslandLabelFontWeight.value,
-      'liveDuringEndMiuiIslandLabelRenderQuality':
-          liveDuringEndMiuiIslandLabelRenderQuality.value,
-      'liveDuringEndMiuiIslandLabelFontSize':
-          liveDuringEndMiuiIslandLabelFontSize,
-      'liveDuringEndMiuiIslandLabelOffsetX':
-          liveDuringEndMiuiIslandLabelOffsetX,
-      'liveDuringEndMiuiIslandLabelOffsetY':
-          liveDuringEndMiuiIslandLabelOffsetY,
-      'liveDuringEndMiuiIslandLabelLogoPath':
-          liveDuringEndMiuiIslandLabelLogoPath,
-      'liveDuringEndMiuiIslandLabelLogoCornerRadius':
-          liveDuringEndMiuiIslandLabelLogoCornerRadius,
-      'liveDuringEndMiuiIslandExpandedIconMode':
-          liveDuringEndMiuiIslandExpandedIconMode.value,
-      'liveDuringEndMiuiIslandExpandedIconPath':
-          liveDuringEndMiuiIslandExpandedIconPath,
       'liveShowBeforeClassMinutes': liveShowBeforeClassMinutes,
       'liveClassReminderStartMinutes': liveClassReminderStartMinutes,
-      'liveEndSecondsCountdownThreshold': liveEndSecondsCountdownThreshold,
       'liveTimeCorrectionSeconds': liveTimeCorrectionSeconds,
       'liveBeforeClassQuickAction': liveBeforeClassQuickAction.value,
       'liveBeforeClassQuickActionAutoMinutes':
           liveBeforeClassQuickActionAutoMinutes,
+      'livePermanentNotificationEnabled': livePermanentNotificationEnabled,
       'themeSeedColor': themeSeedColor,
       'foruiTheme': foruiTheme.value,
       'timetablePageBackgroundColor': timetablePageBackgroundColor,
@@ -1986,12 +1904,10 @@ class TimetableSettings {
       ),
       liveShowStageText: json['liveShowStageText'] as bool? ?? true,
       liveEnableBeforeClass: json['liveEnableBeforeClass'] as bool? ?? true,
-      // Migrate: these two are controlled by a single UI switch.
-      // If either is true, both should be true to avoid UI/logic mismatch.
+      // liveEnableBeforeEnd 已随「下课提醒」阶段移除。旧版这两个开关由同一个 UI
+      // 开关联动，存盘时可能出现一个真一个假；沿用 OR 读回，避免当初实际开着
+      // 课中提醒的用户升级后被静默关掉。
       liveEnableDuringClass:
-          (json['liveEnableDuringClass'] as bool? ?? true) ||
-          (json['liveEnableBeforeEnd'] as bool? ?? true),
-      liveEnableBeforeEnd:
           (json['liveEnableDuringClass'] as bool? ?? true) ||
           (json['liveEnableBeforeEnd'] as bool? ?? true),
       livePromoteDuringClass: json['livePromoteDuringClass'] as bool? ?? true,
@@ -2002,41 +1918,14 @@ class TimetableSettings {
           json['liveFollowActiveTimetable'] as bool? ?? false,
       liveHidePrefixText: json['liveHidePrefixText'] as bool? ?? true,
       liveDuringClassTimeDisplayMode: LiveDuringClassTimeDisplayModeX.fromValue(
-        json['liveDuringClassTimeDisplayMode'] as String?,
-      ),
-      liveEnableMiuiIslandLabelImage:
-          json['liveEnableMiuiIslandLabelImage'] as bool? ?? false,
-      liveDuringEndShowCourseName:
-          json['liveDuringEndShowCourseName'] as bool? ??
-          (json['liveShowCourseName'] as bool? ?? true),
-      liveDuringEndShowLocation:
-          json['liveDuringEndShowLocation'] as bool? ??
-          (json['liveShowLocation'] as bool? ?? true),
-      liveDuringEndShowCountdown:
-          json['liveDuringEndShowCountdown'] as bool? ??
-          (json['liveShowCountdown'] as bool? ?? true),
-      liveDuringEndCountdownTextStyle: LiveCountdownTextStyleX.fromValue(
-        json['liveDuringEndCountdownTextStyle'] as String? ??
-            json['liveCountdownTextStyle'] as String?,
-      ),
-      liveDuringEndShowStageText:
-          json['liveDuringEndShowStageText'] as bool? ??
-          (json['liveShowStageText'] as bool? ?? true),
-      liveDuringEndUseShortName:
-          json['liveDuringEndUseShortName'] as bool? ??
-          (json['liveUseShortName'] as bool? ?? true),
-      liveDuringEndHidePrefixText:
-          json['liveDuringEndHidePrefixText'] as bool? ??
-          (json['liveHidePrefixText'] as bool? ?? true),
-      liveDuringEndFollowBeforeClass:
-          json['liveDuringEndFollowBeforeClass'] as bool? ?? true,
-      liveDuringEndTimeDisplayMode: LiveDuringClassTimeDisplayModeX.fromValue(
+        // 「课中时间样式」的选项此前只挂在「课中/下课」那份配置上（现已并入
+        // 课前），所以旧存档里的 liveDuringEndTimeDisplayMode 才是用户真正选过的
+        // 值；优先读它，避免升级后静默回到默认的「最近节点」。
         json['liveDuringEndTimeDisplayMode'] as String? ??
             json['liveDuringClassTimeDisplayMode'] as String?,
       ),
-      liveDuringEndEnableMiuiIslandLabelImage:
-          json['liveDuringEndEnableMiuiIslandLabelImage'] as bool? ??
-          (json['liveEnableMiuiIslandLabelImage'] as bool? ?? false),
+      liveEnableMiuiIslandLabelImage:
+          json['liveEnableMiuiIslandLabelImage'] as bool? ?? false,
       liveHideFromRecents: json['liveHideFromRecents'] as bool? ?? false,
       liveEnableLocalDiagnostics:
           json['liveEnableLocalDiagnostics'] as bool? ?? false,
@@ -2070,58 +1959,10 @@ class TimetableSettings {
       ),
       liveMiuiIslandExpandedIconPath:
           json['liveMiuiIslandExpandedIconPath'] as String?,
-      liveDuringEndMiuiIslandLabelStyle: MiuiIslandLabelStyleX.fromValue(
-        json['liveDuringEndMiuiIslandLabelStyle'] as String? ??
-            json['liveMiuiIslandLabelStyle'] as String?,
-      ),
-      liveDuringEndMiuiIslandLabelContent: MiuiIslandLabelContentX.fromValue(
-        json['liveDuringEndMiuiIslandLabelContent'] as String? ??
-            json['liveMiuiIslandLabelContent'] as String?,
-      ),
-      liveDuringEndMiuiIslandLabelFontColor:
-          json['liveDuringEndMiuiIslandLabelFontColor'] as String? ??
-          (json['liveMiuiIslandLabelFontColor'] as String? ?? '#FFFFFF'),
-      liveDuringEndMiuiIslandLabelFontWeight:
-          MiuiIslandLabelFontWeightX.fromValue(
-            json['liveDuringEndMiuiIslandLabelFontWeight'] as String? ??
-                json['liveMiuiIslandLabelFontWeight'] as String?,
-          ),
-      liveDuringEndMiuiIslandLabelRenderQuality:
-          MiuiIslandLabelRenderQualityX.fromValue(
-            json['liveDuringEndMiuiIslandLabelRenderQuality'] as String? ??
-                json['liveMiuiIslandLabelRenderQuality'] as String?,
-          ),
-      liveDuringEndMiuiIslandLabelFontSize:
-          (json['liveDuringEndMiuiIslandLabelFontSize'] as num?)?.toDouble() ??
-          ((json['liveMiuiIslandLabelFontSize'] as num?)?.toDouble() ?? 14),
-      liveDuringEndMiuiIslandLabelOffsetX:
-          (json['liveDuringEndMiuiIslandLabelOffsetX'] as num?)?.toDouble() ??
-          ((json['liveMiuiIslandLabelOffsetX'] as num?)?.toDouble() ?? 0),
-      liveDuringEndMiuiIslandLabelOffsetY:
-          (json['liveDuringEndMiuiIslandLabelOffsetY'] as num?)?.toDouble() ??
-          ((json['liveMiuiIslandLabelOffsetY'] as num?)?.toDouble() ?? 0),
-      liveDuringEndMiuiIslandLabelLogoPath:
-          json['liveDuringEndMiuiIslandLabelLogoPath'] as String? ??
-          json['liveMiuiIslandLabelLogoPath'] as String?,
-      liveDuringEndMiuiIslandLabelLogoCornerRadius:
-          (json['liveDuringEndMiuiIslandLabelLogoCornerRadius'] as num?)
-              ?.toDouble() ??
-          (json['liveMiuiIslandLabelLogoCornerRadius'] as num?)?.toDouble() ??
-          8,
-      liveDuringEndMiuiIslandExpandedIconMode:
-          MiuiIslandExpandedIconModeX.fromValue(
-            json['liveDuringEndMiuiIslandExpandedIconMode'] as String? ??
-                json['liveMiuiIslandExpandedIconMode'] as String?,
-          ),
-      liveDuringEndMiuiIslandExpandedIconPath:
-          json['liveDuringEndMiuiIslandExpandedIconPath'] as String? ??
-          json['liveMiuiIslandExpandedIconPath'] as String?,
       liveShowBeforeClassMinutes:
           (json['liveShowBeforeClassMinutes'] as num?)?.toInt() ?? 20,
       liveClassReminderStartMinutes:
           (json['liveClassReminderStartMinutes'] as num?)?.toInt() ?? 0,
-      liveEndSecondsCountdownThreshold:
-          (json['liveEndSecondsCountdownThreshold'] as num?)?.toInt() ?? 60,
       liveTimeCorrectionSeconds:
           (json['liveTimeCorrectionSeconds'] as num?)?.toInt() ?? 0,
       liveBeforeClassQuickAction: LiveBeforeClassQuickActionX.fromValue(
@@ -2129,6 +1970,8 @@ class TimetableSettings {
       ),
       liveBeforeClassQuickActionAutoMinutes:
           (json['liveBeforeClassQuickActionAutoMinutes'] as num?)?.toInt() ?? 0,
+      livePermanentNotificationEnabled:
+          json['livePermanentNotificationEnabled'] as bool? ?? true,
       themeSeedColor: json['themeSeedColor'] as String? ?? '#2563EB',
       foruiTheme: ForuiThemeX.fromValue(json['foruiTheme'] as String?),
       timetablePageBackgroundColor:
@@ -2354,7 +2197,6 @@ class TimetableSettings {
     bool? liveShowStageText,
     bool? liveEnableBeforeClass,
     bool? liveEnableDuringClass,
-    bool? liveEnableBeforeEnd,
     bool? livePromoteDuringClass,
     bool? liveShowDuringClassNotification,
     bool? liveUseShortName,
@@ -2362,16 +2204,6 @@ class TimetableSettings {
     bool? liveHidePrefixText,
     LiveDuringClassTimeDisplayMode? liveDuringClassTimeDisplayMode,
     bool? liveEnableMiuiIslandLabelImage,
-    bool? liveDuringEndShowCourseName,
-    bool? liveDuringEndShowLocation,
-    bool? liveDuringEndShowCountdown,
-    LiveCountdownTextStyle? liveDuringEndCountdownTextStyle,
-    bool? liveDuringEndShowStageText,
-    bool? liveDuringEndUseShortName,
-    bool? liveDuringEndHidePrefixText,
-    bool? liveDuringEndFollowBeforeClass,
-    LiveDuringClassTimeDisplayMode? liveDuringEndTimeDisplayMode,
-    bool? liveDuringEndEnableMiuiIslandLabelImage,
     bool? liveHideFromRecents,
     bool? liveEnableLocalDiagnostics,
     MiuiIslandLabelStyle? liveMiuiIslandLabelStyle,
@@ -2388,26 +2220,12 @@ class TimetableSettings {
     MiuiIslandExpandedIconMode? liveMiuiIslandExpandedIconMode,
     String? liveMiuiIslandExpandedIconPath,
     bool clearLiveMiuiIslandExpandedIconPath = false,
-    MiuiIslandLabelStyle? liveDuringEndMiuiIslandLabelStyle,
-    MiuiIslandLabelContent? liveDuringEndMiuiIslandLabelContent,
-    String? liveDuringEndMiuiIslandLabelFontColor,
-    MiuiIslandLabelFontWeight? liveDuringEndMiuiIslandLabelFontWeight,
-    MiuiIslandLabelRenderQuality? liveDuringEndMiuiIslandLabelRenderQuality,
-    double? liveDuringEndMiuiIslandLabelFontSize,
-    double? liveDuringEndMiuiIslandLabelOffsetX,
-    double? liveDuringEndMiuiIslandLabelOffsetY,
-    String? liveDuringEndMiuiIslandLabelLogoPath,
-    bool clearLiveDuringEndMiuiIslandLabelLogoPath = false,
-    double? liveDuringEndMiuiIslandLabelLogoCornerRadius,
-    MiuiIslandExpandedIconMode? liveDuringEndMiuiIslandExpandedIconMode,
-    String? liveDuringEndMiuiIslandExpandedIconPath,
-    bool clearLiveDuringEndMiuiIslandExpandedIconPath = false,
     int? liveShowBeforeClassMinutes,
     int? liveClassReminderStartMinutes,
-    int? liveEndSecondsCountdownThreshold,
     int? liveTimeCorrectionSeconds,
     LiveBeforeClassQuickAction? liveBeforeClassQuickAction,
     int? liveBeforeClassQuickActionAutoMinutes,
+    bool? livePermanentNotificationEnabled,
     String? themeSeedColor,
     ForuiTheme? foruiTheme,
     String? timetablePageBackgroundColor,
@@ -2600,7 +2418,6 @@ class TimetableSettings {
           liveEnableBeforeClass ?? this.liveEnableBeforeClass,
       liveEnableDuringClass:
           liveEnableDuringClass ?? this.liveEnableDuringClass,
-      liveEnableBeforeEnd: liveEnableBeforeEnd ?? this.liveEnableBeforeEnd,
       livePromoteDuringClass:
           livePromoteDuringClass ?? this.livePromoteDuringClass,
       liveShowDuringClassNotification:
@@ -2614,28 +2431,6 @@ class TimetableSettings {
           liveDuringClassTimeDisplayMode ?? this.liveDuringClassTimeDisplayMode,
       liveEnableMiuiIslandLabelImage:
           liveEnableMiuiIslandLabelImage ?? this.liveEnableMiuiIslandLabelImage,
-      liveDuringEndShowCourseName:
-          liveDuringEndShowCourseName ?? this.liveDuringEndShowCourseName,
-      liveDuringEndShowLocation:
-          liveDuringEndShowLocation ?? this.liveDuringEndShowLocation,
-      liveDuringEndShowCountdown:
-          liveDuringEndShowCountdown ?? this.liveDuringEndShowCountdown,
-      liveDuringEndCountdownTextStyle:
-          liveDuringEndCountdownTextStyle ??
-          this.liveDuringEndCountdownTextStyle,
-      liveDuringEndShowStageText:
-          liveDuringEndShowStageText ?? this.liveDuringEndShowStageText,
-      liveDuringEndUseShortName:
-          liveDuringEndUseShortName ?? this.liveDuringEndUseShortName,
-      liveDuringEndHidePrefixText:
-          liveDuringEndHidePrefixText ?? this.liveDuringEndHidePrefixText,
-      liveDuringEndFollowBeforeClass:
-          liveDuringEndFollowBeforeClass ?? this.liveDuringEndFollowBeforeClass,
-      liveDuringEndTimeDisplayMode:
-          liveDuringEndTimeDisplayMode ?? this.liveDuringEndTimeDisplayMode,
-      liveDuringEndEnableMiuiIslandLabelImage:
-          liveDuringEndEnableMiuiIslandLabelImage ??
-          this.liveDuringEndEnableMiuiIslandLabelImage,
       liveHideFromRecents: liveHideFromRecents ?? this.liveHideFromRecents,
       liveEnableLocalDiagnostics:
           liveEnableLocalDiagnostics ?? this.liveEnableLocalDiagnostics,
@@ -2668,53 +2463,10 @@ class TimetableSettings {
           ? null
           : liveMiuiIslandExpandedIconPath ??
                 this.liveMiuiIslandExpandedIconPath,
-      liveDuringEndMiuiIslandLabelStyle:
-          liveDuringEndMiuiIslandLabelStyle ??
-          this.liveDuringEndMiuiIslandLabelStyle,
-      liveDuringEndMiuiIslandLabelContent:
-          liveDuringEndMiuiIslandLabelContent ??
-          this.liveDuringEndMiuiIslandLabelContent,
-      liveDuringEndMiuiIslandLabelFontColor:
-          liveDuringEndMiuiIslandLabelFontColor ??
-          this.liveDuringEndMiuiIslandLabelFontColor,
-      liveDuringEndMiuiIslandLabelFontWeight:
-          liveDuringEndMiuiIslandLabelFontWeight ??
-          this.liveDuringEndMiuiIslandLabelFontWeight,
-      liveDuringEndMiuiIslandLabelRenderQuality:
-          liveDuringEndMiuiIslandLabelRenderQuality ??
-          this.liveDuringEndMiuiIslandLabelRenderQuality,
-      liveDuringEndMiuiIslandLabelFontSize:
-          liveDuringEndMiuiIslandLabelFontSize ??
-          this.liveDuringEndMiuiIslandLabelFontSize,
-      liveDuringEndMiuiIslandLabelOffsetX:
-          liveDuringEndMiuiIslandLabelOffsetX ??
-          this.liveDuringEndMiuiIslandLabelOffsetX,
-      liveDuringEndMiuiIslandLabelOffsetY:
-          liveDuringEndMiuiIslandLabelOffsetY ??
-          this.liveDuringEndMiuiIslandLabelOffsetY,
-      liveDuringEndMiuiIslandLabelLogoPath:
-          clearLiveDuringEndMiuiIslandLabelLogoPath
-          ? null
-          : liveDuringEndMiuiIslandLabelLogoPath ??
-                this.liveDuringEndMiuiIslandLabelLogoPath,
-      liveDuringEndMiuiIslandLabelLogoCornerRadius:
-          liveDuringEndMiuiIslandLabelLogoCornerRadius ??
-          this.liveDuringEndMiuiIslandLabelLogoCornerRadius,
-      liveDuringEndMiuiIslandExpandedIconMode:
-          liveDuringEndMiuiIslandExpandedIconMode ??
-          this.liveDuringEndMiuiIslandExpandedIconMode,
-      liveDuringEndMiuiIslandExpandedIconPath:
-          clearLiveDuringEndMiuiIslandExpandedIconPath
-          ? null
-          : liveDuringEndMiuiIslandExpandedIconPath ??
-                this.liveDuringEndMiuiIslandExpandedIconPath,
       liveShowBeforeClassMinutes:
           liveShowBeforeClassMinutes ?? this.liveShowBeforeClassMinutes,
       liveClassReminderStartMinutes:
           liveClassReminderStartMinutes ?? this.liveClassReminderStartMinutes,
-      liveEndSecondsCountdownThreshold:
-          liveEndSecondsCountdownThreshold ??
-          this.liveEndSecondsCountdownThreshold,
       liveTimeCorrectionSeconds:
           liveTimeCorrectionSeconds ?? this.liveTimeCorrectionSeconds,
       liveBeforeClassQuickAction:
@@ -2722,6 +2474,8 @@ class TimetableSettings {
       liveBeforeClassQuickActionAutoMinutes:
           liveBeforeClassQuickActionAutoMinutes ??
           this.liveBeforeClassQuickActionAutoMinutes,
+      livePermanentNotificationEnabled:
+          livePermanentNotificationEnabled ?? this.livePermanentNotificationEnabled,
       themeSeedColor: themeSeedColor ?? this.themeSeedColor,
       foruiTheme: foruiTheme ?? this.foruiTheme,
       timetablePageBackgroundColor:
@@ -2888,34 +2642,16 @@ class TimetableSettings {
     miuiIslandExpandedIconPath: liveMiuiIslandExpandedIconPath,
   );
 
-  LiveDisplaySettings get duringEndDisplaySettings =>
-      liveDuringEndFollowBeforeClass
-      ? beforeClassDisplaySettings
-      : LiveDisplaySettings(
-          showCourseName: liveDuringEndShowCourseName,
-          showLocation: liveDuringEndShowLocation,
-          showCountdown: liveDuringEndShowCountdown,
-          countdownTextStyle: liveDuringEndCountdownTextStyle,
-          showStageText: liveDuringEndShowStageText,
-          useShortName: liveDuringEndUseShortName,
-          hidePrefixText: liveDuringEndHidePrefixText,
-          duringClassTimeDisplayMode: liveDuringEndTimeDisplayMode,
-          enableMiuiIslandLabelImage: liveDuringEndEnableMiuiIslandLabelImage,
-          miuiIslandLabelStyle: liveDuringEndMiuiIslandLabelStyle,
-          miuiIslandLabelContent: liveDuringEndMiuiIslandLabelContent,
-          miuiIslandLabelFontColor: liveDuringEndMiuiIslandLabelFontColor,
-          miuiIslandLabelFontWeight: liveDuringEndMiuiIslandLabelFontWeight,
-          miuiIslandLabelRenderQuality:
-              liveDuringEndMiuiIslandLabelRenderQuality,
-          miuiIslandLabelFontSize: liveDuringEndMiuiIslandLabelFontSize,
-          miuiIslandLabelOffsetX: liveDuringEndMiuiIslandLabelOffsetX,
-          miuiIslandLabelOffsetY: liveDuringEndMiuiIslandLabelOffsetY,
-          miuiIslandLabelLogoPath: liveDuringEndMiuiIslandLabelLogoPath,
-          miuiIslandLabelLogoCornerRadius:
-              liveDuringEndMiuiIslandLabelLogoCornerRadius,
-          miuiIslandExpandedIconMode: liveDuringEndMiuiIslandExpandedIconMode,
-          miuiIslandExpandedIconPath: liveDuringEndMiuiIslandExpandedIconPath,
-        );
+  /// 课中/下课一律沿用课前那套显示配置。
+  ///
+  /// 样式配置已从设置界面移除（后续改为固定样式），课中/下课不再有独立配置，
+  /// 因此这里恒返回 [beforeClassDisplaySettings]。
+  ///
+  /// 历史上课中/下课曾有一整套 `liveDuringEnd*` 字段与一个「跟随课前」开关：
+  /// 关掉开关的用户会停在另一套配置上，而那套配置在样式界面移除后再无入口可改，
+  /// 改不动也看不见。字段与其序列化已随本次清理删除；旧存档里这些键会被
+  /// 忽略，读回后课中/下课直接沿用课前配置。
+  LiveDisplaySettings get duringEndDisplaySettings => beforeClassDisplaySettings;
 
   TimetableSettings copyWithBeforeClassDisplaySettings(
     LiveDisplaySettings settings, {
@@ -2956,35 +2692,6 @@ class TimetableSettings {
     bool clearLabelLogoPath = false,
   }) {
     return copyWith(
-      liveDuringEndShowCourseName: settings.showCourseName,
-      liveDuringEndShowLocation: settings.showLocation,
-      liveDuringEndShowCountdown: settings.showCountdown,
-      liveDuringEndCountdownTextStyle: settings.countdownTextStyle,
-      liveDuringEndShowStageText: settings.showStageText,
-      liveDuringEndUseShortName: settings.useShortName,
-      liveDuringEndHidePrefixText: settings.hidePrefixText,
-      liveDuringEndTimeDisplayMode: settings.duringClassTimeDisplayMode,
-      liveDuringEndEnableMiuiIslandLabelImage:
-          settings.enableMiuiIslandLabelImage,
-      liveDuringEndMiuiIslandLabelStyle: settings.miuiIslandLabelStyle,
-      liveDuringEndMiuiIslandLabelContent: settings.miuiIslandLabelContent,
-      liveDuringEndMiuiIslandLabelFontColor: settings.miuiIslandLabelFontColor,
-      liveDuringEndMiuiIslandLabelFontWeight:
-          settings.miuiIslandLabelFontWeight,
-      liveDuringEndMiuiIslandLabelRenderQuality:
-          settings.miuiIslandLabelRenderQuality,
-      liveDuringEndMiuiIslandLabelFontSize: settings.miuiIslandLabelFontSize,
-      liveDuringEndMiuiIslandLabelOffsetX: settings.miuiIslandLabelOffsetX,
-      liveDuringEndMiuiIslandLabelOffsetY: settings.miuiIslandLabelOffsetY,
-      liveDuringEndMiuiIslandLabelLogoPath: settings.miuiIslandLabelLogoPath,
-      liveDuringEndMiuiIslandLabelLogoCornerRadius:
-          settings.miuiIslandLabelLogoCornerRadius,
-      clearLiveDuringEndMiuiIslandLabelLogoPath: clearLabelLogoPath,
-      liveDuringEndMiuiIslandExpandedIconMode:
-          settings.miuiIslandExpandedIconMode,
-      liveDuringEndMiuiIslandExpandedIconPath:
-          settings.miuiIslandExpandedIconPath,
-      clearLiveDuringEndMiuiIslandExpandedIconPath: clearExpandedIconPath,
     );
   }
 

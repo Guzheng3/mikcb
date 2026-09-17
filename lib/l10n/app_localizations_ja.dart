@@ -1820,9 +1820,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get liveTestingEntrySubtitle => 'テスト通知送信、スーパーアイランドとローカル診断ログの確認';
 
   @override
-  String get followBeforeClassSetting => '授業前リマインダーに連携';
-
-  @override
   String get liveReminderTimingTitle => 'リマインダー時間帯';
 
   @override
@@ -1884,6 +1881,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get enableIslandDisplaySubtitle => 'オフにするとシステムスーパーアイランドのトリガーを停止';
 
   @override
+  String get livePermanentNotificationTitle => '常駐通知';
+
+  @override
+  String get livePermanentNotificationSubtitle =>
+      '授業がないときも通知バーに通知を残し、カップルカードの内容を表示します';
+
+  @override
   String get liveTimeThresholdTitle => '時間しきい値';
 
   @override
@@ -1896,14 +1900,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String beforeClassMinutesOption(int minutes) {
     return '$minutes分';
-  }
-
-  @override
-  String get beforeEndSecondsLabel => '終了前秒単位リマインダーしきい値';
-
-  @override
-  String beforeEndSecondsOption(int seconds) {
-    return '$seconds秒';
   }
 
   @override
@@ -1925,9 +1921,6 @@ class AppLocalizationsJa extends AppLocalizations {
       'コンパクトリマインダーで直近の時間を表示するか、全体の合計時間を表示するかを制御。';
 
   @override
-  String get liveDisplayContentTitle => '表示内容';
-
-  @override
   String get liveDisplayContentSubtitle =>
       'この設定グループは現在のステージのみに影響し、他のリマインダー表示は変更しません';
 
@@ -1935,53 +1928,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get showCourseNameTitle => '授業名を表示';
 
   @override
-  String get preferShortNameTitle => '略称を優先表示';
-
-  @override
-  String get preferShortNameSubtitle => '略称は3文字以内を推奨';
-
-  @override
-  String get showLocationTitle => '場所を表示';
-
-  @override
-  String get showCountdownTitle => 'カウントダウンを表示';
-
-  @override
-  String get countdownFormatLabel => 'カウントダウン形式';
-
-  @override
   String get countdownFormatHelp => '分のみスタイルは分単位で更新、秒付きスタイルは秒単位で更新';
 
   @override
-  String get showStageTextTitle => 'ステージステータステキストを表示';
-
-  @override
-  String get showStageTextSubtitle => 'カウントダウンオフ後も「もうすぐ授業/授業中/終了リマインダー」を継続表示可能';
-
-  @override
-  String get hidePrefixTextTitle => 'プレフィックステキストを非表示';
-
-  @override
-  String get hidePrefixTextSubtitle => '例：「もうすぐ授業」などのプレフィックスを非表示';
-
-  @override
   String get liveIslandPreviewTitle => 'スーパー島プレビュー';
-
-  @override
-  String get liveIslandPreviewFollowBadge =>
-      '「授業前表示」の設定に従っています。そちらを調整すると反映されます';
-
-  @override
-  String get liveIslandPreviewStageBeforeClass => 'もうすぐ授業';
-
-  @override
-  String get liveIslandPreviewStageInClass => '授業中';
-
-  @override
-  String get liveIslandPreviewStageBeforeEnd => '終了リマインダー';
-
-  @override
-  String get liveIslandPreviewAboutToEnd => 'まもなく終了';
 
   @override
   String liveIslandPreviewUntilClassStart(String time) {
@@ -2030,87 +1980,24 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get liveIslandVisualTitle => '左側アイコンと展開状態';
-
-  @override
   String get liveIslandVisualSubtitle =>
       '左側テキスト画像、展開状態の大きなアイコンとカスタム画像は全て現在のステージ別に保存';
-
-  @override
-  String get liveMiuiLabelImageTitle => '小米アイランド左側テキストアイコン';
-
-  @override
-  String get liveMiuiLabelImageSubtitle => '小米端末スタイルのみ有効，授業名または場所を左側アイコン位置に生成';
-
-  @override
-  String get liveMiuiLabelContentLabel => '左側テキスト内容';
-
-  @override
-  String get liveMiuiLabelStyleLabel => '左側アイコンスタイル';
-
-  @override
-  String get liveMiuiLabelLogoTitle => '左側アイコンLogo';
-
-  @override
-  String get liveMiuiLabelLogoSubtitle =>
-      '「アイコン+テキスト」スタイルでのみ有効，未選択時はアプリアイコンを継続使用';
-
-  @override
-  String liveMiuiLabelLogoCornerRadiusLabel(String value) {
-    return '左側アイコン角丸$value';
-  }
 
   @override
   String get liveMiuiLabelLogoCornerRadiusTitle => '左アイコンの角丸';
 
   @override
-  String liveMiuiLabelFontSizeLabel(String value) {
-    return '左側テキストサイズ$value';
-  }
-
-  @override
   String get liveMiuiLabelFontSizeTitle => '左テキストのサイズ';
-
-  @override
-  String liveMiuiLabelOffsetXLabel(String value) {
-    return '左側テキスト水平オフセット$value';
-  }
 
   @override
   String get liveMiuiLabelOffsetXTitle => '左テキストの水平オフセット';
 
   @override
-  String liveMiuiLabelOffsetYLabel(String value) {
-    return '左側テキスト垂直オフセット$value';
-  }
-
-  @override
   String get liveMiuiLabelOffsetYTitle => '左テキストの垂直オフセット';
-
-  @override
-  String get liveMiuiLabelFontWeightLabel => '左側テキスト太さ';
-
-  @override
-  String get liveMiuiLabelRenderQualityLabel => '左側テキスト鮮明度';
-
-  @override
-  String get liveMiuiExpandedIconLabel => '展開状態の大きなアイコン';
-
-  @override
-  String get selectImageAction => '画像を選択';
-
-  @override
-  String get replaceImageAction => '画像を変更';
-
-  @override
-  String get liveDisplayConfigModeTitle => '設定モード';
 
   @override
   String get liveDisplayConfigModeSubtitle =>
       'オンにすると、授業中と終了リマインダーが授業前リマインダー表示に完全連携，下の個別設定は一時的に編集不可';
-
-  @override
-  String get followBeforeClassDisplayTitle => '授業前リマインダー設定に連携';
 
   @override
   String get liveKeepAliveTitle => 'バックグラウンド常駐';
@@ -2636,26 +2523,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String liveClassReminderLeadSummaryImmediate(int seconds) {
-    return '授業開始と同時にフォーカスリマインダー表示に移行し、終了$seconds秒前に秒単位カウントダウンに切替';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryKeepNormal(int minutes, int seconds) {
-    return '授業後はまず通常授業中通知を保持し、終了$minutes分前にフォーカスリマインダー/終了リマインダーに切替、最後の$seconds秒で秒単位カウントダウンに切替';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryIsland(int minutes, int seconds) {
-    return '終了$minutes分前にスーパーアイランドとフォーカスリマインダーに切替、最後の$seconds秒で秒単位カウントダウンに切替';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryFocused(int minutes, int seconds) {
-    return '終了$minutes分前にフォーカスリマインダー表示を開始し、最後の$seconds秒で秒単位カウントダウンに切替';
-  }
-
-  @override
   String get liveSettingsEntrySubtitle => 'リマインダー時間帯、アイランド表示、通知バーと表示内容';
 
   @override
@@ -2833,9 +2700,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get beforeClassDisplaySettingsTitle => '授業前リマインダー表示';
-
-  @override
-  String get duringEndDisplaySettingsTitle => '授業中/終了リマインダー表示';
 
   @override
   String get liveDisplaySummaryShortName => '略称';
@@ -6742,48 +6606,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get liveCountdownTextStyleSecondOnlySlash => '/s (5/s)';
 
   @override
-  String get miuiIslandLabelStyleTextOnly => 'Text only';
-
-  @override
-  String get miuiIslandLabelStyleIconAndText => 'Icon + text';
-
-  @override
-  String get miuiIslandLabelContentCourseName => 'Course name';
-
-  @override
-  String get miuiIslandLabelContentLocation => 'Room';
-
-  @override
-  String get miuiIslandLabelContentCourseNameAndLocation => 'Course + room';
-
-  @override
-  String get miuiIslandLabelFontWeightRegular => 'Regular';
-
-  @override
-  String get miuiIslandLabelFontWeightMedium => 'Medium';
-
-  @override
-  String get miuiIslandLabelFontWeightBold => 'Bold';
-
-  @override
-  String get miuiIslandLabelRenderQualityStandard => 'Standard';
-
-  @override
-  String get miuiIslandLabelRenderQualityHigh => 'High';
-
-  @override
-  String get miuiIslandLabelRenderQualityUltra => 'Ultra';
-
-  @override
-  String get miuiIslandExpandedIconAppIcon => 'App icon';
-
-  @override
-  String get miuiIslandExpandedIconCustomImage => 'Custom image';
-
-  @override
-  String get miuiIslandExpandedIconHidden => 'Hidden';
-
-  @override
   String get liveBeforeClassQuickActionNone => 'Hidden';
 
   @override
@@ -8169,6 +7991,9 @@ class AppLocalizationsJa extends AppLocalizations {
       'Failed to suspend Live Island schedule triggers';
 
   @override
+  String get logLiveUpdatePermanentNotificationFailed => '常駐通知スイッチの同期に失敗';
+
+  @override
   String get logLiveUpdateTestRequested =>
       'User requested manual Live Island test notification';
 
@@ -8200,14 +8025,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String logLiveUpdateSettingsSynced(
     String beforeClass,
     String duringClass,
-    String beforeEnd,
     String promote,
     String notification,
     String countdown,
     String courseName,
     String location,
   ) {
-    return 'Flutter Live Island settings synced: beforeClass=$beforeClass, duringClass=$duringClass, beforeEnd=$beforeEnd, promote=$promote, notification=$notification, countdown=$countdown, courseName=$courseName, location=$location';
+    return 'Flutter Live Island settings synced: beforeClass=$beforeClass, duringClass=$duringClass, promote=$promote, notification=$notification, countdown=$countdown, courseName=$courseName, location=$location';
   }
 
   @override
@@ -8311,9 +8135,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get logFieldLiveEnableDuringClass => 'live Enable During Class';
 
   @override
-  String get logFieldLiveEnableBeforeEnd => 'live Enable Before End';
-
-  @override
   String get logFieldLivePromoteDuringClass => 'live Promote During Class';
 
   @override
@@ -8388,10 +8209,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get logFieldLiveClassReminderStartMinutes =>
       'live Class Reminder Start Minutes';
-
-  @override
-  String get logFieldLiveEndSecondsCountdownThreshold =>
-      'live End Seconds Countdown Threshold';
 
   @override
   String get logFieldState => 'state';
@@ -9987,4 +9804,103 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get globalSettingsCleared => 'グローバル表示設定をクリアしました';
+
+  @override
+  String get liveIslandVisualTitle => '左側アイコンと展開状態';
+
+  @override
+  String get liveMiuiExpandedIconLabel => '展開状態の大きなアイコン';
+
+  @override
+  String get liveMiuiLabelContentLabel => '左側テキスト内容';
+
+  @override
+  String liveMiuiLabelFontSizeLabel(String value) {
+    return '左側テキストサイズ$value';
+  }
+
+  @override
+  String get liveMiuiLabelFontWeightLabel => '左側テキスト太さ';
+
+  @override
+  String get liveMiuiLabelImageSubtitle => '小米端末スタイルのみ有効，授業名または場所を左側アイコン位置に生成';
+
+  @override
+  String get liveMiuiLabelImageTitle => '小米アイランド左側テキストアイコン';
+
+  @override
+  String liveMiuiLabelLogoCornerRadiusLabel(String value) {
+    return '左側アイコン角丸$value';
+  }
+
+  @override
+  String get liveMiuiLabelLogoSubtitle =>
+      '「アイコン+テキスト」スタイルでのみ有効，未選択時はアプリアイコンを継続使用';
+
+  @override
+  String get liveMiuiLabelLogoTitle => '左側アイコンLogo';
+
+  @override
+  String liveMiuiLabelOffsetXLabel(String value) {
+    return '左側テキスト水平オフセット$value';
+  }
+
+  @override
+  String liveMiuiLabelOffsetYLabel(String value) {
+    return '左側テキスト垂直オフセット$value';
+  }
+
+  @override
+  String get liveMiuiLabelRenderQualityLabel => '左側テキスト鮮明度';
+
+  @override
+  String get liveMiuiLabelStyleLabel => '左側アイコンスタイル';
+
+  @override
+  String get miuiIslandExpandedIconAppIcon => 'App icon';
+
+  @override
+  String get miuiIslandExpandedIconCustomImage => 'Custom image';
+
+  @override
+  String get miuiIslandExpandedIconHidden => 'Hidden';
+
+  @override
+  String get miuiIslandLabelContentCourseName => 'Course name';
+
+  @override
+  String get miuiIslandLabelContentCourseNameAndLocation => 'Course + room';
+
+  @override
+  String get miuiIslandLabelContentLocation => 'Room';
+
+  @override
+  String get miuiIslandLabelFontWeightBold => 'Bold';
+
+  @override
+  String get miuiIslandLabelFontWeightMedium => 'Medium';
+
+  @override
+  String get miuiIslandLabelFontWeightRegular => 'Regular';
+
+  @override
+  String get miuiIslandLabelRenderQualityHigh => 'High';
+
+  @override
+  String get miuiIslandLabelRenderQualityStandard => 'Standard';
+
+  @override
+  String get miuiIslandLabelRenderQualityUltra => 'Ultra';
+
+  @override
+  String get miuiIslandLabelStyleIconAndText => 'Icon + text';
+
+  @override
+  String get miuiIslandLabelStyleTextOnly => 'Text only';
+
+  @override
+  String get replaceImageAction => '画像を変更';
+
+  @override
+  String get selectImageAction => '画像を選択';
 }

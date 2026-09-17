@@ -440,7 +440,6 @@ LiveActivityCourseSelection? _liveGetActivityCourseSelection(
       endTime: endTime,
       aheadTime: effectiveAheadTime,
       settings: settings,
-      endReminderWindow: TimetableProvider._liveEndReminderWindow,
     );
     if (stage != null) {
       final nextCourse = i + 1 < todayCourses.length
@@ -891,6 +890,13 @@ Future<void> _liveUpdateActivityBody(
     return;
   }
 
+  // 常驻开关单独下发：它在没有课程会话时也要生效，而那种时刻 Flutter 走的是
+  // stopLiveUpdate、根本不会调 startLiveUpdate，开关值就永远传不到原生侧。
+  // 取 activeScope（「我的课表」）而非 host.settings：调度器快照里存的就是这一份。
+  await host._liveActivitiesService.setPermanentNotification(
+    activeScope.settings.livePermanentNotificationEnabled,
+  );
+
   final selection = _liveGetActivityCourseSelection(host, scope: activeScope);
   final liveCourse = selection?.currentCourse;
 
@@ -979,7 +985,6 @@ Future<void> _liveUpdateActivityBody(
       startAtMillis: startAtMillis,
       endAtMillis: endAtMillis,
       liveClassReminderStartMinutes: settings.liveClassReminderStartMinutes,
-      endSecondsCountdownThreshold: settings.liveEndSecondsCountdownThreshold,
       promoteDuringClass:
           activeSelection.stage == LiveActivityStage.duringClassStatusBar
           ? false
@@ -990,7 +995,8 @@ Future<void> _liveUpdateActivityBody(
           : settings.liveShowDuringClassNotification,
       enableBeforeClass: settings.liveEnableBeforeClass,
       enableDuringClass: settings.liveEnableDuringClass,
-      enableBeforeEnd: settings.liveEnableBeforeEnd,
+      // 常驻通知：无课程会话时也让通知留在状态栏显示情侣卡片形态。
+      permanentNotification: settings.livePermanentNotificationEnabled,
       showCountdown: displaySettings.showCountdown,
       countdownTextStyle: displaySettings.countdownTextStyle,
       showStageText: displaySettings.showStageText,
@@ -1091,8 +1097,6 @@ Future<void> _liveSyncScheduleSnapshot(
     settings: settings,
     currentWeek: scheduleWeek,
     semesterStartDate: settings.semesterStartDate,
-    endReminderLeadMillis:
-        TimetableProvider._liveEndReminderWindow.inMilliseconds,
     isHoliday: todayIsHoliday,
     isHolidayDate: todayKey,
     holidayDates: holidayDates,

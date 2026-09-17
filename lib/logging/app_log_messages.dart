@@ -49,6 +49,8 @@ abstract final class AppLogMessages {
       'log_live_update_snapshot_clear_failed';
   static const liveUpdateSuspendTriggersFailed =
       'log_live_update_suspend_triggers_failed';
+  static const liveUpdatePermanentNotificationFailed =
+      'log_live_update_permanent_notification_failed';
   static const liveUpdateTestRequested = 'log_live_update_test_requested';
   static const liveUpdateTestNoSelection = 'log_live_update_test_no_selection';
   static const liveUpdateTestSelectionReady =
@@ -70,7 +72,6 @@ abstract final class AppLogMessages {
   static String liveUpdateSettingsSynced({
     required bool beforeClass,
     required bool duringClass,
-    required bool beforeEnd,
     required bool promote,
     required bool notification,
     required bool countdown,
@@ -80,7 +81,6 @@ abstract final class AppLogMessages {
       '$liveUpdateSettingsSyncedKey|'
       'beforeClass=$beforeClass|'
       'duringClass=$duringClass|'
-      'beforeEnd=$beforeEnd|'
       'promote=$promote|'
       'notification=$notification|'
       'countdown=$countdown|'
@@ -121,7 +121,6 @@ const Map<String, String> appLogFieldLabels = {
   'autoStartStatus': 'log_field_auto_start_status',
   'liveEnableBeforeClass': 'log_field_live_enable_before_class',
   'liveEnableDuringClass': 'log_field_live_enable_during_class',
-  'liveEnableBeforeEnd': 'log_field_live_enable_before_end',
   'livePromoteDuringClass': 'log_field_live_promote_during_class',
   'liveShowDuringClassNotification':
       'log_field_live_show_during_class_notification',
@@ -150,8 +149,6 @@ const Map<String, String> appLogFieldLabels = {
   'liveShowBeforeClassMinutes': 'log_field_live_show_before_class_minutes',
   'liveClassReminderStartMinutes':
       'log_field_live_class_reminder_start_minutes',
-  'liveEndSecondsCountdownThreshold':
-      'log_field_live_end_seconds_countdown_threshold',
   'state': 'log_field_state',
   'route': 'log_field_route',
   'previousRoute': 'log_field_previous_route',

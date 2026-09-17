@@ -3364,12 +3364,6 @@ abstract class AppLocalizations {
   /// **'发送测试通知，检查超级岛和本地诊断日志'**
   String get liveTestingEntrySubtitle;
 
-  /// No description provided for @followBeforeClassSetting.
-  ///
-  /// In zh, this message translates to:
-  /// **'跟随上课前提醒'**
-  String get followBeforeClassSetting;
-
   /// No description provided for @liveReminderTimingTitle.
   ///
   /// In zh, this message translates to:
@@ -3478,6 +3472,18 @@ abstract class AppLocalizations {
   /// **'关闭后不触发系统超级岛'**
   String get enableIslandDisplaySubtitle;
 
+  /// No description provided for @livePermanentNotificationTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'常驻通知'**
+  String get livePermanentNotificationTitle;
+
+  /// No description provided for @livePermanentNotificationSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有课程时也让通知留在通知栏，显示情侣卡片的内容'**
+  String get livePermanentNotificationSubtitle;
+
   /// No description provided for @liveTimeThresholdTitle.
   ///
   /// In zh, this message translates to:
@@ -3501,18 +3507,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'{minutes} 分钟'**
   String beforeClassMinutesOption(int minutes);
-
-  /// No description provided for @beforeEndSecondsLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'下课前秒级阈值'**
-  String get beforeEndSecondsLabel;
-
-  /// No description provided for @beforeEndSecondsOption.
-  ///
-  /// In zh, this message translates to:
-  /// **'{seconds} 秒'**
-  String beforeEndSecondsOption(int seconds);
 
   /// No description provided for @timeCorrectionLabel.
   ///
@@ -3544,12 +3538,6 @@ abstract class AppLocalizations {
   /// **'紧凑提醒显示最近时间或总时长'**
   String get duringEndTimeDisplayHelp;
 
-  /// No description provided for @liveDisplayContentTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'显示内容'**
-  String get liveDisplayContentTitle;
-
   /// No description provided for @liveDisplayContentSubtitle.
   ///
   /// In zh, this message translates to:
@@ -3562,101 +3550,17 @@ abstract class AppLocalizations {
   /// **'显示课程名'**
   String get showCourseNameTitle;
 
-  /// No description provided for @preferShortNameTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'优先显示课程简称'**
-  String get preferShortNameTitle;
-
-  /// No description provided for @preferShortNameSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'建议简称控制在 3 个字以内'**
-  String get preferShortNameSubtitle;
-
-  /// No description provided for @showLocationTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'显示地点'**
-  String get showLocationTitle;
-
-  /// No description provided for @showCountdownTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'显示倒计时'**
-  String get showCountdownTitle;
-
-  /// No description provided for @countdownFormatLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'倒计时格式'**
-  String get countdownFormatLabel;
-
   /// No description provided for @countdownFormatHelp.
   ///
   /// In zh, this message translates to:
   /// **'纯分钟样式按分钟刷新，带秒样式按秒刷新'**
   String get countdownFormatHelp;
 
-  /// No description provided for @showStageTextTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'显示阶段状态文案'**
-  String get showStageTextTitle;
-
-  /// No description provided for @showStageTextSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'关闭倒计时后，可继续显示“即将上课 / 上课中 / 下课提醒”'**
-  String get showStageTextSubtitle;
-
-  /// No description provided for @hidePrefixTextTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'隐藏前缀文案'**
-  String get hidePrefixTextTitle;
-
-  /// No description provided for @hidePrefixTextSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'例如隐藏“即将上课”这类前缀'**
-  String get hidePrefixTextSubtitle;
-
   /// No description provided for @liveIslandPreviewTitle.
   ///
   /// In zh, this message translates to:
   /// **'超级岛预览'**
   String get liveIslandPreviewTitle;
-
-  /// No description provided for @liveIslandPreviewFollowBadge.
-  ///
-  /// In zh, this message translates to:
-  /// **'正在跟随“课前提醒显示”设置，调整课前提醒即可生效'**
-  String get liveIslandPreviewFollowBadge;
-
-  /// No description provided for @liveIslandPreviewStageBeforeClass.
-  ///
-  /// In zh, this message translates to:
-  /// **'即将上课'**
-  String get liveIslandPreviewStageBeforeClass;
-
-  /// No description provided for @liveIslandPreviewStageInClass.
-  ///
-  /// In zh, this message translates to:
-  /// **'上课中'**
-  String get liveIslandPreviewStageInClass;
-
-  /// No description provided for @liveIslandPreviewStageBeforeEnd.
-  ///
-  /// In zh, this message translates to:
-  /// **'下课提醒'**
-  String get liveIslandPreviewStageBeforeEnd;
-
-  /// No description provided for @liveIslandPreviewAboutToEnd.
-  ///
-  /// In zh, this message translates to:
-  /// **'即将下课'**
-  String get liveIslandPreviewAboutToEnd;
 
   /// No description provided for @liveIslandPreviewUntilClassStart.
   ///
@@ -3730,59 +3634,11 @@ abstract class AppLocalizations {
   /// **'{value}'**
   String liveMiuiLabelSizePreview(String value);
 
-  /// No description provided for @liveIslandVisualTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'左侧图标与展开态'**
-  String get liveIslandVisualTitle;
-
   /// No description provided for @liveIslandVisualSubtitle.
   ///
   /// In zh, this message translates to:
   /// **'左侧文字图、展开态大图标和自定义图片都按当前阶段单独保存'**
   String get liveIslandVisualSubtitle;
-
-  /// No description provided for @liveMiuiLabelImageTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'小米岛左侧文字图标'**
-  String get liveMiuiLabelImageTitle;
-
-  /// No description provided for @liveMiuiLabelImageSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'仅小米手机样式生效，会把课程名或地点生成到左侧图标位'**
-  String get liveMiuiLabelImageSubtitle;
-
-  /// No description provided for @liveMiuiLabelContentLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'左侧文字内容'**
-  String get liveMiuiLabelContentLabel;
-
-  /// No description provided for @liveMiuiLabelStyleLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'左侧图标样式'**
-  String get liveMiuiLabelStyleLabel;
-
-  /// No description provided for @liveMiuiLabelLogoTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'左侧图标 Logo'**
-  String get liveMiuiLabelLogoTitle;
-
-  /// No description provided for @liveMiuiLabelLogoSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'仅在“图标+文字”样式下生效；未选择时继续使用应用图标'**
-  String get liveMiuiLabelLogoSubtitle;
-
-  /// No description provided for @liveMiuiLabelLogoCornerRadiusLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'左侧图标圆角 {value}'**
-  String liveMiuiLabelLogoCornerRadiusLabel(String value);
 
   /// No description provided for @liveMiuiLabelLogoCornerRadiusTitle.
   ///
@@ -3790,23 +3646,11 @@ abstract class AppLocalizations {
   /// **'左侧图标圆角'**
   String get liveMiuiLabelLogoCornerRadiusTitle;
 
-  /// No description provided for @liveMiuiLabelFontSizeLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'左侧文字大小 {value}'**
-  String liveMiuiLabelFontSizeLabel(String value);
-
   /// No description provided for @liveMiuiLabelFontSizeTitle.
   ///
   /// In zh, this message translates to:
   /// **'左侧文字大小'**
   String get liveMiuiLabelFontSizeTitle;
-
-  /// No description provided for @liveMiuiLabelOffsetXLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'左侧文字水平偏移 {value}'**
-  String liveMiuiLabelOffsetXLabel(String value);
 
   /// No description provided for @liveMiuiLabelOffsetXTitle.
   ///
@@ -3814,65 +3658,17 @@ abstract class AppLocalizations {
   /// **'左侧文字水平偏移'**
   String get liveMiuiLabelOffsetXTitle;
 
-  /// No description provided for @liveMiuiLabelOffsetYLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'左侧文字垂直偏移 {value}'**
-  String liveMiuiLabelOffsetYLabel(String value);
-
   /// No description provided for @liveMiuiLabelOffsetYTitle.
   ///
   /// In zh, this message translates to:
   /// **'左侧文字垂直偏移'**
   String get liveMiuiLabelOffsetYTitle;
 
-  /// No description provided for @liveMiuiLabelFontWeightLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'左侧文字粗细'**
-  String get liveMiuiLabelFontWeightLabel;
-
-  /// No description provided for @liveMiuiLabelRenderQualityLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'左侧文字清晰度'**
-  String get liveMiuiLabelRenderQualityLabel;
-
-  /// No description provided for @liveMiuiExpandedIconLabel.
-  ///
-  /// In zh, this message translates to:
-  /// **'展开态大图标'**
-  String get liveMiuiExpandedIconLabel;
-
-  /// No description provided for @selectImageAction.
-  ///
-  /// In zh, this message translates to:
-  /// **'选择图片'**
-  String get selectImageAction;
-
-  /// No description provided for @replaceImageAction.
-  ///
-  /// In zh, this message translates to:
-  /// **'更换图片'**
-  String get replaceImageAction;
-
-  /// No description provided for @liveDisplayConfigModeTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'配置方式'**
-  String get liveDisplayConfigModeTitle;
-
   /// No description provided for @liveDisplayConfigModeSubtitle.
   ///
   /// In zh, this message translates to:
   /// **'打开后，课中和下课提醒会完全跟随上课前提醒显示，下面的独立设置暂时不可编辑'**
   String get liveDisplayConfigModeSubtitle;
-
-  /// No description provided for @followBeforeClassDisplayTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'跟随上课前提醒设置'**
-  String get followBeforeClassDisplayTitle;
 
   /// No description provided for @liveKeepAliveTitle.
   ///
@@ -4809,30 +4605,6 @@ abstract class AppLocalizations {
   /// **'整体提前 {seconds} 秒'**
   String liveTimeCorrectionAdvance(int seconds);
 
-  /// No description provided for @liveClassReminderLeadSummaryImmediate.
-  ///
-  /// In zh, this message translates to:
-  /// **'一上课进入重点提醒，下课前 {seconds} 秒秒级倒数'**
-  String liveClassReminderLeadSummaryImmediate(int seconds);
-
-  /// No description provided for @liveClassReminderLeadSummaryKeepNormal.
-  ///
-  /// In zh, this message translates to:
-  /// **'课中普通通知，下课前 {minutes} 分钟重点提醒'**
-  String liveClassReminderLeadSummaryKeepNormal(int minutes, int seconds);
-
-  /// No description provided for @liveClassReminderLeadSummaryIsland.
-  ///
-  /// In zh, this message translates to:
-  /// **'下课前 {minutes} 分钟切到超级岛与重点提醒'**
-  String liveClassReminderLeadSummaryIsland(int minutes, int seconds);
-
-  /// No description provided for @liveClassReminderLeadSummaryFocused.
-  ///
-  /// In zh, this message translates to:
-  /// **'下课前 {minutes} 分钟开始重点提醒'**
-  String liveClassReminderLeadSummaryFocused(int minutes, int seconds);
-
   /// No description provided for @liveSettingsEntrySubtitle.
   ///
   /// In zh, this message translates to:
@@ -5174,12 +4946,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'上课前提醒显示'**
   String get beforeClassDisplaySettingsTitle;
-
-  /// No description provided for @duringEndDisplaySettingsTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'课中/下课提醒显示'**
-  String get duringEndDisplaySettingsTitle;
 
   /// No description provided for @liveDisplaySummaryShortName.
   ///
@@ -12092,90 +11858,6 @@ abstract class AppLocalizations {
   /// **'/s（5/s）'**
   String get liveCountdownTextStyleSecondOnlySlash;
 
-  /// No description provided for @miuiIslandLabelStyleTextOnly.
-  ///
-  /// In zh, this message translates to:
-  /// **'仅文字'**
-  String get miuiIslandLabelStyleTextOnly;
-
-  /// No description provided for @miuiIslandLabelStyleIconAndText.
-  ///
-  /// In zh, this message translates to:
-  /// **'图标+文字'**
-  String get miuiIslandLabelStyleIconAndText;
-
-  /// No description provided for @miuiIslandLabelContentCourseName.
-  ///
-  /// In zh, this message translates to:
-  /// **'课程名'**
-  String get miuiIslandLabelContentCourseName;
-
-  /// No description provided for @miuiIslandLabelContentLocation.
-  ///
-  /// In zh, this message translates to:
-  /// **'教室'**
-  String get miuiIslandLabelContentLocation;
-
-  /// No description provided for @miuiIslandLabelContentCourseNameAndLocation.
-  ///
-  /// In zh, this message translates to:
-  /// **'课程名+教室'**
-  String get miuiIslandLabelContentCourseNameAndLocation;
-
-  /// No description provided for @miuiIslandLabelFontWeightRegular.
-  ///
-  /// In zh, this message translates to:
-  /// **'常规'**
-  String get miuiIslandLabelFontWeightRegular;
-
-  /// No description provided for @miuiIslandLabelFontWeightMedium.
-  ///
-  /// In zh, this message translates to:
-  /// **'中等'**
-  String get miuiIslandLabelFontWeightMedium;
-
-  /// No description provided for @miuiIslandLabelFontWeightBold.
-  ///
-  /// In zh, this message translates to:
-  /// **'加粗'**
-  String get miuiIslandLabelFontWeightBold;
-
-  /// No description provided for @miuiIslandLabelRenderQualityStandard.
-  ///
-  /// In zh, this message translates to:
-  /// **'标准'**
-  String get miuiIslandLabelRenderQualityStandard;
-
-  /// No description provided for @miuiIslandLabelRenderQualityHigh.
-  ///
-  /// In zh, this message translates to:
-  /// **'高清'**
-  String get miuiIslandLabelRenderQualityHigh;
-
-  /// No description provided for @miuiIslandLabelRenderQualityUltra.
-  ///
-  /// In zh, this message translates to:
-  /// **'超高清'**
-  String get miuiIslandLabelRenderQualityUltra;
-
-  /// No description provided for @miuiIslandExpandedIconAppIcon.
-  ///
-  /// In zh, this message translates to:
-  /// **'应用图标'**
-  String get miuiIslandExpandedIconAppIcon;
-
-  /// No description provided for @miuiIslandExpandedIconCustomImage.
-  ///
-  /// In zh, this message translates to:
-  /// **'自定义图片'**
-  String get miuiIslandExpandedIconCustomImage;
-
-  /// No description provided for @miuiIslandExpandedIconHidden.
-  ///
-  /// In zh, this message translates to:
-  /// **'不显示'**
-  String get miuiIslandExpandedIconHidden;
-
   /// No description provided for @liveBeforeClassQuickActionNone.
   ///
   /// In zh, this message translates to:
@@ -14361,6 +14043,12 @@ abstract class AppLocalizations {
   /// **'挂起超级岛课表调度失败'**
   String get logLiveUpdateSuspendTriggersFailed;
 
+  /// No description provided for @logLiveUpdatePermanentNotificationFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'同步常驻通知开关失败'**
+  String get logLiveUpdatePermanentNotificationFailed;
+
   /// No description provided for @logLiveUpdateTestRequested.
   ///
   /// In zh, this message translates to:
@@ -14406,11 +14094,10 @@ abstract class AppLocalizations {
   /// No description provided for @logLiveUpdateSettingsSynced.
   ///
   /// In zh, this message translates to:
-  /// **'Flutter 超级岛设置已同步：课前={beforeClass}，课中={duringClass}，下课前={beforeEnd}，提升={promote}，通知={notification}，倒计时={countdown}，课程名={courseName}，地点={location}'**
+  /// **'Flutter 超级岛设置已同步：课前={beforeClass}，课中={duringClass}，提升={promote}，通知={notification}，倒计时={countdown}，课程名={courseName}，地点={location}'**
   String logLiveUpdateSettingsSynced(
     String beforeClass,
     String duringClass,
-    String beforeEnd,
     String promote,
     String notification,
     String countdown,
@@ -14610,12 +14297,6 @@ abstract class AppLocalizations {
   /// **'课中超级岛'**
   String get logFieldLiveEnableDuringClass;
 
-  /// No description provided for @logFieldLiveEnableBeforeEnd.
-  ///
-  /// In zh, this message translates to:
-  /// **'下课前超级岛'**
-  String get logFieldLiveEnableBeforeEnd;
-
   /// No description provided for @logFieldLivePromoteDuringClass.
   ///
   /// In zh, this message translates to:
@@ -14741,12 +14422,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'上课提醒开始分钟'**
   String get logFieldLiveClassReminderStartMinutes;
-
-  /// No description provided for @logFieldLiveEndSecondsCountdownThreshold.
-  ///
-  /// In zh, this message translates to:
-  /// **'下课秒倒计时阈值'**
-  String get logFieldLiveEndSecondsCountdownThreshold;
 
   /// No description provided for @logFieldState.
   ///
@@ -17663,6 +17338,186 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'已清除全局显示设置'**
   String get globalSettingsCleared;
+
+  /// No description provided for @liveIslandVisualTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'左侧图标与展开态'**
+  String get liveIslandVisualTitle;
+
+  /// No description provided for @liveMiuiExpandedIconLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'展开态大图标'**
+  String get liveMiuiExpandedIconLabel;
+
+  /// No description provided for @liveMiuiLabelContentLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'左侧文字内容'**
+  String get liveMiuiLabelContentLabel;
+
+  /// No description provided for @liveMiuiLabelFontSizeLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'左侧文字大小 {value}'**
+  String liveMiuiLabelFontSizeLabel(String value);
+
+  /// No description provided for @liveMiuiLabelFontWeightLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'左侧文字粗细'**
+  String get liveMiuiLabelFontWeightLabel;
+
+  /// No description provided for @liveMiuiLabelImageSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅小米手机样式生效，会把课程名或地点生成到左侧图标位'**
+  String get liveMiuiLabelImageSubtitle;
+
+  /// No description provided for @liveMiuiLabelImageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'小米岛左侧文字图标'**
+  String get liveMiuiLabelImageTitle;
+
+  /// No description provided for @liveMiuiLabelLogoCornerRadiusLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'左侧图标圆角 {value}'**
+  String liveMiuiLabelLogoCornerRadiusLabel(String value);
+
+  /// No description provided for @liveMiuiLabelLogoSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅在“图标+文字”样式下生效；未选择时继续使用应用图标'**
+  String get liveMiuiLabelLogoSubtitle;
+
+  /// No description provided for @liveMiuiLabelLogoTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'左侧图标 Logo'**
+  String get liveMiuiLabelLogoTitle;
+
+  /// No description provided for @liveMiuiLabelOffsetXLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'左侧文字水平偏移 {value}'**
+  String liveMiuiLabelOffsetXLabel(String value);
+
+  /// No description provided for @liveMiuiLabelOffsetYLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'左侧文字垂直偏移 {value}'**
+  String liveMiuiLabelOffsetYLabel(String value);
+
+  /// No description provided for @liveMiuiLabelRenderQualityLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'左侧文字清晰度'**
+  String get liveMiuiLabelRenderQualityLabel;
+
+  /// No description provided for @liveMiuiLabelStyleLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'左侧图标样式'**
+  String get liveMiuiLabelStyleLabel;
+
+  /// No description provided for @miuiIslandExpandedIconAppIcon.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用图标'**
+  String get miuiIslandExpandedIconAppIcon;
+
+  /// No description provided for @miuiIslandExpandedIconCustomImage.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义图片'**
+  String get miuiIslandExpandedIconCustomImage;
+
+  /// No description provided for @miuiIslandExpandedIconHidden.
+  ///
+  /// In zh, this message translates to:
+  /// **'不显示'**
+  String get miuiIslandExpandedIconHidden;
+
+  /// No description provided for @miuiIslandLabelContentCourseName.
+  ///
+  /// In zh, this message translates to:
+  /// **'课程名'**
+  String get miuiIslandLabelContentCourseName;
+
+  /// No description provided for @miuiIslandLabelContentCourseNameAndLocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'课程名+教室'**
+  String get miuiIslandLabelContentCourseNameAndLocation;
+
+  /// No description provided for @miuiIslandLabelContentLocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'教室'**
+  String get miuiIslandLabelContentLocation;
+
+  /// No description provided for @miuiIslandLabelFontWeightBold.
+  ///
+  /// In zh, this message translates to:
+  /// **'加粗'**
+  String get miuiIslandLabelFontWeightBold;
+
+  /// No description provided for @miuiIslandLabelFontWeightMedium.
+  ///
+  /// In zh, this message translates to:
+  /// **'中等'**
+  String get miuiIslandLabelFontWeightMedium;
+
+  /// No description provided for @miuiIslandLabelFontWeightRegular.
+  ///
+  /// In zh, this message translates to:
+  /// **'常规'**
+  String get miuiIslandLabelFontWeightRegular;
+
+  /// No description provided for @miuiIslandLabelRenderQualityHigh.
+  ///
+  /// In zh, this message translates to:
+  /// **'高清'**
+  String get miuiIslandLabelRenderQualityHigh;
+
+  /// No description provided for @miuiIslandLabelRenderQualityStandard.
+  ///
+  /// In zh, this message translates to:
+  /// **'标准'**
+  String get miuiIslandLabelRenderQualityStandard;
+
+  /// No description provided for @miuiIslandLabelRenderQualityUltra.
+  ///
+  /// In zh, this message translates to:
+  /// **'超高清'**
+  String get miuiIslandLabelRenderQualityUltra;
+
+  /// No description provided for @miuiIslandLabelStyleIconAndText.
+  ///
+  /// In zh, this message translates to:
+  /// **'图标+文字'**
+  String get miuiIslandLabelStyleIconAndText;
+
+  /// No description provided for @miuiIslandLabelStyleTextOnly.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅文字'**
+  String get miuiIslandLabelStyleTextOnly;
+
+  /// No description provided for @replaceImageAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'更换图片'**
+  String get replaceImageAction;
+
+  /// No description provided for @selectImageAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择图片'**
+  String get selectImageAction;
 }
 
 class _AppLocalizationsDelegate

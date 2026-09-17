@@ -22,6 +22,14 @@ package vip.qinghan.withu
  * 「通知不具备可提升特征」，看不出真正原因。小米侧因为有 `miui.focus.param`
  * 私有通道兜底，症状被掩盖，问题才一直没暴露。
  *
+ * ⚠️ 自定义布局会被判不合格（2026-09-17 实机实测）：给通知挂
+ * `setCustomContentView` / `setCustomBigContentView` 后，自检页直接报「未满足上岛条件」——
+ * 即 ColorOS 的闸门比上面那段 AOSP 推导更严，**带自定义布局的通知一律不予提升**。
+ *
+ * 因此流体云卡片的版式**无法自绘**：字号、对齐、图标位置、行序都只能由系统模板决定，
+ * 能控的只有往各字段里放什么内容（以及哪个内容进"标题"这个大字槽）。
+ * 想要完整自定义排版只能走 OPPO 官方流体云接入（面向合作应用），或放弃上岛退回普通通知行。
+ *
  * ⚠️ 与官方文档的冲突（2026-09-11 已定论）：官方《Create live update notifications》
  * 的准入清单写的是 “Must NOT `setColorized` to `TRUE`”，与上面这段 AOSP 实现相反。
  * 实机回归证明以官方文档为准——放行 `true` 会让通知彻底失去提升资格，
@@ -39,3 +47,25 @@ package vip.qinghan.withu
 internal fun liveShouldRequestColorizedForPromotion(
     @Suppress("UNUSED_PARAMETER") shouldPromote: Boolean,
 ): Boolean = false
+
+/**
+ * 是否请求把当前阶段提升到实时活动表面（OPPO 流体云 / 小米超级岛 /
+ * 原生 Android 16 实时活动）。
+ *
+ * 产品决定：**只有「上课前」上岛**。课中与临近下课一律不提升，改走普通通知——
+ * 三个平台表面统一按此执行。
+ *
+ * 课中是否仍有普通通知由 `showNotificationDuringClass` 决定
+ * （见 [LiveUpdateService.resolveStage] 与 `canDisplayDuringStage()`）；
+ * 本判据只管「要不要上岛」，不决定阶段本身是否存在。
+ *
+ * 两类入参自然落在 false 一侧，无需特判：
+ * - `duringClassStatusBar` 按定义只占状态栏，历史上就从不提升；
+ * - `null` 是下课到 Service 自停之间最多 30 秒的窗口
+ *   （`LiveUpdateService` ticker 里的 `endAtMillis + 30_000L`），
+ *   旧实现的 `else -> true` 会在该窗口为空阶段请求提升。
+ *
+ * 该判据同时决定小米 `miui.focus.param` 是否拼装（见 `buildNotification`），
+ * 因此对小米同样生效，不只是 ColorOS。
+ */
+internal fun liveShouldPromoteStage(stage: String?): Boolean = stage == "beforeClass"

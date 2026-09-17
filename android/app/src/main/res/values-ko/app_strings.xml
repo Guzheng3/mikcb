@@ -23,19 +23,15 @@
     <string name="action_close">닫기</string>
 
     <string name="prefix_until_class_start">수업 시작까지 </string>
-    <string name="prefix_until_class_end">수업 종료까지 </string>
     <string name="stage_in_class">수업 중</string>
     <string name="stage_before_class">곧 수업 시작</string>
-    <string name="stage_before_end">곧 수업 종료</string>
     <string name="island_class_starting">수업 시작</string>
     <string name="island_about_to_end">곧 종료</string>
     <string name="island_minutes_remaining">%1$d분</string>
 
     <string name="title_before_class">곧 시작: %1$s</string>
-    <string name="title_before_end">곧 종료: %1$s</string>
 
     <string name="label_class_start_time">시작 시간: %1$s</string>
-    <string name="label_class_end_time">종료 시간: %1$s</string>
     <string name="label_location">장소: %1$s</string>
 
     <string name="detail_short_name">약칭: %1$s</string>
@@ -48,7 +44,6 @@
     <string name="detail_note">메모: %1$s</string>
 
     <string name="remaining_until_class_start">수업 시작까지%1$s</string>
-    <string name="remaining_until_class_end">수업 종료까지%1$s</string>
     <string name="final_dismiss_with_time">수업 종료 %1$s</string>
 
     <string name="milestone_recent_end">최근 쉬는 시간</string>

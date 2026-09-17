@@ -6,31 +6,40 @@ import 'package:university_timetable/l10n/app_localizations.dart';
 
 import '../models/timetable_settings.dart';
 import '../services/bundled_assets.dart';
-import '../ui/hyperos/hyperos.dart';
 import '../utils/hex_color.dart';
 
-/// 实时活动摘要态胶囊预览（ColorOS 流体云 / HyperOS 超级岛共用同一形态）。
+/// 实时活动摘要态胶囊预览（ColorOS 流体云）。
+///
+/// 只预览**上课前**这一档：提升通知已限定为仅 `beforeClass` 上岛（见原生
+/// `liveShouldPromoteStage`），课中与下课提醒只剩普通通知，没有胶囊可预览。
 ///
 /// 还原真机摘要态胶囊的单行左右分区：中间是摄像头开孔；左侧是通知 smallIcon
-/// 的图标位（随阶段切换：时钟 / 书 / 对勾）；右侧文本按阶段分发：
+/// 的图标位（上课前为时钟）；右侧是到上课的分钟数（`12分钟`，分钟粒度，
+/// 不逐秒刷新）。
 ///
-/// * 上课前 = 分钟数（`12分钟`，分钟粒度，不逐秒刷新）；
-/// * 上课中 = 「上课中」（刚上课 1 分钟内为「开始上课」）；
-/// * 下课 = 「即将下课」；
-/// * 大课（多节连上）内部课间 = 到下一节上课的分钟数。
+/// 有一档不在这里预览：课前最后 5 秒右侧改成「开始上课」（见原生
+/// `liveShouldShowClassStartingPrompt`）。本预览锚定在开课前约 12 分钟，
+/// 只画常态那一档。
 ///
-/// 这条规则与原生 `LiveUpdateService.buildColorosIslandText()` 一致：左侧图标槽
-/// 实测是约 50px 的圆形位、放不下文字，右侧可用宽度只有 6–7 个字，秒级倒计时
-/// 还会让胶囊随数字位数不断变宽变窄（用户可见的「长度一直在跳」），所以摘要态
-/// 一律给分钟粒度或固定短文案，课名/地点/秒级倒计时交给展开卡片和普通通知。
+/// 这条规则对应原生 `LiveUpdateService.buildColorosIslandText()`，**只对 ColorOS
+/// 生效**：左侧图标槽实测是约 50px 的圆形位、放不下文字，右侧可用宽度只有
+/// 6–7 个字，秒级倒计时还会让胶囊随数字位数不断变宽变窄（用户可见的「长度一直
+/// 在跳」），所以 ColorOS 的胶囊一律给分钟粒度或固定短文案，课名/地点/秒级倒计时
+/// 全部交给下拉通知。
 ///
-/// 「大课下课后下一次上课的倒计时」由下一节课自身的课前提醒（beforeClass）
-/// 接管：只有它进入课前窗口时才显示，间隔过大（11:40 下课、14:00 再上课）
-/// 自然不显示，因此预览不做单独模拟。
+/// ColorOS 上胶囊与下拉是两个互不干扰的面：胶囊只读 `buildColorosIslandText`
+/// 这一行，下拉读完整字段。因此「显示内容」那组开关（课程名 / 简称 / 地点 /
+/// 倒计时样式 / 阶段文字 / 前缀）在 ColorOS 上不影响胶囊，只作用于展开卡片与
+/// 普通通知。
 ///
-/// 「显示内容」那组开关（课程名 / 简称 / 地点 / 倒计时样式 / 阶段文字 / 前缀）
-/// 因此不再影响摘要态胶囊，只作用于展开卡片与普通通知；本预览中开启实验性的
-/// 「小米岛左侧文字图标」时，左侧图标位改按标签配置绘制，便于先调样式。
+/// 注意：小米 / 原生 Android 16 的胶囊**不适用**这条短文案规则，仍按原生
+/// `islandCriticalText` 的其它分支拼装（会带上课名与地点，受上面那组开关影响），
+/// 故本预览只对应 ColorOS 的观感。
+///
+/// 「小米岛左侧文字图标」只在小米系生效（原生 `resolveIslandLabelBitmap()` 对非
+/// 小米系直接返回 null，本机画的是 `ic_upcoming`），所以本预览也只在
+/// [isXiaomiFamilyDevice] 为真时才按该开关绘制左图——否则 ColorOS / 原生
+/// Android 16 上会展示一个真机不存在的样式。
 ///
 /// 注意：原生参数里的 progressInfo（环形进度）/ progressTextInfo 服务于点开
 /// 后的展开态卡片（由系统渲染），摘要态胶囊没有它；本预览只模拟摘要态，
@@ -39,29 +48,18 @@ class LiveIslandPreviewCard extends StatefulWidget {
   const LiveIslandPreviewCard({
     super.key,
     required this.display,
-    required this.forDuringEnd,
-    this.followBeforeClass = false,
-    this.endSecondsCountdownThresholdSeconds = 60,
+    this.isXiaomiFamilyDevice = false,
   });
 
   final LiveDisplaySettings display;
 
-  /// 课中/下课提醒页传 true：该页同时预览「上课中」与「下课提醒」两个岛；
-  /// 课前提醒页传 false：只预览「即将上课」岛。
-  final bool forDuringEnd;
-
-  /// True on the during/end page while it follows the before-class config;
-  /// renders an explanatory badge instead of silently previewing.
-  final bool followBeforeClass;
-
-  /// 保留以兼容既有调用点；摘要态胶囊已不含秒级倒计时，不再使用该阈值。
-  final int endSecondsCountdownThresholdSeconds;
+  /// 本机是否小米系设备。由调用方注入，让本组件保持无 I/O 的纯展示，
+  /// 也便于测试覆盖两种品牌下的渲染差异。
+  final bool isXiaomiFamilyDevice;
 
   @override
   State<LiveIslandPreviewCard> createState() => _LiveIslandPreviewCardState();
 }
-
-enum _PreviewStage { beforeClass, duringClass, beforeEnd }
 
 class _LiveIslandPreviewCardState extends State<LiveIslandPreviewCard> {
   static const _pillColor = Color(0xFF060608);
@@ -97,71 +95,32 @@ class _LiveIslandPreviewCardState extends State<LiveIslandPreviewCard> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final d = widget.display;
-    final stages = widget.forDuringEnd
-        ? const [_PreviewStage.duringClass, _PreviewStage.beforeEnd]
-        : const [_PreviewStage.beforeClass];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (widget.followBeforeClass)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  size: 14,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    l10n.liveIslandPreviewFollowBadge,
-                    style: HyperosTypography.listDetail(context),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        for (var index = 0; index < stages.length; index++) ...[
-          if (stages.length > 1)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Text(
-                _stageWord(l10n, stages[index]),
-                style: HyperosTypography.listDetail(context),
-              ),
-            ),
-          _IslandCapsule(
-            iconSlot: _buildSmallIcon(l10n, d, stages[index]),
-            criticalText: _criticalText(l10n, stages[index]),
-          ),
-          if (index != stages.length - 1) const SizedBox(height: 12),
-        ],
+        _IslandCapsule(
+          iconSlot: _buildSmallIcon(l10n, d),
+          criticalText: _criticalText(),
+        ),
       ],
     );
   }
 
   // --- Left icon slot (notification small-icon position) ------------------
 
-  Widget _buildSmallIcon(
-    AppLocalizations l10n,
-    LiveDisplaySettings d,
-    _PreviewStage stage,
-  ) {
-    // 实验性左图（小米岛左侧文字图标）优先：开关打开就按配置预览左图；
-    // 真机上原生 resolveIslandLabelBitmap() 只对小米系下发，预览里仍按开关
-    // 展示，方便先调样式。
-    if (d.enableMiuiIslandLabelImage) {
+  Widget _buildSmallIcon(AppLocalizations l10n, LiveDisplaySettings d) {
+    // 左图（小米岛左侧文字图标）只在小米系生效：原生 resolveIslandLabelBitmap()
+    // 对非小米系直接返回 null，本机画的是 ic_upcoming。预览必须用同一判据，
+    // 否则 ColorOS / 原生 Android 16 上会展示一个真机上不存在的样式。
+    if (d.enableMiuiIslandLabelImage && widget.isXiaomiFamilyDevice) {
       return _buildIslandLabel(l10n, d);
     }
-    // 原生 setSmallIcon：beforeClass=ic_upcoming（时钟）、
-    // duringClass=ic_course（书）、beforeEnd=ic_countdown（对勾圆环），
-    // 都是白色模板图标；流体云与超级岛都会把它画在摄像头左侧。
-    return SizedBox.square(
+    // 原生 setSmallIcon：beforeClass=ic_upcoming（时钟），白色模板图标；
+    // 流体云与超级岛都会把它画在摄像头左侧。
+    return const SizedBox.square(
       dimension: 28,
-      child: Icon(_stageSmallIconData(stage), size: 24, color: Colors.white),
+      child: Icon(Icons.access_time, size: 24, color: Colors.white),
     );
   }
 
@@ -229,14 +188,6 @@ class _LiveIslandPreviewCardState extends State<LiveIslandPreviewCard> {
     );
   }
 
-  /// 对应原生 ic_upcoming / ic_course / ic_countdown 三枚白色矢量图标的
-  /// 最接近的 Material 字形。
-  IconData _stageSmallIconData(_PreviewStage stage) => switch (stage) {
-        _PreviewStage.beforeClass => Icons.access_time,
-        _PreviewStage.duringClass => Icons.import_contacts,
-        _PreviewStage.beforeEnd => Icons.check_circle_outline,
-      };
-
   Widget _appIconImage(double size) => ClipRRect(
         borderRadius: BorderRadius.circular(size * 0.24),
         child: Image.asset(
@@ -249,34 +200,14 @@ class _LiveIslandPreviewCardState extends State<LiveIslandPreviewCard> {
 
   // --- Right text (islandCriticalText) ------------------------------------
 
-  /// 与原生 `buildColorosIslandText` 同一规则：
-  /// 上课前 = 到上课的分钟数（分钟粒度，避免逐秒刷新导致胶囊宽度抖动）；
-  /// 上课中 = 「上课中」；下课 = 「即将下课」。大课内部课间与「下一节倒计时」
-  /// 依赖真机的课间里程碑与下一节课选择，预览不做模拟。
-  String _criticalText(AppLocalizations l10n, _PreviewStage stage) {
-    switch (stage) {
-      case _PreviewStage.beforeClass:
-        return _formatDuration(
-          _beforeWindow.start.difference(DateTime.now()),
-          LiveCountdownTextStyle.minuteOnlyCn,
-          60,
-        );
-      case _PreviewStage.duringClass:
-        return l10n.liveIslandPreviewStageInClass;
-      case _PreviewStage.beforeEnd:
-        return l10n.liveIslandPreviewAboutToEnd;
-    }
-  }
-
-  String _stageWord(AppLocalizations l10n, _PreviewStage stage) {
-    switch (stage) {
-      case _PreviewStage.beforeClass:
-        return l10n.liveIslandPreviewStageBeforeClass;
-      case _PreviewStage.duringClass:
-        return l10n.liveIslandPreviewStageInClass;
-      case _PreviewStage.beforeEnd:
-        return l10n.liveIslandPreviewStageBeforeEnd;
-    }
+  /// 与原生 `buildColorosIslandText` 同一规则：上课前 = 到上课的分钟数
+  /// （分钟粒度，避免逐秒刷新导致胶囊宽度抖动）。最后 5 秒的那一档见类注释。
+  String _criticalText() {
+    return _formatDuration(
+      _beforeWindow.start.difference(DateTime.now()),
+      LiveCountdownTextStyle.minuteOnlyCn,
+      60,
+    );
   }
 
   // --- Countdown formatter (port of CountdownFormat.kt) -------------------
@@ -358,8 +289,7 @@ class _LiveIslandPreviewCardState extends State<LiveIslandPreviewCard> {
 
 // --- Mock widgets（HyperOS 超级岛观感，深色、与主题无关） --------------------
 
-/// 摘要态胶囊（单行）：中间摄像头，左侧阶段图标位，右侧文本
-/// （上课前＝分钟数，上课中 / 下课为空）。
+/// 摘要态胶囊（单行）：中间摄像头，左侧阶段图标位，右侧到上课的分钟数。
 class _IslandCapsule extends StatelessWidget {
   const _IslandCapsule({required this.iconSlot, required this.criticalText});
 

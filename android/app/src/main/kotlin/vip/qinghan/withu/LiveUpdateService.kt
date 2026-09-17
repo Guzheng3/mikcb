@@ -44,13 +44,38 @@ class LiveUpdateService : Service() {
         private const val NOTIFICATION_ID = 2001
         private const val EXTRA_REQUEST_PROMOTED_ONGOING = "android.requestPromotedOngoing"
 
+        /** Flutter 下发的常驻开关 extra（设置 → 实时活动 → 常驻通知）。 */
+        private const val EXTRA_PERMANENT_NOTIFICATION = "permanentNotification"
+
         /** 流体云文案：临近下课窗口（大课最后 5 分钟显示「即将下课」）。 */
         private const val ABOUT_TO_END_WINDOW_MILLIS = 5 * 60_000L
 
-        /** 流体云文案：刚上课后显示「开始上课」的时长。 */
-        private const val CLASS_STARTING_WINDOW_MILLIS = 60_000L
+        /** ticker 在 reschedule 出口处续排的重试间隔；见 scheduleTickerRetry。 */
+        private const val TICKER_RETRY_DELAY_MILLIS = 5_000L
+
         private const val PREFS_NAME = "native_runtime_prefs"
         private const val KEY_HIDE_FROM_RECENTS = "hide_from_recents"
+
+        /**
+         * 常驻开关落盘键。
+         *
+         * 开关本身由 Flutter 通过 intent extra 下发，但服务被 START_STICKY 用 null
+         * intent 拉起时读不到 extra，那时必须能拿回用户的设置，否则关掉开关的用户
+         * 会在进程被杀后又看到一条常驻通知。
+         */
+        private const val KEY_PERMANENT_NOTIFICATION = "live_permanent_notification"
+
+        /**
+         * 常驻空闲形态单次最长睡眠。
+         *
+         * 空闲时只在「下一次边界」醒来（见 computeIdleTickDelayMillis），跨天前可能
+         * 十几小时没有边界。闹钟与 WorkManager 才是主要唤醒源，这个上限纯属兜底：
+         * 手动改时钟、换时区、或闹钟被 ROM 吞掉时，最长 6 小时也会自纠一次。
+         */
+        private const val MAX_IDLE_TICK_DELAY_MILLIS = 6 * 60 * 60_000L
+
+        /** 一天秒数：空闲档位算不到边界时，直接睡到跨天。 */
+        private const val SECONDS_PER_DAY = 24 * 3600
         private const val ACTION_ENABLE_SILENT_MODE =
             "vip.qinghan.withu.action.ENABLE_SILENT_MODE"
         private const val ACTION_ENABLE_DO_NOT_DISTURB =
@@ -167,6 +192,32 @@ class LiveUpdateService : Service() {
             lastDebugUpdatedAtMillis = System.currentTimeMillis()
         }
 
+        /**
+         * 常驻开关是否打开。
+         *
+         * 开关由 Flutter 通过 intent extra 下发并落盘（见 onStartCommand），但调度器、
+         * 开机接收器与 15 分钟兜底 Worker 也要据此决定「能不能收掉通知」——否则那些
+         * 路径会在无课时把常驻通知摘掉。所以统一从这里读，prefs 细节不外泄。
+         */
+        fun isPermanentNotificationEnabled(context: Context): Boolean =
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .getBoolean(KEY_PERMANENT_NOTIFICATION, true)
+
+        fun setPermanentNotificationEnabled(context: Context, enabled: Boolean) {
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(KEY_PERMANENT_NOTIFICATION, enabled)
+                .apply()
+        }
+
+        /**
+         * 本进程内服务是否在运行。
+         *
+         * 开机/启动路径用它避免用「无课程负载」的 intent 打断一个正跑着的课程会话：
+         * onStartCommand 收到空负载会切到常驻空闲形态。
+         */
+        fun isRunning(): Boolean = isServiceRunning
+
         private fun hasNotificationPermissionCompat(context: Context): Boolean {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 ContextCompat.checkSelfPermission(
@@ -245,7 +296,6 @@ class LiveUpdateService : Service() {
     private var nextName = ""
     private var autoDismissAfterStartMinutes = 0
     private var activityStage = ""
-    private var endSecondsCountdownThreshold = 60
     private var showCountdown = true
     private var countdownTextStyle = "smart"
     private var showStageText = true
@@ -270,11 +320,9 @@ class LiveUpdateService : Service() {
     private var startAtMillis = 0L
     private var endAtMillis = 0L
     private var beforeClassLeadMillis = 0L
-    private var endReminderLeadMillis = 600_000L
     private var liveClassReminderStartMinutes = 0
     private var enableBeforeClass = true
     private var enableDuringClass = true
-    private var enableBeforeEnd = true
     private var promoteDuringClass = true
     private var showNotificationDuringClass = true
     private var beforeClassQuickAction = "none"
@@ -291,6 +339,17 @@ class LiveUpdateService : Service() {
     private var hasStartedForeground = false
     private var lastTickerStage: String? = null
     private var validateAgainstSchedule = true
+    /**
+     * 常驻开关（设置 → 实时活动 → 常驻通知）。
+     *
+     * 打开时服务在「没有课程会话」时不摘通知、也不退出，改为展示情侣卡片形态；
+     * 关闭时完全保持原有的「随课程起停」行为。
+     */
+    private var permanentNotification = true
+    /** 当前是否处于常驻空闲形态（用于让第一帧必定重绘、并让自检页能区分档位）。 */
+    private var idleMode = false
+    /** 常驻空闲形态的上一帧签名，避免无变化时重复 notify。 */
+    private var lastIdleSignature = ""
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -329,13 +388,31 @@ class LiveUpdateService : Service() {
 
             startForegroundSafely(intent)
 
+            // 常驻开关必须**先于负载校验**读取：开机/常驻拉起时 intent 里没有课程
+            // 负载，但仍要据此决定是留在前台还是把通知摘掉。读到 extra 就落盘，
+            // 这样 START_STICKY 用 null intent 重启时也能拿回用户的真实设置。
+            if (intent != null && intent.hasExtra(EXTRA_PERMANENT_NOTIFICATION)) {
+                permanentNotification = intent.getBooleanExtra(EXTRA_PERMANENT_NOTIFICATION, true)
+                setPermanentNotificationEnabled(applicationContext, permanentNotification)
+            } else {
+                permanentNotification = isPermanentNotificationEnabled(applicationContext)
+            }
+
             if (!hasCompleteLivePayload(intent)) {
+                // 已经在跑一个课程会话时，空负载的 intent（开机 / App 启动拉起常驻
+                // 通知）不能把会话打断：此刻阶段仍有效就原样保留，什么都不做。
+                // startForegroundSafely 在已前台时直接返回，不会覆盖现有通知。
+                val now = System.currentTimeMillis()
+                if (hasStartedForeground && resolveStage(now) != null) {
+                    return START_STICKY
+                }
                 UmengDiagnosticReporter.record(
                     context = applicationContext,
                     category = "live_update_service_missing_payload",
                     message = DiagnosticLogMessages.LIVE_UPDATE_SERVICE_MISSING_PAYLOAD,
                     extras = mapOf(
                         "intentIsNull" to (intent == null),
+                        "permanentNotification" to permanentNotification,
                         "hasCourseName" to (!intent?.getStringExtra("courseName").isNullOrBlank()),
                         "hasStage" to (!intent?.getStringExtra("stage").isNullOrBlank()),
                         "hasStartAtMillis" to ((intent?.getLongExtra("startAtMillis", 0L) ?: 0L) > 0L),
@@ -345,8 +422,18 @@ class LiveUpdateService : Service() {
                 val resumed = LiveUpdateScheduler.reschedule(
                     applicationContext,
                     allowImmediateStart = true,
-                    stopStaleSessions = true,
+                    // 常驻模式不能让这次重排把刚起来的前台服务收掉。
+                    stopStaleSessions = !permanentNotification,
                 )
+                if (!resumed && permanentNotification) {
+                    // 常驻：此刻没有课程会话也要把通知留在状态栏，切到情侣卡片形态。
+                    enterIdleMode()
+                    updateForegroundNotification(
+                        buildIdleNotification(liveIdleContent(System.currentTimeMillis()))
+                    )
+                    startTicker()
+                    return START_STICKY
+                }
                 if (!resumed) {
                     stopAndRemoveNotification()
                     return START_NOT_STICKY
@@ -364,8 +451,6 @@ class LiveUpdateService : Service() {
             nextName = sanitizeTextExtra(intent?.getStringExtra("nextName"))
             autoDismissAfterStartMinutes = intent?.getIntExtra("autoDismissAfterStartMinutes", 0) ?: 0
             activityStage = intent?.getStringExtra("stage").orEmpty()
-            endSecondsCountdownThreshold =
-                intent?.getIntExtra("endSecondsCountdownThreshold", 60) ?: 60
             showCountdown = intent?.getBooleanExtra("showCountdown", true) ?: true
             countdownTextStyle = intent?.getStringExtra("countdownTextStyle") ?: "smart"
             showStageText = intent?.getBooleanExtra("showStageText", true) ?: true
@@ -404,15 +489,10 @@ class LiveUpdateService : Service() {
                 intent?.getLongExtra("beforeClassLeadMillis", 0L)
                     ?.coerceAtLeast(0L)
                     ?: 0L
-            endReminderLeadMillis =
-                intent?.getLongExtra("endReminderLeadMillis", 600_000L)
-                    ?.coerceAtLeast(0L)
-                    ?: 600_000L
             liveClassReminderStartMinutes =
                 intent?.getIntExtra("liveClassReminderStartMinutes", 0)?.coerceAtLeast(0) ?: 0
             enableBeforeClass = intent?.getBooleanExtra("enableBeforeClass", true) ?: true
             enableDuringClass = intent?.getBooleanExtra("enableDuringClass", true) ?: true
-            enableBeforeEnd = intent?.getBooleanExtra("enableBeforeEnd", true) ?: true
             promoteDuringClass = intent?.getBooleanExtra("promoteDuringClass", true) ?: true
             showNotificationDuringClass =
                 intent?.getBooleanExtra("showNotificationDuringClass", true) ?: true
@@ -453,7 +533,6 @@ class LiveUpdateService : Service() {
                     "endAtMillis" to endAtMillis,
                     "enableBeforeClass" to enableBeforeClass,
                     "enableDuringClass" to enableDuringClass,
-                    "enableBeforeEnd" to enableBeforeEnd,
                     "promoteDuringClass" to promoteDuringClass,
                     "showNotificationDuringClass" to showNotificationDuringClass,
                     "showCourseNameInIsland" to showCourseNameInIsland,
@@ -540,11 +619,10 @@ class LiveUpdateService : Service() {
         val resumed = LiveUpdateScheduler.reschedule(
             applicationContext,
             allowImmediateStart = true,
-            stopStaleSessions = validateAgainstSchedule,
+            stopStaleSessions = false,
         )
-        if (!resumed) {
-            stopAndRemoveNotification()
-        } else {
+        if (resumed) {
+            // 有活跃课程会话被重新拉起来了：保留当前那一帧，什么也不切换。
             UmengDiagnosticReporter.record(
                 context = applicationContext,
                 category = "live_update_task_removed_resumed",
@@ -555,6 +633,13 @@ class LiveUpdateService : Service() {
                     "keepAliveExperimentEnabled" to keepAliveExperimentEnabled,
                 )
             )
+        } else if (permanentNotification) {
+            // 常驻：用户清后台时哪怕没有课程会话也不能摘通知，切到情侣卡片形态继续
+            // 留在状态栏。服务本身跑不住时由闹钟与 15 分钟兜底 Worker 拉回来。
+            enterIdleMode()
+            refreshIdleNotification(System.currentTimeMillis())
+        } else {
+            stopAndRemoveNotification()
         }
         super.onTaskRemoved(rootIntent)
     }
@@ -631,6 +716,234 @@ class LiveUpdateService : Service() {
         getSystemService(NotificationManager::class.java)
             ?.notify(NOTIFICATION_ID, notification)
             ?: startForeground(NOTIFICATION_ID, notification)
+    }
+
+    // --- 常驻形态（无课程会话时的情侣卡片档） --------------------------------
+    //
+    // 常驻开关打开时，服务在「没有课程会话」的时间段里不摘通知也不退出，改为展示
+    // 情侣卡片那套文案（只取我这一列）。四档形态与胶囊的分工：
+    //
+    // * 空闲（本段）—— 情侣卡片：课名/时间/地点，或 🍵 今天没有课程 / 🌙 今日课程已结束
+    //   / 明日共 N 节 / 未开情侣模式；不上胶囊，也不请求提升。
+    // * 课前窗口     —— 课名 + 地点 + 倒计时；ColorOS 上带胶囊（只显示倒计时）。
+    // * 课中         —— 课名 + 分段进度条；不上胶囊。
+    // * 非常驻模式的旧行为完全保留（会话结束就摘通知并自停）。
+
+    /**
+     * 切进常驻空闲形态。只在**从课程会话过来**的那一次重置签名，让第一帧必定重绘，
+     * 覆盖掉上一帧残留的课程内容；重复进入不动签名，避免无意义的重复 notify。
+     */
+    private fun enterIdleMode() {
+        if (idleMode) {
+            return
+        }
+        idleMode = true
+        lastIdleSignature = ""
+    }
+
+    /**
+     * 重绘常驻空闲通知，返回本帧签名。
+     *
+     * 内容无变化时跳过 notify —— 空闲档位的唤醒点可能只差一次时间格式化（例如同一
+     * 分钟内连醒两次），没必要让系统重画。
+     */
+    private fun refreshIdleNotification(now: Long): String {
+        val content = liveIdleContent(now)
+        val signature = content.signature()
+        if (signature == lastIdleSignature) {
+            return signature
+        }
+        lastIdleSignature = signature
+        updateForegroundNotification(buildIdleNotification(content))
+        updateIdleDebugSnapshot(content)
+        return signature
+    }
+
+    /**
+     * 常驻空闲形态的内容：情侣卡片「我这一列」的实际渲染结果。
+     *
+     * 卡片不可用（从没同步过 / 未登录 / 未开情侣模式）时照搬卡片的不可用文案，不做
+     * 降级 —— 通知说的就是卡片上那句话。
+     */
+    private fun liveIdleContent(now: Long): LiveIdleContent {
+        val snapshot = CoupleTimetableStore.readSnapshot(applicationContext)
+            ?: return LiveIdleContent(title = getString(R.string.widget_couple_mode_off))
+        val display = CoupleTimetableDisplayBuilder.build(
+            context = applicationContext,
+            courses = snapshot.mine,
+            nowMillis = now,
+            status = snapshot.status,
+        )
+        return buildLiveIdleContent(display)
+    }
+
+    /** 常驻空闲形态的通知本体。 */
+    private fun buildIdleNotification(content: LiveIdleContent): Notification {
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(this, CHANNEL_ID)
+        } else {
+            Notification.Builder(this)
+        }
+        val expandedText = buildString {
+            append(content.title)
+            content.bodyLines.forEach { append("\n").append(it) }
+            if (content.footer.isNotBlank()) {
+                append("\n").append(content.footer)
+            }
+        }
+
+        builder.apply {
+            setContentTitle(content.title)
+            setContentText(content.bodyLines.firstOrNull() ?: content.footer)
+            setSmallIcon(R.drawable.ic_course)
+            applyExpandedLargeIcon(this)
+            setContentIntent(buildAppLaunchPendingIntent())
+            setOngoing(true)
+            setAutoCancel(false)
+            setOnlyAlertOnce(true)
+            setCategory(Notification.CATEGORY_STATUS)
+            // 空闲形态不是实时活动，必须让出提升资格：置 true 会让 ColorOS 把这张
+            // 卡片也提升成流体云，和「胶囊只显示上课前」的约定冲突。
+            setColorized(false)
+            setShowWhen(false)
+            setWhen(System.currentTimeMillis())
+            setUsesChronometer(false)
+            setProgress(0, 0, false)
+            if (Build.VERSION.SDK_INT >= 36) {
+                // 清掉上一次会话可能留下的胶囊文案；提升请求也一并撤掉。
+                setShortCriticalText("")
+                setExtras(Bundle().apply { putOplusIslandIcon(this@LiveUpdateService, R.drawable.ic_course) })
+            }
+        }
+        builder.setStyle(
+            Notification.BigTextStyle()
+                .setBigContentTitle(content.title)
+                .bigText(expandedText)
+                .setSummaryText(content.footer)
+        )
+        return builder.build()
+    }
+
+    /**
+     * 常驻空闲形态的唤醒点：只在下一次边界醒来，不再每 60 秒空转。
+     *
+     * 边界取自 [liveNextBoundaryMinutes]（进入候课窗口、上课、下课），今天再无边界
+     * 就睡到跨天。上限 [MAX_IDLE_TICK_DELAY_MILLIS] 兜底，防止改时钟/换时区后
+     * 一直不刷新。
+     */
+    private fun scheduleIdleTick(now: Long) {
+        val runnable = ticker ?: return
+        handler.postDelayed(runnable, computeIdleTickDelayMillis(now))
+    }
+
+    private fun computeIdleTickDelayMillis(now: Long): Long {
+        val calendar = Calendar.getInstance().apply { timeInMillis = now }
+        val secondsIntoDay = calendar.get(Calendar.HOUR_OF_DAY) * 3600 +
+            calendar.get(Calendar.MINUTE) * 60 +
+            calendar.get(Calendar.SECOND)
+        val nowMinutes = secondsIntoDay / 60
+        val boundaryMinutes = liveNextBoundaryMinutes(
+            nowMinutes = nowMinutes,
+            coursesToday = myTodayCourses(),
+            leadMinutes = (beforeClassLeadMillis / 60_000L).toInt(),
+        )
+        val targetSeconds = boundaryMinutes?.times(60) ?: SECONDS_PER_DAY
+        val delaySeconds = (targetSeconds - secondsIntoDay).coerceAtLeast(1)
+        return (delaySeconds * 1000L).coerceIn(1_000L, MAX_IDLE_TICK_DELAY_MILLIS)
+    }
+
+    /** 情侣快照里我这一侧今天的课（常驻空闲档位判边界用）。 */
+    private fun myTodayCourses(): List<CoupleWidgetCourse> {
+        return CoupleTimetableStore.readSnapshot(applicationContext)?.mine?.today.orEmpty()
+    }
+
+    /**
+     * 空闲档位的自检快照。
+     *
+     * 自检页读的是 buildNotification 里写的 lastDebugSnapshot，而空闲档位根本不走
+     * 那条路径；不补这一份，自检页会一直显示上一节课的残留数据。
+     */
+    private fun updateIdleDebugSnapshot(content: LiveIdleContent) {
+        updateDebugSnapshot(
+            linkedMapOf(
+                "summary" to linkedMapOf(
+                    "serviceRunning" to true,
+                    "currentStage" to "idle",
+                    "resolvedStage" to "idle",
+                    "isExpectedToShowIsland" to false,
+                    "isActuallyPromotable" to false,
+                    "statusText" to getString(R.string.debug_status_running),
+                    "notIslandReason" to getString(R.string.debug_promote_not_requested),
+                ),
+                "service" to linkedMapOf(
+                    "serviceRunning" to true,
+                    "hasStartedForeground" to hasStartedForeground,
+                    "activityStage" to "idle",
+                    "resolvedStage" to "idle",
+                    "lastRemainingText" to "",
+                    "lastProgressUnits" to -1,
+                    "lastCriticalTimeText" to "",
+                ),
+                "switches" to linkedMapOf(
+                    "permanentNotification" to permanentNotification,
+                ),
+                "notification" to linkedMapOf(
+                    "permanent" to true,
+                    "shouldPromote" to false,
+                    "showStandardNotification" to true,
+                    "notificationTitle" to content.title,
+                    "notificationContentText" to (content.bodyLines.firstOrNull() ?: content.footer),
+                    "notificationExpandedText" to content.bodyLines.joinToString("\n"),
+                ),
+            )
+        )
+    }
+
+    /**
+     * ticker 的统一出口：课程会话结束（或本来就没有会话）时该做什么。
+     *
+     * 常驻模式下**不摘通知** —— 切到情侣卡片形态，睡到下一个边界继续常驻。这里刻意
+     * 用 `stopStaleSessions = false`：调度器不该因为「此刻没有活跃课程」收掉我们，
+     * 进程真被系统杀掉后，闹钟是带着新课表负载把服务重新拉起来的唯一通路。
+     *
+     * 非常驻模式保持原有行为：重排调度，重排不起来就摘通知并自停。
+     */
+    private fun endSessionOrGoIdle(now: Long) {
+        // 已经在空闲档位时不再请求立即启动，否则「调度器认为有课、但按本机设置这节课
+        // 不该显示」的组合（例如课前提醒被关掉）会让服务被反复重启、每次又立刻回到
+        // 空闲。那种组合交给闹钟在下一个触发点处理即可。
+        val resumed = LiveUpdateScheduler.reschedule(
+            applicationContext,
+            allowImmediateStart = !idleMode,
+            stopStaleSessions = false,
+        )
+        if (resumed) {
+            // 调度器已带着新的课表负载把服务重新拉起来了，交给新的 onStartCommand；
+            // 这里补一次重试 tick，兜住「重启了但没走到 startTicker」的冻结。
+            scheduleTickerRetry()
+            return
+        }
+        if (permanentNotification) {
+            enterIdleMode()
+            refreshIdleNotification(now)
+            scheduleIdleTick(now)
+            return
+        }
+        stopAndRemoveNotification()
+    }
+
+    private fun buildAppLaunchPendingIntent(): PendingIntent {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            action = Intent.ACTION_MAIN
+            addCategory(Intent.CATEGORY_LAUNCHER)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        return PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
     }
 
     private fun buildBeforeClassQuickActions(): List<Notification.Action> {
@@ -923,68 +1236,36 @@ class LiveUpdateService : Service() {
                 if (validateAgainstSchedule &&
                     !LiveUpdateScheduler.hasActiveLiveSelection(applicationContext, now)
                 ) {
-                    if (!LiveUpdateScheduler.reschedule(
-                            applicationContext,
-                            allowImmediateStart = true,
-                            stopStaleSessions = true,
-                        )
-                    ) {
-                        stopAndRemoveNotification()
-                    }
+                    endSessionOrGoIdle(now)
                     return
                 }
                 val stage = resolveStage(now)
                 if (autoDismissAfterStartMinutes > 0 &&
                     now >= startAtMillis + autoDismissAfterStartMinutes * 60_000L
                 ) {
-                    if (!LiveUpdateScheduler.reschedule(
-                            applicationContext,
-                            allowImmediateStart = true,
-                            stopStaleSessions = validateAgainstSchedule,
-                        )
-                    ) {
-                        stopAndRemoveNotification()
-                    }
+                    endSessionOrGoIdle(now)
                     return
                 }
 
                 if (stage == null) {
-                    if (!LiveUpdateScheduler.reschedule(
-                            applicationContext,
-                            allowImmediateStart = true,
-                            stopStaleSessions = validateAgainstSchedule,
-                        )
-                    ) {
-                        stopAndRemoveNotification()
-                    }
+                    endSessionOrGoIdle(now)
                     return
                 }
+                // 走到这里说明这一轮确实是课程会话（课前或课中）：作废空闲形态的签名，
+                // 会话结束后重新进空闲时会重绘第一帧。
+                idleMode = false
 
                 // When stage transitions, reschedule so onStartCommand re-reads
                 // the correct displaySettings for the new stage.
                 if (lastTickerStage != null && stage != lastTickerStage) {
                     lastTickerStage = stage
-                    if (!LiveUpdateScheduler.reschedule(
-                            applicationContext,
-                            allowImmediateStart = true,
-                            stopStaleSessions = validateAgainstSchedule,
-                        )
-                    ) {
-                        stopAndRemoveNotification()
-                    }
+                    endSessionOrGoIdle(now)
                     return
                 }
                 lastTickerStage = stage
 
                 if (now >= endAtMillis + 30_000L) { // Auto-remove 30s after class end, especially for tests.
-                    if (!LiveUpdateScheduler.reschedule(
-                            applicationContext,
-                            allowImmediateStart = true,
-                            stopStaleSessions = validateAgainstSchedule,
-                        )
-                    ) {
-                        stopAndRemoveNotification()
-                    }
+                    endSessionOrGoIdle(now)
                     return
                 }
 
@@ -1030,29 +1311,45 @@ class LiveUpdateService : Service() {
         ticker = null
     }
 
+    /**
+     * 续排一次重试 tick（ticker 已停则什么都不做）。
+     *
+     * ticker 里那几处 `LiveUpdateScheduler.reschedule(...)` 出口都是「调用完就 return，
+     * 指望 reschedule 把服务重新拉起来接着跑」。但 reschedule 返回 true 只代表
+     * `startForegroundService` 调用成功，**并不保证 onStartCommand 一定会走到
+     * startTicker()**：后台 FGS 启动可能被拦、测试会话可能挂起调度、或该次启动因
+     * payload 不完整走早退分支。一旦没走到，ticker 就永久停摆，通知冻结在最后一帧
+     * —— 实机（OPPO PLA110 / ColorOS 16）出现过「创建后 4 秒再没更新、连
+     * endAtMillis+30s 的自动移除都没发生」的冻结。
+     *
+     * 补这一次重试就能兜住：服务真被重启时 onStartCommand → startTicker() 会先
+     * removeCallbacks 清掉它（单线程主 looper，不存在两个 ticker 并存）；只有没重启时
+     * 它才生效，下一拍重新走一遍判定。通知已被移除时 ticker 为 null，自然不再续排。
+     */
+    private fun scheduleTickerRetry() {
+        val runnable = ticker ?: return
+        handler.postDelayed(runnable, TICKER_RETRY_DELAY_MILLIS)
+    }
+
     private fun computeRemainingText(now: Long): String {
         val stage = resolveStage(now)
-        val timeUntilEnd = endAtMillis - now
-
         val prefixTextStart = if (hidePrefixText) "" else getString(R.string.prefix_until_class_start)
-        val prefixTextEnd = if (hidePrefixText) "" else getString(R.string.prefix_until_class_end)
 
         return if (!showCountdown) {
             ""
         } else {
             when (stage) {
                 "beforeClass" -> {
-                    val timeUntilStart = (startAtMillis - now).coerceAtLeast(0L)
-                    "${prefixTextStart}${formatCountdownDuration(
-                        durationMillis = timeUntilStart,
-                        secondsThresholdMillis = 60_000L,
-                    )}"
-                }
-                "beforeEnd" -> {
-                    "${prefixTextEnd}${formatCountdownDuration(
-                        durationMillis = timeUntilEnd,
-                        secondsThresholdMillis = endSecondsCountdownThreshold * 1000L,
-                    )}"
+                    if (liveShouldShowClassStartingPrompt(stage, now, startAtMillis)) {
+                        // 上课信号顶掉倒计时，也不要「距上课」前缀。
+                        getString(R.string.island_class_starting)
+                    } else {
+                        val timeUntilStart = (startAtMillis - now).coerceAtLeast(0L)
+                        "${prefixTextStart}${formatCountdownDuration(
+                            durationMillis = timeUntilStart,
+                            secondsThresholdMillis = 60_000L,
+                        )}"
+                    }
                 }
                 "duringClass",
                 "duringClassStatusBar" -> getString(R.string.stage_in_class)
@@ -1077,7 +1374,8 @@ class LiveUpdateService : Service() {
         } else {
             maxOf(startAtMillis, endAtMillis - liveClassReminderStartMinutes * 60_000L)
         }
-        val endReminderStart = maxOf(startAtMillis, endAtMillis - endReminderLeadMillis)
+        // 「下课提醒」（beforeEnd）阶段已移除：过了重点提醒起点后一律课中，
+        // 直到 endAtMillis 结束。
         return when {
             now < startAtMillis -> if (enableBeforeClass) "beforeClass" else null
             liveClassReminderStartMinutes > 0 && now < reminderStart ->
@@ -1087,11 +1385,7 @@ class LiveUpdateService : Service() {
                     null
                 }
             now < reminderStart -> null
-            liveClassReminderStartMinutes > 0 && enableBeforeEnd -> "beforeEnd"
-            liveClassReminderStartMinutes > 0 && canDisplayDuringStage() -> "duringClass"
-            now >= endReminderStart && enableBeforeEnd -> "beforeEnd"
-            now < endReminderStart && canDisplayDuringStage() -> "duringClass"
-            now >= endReminderStart && canDisplayDuringStage() -> "duringClass"
+            canDisplayDuringStage() -> "duringClass"
             else -> null
         }
     }
@@ -1101,26 +1395,30 @@ class LiveUpdateService : Service() {
     }
 
     /**
-     * 流体云摘要胶囊的右侧文案（ColorOS）。
+     * ColorOS 流体云胶囊的右侧文案。**只有 ColorOS 走这条规则**，其它品牌维持
+     * 各自原有行为（见 `buildNotification` 里 `islandCriticalText` 的分支）。
      *
-     * 左侧小图标槽实测放不下文字、右侧只有 6–7 个字，且秒级倒计时会让胶囊随
-     * 数字位数不断变宽变窄，所以按阶段给短文案（分钟粒度）：
+     * 胶囊在这一侧只呈现「上课前」这一件事：到上课的分钟数，最后 5 秒换成
+     * 「开始上课」。课名、地点、教师、时间区间一概不进胶囊，只进下拉通知 ——
+     * 胶囊和下拉是两个互不干扰的面，改下拉的展示不会改变胶囊这一行。
      *
-     * * 上课前 → 到上课的分钟数；
-     * * 上课中 → 「上课中」；刚开始 1 分钟内 → 「开始上课」；
-     * * 大课（多节连上）内部课间 → 到下一节上课的分钟数；
-     * * 临近下课（最后 5 分钟）→ 「即将下课」。
+     * 为什么只给短文案：左侧小图标槽实测是约 50px 的圆形位、放不下文字，右侧
+     * 可用宽度只有 6–7 个字，秒级倒计时还会让胶囊随数字位数不断变宽变窄（用户
+     * 可见的「长度一直在跳」），所以一律分钟粒度。
+     *
+     * 课中那几档目前不可达：提升已限定为仅课前（见 [liveShouldPromoteStage]），
+     * 本函数的输出只在 `setShortCriticalText` 那里随提升一起下发。保留分支是为了
+     * 课中若重新上岛时不必重写文案规则。
      *
      * 「大课下课后下一次上课的倒计时」不在这里处理：下一节课进入自己的课前
      * 提醒窗口时会由 beforeClass 分支自然接管；间隔过大（11:40 下课、14:00 再
      * 上课）时不会进入该窗口，于是自然不显示。
      */
     private fun buildColorosIslandText(stage: String?, now: Long): String = when (stage) {
-        "beforeClass" -> colorosMinutesText(startAtMillis - now)
-        "beforeEnd" -> if (endAtMillis - now <= ABOUT_TO_END_WINDOW_MILLIS) {
-            getString(R.string.island_about_to_end)
+        "beforeClass" -> if (liveShouldShowClassStartingPrompt(stage, now, startAtMillis)) {
+            getString(R.string.island_class_starting)
         } else {
-            getString(R.string.stage_in_class)
+            colorosMinutesText(startAtMillis - now)
         }
         "duringClass", "duringClassStatusBar" -> buildColorosDuringClassText(now)
         else -> ""
@@ -1139,9 +1437,6 @@ class LiveUpdateService : Service() {
             if (nextSectionStart != null && nextSectionStart > elapsed) {
                 return colorosMinutesText(nextSectionStart - elapsed)
             }
-        }
-        if (elapsed <= CLASS_STARTING_WINDOW_MILLIS) {
-            return getString(R.string.island_class_starting)
         }
         return getString(R.string.stage_in_class)
     }
@@ -1499,7 +1794,6 @@ class LiveUpdateService : Service() {
 
         val islandContentText = when (stage) {
             "beforeClass" -> remainingTextForIsland(stage, startAtMillis, endAtMillis)
-            "beforeEnd" -> remainingTextForIsland(stage, startAtMillis, endAtMillis)
             else -> classProgress?.compactDisplayText ?: getString(R.string.stage_in_class)
         }
 
@@ -1589,14 +1883,6 @@ class LiveUpdateService : Service() {
                     getString(R.string.stage_before_class)
                 }
             }
-            "beforeEnd" -> {
-                val remaining = endAtMillis - now
-                if (remaining > 0) {
-                    getString(R.string.remaining_until_class_end, formatCountdownDuration(remaining))
-                } else {
-                    getString(R.string.stage_before_end)
-                }
-            }
             else -> getString(R.string.stage_in_class)
         }
     }
@@ -1653,6 +1939,38 @@ class LiveUpdateService : Service() {
         return decodeSquareBitmap(path, targetSize)
     }
 
+    /**
+     * 【实验】逆向的 OPPO 私有字段试探 —— 让流体云卡片用我们下发的阶段图标，
+     * 而不是被系统换成的应用图标。
+     *
+     * 真机 dump（PLA110 / ColorOS 16）显示：ColorOS 会自己往通知 extras 里塞
+     * `oplus_smallicon_use_app_icon=true`，并把 `oplus_small_icon` 覆盖成
+     * `mipmap/ic_launcher`，于是卡片右上角永远显示应用图标，而不是 `setSmallIcon`
+     * 下发的时钟 / 书图标。
+     *
+     * 这里反向主张一次：显式给出我们想要的图标，并把「用应用图标」关掉。这两个键
+     * 不在任何公开文档里，ColorOS 完全可能忽略 —— 属试探性改动，确认无效即撤。
+     * 注意它只影响图标**内容**，图标**位置**（卡片右上）由系统布局决定，改不了。
+     */
+    private fun Bundle.putOplusIslandIcon(context: Context, iconRes: Int) {
+        putParcelable("oplus_small_icon", Icon.createWithResource(context, iconRes))
+        putBoolean("oplus_smallicon_use_app_icon", false)
+    }
+
+    /**
+     * 流体云展开卡片的**左侧大图位**。
+     *
+     * 实机对照（ColorOS 16 / PLA110，酷狗媒体卡 vs 本应用卡）确认卡片有两个
+     * 互不相干的图标槽：
+     * - **右上角**是「应用身份」位，恒由系统绘制（本应用上系统还会用
+     *   `oplus_small_icon` 把它覆盖成应用图标，我们设的 `setSmallIcon` 不生效）；
+     * - **左侧那张大图来自 `setLargeIcon`** —— 酷狗用专辑封面填它。
+     *
+     * ⚠️ 回归记录：曾按「展开态图标只在小米岛生效」把这里对非小米系提前 return，
+     * 结果 ColorOS 上左侧大图位空掉、卡片只剩右上角的应用图标，看起来就是
+     * 「图标跑到右边了」。该判断是错的：largeIcon 在 ColorOS 上**正是左侧大图位的
+     * 来源**，必须照常下发。
+     */
     private fun applyExpandedLargeIcon(builder: Notification.Builder) {
         when (miuiIslandExpandedIconMode) {
             "hidden" -> return
@@ -1697,15 +2015,22 @@ class LiveUpdateService : Service() {
     private fun buildNotification(remainingText: String): Notification {
         val now = System.currentTimeMillis()
         val stage = resolveStage(now)
+        // 常驻：会话不成立时落到情侣卡片形态。判在这里而不只判在 ticker 里，是因为
+        // onStartCommand 带着负载启动时也直接调本方法，那条路径必须得到同一个结论
+        // —— 例如课前提醒被关掉时，调度器仍可能把一个 beforeClass 负载送进来。
+        if (stage == null && permanentNotification) {
+            enterIdleMode()
+            return buildIdleNotification(liveIdleContent(now))
+        }
+        // 会话形态：清掉空闲标记。这样会话结束后重新进空闲时 enterIdleMode 会重置
+        // 签名，第一帧必定重绘 —— 否则签名与上一帧空闲内容相同就会跳过 notify，
+        // 屏幕上留着的是那个已经过期的课程会话形态。
+        idleMode = false
         val isUpcoming = stage == "beforeClass"
         val isDuringClassStatusBar = stage == "duringClassStatusBar"
-        val isEndingSoon = stage == "beforeEnd"
         val isDuringClass = stage == "duringClass" || isDuringClassStatusBar
-        val shouldPromote = when {
-            isDuringClassStatusBar -> false
-            isDuringClass -> promoteDuringClass
-            else -> true
-        }
+        // 只有上课前上岛；课中与临近下课改走普通通知。见 liveShouldPromoteStage。
+        val shouldPromote = liveShouldPromoteStage(stage)
         val showStandardNotification = when {
             isDuringClassStatusBar -> true
             isDuringClass -> showNotificationDuringClass
@@ -1716,11 +2041,12 @@ class LiveUpdateService : Service() {
 
         val shortCourseName = if (courseName.length > 8) courseName.substring(0, 8) + ".." else courseName
         val nameToUse = if (useShortNameInIsland && shortCourseNameRaw.isNotBlank()) shortCourseNameRaw else courseName
+        // 【岛专用】只喂胶囊/岛，绝不进下拉通知。两个面用各自独立的变量是刻意的：
+        // 关掉「岛上显示地点」不该让下拉通知里的地点一起消失（见下方下拉各面的字段）。
         val islandCourseName = if (showCourseNameInIsland) {
             if (nameToUse.length > 5) nameToUse.substring(0, 5) else nameToUse
         } else ""
-        val visibleLocation = if (showLocationInIsland) location else ""
-        val islandLocation = visibleLocation
+        val islandLocation = if (showLocationInIsland) location else ""
         val miuiIslandLabelText = when (miuiIslandLabelContent) {
             "location" -> location
             "course_name_and_location" -> listOf(
@@ -1734,7 +2060,6 @@ class LiveUpdateService : Service() {
 
         val stageTitle = when (stage) {
             "beforeClass" -> getString(R.string.stage_before_class)
-            "beforeEnd" -> getString(R.string.stage_before_end)
             else -> getString(R.string.stage_in_class)
         }
         val visibleStatusText = when {
@@ -1742,9 +2067,18 @@ class LiveUpdateService : Service() {
             !showCountdown -> ""
             else -> remainingText.ifBlank { stageTitle }
         }
+        // 课前卡片第一行给「即将上课 + 倒计时」（倒计时是这一屏唯一随时间变化的东西，
+        // 放第一行最醒目）；课名与地点下移到正文行 —— 见 buildPromotedDetailLines 的调用点。
+        // 进入最后 5 秒时倒计时会变成「开始上课」，此时直接用它当标题，拼成
+        // 「即将上课 开始上课」就重复了。
         val title = when (stage) {
-            "beforeClass" -> getString(R.string.title_before_class, shortCourseName)
-            "beforeEnd" -> getString(R.string.title_before_end, shortCourseName)
+            "beforeClass" -> if (liveShouldShowClassStartingPrompt(stage, now, startAtMillis)) {
+                getString(R.string.island_class_starting)
+            } else {
+                listOf(getString(R.string.stage_before_class), visibleStatusText)
+                    .filter { it.isNotBlank() }
+                    .joinToString(" ")
+            }
             else -> shortCourseName
         }
         val shortNameLabel = shortCourseNameRaw.takeIf { it.isNotBlank() && it != courseName }
@@ -1756,44 +2090,29 @@ class LiveUpdateService : Service() {
         val subText = if (isUpcoming) {
             listOf(
                 timeRangeText.takeIf { it.isNotBlank() }?.let { getString(R.string.label_class_start_time, it) },
-                visibleLocation.takeIf { it.isNotBlank() }?.let { getString(R.string.label_location, it) }
-            ).filterNotNull().joinToString("  ·  ")
-        } else if (isEndingSoon) {
-            listOf(
-                timeRangeText.takeIf { it.isNotBlank() }?.let { getString(R.string.label_class_end_time, it) },
-                visibleLocation.takeIf { it.isNotBlank() }?.let { getString(R.string.label_location, it) }
+                location.takeIf { it.isNotBlank() }?.let { getString(R.string.label_location, it) }
             ).filterNotNull().joinToString("  ·  ")
         } else {
             ""
         }
-        val summaryText = if ((isDuringClass || isEndingSoon) && classProgress != null && showCountdown) {
+        val summaryText = if ((isDuringClass) && classProgress != null && showCountdown) {
             listOf(
                 classProgress.nextMilestoneDisplayText,
                 classProgress.finalDismissDisplayText,
-                visibleLocation.takeIf { it.isNotBlank() }
+                location.takeIf { it.isNotBlank() }
             ).filterNotNull().joinToString(" · ")
         } else {
             listOf(
-                visibleLocation.takeIf { it.isNotBlank() },
+                location.takeIf { it.isNotBlank() },
                 teacher.takeIf { it.isNotBlank() },
                 visibleStatusText.takeIf { it.isNotBlank() }
             ).filterNotNull().joinToString(" · ")
         }
 
-        val notificationIntent = Intent(this, MainActivity::class.java).apply {
-            this.action = Intent.ACTION_MAIN
-            this.addCategory(Intent.CATEGORY_LAUNCHER)
-            this.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            notificationIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val pendingIntent = buildAppLaunchPendingIntent()
 
         val detailStatusText = when {
-            (isDuringClass || isEndingSoon) && classProgress != null && showCountdown -> null
+            (isDuringClass) && classProgress != null && showCountdown -> null
             visibleStatusText.isNotBlank() && !shouldPromote -> visibleStatusText
             else -> null
         }
@@ -1803,7 +2122,7 @@ class LiveUpdateService : Service() {
             if (shortNameLabel != null) {
                 append("\n").append(getString(R.string.detail_short_name, shortNameLabel))
             }
-            if ((isDuringClass || isEndingSoon) && classProgress != null && showCountdown) {
+            if ((isDuringClass) && classProgress != null && showCountdown) {
                 if (classProgress.nextMilestoneDisplayText != null) {
                     append("\n").append(
                         getString(R.string.detail_next_milestone, classProgress.nextMilestoneDisplayText)
@@ -1822,45 +2141,53 @@ class LiveUpdateService : Service() {
             if (note.isNotBlank()) append("\n").append(getString(R.string.detail_note, note))
         }
 
-        val promotedContentText = if ((isDuringClass || isEndingSoon) && classProgress != null && showCountdown) {
+        val promotedContentText = if ((isDuringClass) && classProgress != null && showCountdown) {
             listOf(
                 classProgress.compactDisplayText,
-                visibleLocation.takeIf { it.isNotBlank() }
+                location.takeIf { it.isNotBlank() }
             ).filterNotNull().joinToString(" · ")
         } else {
             listOf(
                 visibleStatusText.takeIf { it.isNotBlank() },
                 timeRangeText.takeIf { it.isNotBlank() },
-                visibleLocation.takeIf { it.isNotBlank() },
+                location.takeIf { it.isNotBlank() },
                 teacher.takeIf { it.isNotBlank() }
             ).filterNotNull().joinToString(" · ")
         }
-        val promotedExpandedDetailText = buildString {
-            if ((isDuringClass || isEndingSoon) && classProgress != null && showCountdown) {
-                if (classProgress.nextMilestoneDisplayText != null) {
-                    append(getString(R.string.detail_next_milestone, classProgress.nextMilestoneDisplayText))
-                    append("\n")
-                }
-                append(getString(R.string.detail_final_dismiss, classProgress.finalDismissDisplayText))
-            } else if (detailStatusText != null) {
-                append(getString(R.string.detail_status, detailStatusText))
-            }
-            if (timeRangeText.isNotBlank()) append("\n").append(getString(R.string.detail_time, timeRangeText))
-            if (location.isNotBlank()) append("\n").append(getString(R.string.label_location, location))
-            if (teacher.isNotBlank()) append("\n").append(getString(R.string.detail_teacher, teacher))
-            if (shortNameLabel != null) append("\n").append(getString(R.string.detail_short_name, shortNameLabel))
-            if (nextName.isNotBlank()) append("\n").append(getString(R.string.detail_next_course, nextName))
-            if (note.isNotBlank()) append("\n").append(getString(R.string.detail_note, note))
-        }
+        // 课前卡片正文两行：① 课程名　② 上课地点。第一行是标题里的「即将上课 + 倒计时」。
+        //
+        // 为什么不再是「时间:/地点:/教师:」逐行表单：卡片正文只渲染两行，那些条目会被
+        // 挤到第三四行、写了也看不到；而且每行带标签会在系统约 17 字的截断额度上白费字符。
+        // 时间区间与教师因此不上卡片（仍保留在通知栏正文与摘要里）。
+        //
+        // 两行都先过 truncateIslandLine：超长课名交给系统截会在行尾补「…」，且截点由系统
+        // 决定，自己先截能保证关键内容（课名开头、地点）留在可见范围内。
+        val promotedExpandedDetailText = buildPromotedDetailLines(
+            duringClassLines = if ((isDuringClass) && classProgress != null && showCountdown) {
+                listOfNotNull(
+                    classProgress.nextMilestoneDisplayText?.let {
+                        getString(R.string.detail_next_milestone, it)
+                    },
+                    getString(R.string.detail_final_dismiss, classProgress.finalDismissDisplayText),
+                )
+            } else {
+                null
+            },
+            beforeClassLines = listOf(
+                truncateIslandLine(courseName),
+                truncateIslandLine(location),
+            ),
+        ).joinToString("\n")
 
+        // 普通通知（非提升态）的正文。下拉通知是「全部显示」的那一面：
+        // 课名、地点、教师、状态都进正文，且一律读完整字段 —— 不受岛开关
+        // （showCourseNameInIsland / showLocationInIsland）影响，也不受胶囊影响。
         val contentText = if (!showStandardNotification) {
             ""
-        } else if ((isDuringClass || isEndingSoon) && classProgress != null) {
+        } else if ((isDuringClass) && classProgress != null) {
             promotedContentText
-        } else if (shouldPromote && !showCourseNameInIsland && !showLocationInIsland) {
-            visibleStatusText
         } else {
-            listOf(islandCourseName, islandLocation, teacher, visibleStatusText)
+            listOf(courseName, location, teacher, visibleStatusText)
                 .filter { it.isNotBlank() }
                 .joinToString(" · ")
         }
@@ -1884,7 +2211,7 @@ class LiveUpdateService : Service() {
                 remainingText = miuiFocusHintText,
                 timeRangeText = timeRangeText,
                 bodyContent = promotedContentText,
-                visibleLocation = visibleLocation,
+                visibleLocation = islandLocation,
                 stage = stage,
                 classProgress = classProgress,
                 startAtMillis = startAtMillis,
@@ -1896,16 +2223,21 @@ class LiveUpdateService : Service() {
             )
         }
 
-        val islandCriticalStatusText = if ((isDuringClass || isEndingSoon) && classProgress != null && showCountdown) {
+        val islandCriticalStatusText = if ((isDuringClass) && classProgress != null && showCountdown) {
             classProgress.criticalTimeText
         } else {
             visibleStatusText
         }
 
+        // 胶囊和下拉是两个互不干扰的面，各自只读自己那一组变量：
+        //
+        // * ColorOS（流体云）—— 胶囊固定只有「上课前」这一档：到上课的分钟数，
+        //   最后 5 秒换成「开始上课」。课名、地点、教师、时间区间一概不上胶囊，
+        //   只进下拉通知。所以这一支**完全不读** islandCourseName / islandLocation
+        //   / islandCriticalStatusText，修改下拉的内容也不会影响胶囊。
+        // * 其它品牌 —— 维持原有行为：胶囊由岛开关（showCourseNameInIsland /
+        //   showLocationInIsland）决定要不要带课名与地点。这条规则不随 ColorOS 变。
         val islandCriticalText = when {
-            // 流体云胶囊：左侧是通知 smallIcon 的圆形图标位（实测放不下文字），
-            // 右侧宽度只有 6–7 个字，秒级倒计时还会让胶囊随数字位数不断变宽变窄。
-            // 因此按阶段给短文案，见 buildColorosIslandText。
             surfaceBrand == LiveSurfaceBrand.COLOROS -> buildColorosIslandText(stage, now)
             shouldPromote && !showCourseNameInIsland && !showLocationInIsland ->
                 islandCriticalStatusText
@@ -1917,8 +2249,14 @@ class LiveUpdateService : Service() {
 
         val iconRes = when (stage) {
             "beforeClass" -> R.drawable.ic_upcoming
-            "beforeEnd" -> R.drawable.ic_countdown
             else -> R.drawable.ic_course
+        }
+        // 提升态请求，外加上一处【实验】的 OPPO 私有图标字段；三个分支共用同一份。
+        val promotionExtras = Bundle().apply {
+            if (shouldPromote && !isDuringClassStatusBar) {
+                putBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, true)
+            }
+            putOplusIslandIcon(this@LiveUpdateService, iconRes)
         }
         val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Notification.Builder(this, CHANNEL_ID)
@@ -1986,17 +2324,13 @@ class LiveUpdateService : Service() {
             if (Build.VERSION.SDK_INT >= 36) {
                 if (isDuringClassStatusBar) {
                     setShortCriticalText("")
-                    setExtras(Bundle())
+                    setExtras(promotionExtras)
                 } else if (shouldPromote) {
                     setShortCriticalText(islandCriticalText)
-                    setExtras(
-                        Bundle().apply {
-                            putBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, true)
-                        }
-                    )
+                    setExtras(promotionExtras)
                 } else {
                     setShortCriticalText("")
-                    setExtras(Bundle())
+                    setExtras(promotionExtras)
                 }
             }
         }
@@ -2149,15 +2483,12 @@ class LiveUpdateService : Service() {
                     "endAtMillis" to endAtMillis,
                     "remainingToStartMillis" to (startAtMillis - now).coerceAtLeast(0L),
                     "remainingToEndMillis" to (endAtMillis - now).coerceAtLeast(0L),
-                    "endReminderLeadMillis" to endReminderLeadMillis,
                     "liveClassReminderStartMinutes" to liveClassReminderStartMinutes,
-                    "endSecondsCountdownThreshold" to endSecondsCountdownThreshold,
                     "autoDismissAfterStartMinutes" to autoDismissAfterStartMinutes,
                 ),
                 "switches" to linkedMapOf(
                     "enableBeforeClass" to enableBeforeClass,
                     "enableDuringClass" to enableDuringClass,
-                    "enableBeforeEnd" to enableBeforeEnd,
                     "promoteDuringClass" to promoteDuringClass,
                     "showNotificationDuringClass" to showNotificationDuringClass,
                 ),
@@ -2441,10 +2772,6 @@ class LiveUpdateService : Service() {
                 durationMillis = (startAtMillis - now).coerceAtLeast(0L),
                 secondsThresholdMillis = 60_000L,
             )
-            "beforeEnd" -> shouldRefreshEverySecond(
-                durationMillis = (endAtMillis - now).coerceAtLeast(0L),
-                secondsThresholdMillis = endSecondsCountdownThreshold * 1000L,
-            )
             "duringClass" -> duringClassProgress?.updatesEverySecond == true
             else -> false
         }
@@ -2452,20 +2779,20 @@ class LiveUpdateService : Service() {
             return 1000L
         }
         val stageDelay = when (stage) {
-            "beforeClass" -> minOf(
-                (startAtMillis - now).coerceAtLeast(1_000L),
-                nextCountdownTextChangeDelayMillis(
-                    durationMillis = (startAtMillis - now).coerceAtLeast(0L),
-                    secondsThresholdMillis = 60_000L,
-                ),
-            )
-            "beforeEnd" -> minOf(
-                (endAtMillis - now).coerceAtLeast(1_000L),
-                nextCountdownTextChangeDelayMillis(
-                    durationMillis = (endAtMillis - now).coerceAtLeast(0L),
-                    secondsThresholdMillis = endSecondsCountdownThreshold * 1000L,
-                ),
-            )
+            "beforeClass" -> {
+                val remainingMillis = (startAtMillis - now).coerceAtLeast(0L)
+                listOfNotNull(
+                    remainingMillis.coerceAtLeast(1_000L),
+                    nextCountdownTextChangeDelayMillis(
+                        durationMillis = remainingMillis,
+                        secondsThresholdMillis = 60_000L,
+                    ),
+                    // 必须有一次 tick 落在「开始上课」窗口开启处：课前文案按分钟
+                    // 跳，否则这 5 秒会被整段跳过。
+                    (remainingMillis - CLASS_STARTING_PROMPT_WINDOW_MILLIS)
+                        .takeIf { it > 0L },
+                ).minOrNull() ?: 60_000L
+            }
             "duringClass" -> {
                 val elapsedMillis = (now - startAtMillis).coerceAtLeast(0L)
                 val nextMilestoneDelay = progressBreakOffsetsMillis
@@ -2481,12 +2808,13 @@ class LiveUpdateService : Service() {
                 ).minOrNull() ?: 60_000L
             }
             "duringClassStatusBar" -> {
-                val beforeEndStartMillis = maxOf(
+                // 到重点提醒起点就切课中，必须在那一点落一次 tick。
+                val duringClassStartMillis = maxOf(
                     startAtMillis,
                     endAtMillis - liveClassReminderStartMinutes * 60_000L,
                 )
                 listOfNotNull(
-                    (beforeEndStartMillis - now).takeIf { it > 0L },
+                    (duringClassStartMillis - now).takeIf { it > 0L },
                     (endAtMillis - now).takeIf { it > 0L },
                 ).minOrNull() ?: 60_000L
             }
@@ -2494,4 +2822,73 @@ class LiveUpdateService : Service() {
         }
         return stageDelay.coerceIn(1_000L, 60_000L)
     }
+}
+
+/**
+ * 按显示宽度硬截断，**不加省略号**。
+ *
+ * 流体云卡片正文每行约 17 个半角单位就会被系统截断并补上「…」，而截点由系统决定
+ * （实测与卡片剩余宽度无关：截断点右侧仍留着一大截空白）。我们自己先截到 [maxUnits]
+ * 以内，既让关键内容留在前面，也避免行尾出现系统补的省略号。
+ *
+ * 宽度按「汉字/全角记 2、其余记 1」粗略估算 —— 系统给的是像素额度，这里用等宽近似。
+ */
+internal fun truncateIslandLine(text: String, maxUnits: Int = 16): String {
+    var units = 0
+    val kept = StringBuilder()
+    for (ch in text) {
+        val width = if (ch.code > 0x2E80) 2 else 1
+        if (units + width > maxUnits) break
+        units += width
+        kept.append(ch)
+    }
+    return kept.toString()
+}
+
+/**
+ * 组装提升态（流体云）展开卡片的详情行，返回行列表，由调用方用 `"\n"` 拼接。
+ *
+ * 逐行收集而非「先判空再 `append("\n")`」：后者在首段为空时会拼出一个**前导空行**，
+ * 那一行会被卡片吃掉，正文只剩被截断的第二行（实机曾表现为「时间: 19:13 - 19:1...」）。
+ *
+ * @param duringClassLines 课中进度行；非 null 时取代 [beforeClassLines] 作为开头
+ * @param beforeClassLines 课前的内容行（课程名、上课地点，调用方已用
+ *   [truncateIslandLine] 硬截断）；空白项自动跳过，避免产生空行
+ */
+internal fun buildPromotedDetailLines(
+    duringClassLines: List<String>?,
+    beforeClassLines: List<String>,
+): List<String> = buildList {
+    if (duringClassLines != null) {
+        addAll(duringClassLines)
+    } else {
+        beforeClassLines.forEach { line ->
+            line.takeIf { it.isNotBlank() }?.let { add(it) }
+        }
+    }
+}
+
+/** 课前倒计时最后 5 秒改显示「开始上课」的窗口。 */
+internal const val CLASS_STARTING_PROMPT_WINDOW_MILLIS = 5_000L
+
+/**
+ * 是否处于「开始上课」提示窗口：课前阶段的最后 5 秒。
+ *
+ * 这段时间用 [R.string.island_class_starting] 顶掉倒计时，作为上课信号。
+ * 课中与下课提醒不再上岛（见 [liveShouldPromoteStage]），所以这个信号放在
+ * 唯一会上岛的课前阶段末尾。
+ *
+ * 这个判据同时要驱动 tick 落点：课前文案按分钟跳，若不在窗口开启处补一次
+ * tick，这 5 秒会被整段跳过（见 `LiveUpdateService.computeNextTickDelayMillis`）。
+ */
+internal fun liveShouldShowClassStartingPrompt(
+    stage: String?,
+    nowMillis: Long,
+    startAtMillis: Long,
+): Boolean {
+    if (stage != "beforeClass") {
+        return false
+    }
+    val remainingMillis = startAtMillis - nowMillis
+    return remainingMillis in 0..CLASS_STARTING_PROMPT_WINDOW_MILLIS
 }

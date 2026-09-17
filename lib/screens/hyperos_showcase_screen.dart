@@ -1064,9 +1064,10 @@ class _HyperosShowcaseScreenState extends State<HyperosShowcaseScreen> {
       body: '这是一条用于验收更新弹窗的模拟更新日志。\n'
           '- 假下载只播放进度动画，不访问网络\n'
           '- 下拉或点击遮罩即可关闭',
-      releaseUrl: 'https://withu.app',
-      downloadUrl:
-          'https://withu.app/downloads/demo.apk',
+      // 演示用的占位地址，不会真的发起请求；example.com 是 RFC 2606 保留域，
+      // 避免看起来像某个真实站点。
+      releaseUrl: 'https://example.com/releases/v9.9.9',
+      downloadUrl: 'https://example.com/downloads/demo.apk',
       updatedAt: null,
       isPrerelease: false,
     );

@@ -899,8 +899,7 @@ class _LiveEntryTileState extends State<_LiveEntryTile>
     final liveSettings = context.watch<TimetableProvider>().settings;
     final liveReminderEnabled =
         liveSettings.liveEnableBeforeClass ||
-        liveSettings.liveEnableDuringClass ||
-        liveSettings.liveEnableBeforeEnd;
+        liveSettings.liveEnableDuringClass;
     // 权限缺失优先；已授权时展示开/关态，避免入口右侧空白。
     final detailsText = _hasPermission == false
         ? l10n.liveNotificationPermissionMissing

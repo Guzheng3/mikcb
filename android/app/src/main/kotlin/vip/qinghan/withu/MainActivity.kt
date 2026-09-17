@@ -179,6 +179,11 @@ class MainActivity : FlutterActivity() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannels()
 
+        // 常驻通知：开关打开时，App 一启动就把前台服务拉起来显示情侣卡片形态。
+        // 放在这里而不是等 Flutter 下发负载，是因为无课时 Flutter 不会启动任何会话，
+        // 通知就永远不会出现。已在跑或当前有会话时该方法自身会跳过，不会打断会话。
+        LiveUpdateScheduler.ensurePermanentNotificationRunning(this)
+
         // 公平运行内存：绑定 Flutter 通道（原生广播本身不依赖引擎）。
         FairMemoryAdapter.attachFlutterEngine(flutterEngine.dartExecutor.binaryMessenger)
 
@@ -421,6 +426,14 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "initialize" -> result.success(true)
+                    // 岛左侧文字标签等能力只在小米系下发（见
+                    // LiveUpdateService.resolveIslandLabelBitmap 的 isXiaomiFamilyDevice
+                    // 门控）。界面用同一判据隐藏无效项，故共用 liveSurfaceBrand，
+                    // 避免两处品牌规则各自漂移。
+                    "isXiaomiFamilyDevice" -> result.success(
+                        liveSurfaceBrand(Build.MANUFACTURER, Build.BRAND) ==
+                            LiveSurfaceBrand.XIAOMI
+                    )
                     "checkNotificationPermission" -> result.success(hasNotificationPermission())
                     "requestNotificationPermission" -> {
                         if (hasNotificationPermission()) {
@@ -478,6 +491,24 @@ class MainActivity : FlutterActivity() {
                     }
                     "getLiveUpdateDebugStatus" -> {
                         result.success(LiveUpdateService.buildDebugStatus(this))
+                    }
+                    "setPermanentNotification" -> {
+                        // 常驻开关独立于 startLiveUpdate 下发：无课程会话时 Flutter 不会
+                        // 启动会话，用户此刻关掉开关的话必须立刻落盘，否则下一次开机或
+                        // App 启动会把常驻通知又挂回来。
+                        val enabled = call.arguments as? Boolean
+                        if (enabled == null) {
+                            result.error("INVALID_ARGUMENTS", "Missing enabled flag", null)
+                        } else {
+                            LiveUpdateService.setPermanentNotificationEnabled(this, enabled)
+                            if (enabled) {
+                                LiveUpdateScheduler.ensurePermanentNotificationRunning(this)
+                            } else {
+                                // 关掉就立刻摘掉通知，不等下一次启动。
+                                stopLiveUpdateService()
+                            }
+                            result.success(true)
+                        }
                     }
                     "syncScheduleSnapshot" -> {
                         val snapshotJson = call.arguments as? String

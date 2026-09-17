@@ -15,7 +15,6 @@ abstract final class AppLogMessageLocalizer {
       return l10n.logLiveUpdateSettingsSynced(
         params['beforeClass'] ?? '',
         params['duringClass'] ?? '',
-        params['beforeEnd'] ?? '',
         params['promote'] ?? '',
         params['notification'] ?? '',
         params['countdown'] ?? '',
@@ -76,6 +75,8 @@ abstract final class AppLogMessageLocalizer {
         l10n.logLiveUpdateSnapshotClearFailed,
       'log_live_update_suspend_triggers_failed' =>
         l10n.logLiveUpdateSuspendTriggersFailed,
+      'log_live_update_permanent_notification_failed' =>
+        l10n.logLiveUpdatePermanentNotificationFailed,
       'log_live_update_test_requested' => l10n.logLiveUpdateTestRequested,
       'log_live_update_test_no_selection' => l10n.logLiveUpdateTestNoSelection,
       'log_live_update_test_selection_ready' =>
@@ -131,7 +132,6 @@ abstract final class AppLogMessageLocalizer {
         l10n.logFieldLiveEnableBeforeClass,
       'log_field_live_enable_during_class' =>
         l10n.logFieldLiveEnableDuringClass,
-      'log_field_live_enable_before_end' => l10n.logFieldLiveEnableBeforeEnd,
       'log_field_live_promote_during_class' =>
         l10n.logFieldLivePromoteDuringClass,
       'log_field_live_show_during_class_notification' =>
@@ -168,8 +168,6 @@ abstract final class AppLogMessageLocalizer {
         l10n.logFieldLiveShowBeforeClassMinutes,
       'log_field_live_class_reminder_start_minutes' =>
         l10n.logFieldLiveClassReminderStartMinutes,
-      'log_field_live_end_seconds_countdown_threshold' =>
-        l10n.logFieldLiveEndSecondsCountdownThreshold,
       'log_field_state' => l10n.logFieldState,
       'log_field_route' => l10n.logFieldRoute,
       'log_field_previous_route' => l10n.logFieldPreviousRoute,

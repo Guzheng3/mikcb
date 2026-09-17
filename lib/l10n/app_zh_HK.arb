@@ -807,7 +807,6 @@
   "liveKeepAliveEntrySubtitle": "隱藏後台、後台保活輔助服務和權限入口",
   "liveTestingEntryTitle": "測試與診斷",
   "liveTestingEntrySubtitle": "發送測試通知，檢查超級島和本地診斷日誌",
-  "followBeforeClassSetting": "跟隨上課前提醒",
   "liveReminderTimingTitle": "提醒時段",
   "liveReminderSwitchesTitle": "提醒開關",
   "liveReminderSwitchesSubtitle": "不同提醒時段可以自由組合；這些開關互不替代",
@@ -840,6 +839,8 @@
   "duringClassStatusNotificationPersistent": "上課後持續顯示普通課中通知，到下課提醒前再切換",
   "enableIslandDisplayTitle": "展示超級島",
   "enableIslandDisplaySubtitle": "關閉後不會再嘗試觸發系統超級島",
+  "livePermanentNotificationTitle": "常駐通知",
+  "livePermanentNotificationSubtitle": "沒有課程時也讓通知留在通知欄，顯示情侶卡片的內容",
   "liveTimeThresholdTitle": "時間阈值",
   "liveTimeThresholdSubtitle": "控製上課前彈出、下課前多久切到超級島 / 重點提醒，以及最後秒級倒計時",
   "beforeClassPopupLabel": "上課前彈出時間",
@@ -847,15 +848,6 @@
   "@beforeClassMinutesOption": {
     "placeholders": {
       "minutes": {
-        "type": "int"
-      }
-    }
-  },
-  "beforeEndSecondsLabel": "下課前秒級提醒阈值",
-  "beforeEndSecondsOption": "{seconds} 秒",
-  "@beforeEndSecondsOption": {
-    "placeholders": {
-      "seconds": {
         "type": "int"
       }
     }
@@ -871,25 +863,10 @@
   "timeCorrectionHelp": "如果學校鈴聲比課表快幾秒，就調成提前；如果鈴聲慢幾秒，就調成延後",
   "duringEndTimeDisplayLabel": "課中 / 下課提醒時間樣式",
   "duringEndTimeDisplayHelp": "控製緊湊提醒裡顯示最近時間還是整段總時間",
-  "liveDisplayContentTitle": "顯示內容",
   "liveDisplayContentSubtitle": "這組設定只蠅響目前階段，不會改動另一組提醒顯示",
   "showCourseNameTitle": "顯示課程名",
-  "preferShortNameTitle": "優先顯示課程簡稱",
-  "preferShortNameSubtitle": "建議簡稱控製在 3 個字以內",
-  "showLocationTitle": "顯示地點",
-  "showCountdownTitle": "顯示倒計時",
-  "countdownFormatLabel": "倒計時格式",
   "countdownFormatHelp": "純分鐘樣式按分鐘刷新，帶秒樣式按秒刷新",
-  "showStageTextTitle": "顯示階段狀態文案",
-  "showStageTextSubtitle": "關閉倒計時後，可繼續顯示“即將上課 / 上課中 / 下課提醒”",
-  "hidePrefixTextTitle": "隱藏前綴文案",
-  "hidePrefixTextSubtitle": "例如隱藏“即將上課”這類前綴",
   "liveIslandPreviewTitle": "超級島預覽",
-  "liveIslandPreviewFollowBadge": "正在跟隨「課前提醒顯示」設定，調整課前提醒即可生效",
-  "liveIslandPreviewStageBeforeClass": "即將上課",
-  "liveIslandPreviewStageInClass": "上課中",
-  "liveIslandPreviewStageBeforeEnd": "下課提醒",
-  "liveIslandPreviewAboutToEnd": "即將下課",
   "liveIslandPreviewUntilClassStart": "距上課{time}",
   "@liveIslandPreviewUntilClassStart": {
     "placeholders": {
@@ -923,54 +900,8 @@
       }
     }
   },
-  "liveIslandVisualTitle": "左側圖示與展開態",
   "liveIslandVisualSubtitle": "左側文字圖、展開態大圖示和自定義圖片都按目前階段單獨保存",
-  "liveMiuiLabelImageTitle": "小米島左側文字圖示",
-  "liveMiuiLabelImageSubtitle": "僅小米手機樣式生效，會把課程名或地點生成到左側圖示位",
-  "liveMiuiLabelContentLabel": "左側文字內容",
-  "liveMiuiLabelStyleLabel": "左側圖示樣式",
-  "liveMiuiLabelLogoTitle": "左側圖示 Logo",
-  "liveMiuiLabelLogoSubtitle": "僅在「圖示+文字」樣式下生效；未選擇時會繼續使用應用圖示",
-  "liveMiuiLabelLogoCornerRadiusLabel": "左側圖示圓角 {value}",
-  "@liveMiuiLabelLogoCornerRadiusLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "liveMiuiLabelFontSizeLabel": "左側文字大小 {value}",
-  "@liveMiuiLabelFontSizeLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "liveMiuiLabelOffsetXLabel": "左側文字水平偏移 {value}",
-  "@liveMiuiLabelOffsetXLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "liveMiuiLabelOffsetYLabel": "左側文字垂直偏移 {value}",
-  "@liveMiuiLabelOffsetYLabel": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "liveMiuiLabelFontWeightLabel": "左側文字粗細",
-  "liveMiuiLabelRenderQualityLabel": "左側文字清晰度",
-  "liveMiuiExpandedIconLabel": "展開態大圖示",
-  "selectImageAction": "選擇圖片",
-  "replaceImageAction": "更換圖片",
-  "liveDisplayConfigModeTitle": "配置方式",
   "liveDisplayConfigModeSubtitle": "打開後，課中和下課提醒會完全跟隨上課前提醒顯示，下面的獨立設定暫時不可編輯",
-  "followBeforeClassDisplayTitle": "跟隨上課前提醒設定",
   "liveKeepAliveTitle": "後台保活",
   "liveKeepAliveOptionsTitle": "保活選項",
   "liveKeepAliveOptionsSubtitle": "用於提升超級島和提醒在後台場景下的穩定性",
@@ -1284,47 +1215,6 @@
       }
     }
   },
-  "liveClassReminderLeadSummaryImmediate": "從上課開始就進入重點提醒顯示，並在距離下課 {seconds} 秒切到秒級倒數",
-  "@liveClassReminderLeadSummaryImmediate": {
-    "placeholders": {
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "liveClassReminderLeadSummaryKeepNormal": "上課後先保留普通課中通知，在距離下課前 {minutes} 分鐘切到重點提醒 / 下課提醒，並在最後 {seconds} 秒切到秒級倒數",
-  "@liveClassReminderLeadSummaryKeepNormal": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "liveClassReminderLeadSummaryIsland": "在距離下課前 {minutes} 分鐘切到超級島與重點提醒，並在最後 {seconds} 秒切到秒級倒數",
-  "@liveClassReminderLeadSummaryIsland": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "liveClassReminderLeadSummaryFocused": "在距離下課前 {minutes} 分鐘開始顯示重點提醒，並在最後 {seconds} 秒切到秒級倒數",
-  "@liveClassReminderLeadSummaryFocused": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
   "liveSettingsEntrySubtitle": "提醒時段、島顯示、通知欄和顯示內容",
   "timetableProfilesEntrySubtitle": "新建、切換、複製、重新命名和刪除課表",
   "homeTitleSectionTitle": "首頁標題",
@@ -1336,7 +1226,6 @@
   "timetableBackgroundColorSectionSubtitle": "只作用於課表頁面的大背景",
   "defaultTimetablePreviewName": "預設課表",
   "beforeClassDisplaySettingsTitle": "上課前提醒顯示",
-  "duringEndDisplaySettingsTitle": "課中／下課提醒顯示",
   "liveDisplaySummaryShortName": "簡稱",
   "liveDisplaySummaryCourseName": "課程名",
   "liveDisplaySummaryLocation": "地點",
@@ -3679,20 +3568,6 @@
   "liveCountdownTextStyleSecondOnlyCn": "純秒（5秒）",
   "liveCountdownTextStyleSecondOnlyShort": "s（5s）",
   "liveCountdownTextStyleSecondOnlySlash": "/s（5/s）",
-  "miuiIslandLabelStyleTextOnly": "僅文字",
-  "miuiIslandLabelStyleIconAndText": "圖標+文字",
-  "miuiIslandLabelContentCourseName": "課程名",
-  "miuiIslandLabelContentLocation": "教室",
-  "miuiIslandLabelContentCourseNameAndLocation": "課程名+教室",
-  "miuiIslandLabelFontWeightRegular": "常規",
-  "miuiIslandLabelFontWeightMedium": "中等",
-  "miuiIslandLabelFontWeightBold": "加粗",
-  "miuiIslandLabelRenderQualityStandard": "標準",
-  "miuiIslandLabelRenderQualityHigh": "高清",
-  "miuiIslandLabelRenderQualityUltra": "超高清",
-  "miuiIslandExpandedIconAppIcon": "應用圖標",
-  "miuiIslandExpandedIconCustomImage": "自定義圖片",
-  "miuiIslandExpandedIconHidden": "不顯示",
   "liveBeforeClassQuickActionNone": "不顯示",
   "liveBeforeClassQuickActionSilent": "打開靜音",
   "liveBeforeClassQuickActionDoNotDisturb": "打開免打擾",
@@ -4783,6 +4658,7 @@
   "logLiveUpdateSnapshotSyncFailed": "同步超級島課表快照失敗",
   "logLiveUpdateSnapshotClearFailed": "清空超級島課表快照失敗",
   "logLiveUpdateSuspendTriggersFailed": "掛起超級島課表調度失敗",
+  "logLiveUpdatePermanentNotificationFailed": "同步常駐通知開關失敗",
   "logLiveUpdateTestRequested": "用戶請求手動超級島測試通知",
   "logLiveUpdateTestNoSelection": "手動超級島測試：未找到可用課程",
   "logLiveUpdateTestSelectionReady": "手動超級島測試：已解析目標課程",
@@ -4790,16 +4666,13 @@
   "logLiveUpdateTestStarting": "手動超級島測試：正在啟動原生超級島",
   "logLiveUpdateTestStarted": "手動超級島測試：已成功請求原生超級島",
   "logLiveUpdateTestFailed": "手動超級島測試：原生超級島出現前失敗",
-  "logLiveUpdateSettingsSynced": "Flutter 超級島設置已同步：課前={beforeClass}，課中={duringClass}，下課前={beforeEnd}，提升={promote}，通知={notification}，倒計時={countdown}，課程名={courseName}，地點={location}",
+  "logLiveUpdateSettingsSynced": "Flutter 超級島設置已同步：課前={beforeClass}，課中={duringClass}，提升={promote}，通知={notification}，倒計時={countdown}，課程名={courseName}，地點={location}",
   "@logLiveUpdateSettingsSynced": {
     "placeholders": {
       "beforeClass": {
         "type": "String"
       },
       "duringClass": {
-        "type": "String"
-      },
-      "beforeEnd": {
         "type": "String"
       },
       "promote": {
@@ -4851,7 +4724,6 @@
   "logFieldAutoStartStatus": "自啟動壯態",
   "logFieldLiveEnableBeforeClass": "課前超級島",
   "logFieldLiveEnableDuringClass": "課中超級島",
-  "logFieldLiveEnableBeforeEnd": "下課前超級島",
   "logFieldLivePromoteDuringClass": "課中提升通知",
   "logFieldLiveShowDuringClassNotification": "課中壯態欄通知",
   "logFieldLiveShowCountdown": "顯示倒計時",
@@ -4873,7 +4745,6 @@
   "logFieldLiveMiuiIslandExpandedIconMode": "展開圖標模式",
   "logFieldLiveShowBeforeClassMinutes": "課前顯示分鐘數",
   "logFieldLiveClassReminderStartMinutes": "上課提醒開始分鐘",
-  "logFieldLiveEndSecondsCountdownThreshold": "下課秒倒計時阈值",
   "logFieldState": "壯態",
   "logFieldRoute": "路由",
   "logFieldPreviousRoute": "先前路由",
@@ -5845,5 +5716,63 @@
   "globalSettingsDescriptionBody": "在這裡設定的顯示項目會套用到所有課表；個別課表單獨修改過的項目，仍以該課表自己的設定為準。學期、節次（時間範本）等課表專屬內容不參與全域設定。",
   "globalSettingsClearTitle": "清除全域顯示設定",
   "globalSettingsClearConfirm": "清除後，所有課表將恢復使用各自的設定。",
-  "globalSettingsCleared": "已清除全域顯示設定"
+  "globalSettingsCleared": "已清除全域顯示設定",
+  "liveIslandVisualTitle": "左側圖示與展開態",
+  "liveMiuiExpandedIconLabel": "展開態大圖示",
+  "liveMiuiLabelContentLabel": "左側文字內容",
+  "liveMiuiLabelFontSizeLabel": "左側文字大小 {value}",
+  "@liveMiuiLabelFontSizeLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelFontWeightLabel": "左側文字粗細",
+  "liveMiuiLabelImageSubtitle": "僅小米手機樣式生效，會把課程名或地點生成到左側圖示位",
+  "liveMiuiLabelImageTitle": "小米島左側文字圖示",
+  "liveMiuiLabelLogoCornerRadiusLabel": "左側圖示圓角 {value}",
+  "@liveMiuiLabelLogoCornerRadiusLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelLogoSubtitle": "僅在「圖示+文字」樣式下生效；未選擇時會繼續使用應用圖示",
+  "liveMiuiLabelLogoTitle": "左側圖示 Logo",
+  "liveMiuiLabelOffsetXLabel": "左側文字水平偏移 {value}",
+  "@liveMiuiLabelOffsetXLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelOffsetYLabel": "左側文字垂直偏移 {value}",
+  "@liveMiuiLabelOffsetYLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMiuiLabelRenderQualityLabel": "左側文字清晰度",
+  "liveMiuiLabelStyleLabel": "左側圖示樣式",
+  "miuiIslandExpandedIconAppIcon": "應用圖標",
+  "miuiIslandExpandedIconCustomImage": "自定義圖片",
+  "miuiIslandExpandedIconHidden": "不顯示",
+  "miuiIslandLabelContentCourseName": "課程名",
+  "miuiIslandLabelContentCourseNameAndLocation": "課程名+教室",
+  "miuiIslandLabelContentLocation": "教室",
+  "miuiIslandLabelFontWeightBold": "加粗",
+  "miuiIslandLabelFontWeightMedium": "中等",
+  "miuiIslandLabelFontWeightRegular": "常規",
+  "miuiIslandLabelRenderQualityHigh": "高清",
+  "miuiIslandLabelRenderQualityStandard": "標準",
+  "miuiIslandLabelRenderQualityUltra": "超高清",
+  "miuiIslandLabelStyleIconAndText": "圖標+文字",
+  "miuiIslandLabelStyleTextOnly": "僅文字",
+  "replaceImageAction": "更換圖片",
+  "selectImageAction": "選擇圖片"
 }

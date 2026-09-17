@@ -37,10 +37,13 @@ void main() {
 
   group('StatisticsExportBrand', () {
     test('exposes stable public brand urls', () {
-      expect(StatisticsExportBrand.websiteUrl, contains('163366.xyz'));
-      expect(StatisticsExportBrand.websiteDisplay, '163366.xyz');
-      expect(StatisticsExportBrand.githubUrl, contains('Mutx163/mikcb'));
-      expect(StatisticsExportBrand.githubDisplay, 'github.com/Mutx163/mikcb');
+      expect(
+        StatisticsExportBrand.websiteUrl,
+        contains('gzr.xjy.xn--6qq986b3xl'),
+      );
+      expect(StatisticsExportBrand.websiteDisplay, 'gzr.xjy.我爱你');
+      expect(StatisticsExportBrand.githubUrl, contains('Guzheng3/mikcb'));
+      expect(StatisticsExportBrand.githubDisplay, 'github.com/Guzheng3/mikcb');
     });
   });
 }

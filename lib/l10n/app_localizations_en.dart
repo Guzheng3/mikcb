@@ -1892,9 +1892,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Send test notifications and inspect island diagnostics logs';
 
   @override
-  String get followBeforeClassSetting => 'Follow Before-class Settings';
-
-  @override
   String get liveReminderTimingTitle => 'Reminder Timing';
 
   @override
@@ -1960,6 +1957,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Disable this if you never want the app to trigger system island presentation';
 
   @override
+  String get livePermanentNotificationTitle => 'Persistent notification';
+
+  @override
+  String get livePermanentNotificationSubtitle =>
+      'Keep the notification in the shade even with no class, showing the couple card content';
+
+  @override
   String get liveTimeThresholdTitle => 'Timing Thresholds';
 
   @override
@@ -1972,14 +1976,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String beforeClassMinutesOption(int minutes) {
     return '$minutes min';
-  }
-
-  @override
-  String get beforeEndSecondsLabel => 'Before-end second-level threshold';
-
-  @override
-  String beforeEndSecondsOption(int seconds) {
-    return '$seconds sec';
   }
 
   @override
@@ -2003,9 +1999,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose whether compact reminders show nearest time or the total remaining time.';
 
   @override
-  String get liveDisplayContentTitle => 'Display Content';
-
-  @override
   String get liveDisplayContentSubtitle =>
       'These settings only affect the current stage and do not change the other reminder stage';
 
@@ -2013,57 +2006,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showCourseNameTitle => 'Show Course Name';
 
   @override
-  String get preferShortNameTitle => 'Prefer Short Course Name';
-
-  @override
-  String get preferShortNameSubtitle =>
-      'Short names work best within 3 characters';
-
-  @override
-  String get showLocationTitle => 'Show Location';
-
-  @override
-  String get showCountdownTitle => 'Show Countdown';
-
-  @override
-  String get countdownFormatLabel => 'Countdown Format';
-
-  @override
   String get countdownFormatHelp =>
       'Minute-only styles refresh by minute; second-based styles refresh by second.';
 
   @override
-  String get showStageTextTitle => 'Show Stage Label';
-
-  @override
-  String get showStageTextSubtitle =>
-      'If countdown is hidden, you can still show labels like before class / in class / before end';
-
-  @override
-  String get hidePrefixTextTitle => 'Hide Prefix Text';
-
-  @override
-  String get hidePrefixTextSubtitle =>
-      'For example, hide prefixes like “before class”';
-
-  @override
   String get liveIslandPreviewTitle => 'Super Island preview';
-
-  @override
-  String get liveIslandPreviewFollowBadge =>
-      'Following before-class display settings; adjust those to preview changes';
-
-  @override
-  String get liveIslandPreviewStageBeforeClass => 'Before class';
-
-  @override
-  String get liveIslandPreviewStageInClass => 'In class';
-
-  @override
-  String get liveIslandPreviewStageBeforeEnd => 'Before end';
-
-  @override
-  String get liveIslandPreviewAboutToEnd => 'Ending soon';
 
   @override
   String liveIslandPreviewUntilClassStart(String time) {
@@ -2112,89 +2059,24 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get liveIslandVisualTitle => 'Left Icon & Expanded View';
-
-  @override
   String get liveIslandVisualSubtitle =>
       'The left text icon, expanded large icon, and custom image are all stored separately for the current stage';
-
-  @override
-  String get liveMiuiLabelImageTitle => 'Xiaomi Island Left Text Icon';
-
-  @override
-  String get liveMiuiLabelImageSubtitle =>
-      'Only effective on Xiaomi-style island layouts. It renders course name or location into the left icon slot';
-
-  @override
-  String get liveMiuiLabelContentLabel => 'Left Text Content';
-
-  @override
-  String get liveMiuiLabelStyleLabel => 'Left Icon Style';
-
-  @override
-  String get liveMiuiLabelLogoTitle => 'Left Icon Logo';
-
-  @override
-  String get liveMiuiLabelLogoSubtitle =>
-      'Only applies to the icon + text style. If not selected, the app icon remains the fallback';
-
-  @override
-  String liveMiuiLabelLogoCornerRadiusLabel(String value) {
-    return 'Left Icon Corner Radius $value';
-  }
 
   @override
   String get liveMiuiLabelLogoCornerRadiusTitle => 'Left icon corner radius';
 
   @override
-  String liveMiuiLabelFontSizeLabel(String value) {
-    return 'Left Text Size $value';
-  }
-
-  @override
   String get liveMiuiLabelFontSizeTitle => 'Left text size';
-
-  @override
-  String liveMiuiLabelOffsetXLabel(String value) {
-    return 'Left Text Horizontal Offset $value';
-  }
 
   @override
   String get liveMiuiLabelOffsetXTitle => 'Left text horizontal offset';
 
   @override
-  String liveMiuiLabelOffsetYLabel(String value) {
-    return 'Left Text Vertical Offset $value';
-  }
-
-  @override
   String get liveMiuiLabelOffsetYTitle => 'Left text vertical offset';
-
-  @override
-  String get liveMiuiLabelFontWeightLabel => 'Left Text Weight';
-
-  @override
-  String get liveMiuiLabelRenderQualityLabel => 'Left Text Render Quality';
-
-  @override
-  String get liveMiuiExpandedIconLabel => 'Expanded Large Icon';
-
-  @override
-  String get selectImageAction => 'Choose Image';
-
-  @override
-  String get replaceImageAction => 'Replace Image';
-
-  @override
-  String get liveDisplayConfigModeTitle => 'Configuration Mode';
 
   @override
   String get liveDisplayConfigModeSubtitle =>
       'When enabled, during-class and before-end reminders fully follow the before-class display settings, and the controls below become read-only';
-
-  @override
-  String get followBeforeClassDisplayTitle =>
-      'Follow Before-class Display Settings';
 
   @override
   String get liveKeepAliveTitle => 'Keep Alive';
@@ -2743,26 +2625,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String liveClassReminderLeadSummaryImmediate(int seconds) {
-    return 'Switch to the focused reminder as soon as class starts, then show second-level countdown in the last ${seconds}s before class ends';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryKeepNormal(int minutes, int seconds) {
-    return 'Keep the normal in-class notification first, switch to focused / class-end reminder $minutes minutes before class ends, then show second-level countdown in the last ${seconds}s';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryIsland(int minutes, int seconds) {
-    return 'Switch to the Island and focused reminder $minutes minutes before class ends, then show second-level countdown in the last ${seconds}s';
-  }
-
-  @override
-  String liveClassReminderLeadSummaryFocused(int minutes, int seconds) {
-    return 'Start the focused reminder $minutes minutes before class ends, then show second-level countdown in the last ${seconds}s';
-  }
-
-  @override
   String get liveSettingsEntrySubtitle =>
       'Reminder timing, Island display, notification bar, and display content';
 
@@ -2952,9 +2814,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get beforeClassDisplaySettingsTitle => 'Before-class reminder display';
-
-  @override
-  String get duringEndDisplaySettingsTitle => 'In-class / end reminder display';
 
   @override
   String get liveDisplaySummaryShortName => 'Short name';
@@ -6997,48 +6856,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get liveCountdownTextStyleSecondOnlySlash => '/s (5/s)';
 
   @override
-  String get miuiIslandLabelStyleTextOnly => 'Text only';
-
-  @override
-  String get miuiIslandLabelStyleIconAndText => 'Icon + text';
-
-  @override
-  String get miuiIslandLabelContentCourseName => 'Course name';
-
-  @override
-  String get miuiIslandLabelContentLocation => 'Room';
-
-  @override
-  String get miuiIslandLabelContentCourseNameAndLocation => 'Course + room';
-
-  @override
-  String get miuiIslandLabelFontWeightRegular => 'Regular';
-
-  @override
-  String get miuiIslandLabelFontWeightMedium => 'Medium';
-
-  @override
-  String get miuiIslandLabelFontWeightBold => 'Bold';
-
-  @override
-  String get miuiIslandLabelRenderQualityStandard => 'Standard';
-
-  @override
-  String get miuiIslandLabelRenderQualityHigh => 'High';
-
-  @override
-  String get miuiIslandLabelRenderQualityUltra => 'Ultra';
-
-  @override
-  String get miuiIslandExpandedIconAppIcon => 'App icon';
-
-  @override
-  String get miuiIslandExpandedIconCustomImage => 'Custom image';
-
-  @override
-  String get miuiIslandExpandedIconHidden => 'Hidden';
-
-  @override
   String get liveBeforeClassQuickActionNone => 'Hidden';
 
   @override
@@ -8426,6 +8243,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Failed to suspend Live Island schedule triggers';
 
   @override
+  String get logLiveUpdatePermanentNotificationFailed =>
+      'Failed to sync the persistent notification switch';
+
+  @override
   String get logLiveUpdateTestRequested =>
       'User requested manual Live Island test notification';
 
@@ -8457,14 +8278,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String logLiveUpdateSettingsSynced(
     String beforeClass,
     String duringClass,
-    String beforeEnd,
     String promote,
     String notification,
     String countdown,
     String courseName,
     String location,
   ) {
-    return 'Flutter Live Island settings synced: beforeClass=$beforeClass, duringClass=$duringClass, beforeEnd=$beforeEnd, promote=$promote, notification=$notification, countdown=$countdown, courseName=$courseName, location=$location';
+    return 'Flutter Live Island settings synced: beforeClass=$beforeClass, duringClass=$duringClass, promote=$promote, notification=$notification, countdown=$countdown, courseName=$courseName, location=$location';
   }
 
   @override
@@ -8568,9 +8388,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logFieldLiveEnableDuringClass => 'live Enable During Class';
 
   @override
-  String get logFieldLiveEnableBeforeEnd => 'live Enable Before End';
-
-  @override
   String get logFieldLivePromoteDuringClass => 'live Promote During Class';
 
   @override
@@ -8645,10 +8462,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get logFieldLiveClassReminderStartMinutes =>
       'live Class Reminder Start Minutes';
-
-  @override
-  String get logFieldLiveEndSecondsCountdownThreshold =>
-      'live End Seconds Countdown Threshold';
 
   @override
   String get logFieldState => 'state';
@@ -10275,4 +10088,104 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get globalSettingsCleared => 'Global display settings cleared';
+
+  @override
+  String get liveIslandVisualTitle => 'Left Icon & Expanded View';
+
+  @override
+  String get liveMiuiExpandedIconLabel => 'Expanded Large Icon';
+
+  @override
+  String get liveMiuiLabelContentLabel => 'Left Text Content';
+
+  @override
+  String liveMiuiLabelFontSizeLabel(String value) {
+    return 'Left Text Size $value';
+  }
+
+  @override
+  String get liveMiuiLabelFontWeightLabel => 'Left Text Weight';
+
+  @override
+  String get liveMiuiLabelImageSubtitle =>
+      'Only effective on Xiaomi-style island layouts. It renders course name or location into the left icon slot';
+
+  @override
+  String get liveMiuiLabelImageTitle => 'Xiaomi Island Left Text Icon';
+
+  @override
+  String liveMiuiLabelLogoCornerRadiusLabel(String value) {
+    return 'Left Icon Corner Radius $value';
+  }
+
+  @override
+  String get liveMiuiLabelLogoSubtitle =>
+      'Only applies to the icon + text style. If not selected, the app icon remains the fallback';
+
+  @override
+  String get liveMiuiLabelLogoTitle => 'Left Icon Logo';
+
+  @override
+  String liveMiuiLabelOffsetXLabel(String value) {
+    return 'Left Text Horizontal Offset $value';
+  }
+
+  @override
+  String liveMiuiLabelOffsetYLabel(String value) {
+    return 'Left Text Vertical Offset $value';
+  }
+
+  @override
+  String get liveMiuiLabelRenderQualityLabel => 'Left Text Render Quality';
+
+  @override
+  String get liveMiuiLabelStyleLabel => 'Left Icon Style';
+
+  @override
+  String get miuiIslandExpandedIconAppIcon => 'App icon';
+
+  @override
+  String get miuiIslandExpandedIconCustomImage => 'Custom image';
+
+  @override
+  String get miuiIslandExpandedIconHidden => 'Hidden';
+
+  @override
+  String get miuiIslandLabelContentCourseName => 'Course name';
+
+  @override
+  String get miuiIslandLabelContentCourseNameAndLocation => 'Course + room';
+
+  @override
+  String get miuiIslandLabelContentLocation => 'Room';
+
+  @override
+  String get miuiIslandLabelFontWeightBold => 'Bold';
+
+  @override
+  String get miuiIslandLabelFontWeightMedium => 'Medium';
+
+  @override
+  String get miuiIslandLabelFontWeightRegular => 'Regular';
+
+  @override
+  String get miuiIslandLabelRenderQualityHigh => 'High';
+
+  @override
+  String get miuiIslandLabelRenderQualityStandard => 'Standard';
+
+  @override
+  String get miuiIslandLabelRenderQualityUltra => 'Ultra';
+
+  @override
+  String get miuiIslandLabelStyleIconAndText => 'Icon + text';
+
+  @override
+  String get miuiIslandLabelStyleTextOnly => 'Text only';
+
+  @override
+  String get replaceImageAction => 'Replace Image';
+
+  @override
+  String get selectImageAction => 'Choose Image';
 }
