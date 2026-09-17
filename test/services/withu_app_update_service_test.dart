@@ -235,6 +235,39 @@ void main() {
     );
   });
 
+  test('compares the four-segment release versions this project ships', () {
+    // versionName 是四段号（5.2.0.5），pub_semver 解析不了它，曾导致新版本
+    // 一律比不出来、云端更新永远提示「已是最新」。
+    expect(WithuAppUpdateService.isRemoteNewer('5.2.0.5', '5.2.0.4'), isTrue);
+    expect(WithuAppUpdateService.isRemoteNewer('5.2.0.4', '5.2.0.5'), isFalse);
+    expect(WithuAppUpdateService.isRemoteNewer('5.2.0.10', '5.2.0.9'), isTrue);
+    expect(WithuAppUpdateService.isRemoteNewer('5.2.0.5', '5.2.0.5'), isFalse);
+    expect(WithuAppUpdateService.isRemoteNewer('v5.2.0.5', '5.2.0.4'), isTrue);
+  });
+
+  test('ranks a four-segment version above the three-segment baseline', () {
+    expect(WithuAppUpdateService.isRemoteNewer('5.2.0.5', '5.2.0'), isTrue);
+    expect(WithuAppUpdateService.isRemoteNewer('5.2.0', '5.2.0.5'), isFalse);
+    expect(WithuAppUpdateService.isRemoteNewer('1.1.11', '1.1.10.6'), isTrue);
+    expect(WithuAppUpdateService.isRemoteNewer('1.1.10.6', '1.1.11'), isFalse);
+  });
+
+  test('maps the pubspec prerelease form onto the fourth segment', () {
+    // docs/RELEASE.md 约定：1.1.10-6+36 与 1.1.10.6 视为同一版本。
+    expect(
+      WithuAppUpdateService.isRemoteNewer('1.1.10-6+36', '1.1.10.6'),
+      isFalse,
+    );
+    expect(
+      WithuAppUpdateService.isRemoteNewer('1.1.10.6', '1.1.10-6+36'),
+      isFalse,
+    );
+    expect(
+      WithuAppUpdateService.isRemoteNewer('1.1.10-7+37', '1.1.10.6'),
+      isTrue,
+    );
+  });
+
   test('probes built-in mirrors and selects the faster one', () async {
     SharedPreferences.setMockInitialValues({});
     final requestedUrls = <Uri>[];

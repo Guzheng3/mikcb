@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:pub_semver/pub_semver.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_http_client.dart';
@@ -227,12 +226,128 @@ class WithuAppUpdateService {
     );
   }
 
+  /// [remote] 比 [current] 高时返回 true。
+  ///
+  /// 本工程的对外版本号是四段（`5.2.0.5`），pubspec 里则写作 `5.2.0-0+135`；
+  /// `docs/RELEASE.md` 约定二者按 `1.1.10-6+36` ≡ `1.1.10.6` 比较。pub_semver 只接受
+  /// 三段号（`Version.parse('5.2.0.5')` 直接抛异常），四段号会因此永远比不出高低、
+  /// 云端更新永远回「已是最新」，所以这里自行解析比较。
   static bool isRemoteNewer(String remote, String current) {
-    final remoteVersion = _parseVersion(remote);
-    final currentVersion = _parseVersion(current);
-    return remoteVersion != null &&
-        currentVersion != null &&
-        remoteVersion > currentVersion;
+    return _compareVersions(remote, current) > 0;
+  }
+
+  static int _compareVersions(String left, String right) {
+    final leftVersion = _parseVersion(left);
+    final rightVersion = _parseVersion(right);
+    final maxLength =
+        leftVersion.mainParts.length > rightVersion.mainParts.length
+        ? leftVersion.mainParts.length
+        : rightVersion.mainParts.length;
+
+    for (var index = 0; index < maxLength; index++) {
+      final leftValue = index < leftVersion.mainParts.length
+          ? leftVersion.mainParts[index]
+          : 0;
+      final rightValue = index < rightVersion.mainParts.length
+          ? rightVersion.mainParts[index]
+          : 0;
+      if (leftValue != rightValue) {
+        return leftValue.compareTo(rightValue);
+      }
+    }
+
+    final leftPrerelease = leftVersion.prerelease;
+    final rightPrerelease = rightVersion.prerelease;
+    if (leftPrerelease == null && rightPrerelease == null) {
+      return 0;
+    }
+    if (leftPrerelease == null) {
+      return 1;
+    }
+    if (rightPrerelease == null) {
+      return -1;
+    }
+    return _comparePrerelease(leftPrerelease, rightPrerelease);
+  }
+
+  /// 数字段进 [mainParts]，比较时短的一方按 0 补齐；
+  /// `-` 后面的纯数字段按第四段编号并入 [mainParts]（`1.1.10-6+36` ≡ `1.1.10.6`），
+  /// 非纯数字段（如 `rc1`、`rc.10`）保留为预发布标识，排在正式号之后。
+  static _ParsedVersion _parseVersion(String raw) {
+    final normalized = raw.trim().replaceFirst(RegExp(r'^[vV]'), '');
+    final withoutBuild = normalized.split('+').first;
+    final dashIndex = withoutBuild.indexOf('-');
+    final hasPrerelease = dashIndex != -1;
+    final base = hasPrerelease
+        ? withoutBuild.substring(0, dashIndex)
+        : withoutBuild;
+    final explicitPrerelease = hasPrerelease
+        ? withoutBuild.substring(dashIndex + 1).trim()
+        : null;
+    final baseParts = base
+        .split('.')
+        .map((item) => int.tryParse(item.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0)
+        .toList();
+
+    if (explicitPrerelease != null) {
+      // "29-debug" 这类数字前缀也当作第四段编号，与旧版更新检查行为一致。
+      final numericPrerelease = _numericPrefixParts(explicitPrerelease);
+      if (numericPrerelease != null) {
+        return _ParsedVersion(
+          mainParts: [...baseParts, ...numericPrerelease],
+          prerelease: null,
+        );
+      }
+    }
+
+    return _ParsedVersion(
+      mainParts: baseParts,
+      prerelease: explicitPrerelease == null || explicitPrerelease.isEmpty
+          ? null
+          : explicitPrerelease,
+    );
+  }
+
+  /// 取预发布段的数字前缀，如 `6.1` → [6, 1]、`29-debug` → [29]；
+  /// 首段就不含数字（如 `rc.10`）时返回 null，表示它整体是文字标识。
+  static List<int>? _numericPrefixParts(String raw) {
+    final values = <int>[];
+    for (final part in raw.split('.')) {
+      final value = int.tryParse(part);
+      if (value != null) {
+        values.add(value);
+        continue;
+      }
+      final match = RegExp(r'^\d+').firstMatch(part);
+      if (match != null) {
+        values.add(int.parse(match.group(0)!));
+      }
+      break;
+    }
+    return values.isEmpty ? null : values;
+  }
+
+  static int _comparePrerelease(String left, String right) {
+    final leftParts = left.split('.');
+    final rightParts = right.split('.');
+    final maxLength = leftParts.length > rightParts.length
+        ? leftParts.length
+        : rightParts.length;
+
+    for (var index = 0; index < maxLength; index++) {
+      final leftValue = index < leftParts.length ? leftParts[index] : '';
+      final rightValue = index < rightParts.length ? rightParts[index] : '';
+      if (leftValue == rightValue) {
+        continue;
+      }
+      final leftNumber = int.tryParse(leftValue);
+      final rightNumber = int.tryParse(rightValue);
+      if (leftNumber != null && rightNumber != null) {
+        return leftNumber.compareTo(rightNumber);
+      }
+      return leftValue.compareTo(rightValue);
+    }
+    return 0;
   }
 
   static bool _isLocalUpdateHost(String host) {
@@ -240,18 +355,16 @@ class WithuAppUpdateService {
     return localHosts.contains(host.toLowerCase());
   }
 
-  static Version? _parseVersion(String raw) {
-    final normalized = raw.trim().replaceFirst(RegExp(r'^[vV]'), '');
-    try {
-      return Version.parse(normalized);
-    } on FormatException {
-      return null;
-    }
-  }
-
   void dispose() {
     if (_ownsClient) {
       _client.close();
     }
   }
+}
+
+class _ParsedVersion {
+  final List<int> mainParts;
+  final String? prerelease;
+
+  const _ParsedVersion({required this.mainParts, required this.prerelease});
 }
