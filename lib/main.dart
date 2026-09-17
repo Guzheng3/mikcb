@@ -314,6 +314,15 @@ Future<void> main() async {
           buildNumber: '',
         );
       }
+      // 落一条真实版本号：发布事故里最难核对的就是「云端记录的版本号 vs 包内 versionName」，
+      // 而 release 包不打印 debugPrint，只能靠运行日志留痕。
+      unawaited(
+        AppLogService.instance.info(
+          'app_version',
+          'versionName=${packageInfo.version} versionCode='
+          '${packageInfo.buildNumber} package=${packageInfo.packageName}',
+        ),
+      );
       // 依赖倒置登记：八宫格目录（widgets 层）经此回调取设置库私有子页，
       // 拆分后 home_menu_catalog 不再直接 import 设置页（消除 widgets →
       // screens 循环依赖）。登记唯一的显式入口，早于任何菜单渲染。
@@ -752,6 +761,14 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       if (release == null || release.downloadUrl?.trim().isEmpty != false) {
         return;
       }
+      // 记下「当前版本 vs 云端声明的版本」：两者若对不上（例如云端把旧包标成新版本号），
+      // 这条日志就是最直接的证据，release 包没有它无从回溯。
+      unawaited(
+        AppLogService.instance.info(
+          'withu_update_available',
+          'current=$currentVersion remote=${release.version}',
+        ),
+      );
       await _showWithuUpdatePrompt(release, currentVersion);
     } catch (error, stackTrace) {
       unawaited(
