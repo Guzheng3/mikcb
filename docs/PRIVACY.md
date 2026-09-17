@@ -43,7 +43,7 @@
 
 ## 联系
 
-隐私相关问题可通过 [GitHub Issues](https://github.com/Mutx163/mikcb/issues) 联系维护者（请勿在公开 Issue 中粘贴个人敏感信息）。
+隐私相关问题可通过 [GitHub Issues](https://github.com/Guzheng3/mikcb/issues) 联系维护者（请勿在公开 Issue 中粘贴个人敏感信息）。
 
 ## 变更
 

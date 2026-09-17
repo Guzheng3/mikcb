@@ -3,12 +3,12 @@
 ![Flutter](https://img.shields.io/badge/Flutter-3.44.8-02569B?logo=flutter&logoColor=white)
 ![Android](https://img.shields.io/badge/Android-Only-34A853?logo=android&logoColor=white)
 ![HyperOS](https://img.shields.io/badge/Focus-HyperOS%20%E8%B6%85%E7%BA%A7%E5%B2%9B-FF6A00)
-![Release](https://img.shields.io/github/v/release/Mutx163/mikcb?display_name=tag)
-![CI](https://img.shields.io/github/actions/workflow/status/Mutx163/mikcb/ci.yml?branch=main&label=CI)
+![Release](https://img.shields.io/github/v/release/Guzheng3/mikcb?display_name=tag)
+![CI](https://img.shields.io/github/actions/workflow/status/Guzheng3/mikcb/ci.yml?branch=main&label=CI)
 
 一个面向校园场景的 Android 课表应用。
 
-🌐 官网：<https://163366.xyz> · [下载最新版本](https://github.com/Mutx163/mikcb/releases)
+🌐 官网：<https://gzr.xjy.xn--6qq986b3xl> · [下载最新版本](https://github.com/Guzheng3/mikcb/releases)
 
 轻屿课表的重点不是单纯展示课程，而是把课表、提醒、通知、小组件和 HyperOS 超级岛串成一条完整链路。它关注的是“接下来要上什么课、现在这节课进行到哪、能不能不打开应用就知道状态”。
 
@@ -48,9 +48,9 @@
 
 ## 教务导入与适配
 
-- 当前应用已经支持一部分学校的教务系统网页登录导入，适配脚本来自 `qingyu_warehouse`
+- 当前应用已经支持一部分学校的教务系统网页登录导入，适配脚本随应用内置（`assets/warehouse/`）
 - 如果你的学校暂时还没有适配，仍然可以先走 `.ics` 导入或完整备份迁移
-- 教务适配仓库：<https://github.com/Mutx163/qingyu_warehouse>
+- 适配资源仓库：<https://github.com/Guzheng3/mikcb>
 - 如果你会网页调试、抓包、JavaScript 或愿意维护自己学校的教务系统，欢迎直接参与适配补充
 
 ## 为什么做这个
@@ -66,7 +66,7 @@
 
 ## 下载与更新
 
-- 发布页：<https://github.com/Mutx163/mikcb/releases>
+- 发布页：<https://github.com/Guzheng3/mikcb/releases>
 - 正式包当前以 `arm64-v8a` 为主
 - 应用内可读取 GitHub Releases，显示版本号、更新时间和下载入口
 - 发行流程见 [docs/RELEASE.md](./docs/RELEASE.md)
@@ -121,7 +121,7 @@ flutter build apk --release --flavor prod --target-platform android-arm64
 - 产品说明（存档）：[docs/PRODUCT.md](./docs/PRODUCT.md)
 - 发布流程：[docs/RELEASE.md](./docs/RELEASE.md)
 - 网站与国际化协作约定：[docs/WEB_AND_L10N_WORKFLOW.md](./docs/WEB_AND_L10N_WORKFLOW.md)
-- 变更日志：[GitHub Releases](https://github.com/Mutx163/mikcb/releases) / [docs/releases/](./docs/releases/)
+- 变更日志：[GitHub Releases](https://github.com/Guzheng3/mikcb/releases) / [docs/releases/](./docs/releases/)
 
 ## 技术栈
 

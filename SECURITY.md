@@ -14,7 +14,7 @@
 Send a private report to the maintainer:
 
 - GitHub: [@Mutx163](https://github.com/Mutx163) (Security Advisories or private message)
-- Or open a [GitHub Security Advisory](https://github.com/Mutx163/mikcb/security/advisories/new) on this repository
+- Or open a [GitHub Security Advisory](https://github.com/Guzheng3/mikcb/security/advisories/new) on this repository
 
 Include:
 
@@ -30,6 +30,6 @@ Include:
 
 ## Out of Scope
 
-- Issues in third-party school adapters (`qingyu_warehouse`) — report in that repository
+- Issues in school adapters bundled with the app — report via [Issues](https://github.com/Guzheng3/mikcb/issues)
 - Social engineering against end users
-- Missing features or general product feedback — use [Issues](https://github.com/Mutx163/mikcb/issues)
+- Missing features or general product feedback — use [Issues](https://github.com/Guzheng3/mikcb/issues)

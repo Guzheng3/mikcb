@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
-BASE_URL = "https://163366.xyz"
+BASE_URL = "https://gzr.xjy.xn--6qq986b3xl"
 TOPIC_LASTMOD = "2026-08-19"
 RELEASE_TYPES = ("新增", "优化", "修复", "调整", "测试", "移除", "更新")
 
@@ -64,7 +64,7 @@ TOPIC_PAGES = (
             ("方式一：教务系统网页登录导入", "在 App 内打开「导入课程表 → 教务系统导入」，选择学校后按页面提示登录教务系统。适配脚本会读取课程安排并转换为应用内课表，具体登录步骤和验证码要求取决于学校教务系统。", ("先在适配学校列表确认学校", "按学校页面提示完成登录或验证码", "导入后检查学期、周次、节次和地点", "不要把教务密码分享给任何第三方")),
             ("方式二：ICS 文件导入", "如果学校或其他课表工具可以导出 iCalendar（.ics）文件，可以在应用中选择文件导入。ICS 适合在不同课表软件之间迁移课程，但导出文件的周次和重复规则需要在导入后核对。", ("支持 .ics 文件", "适合跨应用迁移", "导入后检查单双周和课程时间", "保留原始文件作为备份")),
             ("方式三：AI 识图与表格模板", "手上只有课表截图时，可以尝试 AI 识图导入；也可以使用表格模板批量整理课程。识图结果和表格内容都建议逐项核对，尤其是教室、单双周、起止日期和周次范围。", ("适合没有网页适配的学校", "截图清晰、表头完整时识别更可靠", "复杂排课请优先人工复核", "导入前后都可以使用备份功能")),
-            ("找不到学校怎么办？", "先选择 ICS、AI 识图或表格模板完成课表建立，再到 qingyu_warehouse 提交学校教务适配需求。学校名单会自动同步，适配情况以官网学校列表和应用内列表为准。", ("查看已适配学校列表", "反馈学校名称和教务系统入口", "不要在公开 Issue 中提交账号密码", "等待适配期间仍可使用通用导入方式")),
+            ("找不到学校怎么办？", "先选择 ICS、AI 识图或表格模板完成课表建立，再到 mikcb 仓库提交学校教务适配需求。适配情况以官网学校列表和应用内列表为准。", ("查看已适配学校列表", "反馈学校名称和教务系统入口", "不要在公开 Issue 中提交账号密码", "等待适配期间仍可使用通用导入方式")),
         ),
     },
     {
@@ -231,7 +231,7 @@ def site_header(prefix: str) -> str:
     <div class="nav-actions">
       <a
         class="nav-github"
-        href="https://github.com/Mutx163/mikcb"
+        href="https://github.com/Guzheng3/mikcb"
         target="_blank"
         rel="noreferrer"
         aria-label="GitHub 仓库"
@@ -268,7 +268,7 @@ def site_footer(prefix: str) -> str:
     <nav class="footer-cols" aria-label="页脚导航">
       <div class="footer-col"><small>产品</small><a href="{home}">首页</a><a href="{prefix}android-timetable.html">Android 课表</a><a href="{prefix}hyperos-timetable.html">HyperOS 超级岛</a></div>
       <div class="footer-col"><small>指南</small><a href="{prefix}schools.html">适配学校</a><a href="{prefix}course-import.html">教务导入</a><a href="{prefix}webdav-timetable-sync.html">WebDAV 同步</a></div>
-      <div class="footer-col"><small>开源</small><a href="https://github.com/Mutx163/mikcb" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/Mutx163/mikcb/releases" target="_blank" rel="noreferrer">Releases</a><a href="{prefix}contributing.html">贡献指南</a></div>
+      <div class="footer-col"><small>开源</small><a href="https://github.com/Guzheng3/mikcb" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/Guzheng3/mikcb/releases" target="_blank" rel="noreferrer">Releases</a><a href="{prefix}contributing.html">贡献指南</a></div>
     </nav>
   </div>
   <p class="footer-copy">Copyright © 轻屿课表 · GPL-3.0</p>
@@ -429,9 +429,9 @@ def render_school_page(payload: dict[str, Any]) -> str:
   <h1>轻屿课表已适配学校与教务导入</h1>
   <p class="seo-lead">轻屿课表支持在 Android App 内选择「导入课程表 → 教务系统导入」，登录学校教务系统后直接同步课程。当前共有 <strong>{school_count} 所高校</strong>、<strong>{generic_count} 套通用教务适配</strong>，共 {total} 条导入入口。</p>
   <div class="seo-stat-grid"><div><strong>{school_count}</strong><span>所高校</span></div><div><strong>{generic_count}</strong><span>套通用适配</span></div><div><strong>{total}</strong><span>条入口</span></div></div>
-  <div class="seo-callout"><strong>找不到你的学校？</strong><p>可以先使用 .ics 文件、AI 识图或表格模板导入；也可以在 <a href="https://github.com/Mutx163/qingyu_warehouse/issues" target="_blank" rel="noreferrer">qingyu_warehouse 提交适配需求</a>。</p></div>
+  <div class="seo-callout"><strong>找不到你的学校？</strong><p>可以先使用 .ics 文件、AI 识图或表格模板导入；也可以在 <a href="https://github.com/Guzheng3/mikcb/issues" target="_blank" rel="noreferrer">mikcb 提交适配需求</a>。</p></div>
   <h2>支持网页登录导入的高校</h2>
-  <p class="seo-muted">以下学校名单由 <a href="https://github.com/Mutx163/qingyu_warehouse" target="_blank" rel="noreferrer">qingyu_warehouse</a> 自动同步，最近同步时间：{body(updated)}。</p>
+  <p class="seo-muted">以下学校名单来自应用内置的适配资源，最近生成时间：{body(updated)}。</p>
   {"".join(groups_html)}
   <section class="seo-school-group"><h2>通用教务适配 <span>{generic_count} 套</span></h2><ul class="seo-school-list">{generic_rows}</ul></section>
   <div class="seo-related-links"><a class="primary-cta" href="./course-import.html">查看完整导入方式</a><a class="secondary-cta" href="./">返回官网首页</a></div>
@@ -479,7 +479,7 @@ def render_release_index(feed: dict[str, Any]) -> str:
   {breadcrumb("../", "更新日志")}
   <p class="section-label">更新日志 / CHANGELOG</p>
   <h1>轻屿课表版本更新日志</h1>
-  <p class="seo-lead">这里汇总轻屿课表 Android App 的公开版本更新，包括 HyperOS 超级岛、课程提醒、教务导入、WebDAV 云同步、桌面小组件和课表管理优化。安装包和完整 Release 讨论仍以 <a href="https://github.com/Mutx163/mikcb/releases" target="_blank" rel="noreferrer">GitHub Releases</a> 为准。</p>
+  <p class="seo-lead">这里汇总轻屿课表 Android App 的公开版本更新，包括 HyperOS 超级岛、课程提醒、教务导入、WebDAV 云同步、桌面小组件和课表管理优化。安装包和完整 Release 讨论仍以 <a href="https://github.com/Guzheng3/mikcb/releases" target="_blank" rel="noreferrer">GitHub Releases</a> 为准。</p>
   <div class="seo-grid">{"".join(cards)}</div>
   <div class="seo-related-links"><a class="primary-cta" href="../#download">下载最新版本</a><a class="secondary-cta" href="../">返回官网首页</a></div>
 </section>"""
@@ -521,7 +521,7 @@ def render_release_detail(item: dict[str, Any]) -> str:
             sections.append(f'<section class="seo-release-section"><h2>{body(change_type)}</h2><ul class="detail-list">{"".join(f"<li>{body(value)}</li>" for value in entries)}</ul></section>')
     if not sections:
         sections.append(f'<p>{body(description)}</p>')
-    release_url = text(item.get("releaseUrl"), "https://github.com/Mutx163/mikcb/releases")
+    release_url = text(item.get("releaseUrl"), "https://github.com/Guzheng3/mikcb/releases")
     download_url = text(item.get("downloadUrl"), release_url)
     content = f"""
 <section class="section-shell seo-article">
@@ -587,7 +587,7 @@ def build_sitemap(feed: dict[str, Any], schools: dict[str, Any]) -> str:
 
 
 def main() -> int:
-    # 说明：曾提供 --base-url 选项，但生成器仅支持规范站点 163366.xyz
+    # 说明：曾提供 --base-url 选项，但生成器仅支持规范站点 gzr.xjy.我爱你
     # （canonical/og:url/sitemap 均以 BASE_URL 为唯一事实源），传入其他值
     # 只会被 SystemExit 拒绝，属死参数，已移除。
     parser = argparse.ArgumentParser(description=__doc__)

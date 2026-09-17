@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        **教务导入脚本在独立仓库维护：** [qingyu_warehouse](https://github.com/Mutx163/qingyu_warehouse)
+        **教务导入脚本随应用内置：** [mikcb](https://github.com/Guzheng3/mikcb)
 
         若你准备直接提交适配代码，请前往该仓库开 Issue / PR。
         此处仅用于从主应用侧登记需求，便于排期。

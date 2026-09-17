@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://163366.xyz/sitemap.xml
+Sitemap: https://gzr.xjy.xn--6qq986b3xl/sitemap.xml

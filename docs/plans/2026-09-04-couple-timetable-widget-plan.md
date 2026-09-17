@@ -19,9 +19,9 @@
 
 | 文件 | 用途 |
 |---|---|
-| `android/app/src/main/kotlin/com/mutx163/qingyu/CoupleTimetableWidgetProvider.kt` | 小组件 Provider 核心逻辑 |
-| `android/app/src/main/kotlin/com/mutx163/qingyu/CoupleTimetableStore.kt` | 保存/读取 withU 账号、伴侣、双方课程快照和高亮颜色设置 |
-| `android/app/src/main/kotlin/com/mutx163/qingyu/CoupleTimetableViewsService.kt` | 可滚动课程列表的 RemoteViewsService + Factory |
+| `android/app/src/main/kotlin/vip/qinghan/withu/CoupleTimetableWidgetProvider.kt` | 小组件 Provider 核心逻辑 |
+| `android/app/src/main/kotlin/vip/qinghan/withu/CoupleTimetableStore.kt` | 保存/读取 withU 账号、伴侣、双方课程快照和高亮颜色设置 |
+| `android/app/src/main/kotlin/vip/qinghan/withu/CoupleTimetableViewsService.kt` | 可滚动课程列表的 RemoteViewsService + Factory |
 | `android/app/src/main/res/layout/widget_couple_timetable.xml` | 4×2 双栏卡片主体布局 |
 | `android/app/src/main/res/layout/widget_couple_course_item.xml` | 单节课条目布局 |
 | `android/app/src/main/res/layout/widget_couple_course_divider.xml` | 课程间隔线 |
@@ -48,8 +48,8 @@
 | `android/app/src/main/res/values-zh-rHK/widget_strings.xml` | 繁中（香港）文案 |
 | `android/app/src/main/res/values-zh-rTW/widget_strings.xml` | 繁中（台湾）文案 |
 | `android/app/src/main/AndroidManifest.xml` | 注册 receiver 与 `RemoteViewsService` |
-| `android/app/src/main/kotlin/com/mutx163/qingyu/TodayWidgetSupport.kt` | `updateAll()` 加入情侣课表刷新 |
-| `android/app/src/main/kotlin/com/mutx163/qingyu/HomeWidgetStorage.kt` | `rescheduleRefresh()` 加入情侣课表刷新时间 |
+| `android/app/src/main/kotlin/vip/qinghan/withu/TodayWidgetSupport.kt` | `updateAll()` 加入情侣课表刷新 |
+| `android/app/src/main/kotlin/vip/qinghan/withu/HomeWidgetStorage.kt` | `rescheduleRefresh()` 加入情侣课表刷新时间 |
 
 ## 3. 资源规格
 

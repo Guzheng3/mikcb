@@ -506,7 +506,7 @@ function bindGeneralAnalytics() {
 
   document
     .querySelectorAll(
-      'a[href="https://github.com/Mutx163/mikcb"], a[href="https://github.com/Mutx163/mikcb/releases"]'
+      'a[href="https://github.com/Guzheng3/mikcb"], a[href="https://github.com/Guzheng3/mikcb/releases"]'
     )
     .forEach((link) => {
       if (
@@ -699,10 +699,10 @@ if (navSectionLinks.length) {
   window.addEventListener("load", syncActiveNavFromLocation);
 }
 
-const repoApiUrl = "https://api.github.com/repos/Mutx163/mikcb";
+const repoApiUrl = "https://api.github.com/repos/Guzheng3/mikcb";
 const releasesApiUrl = "./releases/latest.json";
 const releaseFeedApiUrl = "./releases/feed.json";
-const fallbackReleasePage = "https://github.com/Mutx163/mikcb/releases";
+const fallbackReleasePage = "https://github.com/Guzheng3/mikcb/releases";
 const defaultMirrorPrefix = "https://ghfast.top/";
 const globalMirrorProbeKey = "mikcb-docs-fastest-mirror:__global__";
 function getMirrorCandidates() {
@@ -1275,7 +1275,7 @@ async function loadTrustSignals(releases = 0) {
     } catch (error) {
       try {
         const badgeResponse = await fetch(
-          "https://img.shields.io/github/stars/Mutx163/mikcb.json",
+          "https://img.shields.io/github/stars/Guzheng3/mikcb.json",
           { cache: "no-store" }
         );
         if (badgeResponse.ok) {

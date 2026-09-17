@@ -2,7 +2,7 @@
 
 > 状态：方案评审中（未开工）
 > 范围：Android 原生桌面小组件（Kotlin AppWidgetProvider + RemoteViews），Flutter 侧设置页与数据同步
-> 关联代码：`android/app/src/main/kotlin/com/mutx163/qingyu/*Widget*.kt`、`android/app/src/main/res/layout/widget_*.xml`、`lib/screens/settings/settings_home_widget.dart`、`lib/services/stats_widget_service.dart`
+> 关联代码：`android/app/src/main/kotlin/vip/qinghan/withu/*Widget*.kt`、`android/app/src/main/res/layout/widget_*.xml`、`lib/screens/settings/settings_home_widget.dart`、`lib/services/stats_widget_service.dart`
 
 ---
 

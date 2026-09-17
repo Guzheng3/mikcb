@@ -7,8 +7,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        请先确认使用的是 [最新 Release](https://github.com/Mutx163/mikcb/releases)。
-        安全问题请走 [Security Advisory](https://github.com/Mutx163/mikcb/security/advisories/new)，不要在此提交。
+        请先确认使用的是 [最新 Release](https://github.com/Guzheng3/mikcb/releases)。
+        安全问题请走 [Security Advisory](https://github.com/Guzheng3/mikcb/security/advisories/new)，不要在此提交。
 
   - type: input
     id: version

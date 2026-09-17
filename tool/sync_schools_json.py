@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
-"""Fetch qingyu_warehouse root_index.yaml and write docs/schools.json for the site."""
+"""Write docs/schools.json for the site from the bundled school index.
+
+The app ships its adapters inside assets/warehouse/, so that bundled index is
+the single source of truth for which schools are supported. Nothing is fetched
+over the network.
+"""
 
 from __future__ import annotations
 
 import json
 import re
 import sys
-import urllib.error
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-DEFAULT_SOURCE = "https://github.com/Mutx163/qingyu_warehouse"
-DEFAULT_SOURCE_REF = "main"
-DEFAULT_YAML_URL = (
-    "https://raw.githubusercontent.com/Mutx163/qingyu_warehouse/main/index/root_index.yaml"
-)
+BUNDLED_INDEX = Path("assets/warehouse/root_index.yaml")
 DEFAULT_OUTPUT = Path("docs/schools.json")
 
 QUOTED_VALUE = re.compile(r'^[^:\s]+:\s*["\']?(.+?)["\']?\s*$')
@@ -76,7 +75,7 @@ def sort_key(entry: dict[str, str]) -> tuple[int, str, str]:
     return (generic_rank, entry.get("initial", ""), entry.get("name", ""))
 
 
-def build_payload(entries: list[dict[str, str]]) -> dict:
+def build_payload(entries: list[dict[str, str]], source: str) -> dict:
     normalized = []
     for entry in sorted(entries, key=sort_key):
         normalized.append(
@@ -94,8 +93,7 @@ def build_payload(entries: list[dict[str, str]]) -> dict:
 
     return {
         "updatedAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
-        "source": DEFAULT_SOURCE,
-        "sourceRef": DEFAULT_SOURCE_REF,
+        "source": source,
         "counts": {
             "total": len(normalized),
             "schools": school_count,
@@ -105,29 +103,20 @@ def build_payload(entries: list[dict[str, str]]) -> dict:
     }
 
 
-def fetch_yaml(url: str) -> str:
-    request = urllib.request.Request(url, headers={"User-Agent": "mikcb-sync-schools-json"})
-    with urllib.request.urlopen(request, timeout=60) as response:
-        charset = response.headers.get_content_charset() or "utf-8"
-        return response.read().decode(charset)
-
-
 def main() -> int:
     output_path = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_OUTPUT
-    yaml_url = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_YAML_URL
+    index_path = Path(sys.argv[2]) if len(sys.argv) > 2 else BUNDLED_INDEX
 
-    try:
-        yaml_text = fetch_yaml(yaml_url)
-    except urllib.error.URLError as error:
-        print(f"ERROR: failed to fetch {yaml_url}: {error}", file=sys.stderr)
+    if not index_path.is_file():
+        print(f"ERROR: bundled school index not found: {index_path}", file=sys.stderr)
         return 1
 
-    entries = parse_root_index_yaml(yaml_text)
+    entries = parse_root_index_yaml(index_path.read_text(encoding="utf-8"))
     if not entries:
-        print("ERROR: no schools parsed from root_index.yaml", file=sys.stderr)
+        print(f"ERROR: no schools parsed from {index_path}", file=sys.stderr)
         return 1
 
-    payload = build_payload(entries)
+    payload = build_payload(entries, index_path.as_posix())
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(f"{json.dumps(payload, ensure_ascii=False, indent=2)}\n", encoding="utf-8")
     print(

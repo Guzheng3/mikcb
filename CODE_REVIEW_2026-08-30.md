@@ -107,7 +107,7 @@ if (schemes.length > maxSchemes) {
 
 ### M5. 卡片绑定记录清理依赖 `onDeleted`，force-stop 后失效
 
-`android/app/src/main/kotlin/com/mutx163/qingyu/WidgetBindingStore.kt:36`
+`android/app/src/main/kotlin/vip/qinghan/withu/WidgetBindingStore.kt:36`
 
 ```kotlin
 fun remove(context: Context, appWidgetId: Int) {

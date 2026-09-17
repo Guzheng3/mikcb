@@ -82,9 +82,9 @@ Android 签名：`android/key.properties` 与 keystore **不要提交**；CI 使
 - 多语言（`lib/l10n/*.arb`）
 - 文档与官网（`docs/`）
 
-### 教务系统适配（独立仓库）
+### 教务系统适配（随应用内置）
 
-网页登录导入脚本在 **[qingyu_warehouse](https://github.com/Mutx163/qingyu_warehouse)** 维护。请在该仓库开 Issue / PR。
+网页登录导入脚本随应用内置在 `assets/warehouse/`。请在 **[本仓库](https://github.com/Guzheng3/mikcb)** 开 Issue / PR。
 
 ### 不要提交的内容
 
@@ -112,5 +112,5 @@ Maintainer 发版流程见 [docs/RELEASE.md](./docs/RELEASE.md)。外部贡献�
 
 ## 获取帮助
 
-- [GitHub Issues](https://github.com/Mutx163/mikcb/issues)
-- [Releases / 更新日志](https://github.com/Mutx163/mikcb/releases)
+- [GitHub Issues](https://github.com/Guzheng3/mikcb/issues)
+- [Releases / 更新日志](https://github.com/Guzheng3/mikcb/releases)

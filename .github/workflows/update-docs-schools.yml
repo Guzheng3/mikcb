@@ -1,14 +1,17 @@
 name: Update Docs Schools JSON
 
 on:
-  schedule:
-    # 每天 09:30（北京时间），与 release JSON 同步任务错开
-    - cron: "30 1 * * *"
+  push:
+    branches:
+      - main
+    paths:
+      # The bundled index is the only source of supported schools.
+      - 'assets/warehouse/root_index.yaml'
   workflow_dispatch:
 
 concurrency:
   # Schools and releases both rewrite sitemap/pages; serialize their commits.
-  # cancel-in-progress 必须为 false：两个定时任务共用本组，取消会丢同步。
+  # cancel-in-progress 必须为 false：两个任务共用本组，取消会丢一次数据同步。
   group: docs-data-${{ github.ref }}
   cancel-in-progress: false
 
@@ -30,7 +33,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Sync schools JSON from qingyu_warehouse
+      - name: Generate schools JSON from bundled index
         run: python tool/sync_schools_json.py
 
       - name: Build crawlable docs pages and sitemap

@@ -126,9 +126,9 @@
 - [.github/workflows/ci.yml](../.github/workflows/ci.yml)：`push` / `pull_request` 时执行依赖安装、静态分析和测试。
 - [.github/workflows/android-build.yml](../.github/workflows/android-build.yml)：推送 `v*` tag 时先执行检查，再签名构建 `arm64-v8a` APK 并创建 / 更新 GitHub Release，最后同步源码 / tag / APK 到 GitCode 镜像。
 - [.github/workflows/update-docs-releases.yml](../.github/workflows/update-docs-releases.yml)：GitHub Release 发布、编辑、撤销等事件后自动更新 `docs/releases/latest.json`，供应用内更新检查读取。
-- [.github/workflows/update-docs-schools.yml](../.github/workflows/update-docs-schools.yml)：每天定时（及手动）从 `qingyu_warehouse` 拉取 `root_index.yaml`，生成 `docs/schools.json`，供官网已适配学校列表读取。
+- [.github/workflows/update-docs-schools.yml](../.github/workflows/update-docs-schools.yml)：内置学校索引 `assets/warehouse/root_index.yaml` 变更时（及手动触发）生成 `docs/schools.json`，供官网已适配学校列表读取。
 
-上游教务适配的自动同步在 [`qingyu_warehouse` 仓库](https://github.com/Mutx163/qingyu_warehouse) 的 `.github/workflows/sync-upstream.yml` 中执行（每天 09:00 北京时间）；mikcb 侧仅通过上述 schools JSON 任务跟进索引变化。
+适配脚本随应用内置在 `assets/warehouse/` 下，应用运行时不访问任何外部适配仓库。
 
 也就是说：
 
@@ -159,7 +159,7 @@ release workflow 还会做这些事：
 
 | 平台 | 配置 | 说明 |
 |------|------|------|
-| GitCode | 创建仓库 | 路径默认需与 GitHub 相同（`Mutx163/mikcb`）；不同则设 GitHub Variable `GITCODE_REPOSITORY` |
+| GitCode | 创建仓库 | 路径默认需与 GitHub 相同（`Guzheng3/mikcb`）；不同则设 GitHub Variable `GITCODE_REPOSITORY` |
 | GitCode | [个人访问令牌](https://gitcode.com/setting/token-classic) | 需具备仓库写权限（推代码 + 创建/编辑 Release） |
 | GitHub | Secret `GITCODE_TOKEN` | 存 GitCode 令牌 |
 | GitHub | Variable `GITCODE_USERNAME` | GitCode 用户名；同时充当同步开关 |

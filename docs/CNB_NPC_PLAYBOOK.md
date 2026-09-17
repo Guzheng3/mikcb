@@ -15,7 +15,7 @@
 ## 1. 平台与坐标
 
 - 平台：**CNB（cnb.cool）**，用户口中的 "CMB" 即此平台。
-- 本项目 CNB 仓库：`Mutx163/qingyukb`（GitHub 主仓 `Mutx163/mikcb` 双推送的 CNB 侧；NPC 协作发生在 CNB 侧）。
+- 本项目 CNB 仓库：`Mutx163/qingyukb`（GitHub 主仓 `Guzheng3/mikcb` 双推送的 CNB 侧；NPC 协作发生在 CNB 侧）。
 - **NPC 机制**：在 Issue / PR 评论里 @ 一个 NPC，平台为它启动一条流水线；默认只能读代码、写评论；评论里勾选 **「替我上班」开启工作模式** 后才能写代码、推分支、发 PR（需开发者权限）。NPC 以当事人身份**限时/限地/限权**代办，回复通常以 `@cnb.akIWDscTwHA(仓央嘉措)` 开头（这是用户账号）。
 - **编号空间共用**：ISS 与 PR 共用一套 #N（例如 #94 是 PR、#95 是 ISS；68 ISS + 33 PR = 最大编号 101）。看到 `#N` 引用先分清是哪类，再谈对账。
 
