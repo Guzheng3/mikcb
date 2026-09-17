@@ -1,7 +1,28 @@
 {
-  "generatedAt": "2026-09-17T05:35:16.813Z",
-  "releaseCount": 5,
+  "generatedAt": "2026-09-17T06:37:17.383Z",
+  "releaseCount": 6,
   "releases": [
+    {
+      "channelLabel": "预发布",
+      "version": "5.2.0.7",
+      "title": "v5.2.0.7",
+      "prerelease": true,
+      "publishedAt": "2026-09-17T06:36:57Z",
+      "description": "优化 更新版本核对：发布时会核对更新提示里的版本号与安装包内的真实版本号，两者不一致直接拒绝发布，不会再出现「提示有新版本、装上去还是旧版」的情况。 · 优化 版本信息留痕：应用启动时会记录自身真实版本号与版本代码，核对「版本是否装对」时有据可查。",
+      "highlights": [
+        {
+          "type": "优化",
+          "text": "优化 更新版本核对：发布时会核对更新提示里的版本号与安装包内的真实版本号，两者不一致直接拒绝发布，不会再出现「提示有新版本、装上去还是旧版」的情况。"
+        },
+        {
+          "type": "优化",
+          "text": "优化 版本信息留痕：应用启动时会记录自身真实版本号与版本代码，核对「版本是否装对」时有据可查。"
+        }
+      ],
+      "releaseUrl": "https://github.com/Guzheng3/mikcb/releases/tag/v5.2.0.7",
+      "downloadUrl": "https://github.com/Guzheng3/mikcb/releases/download/v5.2.0.7/mikcb-5.2.0.7-arm64-v8a.apk",
+      "assetName": "mikcb-5.2.0.7-arm64-v8a.apk"
+    },
     {
       "channelLabel": "预发布",
       "version": "5.2.0.6",
