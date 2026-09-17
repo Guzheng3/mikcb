@@ -49,6 +49,9 @@ class StatisticsExportOptions {
 /// Brand URLs shown on the export-only header / footer.
 abstract final class StatisticsExportBrand {
   static const websiteUrl = 'https://gzr.xjy.xn--6qq986b3xl/';
+  // Deliberately NOT localized: these CJK characters are part of the IDN itself
+  // (its punycode form is the line above), so translating them would break the
+  // domain. Registered in tool/cjk_hardcode_baseline.txt for that reason.
   static const websiteDisplay = 'gzr.xjy.我爱你';
   static const githubUrl = 'https://github.com/Guzheng3/mikcb';
   static const githubDisplay = 'github.com/Guzheng3/mikcb';

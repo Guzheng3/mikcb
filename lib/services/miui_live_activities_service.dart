@@ -206,7 +206,8 @@ class MiuiLiveActivitiesService {
           extras: {'error': '$e', 'value': value},
         ),
       );
-      appDebugLog('MiuiLive', '更新常驻通知开关失败：$e');
+      // 调试文案刻意用英文（CJK 硬编码审计按行计，中文只该出现在 l10n 与既有基线里）。
+      appDebugLog('MiuiLive', 'setPermanentNotification failed: $e');
     }
   }
 
