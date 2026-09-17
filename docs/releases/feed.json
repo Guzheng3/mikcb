@@ -1,7 +1,24 @@
 {
-  "generatedAt": "2026-09-17T05:03:13.565Z",
-  "releaseCount": 4,
+  "generatedAt": "2026-09-17T05:35:16.813Z",
+  "releaseCount": 5,
   "releases": [
+    {
+      "channelLabel": "预发布",
+      "version": "5.2.0.6",
+      "title": "v5.2.0.6",
+      "prerelease": true,
+      "publishedAt": "2026-09-17T05:34:59Z",
+      "description": "修复 应用内检查更新：此前任何更高的新版本都识别不出来，点「检查更新」永远回「已是最新」，也就一直收不到更新推送；现在能正常检测到更高版本并提示升级。",
+      "highlights": [
+        {
+          "type": "修复",
+          "text": "修复 应用内检查更新：此前任何更高的新版本都识别不出来，点「检查更新」永远回「已是最新」，也就一直收不到更新推送；现在能正常检测到更高版本并提示升级。"
+        }
+      ],
+      "releaseUrl": "https://github.com/Guzheng3/mikcb/releases/tag/v5.2.0.6",
+      "downloadUrl": "https://github.com/Guzheng3/mikcb/releases/download/v5.2.0.6/mikcb-5.2.0.6-arm64-v8a.apk",
+      "assetName": "mikcb-5.2.0.6-arm64-v8a.apk"
+    },
     {
       "channelLabel": "预发布",
       "version": "5.2.0.5",
