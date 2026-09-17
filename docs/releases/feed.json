@@ -1,7 +1,36 @@
 {
-  "generatedAt": "2026-09-16T21:23:48.295Z",
-  "releaseCount": 3,
+  "generatedAt": "2026-09-17T04:56:27.281Z",
+  "releaseCount": 4,
   "releases": [
+    {
+      "channelLabel": "预发布",
+      "version": "5.2.0.5",
+      "title": "v5.2.0.5",
+      "prerelease": true,
+      "publishedAt": "2026-09-17T04:56:10Z",
+      "description": "修复 情侣课表历史记录：开学日期不再一直显示为空，列表恢复按学期分组排列（此前会退化成按保存时间展示）。 · 优化 情侣课表恢复：回滚结果按实际状态提示，内容本来就一致时不再误报「已恢复」，失败时也不再没有任何反馈。 · 优化 情侣课表同步：断开连接后重新连上，本地还没上传的改动能自动补传，不必再手动操作一次。",
+      "highlights": [
+        {
+          "type": "修复",
+          "text": "修复 情侣课表历史记录：开学日期不再一直显示为空，列表恢复按学期分组排列（此前会退化成按保存时间展示）。"
+        },
+        {
+          "type": "优化",
+          "text": "优化 情侣课表恢复：回滚结果按实际状态提示，内容本来就一致时不再误报「已恢复」，失败时也不再没有任何反馈。"
+        },
+        {
+          "type": "优化",
+          "text": "优化 情侣课表同步：断开连接后重新连上，本地还没上传的改动能自动补传，不必再手动操作一次。"
+        },
+        {
+          "type": "优化",
+          "text": "优化 情侣课表账号切换：切换账号后旧的同步进度自动失效，不会再拿上一个账号的进度当成已同步，从而覆盖新账号的云端课表。"
+        }
+      ],
+      "releaseUrl": "https://github.com/Guzheng3/mikcb/releases/tag/v5.2.0.5",
+      "downloadUrl": "https://github.com/Guzheng3/mikcb/releases/download/v5.2.0.5/mikcb-5.2.0.5-arm64-v8a.apk",
+      "assetName": "mikcb-5.2.0.5-arm64-v8a.apk"
+    },
     {
       "channelLabel": "预发布",
       "version": "5.2.0.4",
