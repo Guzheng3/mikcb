@@ -210,14 +210,6 @@ class LiveUpdateService : Service() {
                 .apply()
         }
 
-        /**
-         * 本进程内服务是否在运行。
-         *
-         * 开机/启动路径用它避免用「无课程负载」的 intent 打断一个正跑着的课程会话：
-         * onStartCommand 收到空负载会切到常驻空闲形态。
-         */
-        fun isRunning(): Boolean = isServiceRunning
-
         private fun hasNotificationPermissionCompat(context: Context): Boolean {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 ContextCompat.checkSelfPermission(
@@ -337,6 +329,14 @@ class LiveUpdateService : Service() {
     private var cachedIslandBitmapKey: String? = null
     private var cachedIslandBitmap: Bitmap? = null
     private var hasStartedForeground = false
+    /**
+     * 最后一次投递出去的通知。
+     *
+     * 重复的 `startForegroundService` 需要重发当前这一帧来销掉 5 秒契约（见
+     * [startForegroundSafely]），所以要留住它 —— 重建成 bootstrap 会把正在显示的
+     * 内容顶掉。
+     */
+    private var currentNotification: Notification? = null
     private var lastTickerStage: String? = null
     private var validateAgainstSchedule = true
     /**
@@ -427,10 +427,10 @@ class LiveUpdateService : Service() {
                 )
                 if (!resumed && permanentNotification) {
                     // 常驻：此刻没有课程会话也要把通知留在状态栏，切到情侣卡片形态。
+                    // 走 refreshIdleNotification 而不是无条件重绘：Flutter 每次刷新都会
+                    // 重发这个空负载 intent，签名没变就不该让系统重画。
                     enterIdleMode()
-                    updateForegroundNotification(
-                        buildIdleNotification(liveIdleContent(System.currentTimeMillis()))
-                    )
+                    refreshIdleNotification(System.currentTimeMillis())
                     startTicker()
                     return START_STICKY
                 }
@@ -648,18 +648,43 @@ class LiveUpdateService : Service() {
         return isHideFromRecentsEnabled()
     }
 
+    /**
+     * 满足前台服务契约。
+     *
+     * **每次** `Context.startForegroundService()` 都会在 system_server 侧重新起一个
+     * 5 秒计时（`ActiveServices` 的 `fgRequired`），服务不在这 5 秒内再调一次
+     * `startForeground()` 清掉它，整个进程会被
+     * `ForegroundServiceDidNotStartInTimeException` 杀掉 —— 表现为「点开就闪退」。
+     *
+     * 所以这里**不能**在「已经在前台」时直接 return：同一进程里出现第二次
+     * `startForegroundService`（例如 App 启动时本服务被拉起后，Flutter 又启动了
+     * 一次课程会话）就会漏掉那次计时。做法是重发**当前这一帧**，而不是重发
+     * bootstrap —— 后者会把正在显示的内容顶掉。
+     */
     private fun startForegroundSafely(intent: Intent?) {
         ensureNotificationChannel()
         if (hasStartedForeground) {
+            val current = currentNotification ?: buildBootstrapNotification(bootstrapTitleOf(intent))
+            startForegroundWithType(current)
+            currentNotification = current
             return
         }
 
-        val bootstrapTitle = intent?.getStringExtra("courseName")
+        val notification = buildBootstrapNotification(bootstrapTitleOf(intent))
+        startForegroundWithType(notification)
+        currentNotification = notification
+        hasStartedForeground = true
+    }
+
+    private fun bootstrapTitleOf(intent: Intent?): String {
+        return intent?.getStringExtra("courseName")
             ?.takeIf { it.isNotBlank() }
             ?.let { getString(R.string.notification_course_reminder_title, it) }
             ?: getString(R.string.app_display_name)
-        val notification = buildBootstrapNotification(bootstrapTitle)
-        // FOREGROUND_SERVICE_TYPE_SPECIAL_USE is API 34+.
+    }
+
+    /** FOREGROUND_SERVICE_TYPE_SPECIAL_USE is API 34+. */
+    private fun startForegroundWithType(notification: Notification) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(
                 NOTIFICATION_ID,
@@ -669,7 +694,6 @@ class LiveUpdateService : Service() {
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
-        hasStartedForeground = true
     }
 
     private fun ensureNotificationChannel() {
@@ -707,15 +731,16 @@ class LiveUpdateService : Service() {
     }
 
     private fun updateForegroundNotification(notification: Notification) {
+        currentNotification = notification
         if (!hasStartedForeground) {
-            startForeground(NOTIFICATION_ID, notification)
+            startForegroundWithType(notification)
             hasStartedForeground = true
             return
         }
 
         getSystemService(NotificationManager::class.java)
             ?.notify(NOTIFICATION_ID, notification)
-            ?: startForeground(NOTIFICATION_ID, notification)
+            ?: startForegroundWithType(notification)
     }
 
     // --- 常驻形态（无课程会话时的情侣卡片档） --------------------------------

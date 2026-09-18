@@ -793,21 +793,20 @@ object LiveUpdateScheduler {
     }
 
     /**
-     * 常驻模式下在开机 / App 启动时把前台服务拉起来。
+     * 常驻模式下把前台服务拉起来（开机、以及 Flutter 判定「常驻打开且当前无会话」时）。
      *
      * 与 [handleBootReschedule] 的分工：那条路径只在「此刻正好有课」时才起服务，而
      * 常驻通知在无课时也必须存在。这里发一个**不带课程负载**的 intent，服务的
      * onStartCommand 会读落盘的常驻开关并进入情侣卡片形态（见 buildIdleNotification）。
      *
-     * 幂等且不会打断进行中的会话：服务收到空负载时，若当前阶段仍然有效就原样保留。
-     * 已经在跑的话这里直接跳过，省掉一次多余的 onStartCommand。
+     * 已经在跑时也照样重发：服务实例里的 permanentNotification 是启动那一刻读的，
+     * 用户刚把开关拨开时它还是 false，不重发就会在本次会话结束时把通知摘掉。
+     * 重发是安全的 —— 服务每次 onStartCommand 都会重新调 startForeground 销掉系统
+     * 侧那 5 秒契约，且当前若真有课程会话会被服务自己的判断保留下来。
      */
     fun ensurePermanentNotificationRunning(context: Context) {
         val appContext = context.applicationContext
         if (!LiveUpdateService.isPermanentNotificationEnabled(appContext)) {
-            return
-        }
-        if (LiveUpdateService.isRunning()) {
             return
         }
         try {
@@ -817,7 +816,7 @@ object LiveUpdateScheduler {
             )
         } catch (e: Exception) {
             // 后台启动前台服务可能被系统拒绝（机型策略、省电模式）。这不是致命错误：
-            // 下一次闹钟或 15 分钟兜底 Worker 会再试一次。
+            // 下一次闹钟、15 分钟兜底 Worker，或下一次 Flutter 刷新会再试。
             Log.w(TAG, DiagnosticLogMessages.LOG_START_LIVE_UPDATE_SERVICE_FAILED, e)
         }
     }

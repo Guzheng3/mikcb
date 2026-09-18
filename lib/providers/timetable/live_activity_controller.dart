@@ -882,20 +882,20 @@ Future<void> _liveUpdateActivityBody(
     await _liveSyncScheduleSnapshot(host, scope: activeScope);
   }
 
+  // 常驻开关先落盘：它决定下面「没有课程会话时」是停服务还是让通知常驻。
+  // 取 host.settings（当前课表）而不是 activeScope.settings：activeScope 可能为
+  // null（无可用课表），而开关在任何情况下都要能读能写。
+  await host._liveActivitiesService.setPermanentNotification(
+    host.settings.livePermanentNotificationEnabled,
+  );
+
   if (activeScope == null ||
       _liveScopeIsHoliday(host, activeScope, DateTime.now())) {
     host._currentLiveCourseId = null;
     host._lastLiveActivityStageKey = null;
-    await host._liveActivitiesService.stopLiveUpdate();
+    await _liveStopOrKeepPermanentNotification(host);
     return;
   }
-
-  // 常驻开关单独下发：它在没有课程会话时也要生效，而那种时刻 Flutter 走的是
-  // stopLiveUpdate、根本不会调 startLiveUpdate，开关值就永远传不到原生侧。
-  // 取 activeScope（「我的课表」）而非 host.settings：调度器快照里存的就是这一份。
-  await host._liveActivitiesService.setPermanentNotification(
-    activeScope.settings.livePermanentNotificationEnabled,
-  );
 
   final selection = _liveGetActivityCourseSelection(host, scope: activeScope);
   final liveCourse = selection?.currentCourse;
@@ -1035,6 +1035,24 @@ Future<void> _liveUpdateActivityBody(
   } else {
     host._currentLiveCourseId = null;
     host._lastLiveActivityStageKey = null;
+    await _liveStopOrKeepPermanentNotification(host);
+  }
+}
+
+/// 当前没有课程会话时该拿服务怎么办。
+///
+/// 常驻开关打开 → 让原生把服务留在前台（情侣卡片形态）；关闭 → 维持原有的
+/// 「随课程起停」，摘掉通知。
+///
+/// 这里刻意把起停决策收敛成 Flutter 一家：原生侧只在开机与用户拨开关时经通道
+/// 拉起服务，**不在 Activity 启动时自行 startForegroundService**。否则
+/// 「原生起服务」与「Flutter 因无会话而停服务」会撞在同一时刻：system_server 侧
+/// startForegroundService 挂的 5 秒前台契约还没销账，服务就被拆掉，进程随后被
+/// ForegroundServiceDidNotStartInTimeException 杀掉 —— 表现为一打开就闪退。
+Future<void> _liveStopOrKeepPermanentNotification(TimetableProvider host) async {
+  if (host.settings.livePermanentNotificationEnabled) {
+    await host._liveActivitiesService.ensurePermanentNotification();
+  } else {
     await host._liveActivitiesService.stopLiveUpdate();
   }
 }

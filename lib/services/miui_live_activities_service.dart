@@ -185,6 +185,31 @@ class MiuiLiveActivitiesService {
     }
   }
 
+  /// 让原生把常驻通知挂起来（无课程会话时的情侣卡片形态）。
+  ///
+  /// 与 [setPermanentNotification] 分工：那个只写开关落盘，这个负责把前台服务起起来。
+  ///
+  /// 起停一律由 Flutter 独占决策，原生侧**不在 Activity 启动时自行拉起**。否则
+  /// 「原生 startForegroundService」与「Flutter 因当前没有课程会话而 stopService」
+  /// 会撞在同一时刻：startForegroundService 在 system_server 侧挂的 5 秒前台契约
+  /// 还没销账，服务就被拆了，进程随后被 ForegroundServiceDidNotStartInTimeException
+  /// 杀掉 —— 用户看到的就是「一打开就闪退」。
+  Future<void> ensurePermanentNotification() async {
+    if (!Platform.isAndroid) return;
+    try {
+      await _channel.invokeMethod('ensurePermanentNotification');
+    } catch (e) {
+      unawaited(
+        AppLogService.instance.warn(
+          'live_permanent_notification_failed',
+          AppLogMessages.liveUpdatePermanentNotificationFailed,
+          extras: {'error': '$e'},
+        ),
+      );
+      appDebugLog('MiuiLive', 'ensurePermanentNotification failed: $e');
+    }
+  }
+
   Future<void> setLiveDiagnosticsEnabled(bool value) async {
     await UmengAnalyticsService.setLiveDiagnosticsEnabled(value);
   }
