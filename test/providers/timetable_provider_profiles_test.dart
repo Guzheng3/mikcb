@@ -2141,6 +2141,10 @@ void main() {
           semesterStartDate: DateTime(2026, 2, 23),
           liveEnableBeforeClass: true,
           liveEnableDuringClass: true,
+          // 这几条测的是「随课程起停」的旧契约。常驻开关默认打开时，无课程会话
+          // 会改走 ensurePermanentNotification（见 _liveStopOrKeepPermanentNotification），
+          // 所以这里显式关掉，保留对旧路径的覆盖；新路径另有测试。
+          livePermanentNotificationEnabled: false,
         ),
       );
       await provider.addCourse(
@@ -2183,6 +2187,12 @@ void main() {
       );
       await provider.initialize();
       await settleLiveActivityStartup(liveService);
+      // 见上一条：本用例覆盖的是常驻关闭时的「随课程起停」路径。
+      await provider.updateTimetableSettings(
+        provider.settings.copyWith(livePermanentNotificationEnabled: false),
+      );
+      // 改设置本身会排一次 live 刷新，先让它落定再开始计数。
+      await settleLiveActivityStartup(liveService);
 
       provider.seedLiveActivityTrackingForTesting(
         currentCourseId: 'stale-debounce-key',
@@ -2223,6 +2233,13 @@ void main() {
     );
     await provider.initialize();
     await settleLiveActivityStartup(liveService);
+    // 覆盖常驻关闭时的旧契约：无会话就停服务。常驻打开时改走
+    // ensurePermanentNotification，由下一条用例负责。
+    await provider.updateTimetableSettings(
+      provider.settings.copyWith(livePermanentNotificationEnabled: false),
+    );
+    // 改设置本身会排一次 live 刷新，先让它落定再开始计数。
+    await settleLiveActivityStartup(liveService);
     liveService.stopLiveUpdateCallCount = 0;
     liveService.startLiveUpdateCallCount = 0;
 
@@ -2232,6 +2249,32 @@ void main() {
     expect(liveService.stopLiveUpdateCallCount, 1);
     expect(liveService.startLiveUpdateCallCount, 0);
   });
+
+  test(
+    'update live activity keeps permanent notification when no course session',
+    () async {
+      final liveService = TestMiuiLiveActivitiesService();
+      final provider = TimetableProvider(
+        autoInitialize: false,
+        liveActivitiesService: liveService,
+      );
+      await provider.initialize();
+      await settleLiveActivityStartup(liveService);
+      // 默认设置：常驻通知打开。
+      expect(provider.settings.livePermanentNotificationEnabled, isTrue);
+      liveService.stopLiveUpdateCallCount = 0;
+      liveService.ensurePermanentNotificationCallCount = 0;
+      liveService.startLiveUpdateCallCount = 0;
+
+      await provider.updateLiveActivityForTesting(syncScheduleSnapshot: false);
+      await pumpEventQueue();
+
+      // 没有课程会话时不该摘掉通知：改让原生留在前台显示情侣卡片形态。
+      expect(liveService.ensurePermanentNotificationCallCount, 1);
+      expect(liveService.stopLiveUpdateCallCount, 0);
+      expect(liveService.startLiveUpdateCallCount, 0);
+    },
+  );
 
   test(
     'live activity still uses manual currentWeek without semester start (v2.0 behavior)',
@@ -2347,6 +2390,9 @@ void main() {
       final provider = await _createLiveActivityTestProvider(
         enableLiveActivitySync: true,
         liveActivitiesService: liveService,
+        // 覆盖常驻关闭时的旧契约（无会话即停服务）。
+        configureSettings: (settings) =>
+            settings.copyWith(livePermanentNotificationEnabled: false),
       );
       await settleLiveActivityStartup(liveService);
       await provider.addCourse(
@@ -2386,6 +2432,9 @@ void main() {
       final provider = await _createLiveActivityTestProvider(
         enableLiveActivitySync: true,
         liveActivitiesService: liveService,
+        // 覆盖常驻关闭时的旧契约（无会话即停服务）。
+        configureSettings: (settings) =>
+            settings.copyWith(livePermanentNotificationEnabled: false),
       );
       await settleLiveActivityStartup(liveService);
       await provider.addCourse(
@@ -2492,6 +2541,9 @@ void main() {
       final provider = await _createLiveActivityTestProvider(
         enableLiveActivitySync: true,
         liveActivitiesService: liveService,
+        // 覆盖常驻关闭时的旧契约（无会话即停服务）。
+        configureSettings: (settings) =>
+            settings.copyWith(livePermanentNotificationEnabled: false),
       );
       await settleLiveActivityStartup(liveService);
       await provider.addCourse(

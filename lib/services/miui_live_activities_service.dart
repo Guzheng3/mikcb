@@ -664,12 +664,19 @@ class TestMiuiLiveActivitiesService extends MiuiLiveActivitiesService {
   int stopLiveUpdateCallCount = 0;
   int startLiveUpdateCallCount = 0;
   int syncScheduleSnapshotCallCount = 0;
+  /// 常驻开关打开、且当前没有课程会话时走的通道；与 stopLiveUpdateCallCount 互斥。
+  int ensurePermanentNotificationCallCount = 0;
   /// 最近一次同步给原生侧的快照课程（含解析后的时间），供断言使用。
   List<Course>? lastSyncedCourses;
 
   @override
   Future<void> stopLiveUpdate() async {
     stopLiveUpdateCallCount++;
+  }
+
+  @override
+  Future<void> ensurePermanentNotification() async {
+    ensurePermanentNotificationCallCount++;
   }
 
   @override
