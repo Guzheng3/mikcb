@@ -1072,6 +1072,93 @@ void main() {
     );
   });
 
+  testWidgets('day swipe slides a card sideways like the week deck', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 2800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final now = DateTime.now();
+    final provider = await createInitializedTestProvider(tester);
+    late int todayWeek;
+    await runRealAsync(tester, () async {
+      await provider.updateTimetableSettings(
+        provider.settings.copyWith(
+          semesterStartDate: _startOfCurrentWeek(now).subtract(
+            const Duration(days: 7),
+          ),
+          semesterWeekCount: 20,
+          timetableHideWeekends: false,
+        ),
+      );
+      await provider.syncCurrentWeekWithSemesterStart();
+      todayWeek = provider.currentDateWeek;
+      await provider.setCurrentWeek(todayWeek);
+    });
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: provider,
+        child: const TestApp(
+          home: TimetableScreen(enableProgressTimer: false),
+        ),
+      ),
+    );
+    await _pumpTimetableFrame(tester);
+
+    await tester.tap(find.byKey(ValueKey('weekday-header-$todayWeek-3')));
+    await _pumpTimetableFrame(tester);
+
+    double deckCardTravel(WidgetTester tester) {
+      final deck = find.byKey(const ValueKey('day-view-pager-deck'));
+      final deckLeft = tester.getRect(deck).left;
+      final cards = find.descendant(
+        of: deck,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget.key is ValueKey<String> &&
+              (widget.key as ValueKey<String>).value.startsWith('day-content-'),
+        ),
+      );
+      expect(cards, findsNWidgets(2), reason: 'deck must draw both days');
+      var travel = 0.0;
+      for (final card in cards.evaluate()) {
+        travel = math.min(
+          travel,
+          (card.renderObject! as RenderBox)
+                  .localToGlobal(Offset.zero)
+                  .dx -
+              deckLeft,
+        );
+      }
+      return travel;
+    }
+
+    // Both directions: the outgoing / incoming card has to leave the deck's
+    // centre column while the drag is in flight. Pinning every card at the
+    // viewport centre (the old in-place cross-dissolve) reads as the day
+    // vanishing instead of sliding away.
+    for (final swipeDelta in <double>[-200, 200]) {
+      final swipeArea = tester.getRect(
+        find.byKey(const ValueKey('day-view-swipe-area')),
+      );
+      final gesture = await tester.startGesture(
+        swipeArea.topCenter + const Offset(0, 48),
+      );
+      for (var step = 0; step < 4; step++) {
+        await gesture.moveBy(Offset(swipeDelta / 4, 0));
+        await tester.pump();
+      }
+      expect(
+        deckCardTravel(tester),
+        lessThan(-1),
+        reason: 'swipeDelta=$swipeDelta should move a card sideways',
+      );
+      await gesture.up();
+      await _pumpUntilDayPagerSettled(tester);
+    }
+  });
+
   testWidgets('hides back to today when calendar is past semesterWeekCount', (
     tester,
   ) async {

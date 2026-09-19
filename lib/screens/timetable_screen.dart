@@ -294,8 +294,6 @@ class _TimetableScreenState extends State<TimetableScreen>
   late final AnimationController _coupleBeamController;
   late final AnimationController _profileSwitchController;
   late final Animation<double> _coupleHeartbeatScale;
-  final Map<PageController, double> _pagerLastActivePage = {};
-  final Map<PageController, double> _pagerLeadDirection = {};
   final Map<int, ScrollController> _weekGridScrollControllers = {};
 
   /// 日视图锚点展开/收起与设置页拖动转场期间，卡片玻璃 fill 需要每帧
@@ -448,6 +446,13 @@ class _TimetableScreenState extends State<TimetableScreen>
   /// expensive course-grid build/layout while transforms still track 1:1.
   final Map<int, Widget> _weekDeckCardCache = <int, Widget>{};
   double _daySwipeDirection = 1;
+
+  /// Day deck state: mirrors the week deck (see [_buildWeekPagerDeck]). The
+  /// day pager keeps its own real PageView, so this layer only exists while a
+  /// gesture carries the pager off its integral page.
+  final ValueNotifier<int> _dayDeckReleaseTick = ValueNotifier<int>(0);
+  final Map<int, Widget> _dayDeckCardCache = <int, Widget>{};
+  bool _dayDeckHoldScheduled = false;
   double _dayViewAnchorFraction = 0.5;
   bool _isDaySwipeAnimating = false;
 
@@ -630,6 +635,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     _weekGridScrollOffset.dispose();
     _dayAgendaProgressTimer?.cancel();
     _dayAgendaProgressTick.dispose();
+    _dayDeckReleaseTick.dispose();
     _dayHeaderPreview.dispose();
     final dayViewController = _dayViewPageController;
     if (dayViewController != null) {
@@ -1281,6 +1287,10 @@ class _TimetableScreenState extends State<TimetableScreen>
       }
     }
     _dayHeaderPreview.value = null;
+    // Closing mid-settle must not leave the deck's gesture state armed: the
+    // next open would start with a stale start page (and the snap physics read
+    // it too).
+    _dayPagerDragStartPage = null;
     setState(() {
       _selectedWeekForDayView = null;
       _selectedDayOfWeek = null;
@@ -3362,7 +3372,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// One-shot "incoming card" reveal matching [_buildPagerCardTransition]:
+  /// One-shot "incoming card" reveal matching the swipe decks:
   /// the timetable surface scales 0.79 -> 1, fades 0.22 -> 1 and unblurs
   /// 14 -> 0 when the active profile switches. Wraps week view and the
   /// day-view overlay (both live inside [_buildWeekPager]).
@@ -3845,168 +3855,14 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
   }
 
-  // Card paging tuning: the incoming neighbor enters the centered card reveal.
-  // Forward (left swipe): the incoming page rises from below (scale 85% -> 100%,
-  // opacity 0.0052 -> 1, blur 14 sigma -> 0) while the outgoing page follows the
-  // finger away. Backward (right swipe): the outgoing page stacks in place and
-  // recedes (opacity 1 -> 0.0052, shrink to 85%, blur) while the left neighbor
-  // drops in from the very top.
+  // Card reveal tuning, shared by the week and day swipe decks and the
+  // one-shot profile-switch reveal: the lower card holds its seed state until
+  // the travelling card has covered _cardPagerAppearStart of the page, then
+  // ramps 85% -> 100% and 0.52% -> 100% opacity over the remaining travel.
   static const double _cardPagerAppearStart = 0.1314;
   static const double _cardPagerAppearOpacity = 0.0052;
   static const double _cardPagerMaxBlurSigma = 14;
   static const double _cardPagerMinScale = 0.85;
-
-  /// Only the gesture-target neighbor enters the centered card reveal.
-  Widget _buildPagerCardTransition({
-    required PageController controller,
-    required int page,
-    required Widget child,
-    double? Function()? takeDragStartPage,
-    double? Function()? takeDragDirection,
-  }) {
-    return AnimatedBuilder(
-      animation: controller,
-      child: child,
-      builder: (context, cardChild) {
-        final activePage =
-            controller.hasClients && controller.position.hasContentDimensions
-            ? (controller.page ?? page.toDouble())
-            : page.toDouble();
-        final leadDirection = _updatePagerLeadDirection(controller, activePage);
-        final dragStartPage = takeDragStartPage?.call();
-        final dragDirection = takeDragDirection?.call();
-        if (dragStartPage == null) return cardChild ?? child;
-        final resolvedDirection = dragDirection ?? leadDirection;
-        final pageDelta = page - dragStartPage;
-        if (pageDelta.abs() > 1.5) {
-          return cardChild ?? child;
-        }
-        final viewportDimension = controller.position.viewportDimension;
-
-        ui.ImageFilter cardFilter({
-          required double alpha,
-          required double blurSigma,
-        }) {
-          final alphaFilter = ui.ColorFilter.mode(
-            Color.fromARGB((alpha.clamp(0.0, 1.0) * 255).round(), 0, 0, 0),
-            ui.BlendMode.dstIn,
-          );
-          return blurSigma > 0
-              ? ui.ImageFilter.compose(
-                  outer: alphaFilter,
-                  inner: ui.ImageFilter.blur(
-                    sigmaX: blurSigma,
-                    sigmaY: blurSigma,
-                    tileMode: ui.TileMode.clamp,
-                  ),
-                )
-              : alphaFilter;
-        }
-
-        // Backward paging (right swipe): the outgoing page stacks in place and
-        // recedes (fade out + shrink to 79% + blur) while the left neighbor
-        // drops in from the very top.
-        if (resolvedDirection < 0) {
-          if (pageDelta == -1) {
-            // Incoming left neighbor: cancel its PageView offset so it lands
-            // centered while the receding neighbor slides over it.
-            final dragProgress =
-                ((dragStartPage - activePage) / (dragStartPage - page))
-                    .clamp(0.0, 1.0)
-                    .toDouble();
-            final appearProgress =
-                ((dragProgress - _cardPagerAppearStart) /
-                        (1.0 - _cardPagerAppearStart))
-                    .clamp(0.0, 1.0)
-                    .toDouble();
-            final scale =
-                _cardPagerMinScale +
-                (1.0 - _cardPagerMinScale) * appearProgress;
-            final alpha =
-                (_cardPagerAppearOpacity +
-                        (1.0 - _cardPagerAppearOpacity) * appearProgress)
-                    .clamp(0.0, 1.0);
-            final blurSigma =
-                _cardPagerMaxBlurSigma * (1.0 - appearProgress).clamp(0.0, 1.0);
-            return ImageFiltered(
-              imageFilter: cardFilter(alpha: alpha, blurSigma: blurSigma),
-              child: Transform.translate(
-                offset: Offset((activePage - page) * viewportDimension, 0),
-                child: Transform.scale(scale: scale, child: cardChild ?? child),
-              ),
-            );
-          }
-          if (pageDelta != 0) return cardChild ?? child;
-          // Outgoing page: cancel its PageView offset so it recedes in place.
-          final recedeProgress = (dragStartPage - activePage).clamp(0.0, 1.0);
-          final scale = 1.0 - (1.0 - _cardPagerMinScale) * recedeProgress;
-          final blurSigma = _cardPagerMaxBlurSigma * recedeProgress;
-          final alpha = 1.0 - (1.0 - _cardPagerAppearOpacity) * recedeProgress;
-          return ImageFiltered(
-            imageFilter: cardFilter(alpha: alpha, blurSigma: blurSigma),
-            child: Transform.translate(
-              offset: Offset((activePage - page) * viewportDimension, 0),
-              child: Transform.scale(scale: scale, child: cardChild ?? child),
-            ),
-          );
-        }
-        // Forward paging (left swipe): the outgoing page follows the finger
-        // away; only the incoming right neighbor enters the reveal.
-        if (pageDelta * resolvedDirection <= 0) {
-          return cardChild ?? child;
-        }
-        final dragProgress =
-            ((dragStartPage - activePage) / (dragStartPage - page))
-                .clamp(0.0, 1.0)
-                .toDouble();
-        final appearProgress =
-            ((dragProgress - _cardPagerAppearStart) /
-                    (1.0 - _cardPagerAppearStart))
-                .clamp(0.0, 1.0)
-                .toDouble();
-        final scale =
-            _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appearProgress;
-        // Cancel only the incoming card's PageView layout offset; the active
-        // page still follows the finger.
-        final Widget transition = Transform.translate(
-          offset: Offset((activePage - page) * viewportDimension, 0),
-          child: Transform.scale(scale: scale, child: cardChild ?? child),
-        );
-        // Use a single image filter for alpha and blur. The completed state
-        // keeps the same wrapper so Android does not repaint as a new layer.
-        final alpha =
-            (_cardPagerAppearOpacity +
-                    (1.0 - _cardPagerAppearOpacity) * appearProgress)
-                .clamp(0.0, 1.0);
-        final blurSigma =
-            _cardPagerMaxBlurSigma * (1.0 - appearProgress).clamp(0.0, 1.0);
-        return ImageFiltered(
-          imageFilter: cardFilter(alpha: alpha, blurSigma: blurSigma),
-          child: transition,
-        );
-      },
-    );
-  }
-
-  double _updatePagerLeadDirection(
-    PageController controller,
-    double activePage,
-  ) {
-    if (!_pagerLastActivePage.containsKey(controller)) {
-      // Seed the first observed page so the first drag has a real delta.
-      _pagerLastActivePage[controller] = activePage;
-      return 0;
-    }
-    final lastPage = _pagerLastActivePage[controller]!;
-    final target = (activePage - lastPage).sign.toDouble();
-    final previous = _pagerLeadDirection[controller] ?? 0.0;
-    final direction = previous + (target - previous) * 0.55;
-    // Commit immediately so the next page builder in the same frame cannot
-    // observe a stale start point.
-    _pagerLastActivePage[controller] = activePage;
-    _pagerLeadDirection[controller] = direction;
-    return direction;
-  }
 
   Widget _buildWeekPager(
     TimetableProvider provider,
@@ -4519,11 +4375,11 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// Lower-layer reveal curve for the week deck. Mirrors the day pager's
+  /// Lower-layer reveal curve shared by the week and day decks. Mirrors the
   /// [_cardPagerAppearStart] dead zone: the lower card holds its seed state
   /// until the upper layer has travelled that fraction of the page, then ramps
   /// to full over the remaining travel.
-  double _weekDeckAppearProgress(double progress) {
+  double _deckAppearProgress(double progress) {
     return ((progress - _cardPagerAppearStart) /
             (1.0 - _cardPagerAppearStart))
         .clamp(0.0, 1.0)
@@ -4583,7 +4439,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     // 85%->100%, opacity 0.52%->100% after the 13.14% dead zone).
     if (direction > 0) {
       final progress = delta.clamp(0.0, 1.0).toDouble();
-      final appear = _weekDeckAppearProgress(progress);
+      final appear = _deckAppearProgress(progress);
       final incomingScale =
           _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appear;
       final incomingOpacity =
@@ -4613,7 +4469,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     // Backward (right swipe): the previous week slides in from the left while
     // it fades in; the current week recedes in place underneath.
     final progress = (-delta).clamp(0.0, 1.0).toDouble();
-    final appear = _weekDeckAppearProgress(progress);
+    final appear = _deckAppearProgress(progress);
     final incomingScale =
         _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appear;
     final incomingOpacity =
@@ -4637,6 +4493,231 @@ class _TimetableScreenState extends State<TimetableScreen>
           translateX: -(1.0 - progress) * availableWidth,
           scale: incomingScale,
           opacity: incomingOpacity,
+        ),
+      ],
+    );
+  }
+
+  /// Deck layer that owns the day swipe's z-order; same choreography as
+  /// [_buildWeekPagerDeck], applied to the day pager's pages.
+  ///
+  /// The day pager used to cross-dissolve its own pages in place, so no card
+  /// ever travelled and the settled day looked like it vanished. Here the
+  /// travelling card always slides horizontally on the top layer.
+  ///
+  /// [controller] must be the pager the caller's layers are actually driving:
+  /// the day controller gets replaced while the day view opens, and painting a
+  /// deck against the other instance would read a stale page.
+  bool _isDayDeckActive(PageController? controller) {
+    final startPage = _dayPagerDragStartPage;
+    if (startPage == null ||
+        !identical(controller, _dayViewPageController) ||
+        controller == null ||
+        !_isDayView ||
+        _isDaySwipeAnimating ||
+        _isSyncingDayViewPage ||
+        !controller.hasClients ||
+        !controller.position.hasContentDimensions) {
+      return false;
+    }
+    final activePage = controller.page;
+    if (activePage == null) return false;
+    final delta = (activePage - startPage).abs();
+    // A fling that outruns one page hands back to the real pager: the deck
+    // only draws the two-page stack, so keeping it would skip every page the
+    // fling flies over. The hand-back lands on an integral page either way,
+    // where both layers show the same layout.
+    return delta > 0.0001 && delta <= 1.0;
+  }
+
+  Widget _buildDayPagerDeck(
+    TimetableProvider provider,
+    TimetableSettings settings,
+    PageController controller,
+    int pageCount,
+  ) {
+    // New content/layout generation: the AnimatedBuilder below reuses these
+    // card instances every drag frame, so they must not outlive one build.
+    _dayDeckCardCache.clear();
+    return IgnorePointer(
+      key: const ValueKey('day-view-pager-deck'),
+      child: AnimatedBuilder(
+        animation: Listenable.merge([controller, _dayDeckReleaseTick]),
+        builder: (context, _) {
+          // A replaced controller means this panel is on its way out; painting
+          // against its stale position would flash the old day.
+          if (!identical(controller, _dayViewPageController)) {
+            return const SizedBox.shrink();
+          }
+          if (_isDayDeckActive(controller)) {
+            final startPage = _dayPagerDragStartPage!;
+            final activePage = controller.page ?? startPage;
+            final viewportWidth = controller.position.viewportDimension;
+            if (viewportWidth <= 0) return const SizedBox.shrink();
+            final delta = activePage - startPage;
+            return _buildDayDeckStack(
+              provider: provider,
+              settings: settings,
+              pageCount: pageCount,
+              startPage: startPage,
+              delta: delta,
+              direction: delta.abs() < 0.0001
+                  ? _daySwipeDirection
+                  : delta.sign.toDouble(),
+              viewportWidth: viewportWidth,
+            );
+          }
+          // The spring has landed on an integral page but the pager's cards
+          // were built before the selection commit. Hold the settled day until
+          // the rebuild that follows clears the gesture state.
+          final activePage = controller.hasClients &&
+                  controller.position.hasContentDimensions
+              ? controller.page
+              : null;
+          if (_dayPagerDragStartPage != null &&
+              activePage != null &&
+              (activePage - activePage.roundToDouble()).abs() <= 0.0001) {
+            if (!_dayDeckHoldScheduled) {
+              _dayDeckHoldScheduled = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _dayDeckHoldScheduled = false;
+                if (!mounted || _isDayDeckActive(controller)) return;
+                _completeDayDeckSettle();
+              });
+            }
+            return _buildDayDeckCard(
+              provider,
+              settings,
+              pageCount,
+              activePage.round(),
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+
+  /// Clears the day gesture state once the pager has rebuilt its own cards, so
+  /// the deck shuts down on the same frame the settled day becomes visible.
+  void _completeDayDeckSettle() {
+    if (!mounted) return;
+    _dayPagerDragStartPage = null;
+    _dayDeckReleaseTick.value += 1;
+    setState(() {});
+  }
+
+  Widget _buildDayDeckCard(
+    TimetableProvider provider,
+    TimetableSettings settings,
+    int pageCount,
+    int index,
+  ) {
+    final cached = _dayDeckCardCache[index];
+    if (cached != null) {
+      // Identical widget instance => Element.updateChild skips the subtree and
+      // only the enclosing transform repaints.
+      return cached;
+    }
+    if (index < 0 || index >= pageCount) {
+      return const SizedBox.shrink();
+    }
+    final card = RepaintBoundary(
+      child: ValueListenableBuilder<int>(
+        valueListenable: _dayAgendaProgressTick,
+        builder: (context, _, _) => _buildDayViewPageContent(
+          provider: provider,
+          settings: settings,
+          page: index,
+        ),
+      ),
+    );
+    _dayDeckCardCache[index] = card;
+    return card;
+  }
+
+  /// Day swipe z-order stack; see [_buildDayPagerDeck].
+  ///
+  /// - Forward (left swipe): the outgoing day follows the finger out to the
+  ///   left on the top layer while it fades; the next day rises in place
+  ///   underneath.
+  /// - Backward (right swipe): the previous day slides in from the left on the
+  ///   top layer while it fades in; the outgoing day recedes in place
+  ///   underneath.
+  Widget _buildDayDeckStack({
+    required TimetableProvider provider,
+    required TimetableSettings settings,
+    required int pageCount,
+    required double startPage,
+    required double delta,
+    required double direction,
+    required double viewportWidth,
+  }) {
+    final outgoingIndex = startPage.round();
+
+    Widget deckCard(
+      int index, {
+      required double translateX,
+      double scale = 1.0,
+      double opacity = 1.0,
+    }) {
+      return Opacity(
+        opacity: opacity.clamp(0.0, 1.0),
+        child: Transform.translate(
+          offset: Offset(translateX, 0),
+          child: Transform.scale(
+            scale: scale,
+            child: _buildDayDeckCard(provider, settings, pageCount, index),
+          ),
+        ),
+      );
+    }
+
+    if (direction > 0) {
+      final progress = delta.clamp(0.0, 1.0).toDouble();
+      final appear = _deckAppearProgress(progress);
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          deckCard(
+            outgoingIndex + 1,
+            translateX: 0,
+            scale: _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appear,
+            opacity:
+                _cardPagerAppearOpacity +
+                (1.0 - _cardPagerAppearOpacity) * appear,
+          ),
+          deckCard(
+            outgoingIndex,
+            translateX: -progress * viewportWidth,
+            opacity:
+                _cardPagerAppearOpacity +
+                (1.0 - _cardPagerAppearOpacity) * (1.0 - progress),
+          ),
+        ],
+      );
+    }
+
+    final progress = (-delta).clamp(0.0, 1.0).toDouble();
+    final appear = _deckAppearProgress(progress);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        deckCard(
+          outgoingIndex,
+          translateX: 0,
+          scale: 1.0 - (1.0 - _cardPagerMinScale) * progress,
+          opacity:
+              _cardPagerAppearOpacity +
+              (1.0 - _cardPagerAppearOpacity) * (1.0 - progress),
+        ),
+        deckCard(
+          outgoingIndex - 1,
+          translateX: -(1.0 - progress) * viewportWidth,
+          scale: _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appear,
+          opacity:
+              _cardPagerAppearOpacity +
+              (1.0 - _cardPagerAppearOpacity) * appear,
         ),
       ],
     );
@@ -5076,39 +5157,63 @@ class _TimetableScreenState extends State<TimetableScreen>
                       }
                       return false;
                     },
-                    child: PageView.builder(
-                      key: const ValueKey('day-view-swipe-area'),
-                      controller: controller,
-                      // pageSnapping off on purpose: PageView would otherwise
-                      // wrap its own PageScrollPhysics OUTSIDE ours and the
-                      // rescue would never run. _dayPagerPhysics IS the snap.
-                      physics: _dayPagerPhysics,
-                      pageSnapping: false,
-                      itemCount: pageCount,
-                      // Same as the week pager: keep neighbours pre-built so a
-                      // swipe never hits an itemBuilder spike mid-gesture.
-                      allowImplicitScrolling: true,
-                      onPageChanged: (page) =>
-                          _handleDayViewPageChanged(provider, settings, page),
-                      itemBuilder: (context, page) {
-                        // 1 Hz progress heartbeat rebuilds only this page's
-                        // content (ongoing badges / progress), not the State.
-                        return _buildPagerCardTransition(
-                          controller: controller,
-                          page: page,
-                          takeDragStartPage: () => _dayPagerDragStartPage,
-                          takeDragDirection: () => _daySwipeDirection,
-                          child: ValueListenableBuilder<int>(
-                            valueListenable: _dayAgendaProgressTick,
-                            builder: (context, _, _) =>
-                                _buildDayViewPageContent(
-                                  provider: provider,
-                                  settings: settings,
-                                  page: page,
-                                ),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        AnimatedBuilder(
+                          // The deck paints the swipe frames; the real pages
+                          // fade out so the pager still carries the drag and
+                          // the snap physics stay in charge.
+                          animation: Listenable.merge([
+                            controller,
+                            _dayDeckReleaseTick,
+                          ]),
+                          child: PageView.builder(
+                            key: const ValueKey('day-view-swipe-area'),
+                            controller: controller,
+                            // pageSnapping off on purpose: PageView would
+                            // otherwise wrap its own PageScrollPhysics OUTSIDE
+                            // ours and the rescue would never run.
+                            // _dayPagerPhysics IS the snap.
+                            physics: _dayPagerPhysics,
+                            pageSnapping: false,
+                            itemCount: pageCount,
+                            // Same as the week pager: keep neighbours pre-built
+                            // so a swipe never hits an itemBuilder spike
+                            // mid-gesture.
+                            allowImplicitScrolling: true,
+                            onPageChanged: (page) => _handleDayViewPageChanged(
+                              provider,
+                              settings,
+                              page,
+                            ),
+                            itemBuilder: (context, page) {
+                              // 1 Hz progress heartbeat rebuilds only this
+                              // page's content (ongoing badges / progress),
+                              // not the State.
+                              return ValueListenableBuilder<int>(
+                                valueListenable: _dayAgendaProgressTick,
+                                builder: (context, _, _) =>
+                                    _buildDayViewPageContent(
+                                      provider: provider,
+                                      settings: settings,
+                                      page: page,
+                                    ),
+                              );
+                            },
                           ),
-                        );
-                      },
+                          builder: (context, child) => Opacity(
+                            opacity: _isDayDeckActive(controller) ? 0.0 : 1.0,
+                            child: child,
+                          ),
+                        ),
+                        _buildDayPagerDeck(
+                          provider,
+                          settings,
+                          controller,
+                          pageCount,
+                        ),
+                      ],
                     ),
                   ),
                 ),
