@@ -1,7 +1,24 @@
 {
-  "generatedAt": "2026-09-19T04:54:29.649Z",
-  "releaseCount": 7,
+  "generatedAt": "2026-09-19T07:56:20.318Z",
+  "releaseCount": 8,
   "releases": [
+    {
+      "channelLabel": "预发布",
+      "version": "5.2.0.9",
+      "title": "v5.2.0.9",
+      "prerelease": true,
+      "publishedAt": "2026-09-19T07:55:58Z",
+      "description": "优化 日课表左右滑动：切换上一天 / 下一天改成与周课表一致的卡片层叠动效，滑动时始终有一张卡片跟手横移，不再是当前这一天原地消失、新的一天凭空出现。",
+      "highlights": [
+        {
+          "type": "优化",
+          "text": "优化 日课表左右滑动：切换上一天 / 下一天改成与周课表一致的卡片层叠动效，滑动时始终有一张卡片跟手横移，不再是当前这一天原地消失、新的一天凭空出现。"
+        }
+      ],
+      "releaseUrl": "https://github.com/Guzheng3/mikcb/releases/tag/v5.2.0.9",
+      "downloadUrl": "https://github.com/Guzheng3/mikcb/releases/download/v5.2.0.9/mikcb-5.2.0.9-arm64-v8a.apk",
+      "assetName": "mikcb-5.2.0.9-arm64-v8a.apk"
+    },
     {
       "channelLabel": "预发布",
       "version": "5.2.0.8",
