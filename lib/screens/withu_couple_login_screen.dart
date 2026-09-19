@@ -10,6 +10,7 @@ import '../utils/app_toast.dart';
 
 Future<bool?> showWithuCoupleLoginSheet({
   required BuildContext context,
+  required WithuCoupleAuthService authService,
   WithuCoupleConfig? initialConfig,
   required Future<WithuCouplePullResult> Function(
     WithuCoupleTimetableService service,
@@ -21,6 +22,7 @@ Future<bool?> showWithuCoupleLoginSheet({
     context: context,
     useRootNavigator: useRootNavigator,
     builder: (_) => WithuCoupleLoginSheet(
+      authService: authService,
       initialConfig: initialConfig,
       onPullPartner: onPullPartner,
     ),
@@ -30,9 +32,14 @@ Future<bool?> showWithuCoupleLoginSheet({
 class WithuCoupleLoginSheet extends StatefulWidget {
   const WithuCoupleLoginSheet({
     super.key,
+    required this.authService,
     this.initialConfig,
     required this.onPullPartner,
   });
+
+  /// 借用调用方（首页 provider）的认证服务：登录要立刻反映到全局登录态，
+  /// 且凭证只有一份。借用方不得 dispose。
+  final WithuCoupleAuthService authService;
 
   final WithuCoupleConfig? initialConfig;
   final Future<WithuCouplePullResult> Function(
@@ -48,15 +55,17 @@ class _WithuCoupleLoginSheetState extends State<WithuCoupleLoginSheet> {
   late final TextEditingController _baseUrlController;
   late final TextEditingController _usernameController;
   late final TextEditingController _passwordController;
-  late final WithuCoupleAuthService _authService;
   late final WithuCoupleTimetableService _timetableService;
   bool _isSubmitting = false;
+
+  WithuCoupleAuthService get _authService => widget.authService;
 
   @override
   void initState() {
     super.initState();
-    _authService = WithuCoupleAuthService();
-    _timetableService = WithuCoupleTimetableService(authService: _authService);
+    _timetableService = WithuCoupleTimetableService(
+      authService: widget.authService,
+    );
     final config = widget.initialConfig ?? const WithuCoupleConfig();
     _baseUrlController = TextEditingController(text: config.baseUrl);
     _usernameController = TextEditingController();
@@ -71,7 +80,7 @@ class _WithuCoupleLoginSheetState extends State<WithuCoupleLoginSheet> {
     _baseUrlController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
-    _authService.dispose();
+    // _authService 由首页 provider 持有，这里不 dispose。
     super.dispose();
   }
 
@@ -111,6 +120,8 @@ class _WithuCoupleLoginSheetState extends State<WithuCoupleLoginSheet> {
         username: username,
         password: password,
       );
+      // 密码只用于这一次登录请求，凭证已经落盘，不必再留在输入框里。
+      _passwordController.clear();
       final result = await widget.onPullPartner(_timetableService);
       if (!mounted) {
         return;
@@ -132,9 +143,9 @@ class _WithuCoupleLoginSheetState extends State<WithuCoupleLoginSheet> {
             ? AppToastKind.error
             : AppToastKind.success,
       );
-      if (result.status == WithuCouplePullStatus.failed) {
-        return;
-      }
+      // 首次同步失败（对方课表格式不支持、断网…）不影响登录本身：凭证已经落盘，
+      // 这里必须关掉弹窗让调用方刷新登录态。停在登录表单会让用户以为没登录成功，
+      // 再点一次也只是重复登录。同步失败的原因已由上面的 toast 说明。
       Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) {

@@ -536,12 +536,6 @@ abstract class AppLocalizations {
   /// **'TA的课'**
   String get coupleTimetableLegendPartner;
 
-  /// No description provided for @coupleTimetableLegendTogether.
-  ///
-  /// In zh, this message translates to:
-  /// **'一起上课'**
-  String get coupleTimetableLegendTogether;
-
   /// No description provided for @coupleTimetableLegendFree.
   ///
   /// In zh, this message translates to:
@@ -656,18 +650,6 @@ abstract class AppLocalizations {
   /// **'查看你的第 {myWeek} 周时，显示对方第 {partnerWeek} 周的课'**
   String coupleTimetableWeekOffsetPreview(int myWeek, int partnerWeek);
 
-  /// No description provided for @coupleTimetableColorsTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'叠加颜色'**
-  String get coupleTimetableColorsTitle;
-
-  /// No description provided for @coupleTimetableColorsSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'自定义「我的课」「TA的课」「一起上课」在叠加视图中的显示颜色，可按喜好自由搭配'**
-  String get coupleTimetableColorsSubtitle;
-
   /// No description provided for @partnerImportRequiresSingleProfile.
   ///
   /// In zh, this message translates to:
@@ -715,6 +697,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'退出登录'**
   String get withuCoupleDisconnect;
+
+  /// No description provided for @withuCoupleLogoutUnconfirmed.
+  ///
+  /// In zh, this message translates to:
+  /// **'已在本机退出登录，但未能通知服务器；服务器上的会话可能仍然有效'**
+  String get withuCoupleLogoutUnconfirmed;
 
   /// No description provided for @withuCouplePullNow.
   ///
@@ -3687,6 +3675,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'用于提升超级岛和提醒在后台场景下的稳定性'**
   String get liveKeepAliveOptionsSubtitle;
+
+  /// No description provided for @liveBackgroundRestrictionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'系统后台限制'**
+  String get liveBackgroundRestrictionTitle;
+
+  /// No description provided for @liveBackgroundRestrictionSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'系统会在应用退到后台后暂停它，通知里的倒计时会停在最后一帧。点按下方入口，在「耗电管理」里选择「允许完全后台行为」。'**
+  String get liveBackgroundRestrictionSubtitle;
+
+  /// No description provided for @liveBackgroundRestrictionOpen.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开耗电管理'**
+  String get liveBackgroundRestrictionOpen;
 
   /// No description provided for @hideFromRecentsTitle.
   ///

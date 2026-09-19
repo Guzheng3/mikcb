@@ -10,6 +10,7 @@
     <string name="widget_couple_no_course_today">🍵 今天沒有課程</string>
     <string name="widget_couple_mode_off">未開情侶模式，暫不可使用</string>
     <string name="widget_couple_not_logged_in">未登入，請登入後使用</string>
+    <string name="widget_couple_not_bound">對方課表未上傳</string>
     <string name="widget_today_compact_name">今日課程主卡 2×2</string>
     <string name="widget_today_mini_list_name">今日課程迷你列表 2×2</string>
     <string name="widget_today_medium_name">今日課程概覽 2×4</string>

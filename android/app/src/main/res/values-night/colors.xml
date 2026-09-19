@@ -11,6 +11,11 @@
     <color name="widget_couple_shadow">#59F2F2F7</color>
     <color name="widget_couple_text_hint">#8E8E93</color>
     <color name="widget_couple_divider">#2C2C2E</color>
-    <color name="widget_couple_left_accent">#64B5F6</color>
-    <color name="widget_couple_right_accent">#F48FB1</color>
+    <color name="widget_couple_male_accent">#64B5F6</color>
+    <color name="widget_couple_female_accent">#F48FB1</color>
+    <color name="live_card_title">#F2F2F7</color>
+    <color name="live_card_body">#AEA9AF</color>
+    <color name="live_card_footer">#8E8E93</color>
+    <color name="live_card_progress_track">#2C2C2E</color>
+    <color name="live_card_progress">#64B5F6</color>
 </resources>

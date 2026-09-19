@@ -8,7 +8,6 @@ import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/l10n/service_message_localizer.dart';
 import 'package:provider/provider.dart';
 
-import '../models/partner_timetable_binding.dart';
 import '../domain/couple_timetable_logic.dart';
 import '../providers/timetable_provider.dart';
 import '../providers/withu_couple_session_provider.dart';
@@ -20,8 +19,6 @@ import '../services/withu_couple_session_store.dart';
 import '../services/withu_couple_timetable_service.dart';
 import '../ui/hyperos/hyperos.dart';
 import '../utils/app_toast.dart';
-import '../utils/course_color_palette.dart';
-import '../utils/hex_color.dart';
 import 'withu_couple_login_screen.dart';
 
 class CoupleTimetableSettingsScreen extends StatefulWidget {
@@ -34,10 +31,6 @@ class CoupleTimetableSettingsScreen extends StatefulWidget {
 
 class _CoupleTimetableSettingsScreenState
     extends State<CoupleTimetableSettingsScreen> {
-  // 双人课程色快选：沿用一族一色的快捷色（选中色不在列表时
-  // _paletteIncluding 会自动补到行首）。
-  static const _coupleColorChoices = kCourseColorQuickPickHexes;
-
   bool _isExporting = false;
   bool _isImporting = false;
   bool _isUnlinking = false;
@@ -45,7 +38,7 @@ class _CoupleTimetableSettingsScreenState
   bool _isUploadingWithu = false;
   bool _isPinningCoupleWidget = false;
 
-  final WithuCoupleAuthService _withuAuthService = WithuCoupleAuthService();
+  late final WithuCoupleAuthService _withuAuthService;
   final HomeWidgetService _homeWidgetService = HomeWidgetService();
   late final WithuCoupleTimetableService _withuTimetableService;
   WithuCoupleConfig _withuCoupleConfig = const WithuCoupleConfig();
@@ -54,16 +47,13 @@ class _CoupleTimetableSettingsScreenState
   @override
   void initState() {
     super.initState();
+    // 复用首页 provider 的认证服务：凭证只有一份，登录/退出都要立刻反映到
+    // 首页登录态。借用方不负责 dispose（所有者是 provider）。
+    _withuAuthService = context.read<WithuCoupleSessionProvider>().authService;
     _withuTimetableService = WithuCoupleTimetableService(
       authService: _withuAuthService,
     );
     _loadWithuCoupleState();
-  }
-
-  @override
-  void dispose() {
-    _withuAuthService.dispose();
-    super.dispose();
   }
 
   bool get _isWithuCoupleConnected =>
@@ -280,13 +270,6 @@ class _CoupleTimetableSettingsScreenState
                 ),
               ),
             ),
-            const HyperosSectionGap(),
-            HyperosSectionLabel(text: l10n.coupleTimetableColorsTitle),
-            HyperosControlCard(
-              child: HyperosControlCardInset(
-                child: _buildCoupleColorsControl(context, provider, binding),
-              ),
-            ),
           ],
         ],
       ),
@@ -407,30 +390,45 @@ class _CoupleTimetableSettingsScreenState
     final sessionProvider = context.read<WithuCoupleSessionProvider>();
     final connected = await showWithuCoupleLoginSheet(
       context: context,
+      authService: sessionProvider.authService,
       initialConfig: _withuCoupleConfig,
-      onPullPartner: (service) =>
-          service.syncAfterLogin(provider: provider),
+      onPullPartner: (service) => service.syncAfterLogin(provider: provider),
     );
     if (connected != true || !mounted) {
       return;
     }
-    // 登录成功后刷新首页情侣标题的登录态与昵称。
-    unawaited(sessionProvider.restoreSession());
+    // 登录成功后刷新首页情侣标题的登录态与昵称（凭证刚由 connect 落盘，
+    // 直接按本地凭证收敛，不再多发一次 bootstrap）。
+    await sessionProvider.refreshFromLocal();
     await provider.syncCoupleTimetableWidgetSnapshot();
     await _loadWithuCoupleState();
   }
 
   Future<void> _disconnectWithuCouple() async {
+    final l10n = AppLocalizations.of(context)!;
     final provider = context.read<TimetableProvider>();
     final sessionProvider = context.read<WithuCoupleSessionProvider>();
-    await _withuTimetableService.disconnect();
+    // 1) 本机立即退出：只读本地凭证，返回时首页已经是未登录态，不等服务端。
+    await sessionProvider.signOutLocally();
+    await _withuTimetableService.forgetPartnerPullMarkers();
     await provider.syncCoupleTimetableWidgetSnapshot();
     await _loadWithuCoupleState();
     if (!mounted) {
       return;
     }
-    // 断开后同步熄灭首页情侣标题的登录态（爱心退回「登录」提示）。
-    await sessionProvider.restoreSession();
+    // 2) 尽力注销服务端会话（吊销 withu_device 可信设备）。本页不关闭，
+    //    所以这里可以放心等结果再用自己的 context 提示。
+    final serverConfirmed = await sessionProvider.completeServerLogout();
+    if (!mounted) {
+      return;
+    }
+    if (!serverConfirmed) {
+      showAppToast(
+        context,
+        message: l10n.withuCoupleLogoutUnconfirmed,
+        kind: AppToastKind.warning,
+      );
+    }
   }
 
   Future<void> _pinCoupleTimetableWidget() async {
@@ -539,75 +537,6 @@ class _CoupleTimetableSettingsScreenState
       }
     }
   }
-
-  Widget _buildCoupleColorsControl(
-    BuildContext context,
-    TimetableProvider provider,
-    PartnerTimetableBinding binding,
-  ) {
-    final l10n = AppLocalizations.of(context)!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildCoupleColorRow(
-          context,
-          label: l10n.coupleTimetableLegendMine,
-          selectedHex: binding.mineColorHex,
-          onSelected: (color) =>
-              provider.updatePartnerCoupleColors(mineColorHex: color),
-        ),
-        const SizedBox(height: 14),
-        _buildCoupleColorRow(
-          context,
-          label: l10n.coupleTimetableLegendPartner,
-          selectedHex: binding.partnerColorHex,
-          onSelected: (color) =>
-              provider.updatePartnerCoupleColors(partnerColorHex: color),
-        ),
-        const SizedBox(height: 14),
-        _buildCoupleColorRow(
-          context,
-          label: l10n.coupleTimetableLegendTogether,
-          selectedHex: binding.togetherColorHex,
-          onSelected: (color) =>
-              provider.updatePartnerCoupleColors(togetherColorHex: color),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCoupleColorRow(
-    BuildContext context, {
-    required String label,
-    required String selectedHex,
-    required ValueChanged<String> onSelected,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: HyperosTypography.listTitle(context)),
-        const SizedBox(height: 8),
-        HyperosHexColorChipGroup(
-          colorHexes: _paletteIncluding(selectedHex),
-          selectedHex: selectedHex,
-          colorParser: _colorFromHex,
-          distributeHorizontally: false,
-          onSelectedHex: onSelected,
-        ),
-      ],
-    );
-  }
-
-  List<String> _paletteIncluding(String selectedHex) {
-    final normalized = selectedHex.toUpperCase();
-    if (_coupleColorChoices.any((hex) => hex.toUpperCase() == normalized)) {
-      return _coupleColorChoices;
-    }
-    return [selectedHex, ..._coupleColorChoices];
-  }
-
-  Color _colorFromHex(String hex) =>
-      parseHexColorOrFallback(hex, fallback: HyperosIconColors.blue);
 
   Widget _buildWeekOffsetControl(
     BuildContext context,

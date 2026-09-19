@@ -4,7 +4,6 @@ import 'package:university_timetable/l10n/service_message_localizer.dart';
 import 'package:university_timetable/providers/timetable_provider.dart';
 import 'package:university_timetable/providers/withu_couple_session_provider.dart';
 import 'package:university_timetable/screens/couple_timetable_settings_screen.dart';
-import 'package:university_timetable/services/withu_couple_auth_service.dart';
 import 'package:university_timetable/services/withu_couple_config.dart';
 import 'package:university_timetable/services/withu_couple_timetable_service.dart';
 import 'package:university_timetable/ui/hyperos/hyperos.dart';
@@ -41,7 +40,6 @@ class WithuCoupleCenterSheet extends StatefulWidget {
 }
 
 class _WithuCoupleCenterSheetState extends State<WithuCoupleCenterSheet> {
-  final WithuCoupleAuthService _authService = WithuCoupleAuthService();
   late final WithuCoupleTimetableService _timetableService;
   bool _isSyncing = false;
   bool _isDisconnecting = false;
@@ -50,14 +48,11 @@ class _WithuCoupleCenterSheetState extends State<WithuCoupleCenterSheet> {
   @override
   void initState() {
     super.initState();
-    _timetableService = WithuCoupleTimetableService(authService: _authService);
+    // 复用首页 provider 的认证服务：退出登录必须在同一份状态上发生。
+    _timetableService = WithuCoupleTimetableService(
+      authService: widget.sessionProvider.authService,
+    );
     _loadConfig();
-  }
-
-  @override
-  void dispose() {
-    _authService.dispose();
-    super.dispose();
   }
 
   Future<void> _loadConfig() async {
@@ -98,6 +93,15 @@ class _WithuCoupleCenterSheetState extends State<WithuCoupleCenterSheet> {
   Widget _buildAccountHeader(BuildContext context, bool hasPartnerTimetable) {
     final l10n = AppLocalizations.of(context)!;
     final session = widget.sessionProvider;
+    // 昵称可能取不到（旧服务端、对方未设置、离线时只有凭证没有缓存资料）：
+    // 依次退回账号名、本地化文案，不要把空串直接显示出来。
+    final account = session.session?.username.trim() ?? '';
+    final userName = session.userNickname.trim().isNotEmpty
+        ? session.userNickname.trim()
+        : (account.isNotEmpty ? account : l10n.coupleTimetableLegendMine);
+    final partnerName = session.partnerNickname.trim().isNotEmpty
+        ? session.partnerNickname.trim()
+        : l10n.coupleTimetableLegendPartner;
 
     return Row(
       children: [
@@ -114,7 +118,7 @@ class _WithuCoupleCenterSheetState extends State<WithuCoupleCenterSheet> {
                 children: [
                   Flexible(
                     child: Text(
-                      session.userNickname,
+                      userName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: HyperosTypography.listTitle(context),
@@ -130,7 +134,7 @@ class _WithuCoupleCenterSheetState extends State<WithuCoupleCenterSheet> {
                   ),
                   Flexible(
                     child: Text(
-                      session.partnerNickname,
+                      partnerName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: HyperosTypography.listTitle(context),
@@ -140,7 +144,9 @@ class _WithuCoupleCenterSheetState extends State<WithuCoupleCenterSheet> {
               ),
               const SizedBox(height: 4),
               Text(
-                l10n.withuCoupleConnectedAs(session.userNickname),
+                l10n.withuCoupleConnectedAs(
+                  account.isNotEmpty ? account : userName,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: HyperosTypography.listDetail(context),
@@ -285,14 +291,37 @@ class _WithuCoupleCenterSheetState extends State<WithuCoupleCenterSheet> {
   }
 
   Future<void> _disconnect() async {
+    final l10n = AppLocalizations.of(context)!;
+    // 弹窗关闭后这里就不能再用本 widget 的 context 找 Overlay 了，先取根 Overlay
+    // 备用：服务端注销的提示要在弹窗消失之后才可能弹出来。
+    final toastOverlay = Overlay.maybeOf(context, rootOverlay: true);
     setState(() => _isDisconnecting = true);
     try {
-      await _timetableService.disconnect();
+      // 1) 本机立即退出：这一步只读本地凭证，返回时首页已经是未登录态，
+      //    不等服务端往返。
+      await widget.sessionProvider.signOutLocally();
+      await _timetableService.forgetPartnerPullMarkers();
       await widget.timetableProvider.syncCoupleTimetableWidgetSnapshot();
-      if (mounted) {
-        Navigator.of(context).pop();
+      if (!mounted) {
+        return;
       }
-      await widget.sessionProvider.restoreSession();
+      // 2) 先把界面收掉，再去做服务端注销。
+      Navigator.of(context).pop();
+
+      // 3) 尽力注销服务端会话（吊销 withu_device 可信设备）。拿不到确认时
+      //    本地已经退出，只需提醒用户服务端会话可能仍有效。
+      final serverConfirmed = await widget.sessionProvider
+          .completeServerLogout();
+      // 弹窗此时已经关掉，本 widget 的 context 可能已失效，只能用根 Overlay
+      // 作为 toast 宿主（它随应用存活）。
+      if (!serverConfirmed) {
+        showAppToast(
+          null,
+          overlay: toastOverlay,
+          message: l10n.withuCoupleLogoutUnconfirmed,
+          kind: AppToastKind.warning,
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isDisconnecting = false);

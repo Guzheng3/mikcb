@@ -1215,9 +1215,12 @@ Future<CoupleTimetableWidgetSnapshot> _liveBuildCoupleWidgetSnapshot(
       CoupleTimetableWidgetStatus.notLoggedIn,
     );
   }
+  // 开关开着、也登录了，却拿不到 TA 的课表档案。对用户来说原因只有一个：
+  // TA 那边还没把课表传上来。这与「未开情侣模式」是两回事，别共用同一个状态，
+  // 否则通知会让用户去翻开关，而该做的是催对方上传。
   if (binding == null || partnerProfile == null || myProfile == null) {
     return CoupleTimetableWidgetSnapshot.unavailable(
-      CoupleTimetableWidgetStatus.coupleModeOff,
+      CoupleTimetableWidgetStatus.notBound,
     );
   }
 
@@ -1231,9 +1234,11 @@ Future<CoupleTimetableWidgetSnapshot> _liveBuildCoupleWidgetSnapshot(
       : (binding.partnerName.trim().isNotEmpty
             ? binding.partnerName.trim()
             : partnerProfile.name.trim());
+  // 昵称三级兜底全落空（对方课表名与账号昵称同时为空）只有一种可能：拉到的
+  // TA 课表是残缺的。修复动作与未绑定相同（让 TA 重传一次），所以同档显示。
   if (myName.isEmpty || partnerName.isEmpty) {
     return CoupleTimetableWidgetSnapshot.unavailable(
-      CoupleTimetableWidgetStatus.coupleModeOff,
+      CoupleTimetableWidgetStatus.notBound,
     );
   }
 
@@ -1258,8 +1263,8 @@ Future<CoupleTimetableWidgetSnapshot> _liveBuildCoupleWidgetSnapshot(
   return CoupleTimetableWidgetSnapshot(
     myName: myName,
     partnerName: partnerName,
-    leftColorHex: binding.mineColorHex,
-    rightColorHex: binding.partnerColorHex,
+    myGender: displayProfile?.userGender ?? '',
+    partnerGender: displayProfile?.partnerGender ?? '',
     status: CoupleTimetableWidgetStatus.ok,
     generatedAtMillis: now.millisecondsSinceEpoch,
     mine: CoupleTimetableWidgetDayCourses(

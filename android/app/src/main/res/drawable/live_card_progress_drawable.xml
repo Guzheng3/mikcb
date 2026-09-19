@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 自绘卡片的进度条：与系统通知里的进度条观感一致（2dp 圆角、轨道浅、进度用主色）。 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape>
+            <corners android:radius="2dp" />
+            <solid android:color="@color/live_card_progress_track" />
+        </shape>
+    </item>
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape>
+                <corners android:radius="2dp" />
+                <solid android:color="@color/live_card_progress" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>

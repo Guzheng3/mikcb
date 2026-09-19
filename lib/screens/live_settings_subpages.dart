@@ -942,10 +942,22 @@ class _LiveKeepAliveSettingsScreenState
     extends State<LiveKeepAliveSettingsScreen> {
   late TimetableSettings _draft;
 
+  /// ColorOS 一系（OPPO / realme / 一加）会在应用退到后台后冻结整个进程，通知里的
+  /// 倒计时随之停在最后一帧 —— 只有这一档需要在保活页给出「允许完全后台行为」的
+  /// 指引。判据与流体云文案共用原生 `liveSurfaceBrand`，不在这里另写品牌表。
+  bool _isColorOsFamilyDevice = false;
+
   @override
   void initState() {
     super.initState();
     _draft = context.read<TimetableProvider>().settings;
+    unawaited(
+      MiuiLiveActivitiesService().isColorOsFamilyDevice().then((value) {
+        if (mounted && value != _isColorOsFamilyDevice) {
+          setState(() => _isColorOsFamilyDevice = value);
+        }
+      }),
+    );
   }
 
   @override
@@ -977,6 +989,28 @@ class _LiveKeepAliveSettingsScreenState
               ),
             ],
           ),
+          if (_isColorOsFamilyDevice) ...[
+            const HyperosSectionGap(),
+            HyperosSectionLabel(text: l10n.liveBackgroundRestrictionTitle),
+            HyperosHintBanner(
+              icon: const Icon(Icons.info_outline_rounded, size: 18),
+              title: Text(l10n.liveBackgroundRestrictionSubtitle),
+            ),
+            const HyperosSectionGap(),
+            HyperosListGroup(
+              children: [
+                HyperosListTile(
+                  icon: Icons.battery_alert_outlined,
+                  iconAccent: HyperosIconColors.teal,
+                  title: l10n.liveBackgroundRestrictionOpen,
+                  onTap: () => unawaited(
+                    MiuiLiveActivitiesService()
+                        .openBackgroundRestrictionSettings(),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

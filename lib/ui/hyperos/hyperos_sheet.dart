@@ -13,7 +13,7 @@ import 'liquid/hyperos_liquid_glass_surface.dart';
 
 /// Extra height painted below an edge-flush glass sheet's bottom edge so the
 /// liquid-glass specular fringe along the straight bottom side lands outside
-/// the panel's clip and is cut 鈥?otherwise that fringe shows as a 1px
+/// the panel's clip and is cut — otherwise that fringe shows as a 1px
 /// hairline seam where the panel meets the screen bottom (same failure as the
 /// top edge, see `homePageChromeGlassTopEdgeOverdraw`).
 const hyperosEdgeSheetBottomOverdraw = 4.0;
@@ -48,12 +48,13 @@ enum HyperosSheetChrome {
   edge,
 }
 
-/// 鏈鐨勬恫鎬佺幓鐠冩潗璐ㄥ彈銆屾恫鎬佺幓鐠冧綔鐢ㄨ寖鍥淬€嶅摢涓€妗ｅ紑鍏虫帶鍒躲€?
+/// 本框的液态玻璃材质受「液态玻璃作用范围」哪一档开关控制。
 enum HyperosSheetLiquidGlassGroup {
-  /// 搴曢儴寮圭獥涓庡璇濇锛坰howHyperosSheet / HyperosDialog 绯伙紝榛樿寮€锛夈€?
+  /// 底部弹窗与对话框（showHyperosSheet / HyperosDialog 系，默认开）。
   sheetDialog,
 
-  /// 瀵硅瘽寮忓叏灞忛€夋嫨闈㈡澘鈥斺€旈璁句富棰樸€佸瓧浣撶瓑闀垮垪琛ㄩ€夋嫨寮圭獥锛堥粯璁ゅ叧锛?  /// 澶ч潰绉姌灏勫湪闀垮垪琛ㄤ笂鍋忕偒涓旀洿璐圭數锛岄粯璁や繚鎸佺粡鍏哥（鐮傦級銆?
+  /// 对话式全屏选择面板——预设主题、字体等长列表选择弹窗（默认关：
+  /// 大面积折射在长列表上偏炫且更费电，默认保持经典磨砂）。
   selectSheet,
 }
 
@@ -122,15 +123,15 @@ class HyperosSheetFrame extends StatelessWidget {
   /// Whether liquid-glass content receives the extra opaque legibility fill.
   ///
   /// Defaults to false so every sheet/dialog uses the same clear material as
-  /// the home chrome band (9de96b8 / A 鏂规閫氶€忕粺涓€). Set true explicitly
+  /// the home chrome band (9de96b8 / A 方案通透统一). Set true explicitly
   /// only for a deliberately milky panel.
   final bool liquidGlassContentLegibilityFill;
 
-  /// 銆屾恫鎬佺幓鐠冧綔鐢ㄨ寖鍥淬€嶅紑鍏虫。浣嶏細鏈娑叉€佹潗璐ㄨ窡闅忓脊绐楀璇濇锛堥粯璁わ級
-  /// 杩樻槸瀵硅瘽寮忓叏灞忛€夋嫨闈㈡澘锛堥璁句富棰樼瓑闀垮垪琛ㄩ€夋嫨寮圭獥锛夈€?
+  /// 「液态玻璃作用范围」开关档位：本框液态材质跟随弹窗对话框（默认）
+  /// 还是对话式全屏选择面板（预设主题等长列表选择弹窗）。
   final HyperosSheetLiquidGlassGroup liquidGlassGroup;
 
-  /// 鏈褰撳墠鏄惁鍏佽浣跨敤娑叉€佺幓鐠冩潗璐紙鍏ㄥ眬妯″紡 脳 瀹舵棌寮€鍏筹級銆?
+  /// 本框当前是否允许使用液态玻璃材质（全局模式 × 家族开关）。
   bool _liquidGlassAllowed(FrostedAppearance appearance) =>
       switch (liquidGlassGroup) {
         HyperosSheetLiquidGlassGroup.sheetDialog =>
@@ -176,7 +177,7 @@ class HyperosSheetFrame extends StatelessWidget {
             child: content,
           );
 
-    // BoxShadow creates a dark ring around the panel 鈥?visible on all sides,
+    // BoxShadow creates a dark ring around the panel — visible on all sides,
     // moves with the panel (no tracking), and matches the panel's rounded
     // corners naturally.  The shadow sits BEHIND the frosted glass, so
     // BackdropFilter inside the glass samples the bright page content, not
@@ -192,7 +193,7 @@ class HyperosSheetFrame extends StatelessWidget {
         decoration: const BoxDecoration(
           boxShadow: [
             BoxShadow(
-              // 涓?anchored popup 姘旀场鍚岀骇锛氳交鎶曞奖锛屼笉鍐嶅舰鎴愭槑鏄炬殫鐜€?
+              // 与 anchored popup 气泡同级：轻投影，不再形成明显暗环。
               color: Color(0x24000000),
               blurRadius: 20,
             ),
@@ -222,7 +223,7 @@ class HyperosSheetFrame extends StatelessWidget {
               children: [
                 // Paint the glass a few pixels below the visible panel so the
                 // liquid-glass specular fringe on its straight bottom edge
-                // lands outside the ClipRRect and is clipped 鈥?otherwise it
+                // lands outside the ClipRRect and is clipped — otherwise it
                 // shows as a 1px hairline seam where the edge sheet meets the
                 // screen bottom (see hyperosEdgeSheetBottomOverdraw).
                 Positioned(
@@ -270,11 +271,11 @@ class HyperosSheetFrame extends StatelessWidget {
     final appearance = FrostedAppearanceScope.of(context);
 
     // Liquid glass mode: real-time refraction shader panel. Checked before
-    // the gaussian blur gate because liquid glass carries its own blur 鈥?
+    // the gaussian blur gate because liquid glass carries its own blur —
     // gating it on backdropBlurEnabled (liveBlurSupported && blurEnabled)
     // would make the frame a solid gray slab on desktop/web while the nested
     // tiles keep rendering liquid glass.
-    // 銆屾恫鎬佺幓鐠冧綔鐢ㄨ寖鍥淬€嶅搴斿鏃忓紑鍏冲叧闂椂锛屾暣妗嗗洖閫€纾ㄧ爞/瀹炲簳鏉愯川銆?
+    // 「液态玻璃作用范围」对应家族开关关闭时，整框回退磨砂/实底材质。
     if (appearance.glassMode == FrostedGlassMode.liquidGlass &&
         _liquidGlassAllowed(appearance) &&
         !LiquidGlassDegradation.shouldDegrade(context)) {
@@ -290,7 +291,7 @@ class HyperosSheetFrame extends StatelessWidget {
 
     final useBlur = HyperosBlurredHeader.backdropBlurEnabled(context);
 
-    // Blur off 鈫?solid opaque panel (no translucent scrim over the page).
+    // Blur off → solid opaque panel (no translucent scrim over the page).
     if (!useBlur) {
       return Material(
         color: HyperosColors.surfaceContainer(context),
@@ -321,11 +322,11 @@ class HyperosSheetFrame extends StatelessWidget {
     final appearance = FrostedAppearanceScope.of(context);
 
     // Liquid glass mode: real-time refraction shader panel. Checked before
-    // the gaussian blur gate because liquid glass carries its own blur 鈥?
+    // the gaussian blur gate because liquid glass carries its own blur —
     // gating it on backdropBlurEnabled (liveBlurSupported && blurEnabled)
     // would make the frame a solid gray slab on desktop/web while nested
     // tiles keep rendering liquid glass.
-    // 銆屾恫鎬佺幓鐠冧綔鐢ㄨ寖鍥淬€嶅搴斿鏃忓紑鍏冲叧闂椂锛屾暣妗嗗洖閫€纾ㄧ爞/瀹炲簳鏉愯川銆?
+    // 「液态玻璃作用范围」对应家族开关关闭时，整框回退磨砂/实底材质。
     if (appearance.glassMode == FrostedGlassMode.liquidGlass &&
         _liquidGlassAllowed(appearance) &&
         !LiquidGlassDegradation.shouldDegrade(context)) {
@@ -343,7 +344,7 @@ class HyperosSheetFrame extends StatelessWidget {
 
     final useBlur = HyperosBlurredHeader.backdropBlurEnabled(context);
 
-    // Blur off 鈫?solid opaque panel (no translucent scrim over the page).
+    // Blur off → solid opaque panel (no translucent scrim over the page).
     if (!useBlur) {
       return HyperosFrostedPanelScope(
         child: Material(
@@ -512,7 +513,7 @@ class _SheetSlideAnimation extends Animation<Offset> {
 /// [LayoutBuilder] measures the actual sheet height, enabling the
 /// distance-based dismiss threshold.
 ///
-/// Dragging only translates the panel 鈥?the sheet never fades out. An
+/// Dragging only translates the panel — the sheet never fades out. An
 /// `Opacity` layer here would degrade frosted [BackdropFilter] / liquid glass
 /// shaders (the same reason [_SheetSlideUp] avoids animated Opacity), showing
 /// as transparency flicker while the panel is dragged down.

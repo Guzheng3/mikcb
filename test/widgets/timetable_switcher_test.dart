@@ -12,6 +12,7 @@ import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/providers/withu_couple_session_provider.dart';
 import 'package:university_timetable/screens/timetable_screen.dart';
 import 'package:university_timetable/screens/timetable_profiles_screen.dart';
+import 'package:university_timetable/services/data_transfer_service.dart';
 import 'package:university_timetable/services/storage_service.dart';
 import 'package:university_timetable/services/withu_couple_auth_service.dart';
 import 'package:university_timetable/services/withu_couple_session_store.dart';
@@ -242,6 +243,46 @@ void main() {
     expect(find.text('小明'), findsOneWidget);
     expect(find.text('小红'), findsOneWidget);
     expect(find.byKey(const ValueKey('withu_couple_login_chip')), findsNothing);
+  });
+
+  testWidgets('signed-out home shows login prompt despite TA import', (
+    tester,
+  ) async {
+    final provider = await createInitializedTestProvider(tester);
+    await runRealAsync(tester, () async {
+      await provider.updateTimetableSettings(
+        provider.settings.copyWith(coupleTimetableOverlayEnabled: true),
+      );
+      // 退出登录后本机仍保留已导入的对方课表（绑定还在），但标题不该再被它
+      // 撑成情侣标题——那会让人以为退出登录没生效。
+      await provider.importPartnerTimetable(
+        DataTransferService().buildBackupJson(
+          profileName: 'TA',
+          courses: const [],
+          settings: TimetableSettings.defaults(),
+          currentWeek: 1,
+        ),
+        partnerName: 'TA',
+      );
+    });
+    expect(provider.hasPartnerBinding, isTrue);
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: provider,
+        child: const TestApp(home: TimetableScreen(enableProgressTimer: false)),
+      ),
+    );
+    await _pumpTimetableFrame(tester);
+
+    expect(
+      find.byKey(const ValueKey('profile_switcher_trigger')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('withu_couple_login_chip')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('home overflow menu omits timetable management entry', (

@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:university_timetable/models/course.dart';
@@ -275,6 +277,56 @@ void main() {
       'Alice',
       'Bob',
     });
+  });
+
+  test('gender derives from the couple role slots only', () {
+    // 服务端把性别编码进角色槽位：男=user1，女=user2；其余角色不推断。
+    expect(
+      WithuCoupleDisplayProfile.genderFromRole('user1'),
+      WithuCoupleDisplayProfile.genderMale,
+    );
+    expect(
+      WithuCoupleDisplayProfile.genderFromRole('user2'),
+      WithuCoupleDisplayProfile.genderFemale,
+    );
+    expect(WithuCoupleDisplayProfile.genderFromRole('couple'), '');
+    expect(WithuCoupleDisplayProfile.genderFromRole(null), '');
+  });
+
+  test('display profile round-trips both genders', () async {
+    final storage = _MemorySecureStorage();
+    final store = WithuCoupleSessionStore(storage: storage);
+
+    await store.saveDisplayProfile(
+      const WithuCoupleDisplayProfile(
+        userNickname: 'Me',
+        partnerNickname: 'Her',
+        userGender: WithuCoupleDisplayProfile.genderFemale,
+        partnerGender: WithuCoupleDisplayProfile.genderMale,
+      ),
+    );
+
+    final profile = await store.loadDisplayProfile();
+
+    expect(profile?.userGender, WithuCoupleDisplayProfile.genderFemale);
+    expect(profile?.partnerGender, WithuCoupleDisplayProfile.genderMale);
+  });
+
+  test('display profile does not persist an unknown gender', () async {
+    final storage = _MemorySecureStorage();
+    final store = WithuCoupleSessionStore(storage: storage);
+
+    await store.saveDisplayProfile(
+      const WithuCoupleDisplayProfile(
+        userNickname: 'Me',
+        partnerNickname: 'Her',
+        userGender: 'mystery',
+      ),
+    );
+
+    expect(await storage.read(key: 'withu_couple_user_gender'), isNull);
+    expect(await storage.read(key: 'withu_couple_partner_gender'), isNull);
+    expect((await store.loadDisplayProfile())?.userGender, '');
   });
 
   test('login parses folded Set-Cookie headers containing commas', () async {
@@ -811,36 +863,39 @@ void main() {
     expect(history.single.snapshot, isEmpty);
   });
 
-  test('history reads the millisecond semester start the server sends', () async {
-    final storage = _MemorySecureStorage();
-    final client = _FakeClient({
-      _loginUrl: _loginResponse(),
-      _historyUrl: _jsonResponse({
-        'success': true,
-        'max_entries': 13,
-        'history': [
-          {
-            'id': 41,
-            'changeType': 'save',
-            'profileName': 'Default',
-            'courseCount': 2,
-            'currentWeek': 3,
-            // 真实回传里这一列是毫秒时间戳字符串，与管理台的
-            // withu_tt_millis_date 同口径，而不是 ISO 日期。
-            'semesterStartDate':
-                '${DateTime(2026, 3, 2).millisecondsSinceEpoch}',
-            'createdAt': '2026-09-08 10:20:30',
-          },
-        ],
-      }),
-    });
-    final auth = await _connectedAuthService(client, storage);
-    final service = WithuCoupleTimetableService(authService: auth);
+  test(
+    'history reads the millisecond semester start the server sends',
+    () async {
+      final storage = _MemorySecureStorage();
+      final client = _FakeClient({
+        _loginUrl: _loginResponse(),
+        _historyUrl: _jsonResponse({
+          'success': true,
+          'max_entries': 13,
+          'history': [
+            {
+              'id': 41,
+              'changeType': 'save',
+              'profileName': 'Default',
+              'courseCount': 2,
+              'currentWeek': 3,
+              // 真实回传里这一列是毫秒时间戳字符串，与管理台的
+              // withu_tt_millis_date 同口径，而不是 ISO 日期。
+              'semesterStartDate':
+                  '${DateTime(2026, 3, 2).millisecondsSinceEpoch}',
+              'createdAt': '2026-09-08 10:20:30',
+            },
+          ],
+        }),
+      });
+      final auth = await _connectedAuthService(client, storage);
+      final service = WithuCoupleTimetableService(authService: auth);
 
-    final history = await service.fetchMyHistory();
+      final history = await service.fetchMyHistory();
 
-    expect(history.single.semesterAnchor, DateTime(2026, 3, 2));
-  });
+      expect(history.single.semesterAnchor, DateTime(2026, 3, 2));
+    },
+  );
 
   test('rollback restores cloud history and does not overwrite it', () async {
     final cloudContent = _backupJson('history-course');
@@ -1361,5 +1416,288 @@ void main() {
     final result = await service.pullPartnerTimetable(provider: _provider());
 
     expect(result.errorCode, 'withu_couple_account_required');
+  });
+
+  // ── 会话的唯一真相源 ────────────────────────────────────────────
+  // 每个 UI 组件（首页 provider、设置页、登录弹窗、自动同步）都会创建一个
+  // WithuCoupleAuthService，它们共享同一份安全存储。任何长期缓存都会让
+  // 「别人登录/退出了」这件事看不到。
+
+  test('a login made by another instance is visible immediately', () async {
+    final storage = _MemorySecureStorage();
+    final client = MockClient((request) async => _loginResponse());
+    final reader = WithuCoupleAuthService(
+      client: client,
+      sessionStore: WithuCoupleSessionStore(storage: storage),
+    );
+    // 先读一次「没有会话」，把任何可能的缓存填上。
+    expect(await reader.loadSession(), isNull);
+
+    final writer = WithuCoupleAuthService(
+      client: client,
+      sessionStore: WithuCoupleSessionStore(storage: storage),
+    );
+    await writer.connect(
+      baseUrl: 'https://withu.example.com',
+      username: 'alice',
+      password: 'password',
+    );
+
+    expect(await reader.loadSession(), isNotNull);
+  });
+
+  test('clearLocalCredentials wipes the session without any request', () async {
+    final storage = _MemorySecureStorage();
+    var requests = 0;
+    final client = MockClient((request) async {
+      requests++;
+      return _loginResponse();
+    });
+    final auth = WithuCoupleAuthService(
+      client: client,
+      sessionStore: WithuCoupleSessionStore(storage: storage),
+    );
+    await auth.connect(
+      baseUrl: 'https://withu.example.com',
+      username: 'alice',
+      password: 'password',
+    );
+    final requestsAfterLogin = requests;
+
+    await auth.clearLocalCredentials();
+
+    expect(await auth.loadSession(), isNull);
+    expect(storage.values, isEmpty);
+    // 本地退出不联系服务端——服务端注销由 notifyServerLogout 单独负责。
+    expect(requests, requestsAfterLogin);
+  });
+
+  test('notifyServerLogout cannot restore credentials', () async {
+    final storage = _MemorySecureStorage();
+    final client = MockClient((request) async {
+      if (request.url.queryParameters['action'] == 'logout') {
+        // 服务端可能在注销响应里回带新的 Set-Cookie / csrf_token；
+        // 退出登录之后这些都不许再写回本地。
+        return _jsonResponse(
+          {'success': true, 'csrf_token': 'csrf-after-logout'},
+          headers: {
+            'set-cookie': 'PHPSESSID=session-after-logout; Path=/; HttpOnly',
+          },
+        );
+      }
+      return _loginResponse();
+    });
+    final auth = WithuCoupleAuthService(
+      client: client,
+      sessionStore: WithuCoupleSessionStore(storage: storage),
+    );
+    await auth.connect(
+      baseUrl: 'https://withu.example.com',
+      username: 'alice',
+      password: 'password',
+    );
+    final session = await auth.loadSession();
+
+    await auth.clearLocalCredentials();
+    expect(await auth.notifyServerLogout(session!), isTrue);
+
+    expect(await auth.loadSession(), isNull);
+    expect(storage.values, isEmpty);
+  });
+
+  test(
+    'notifyServerLogout reports failure when the server is unreachable',
+    () async {
+      final storage = _MemorySecureStorage();
+      final client = MockClient((request) async {
+        if (request.url.queryParameters['action'] == 'logout') {
+          throw http.ClientException('offline');
+        }
+        return _loginResponse();
+      });
+      final auth = WithuCoupleAuthService(
+        client: client,
+        sessionStore: WithuCoupleSessionStore(storage: storage),
+      );
+      await auth.connect(
+        baseUrl: 'https://withu.example.com',
+        username: 'alice',
+        password: 'password',
+      );
+      final session = await auth.loadSession();
+      await auth.clearLocalCredentials();
+
+      // 拿不到确认时可信设备在服务端仍然有效，UI 需要据此提示。
+      expect(await auth.notifyServerLogout(session!), isFalse);
+      expect(await auth.loadSession(), isNull);
+    },
+  );
+
+  test('per-action timeouts keep logout snappy and sync generous', () {
+    final auth = WithuCoupleAuthService(
+      client: MockClient((request) async => _loginResponse()),
+    );
+
+    // 注销只影响提示，短；同步类请求可能带 2MB 课表内容，宽裕。
+    expect(
+      auth.timeoutForAction('logout'),
+      WithuCoupleAuthService.logoutTimeout,
+    );
+    expect(auth.timeoutForAction('login'), WithuCoupleAuthService.loginTimeout);
+    expect(
+      auth.timeoutForAction('save'),
+      WithuCoupleAuthService.defaultTimeout,
+    );
+    expect(
+      auth.timeoutForAction('bootstrap'),
+      WithuCoupleAuthService.defaultTimeout,
+    );
+    expect(
+      auth.timeoutForAction('partner'),
+      WithuCoupleAuthService.defaultTimeout,
+    );
+    expect(
+      WithuCoupleAuthService.logoutTimeout <
+          WithuCoupleAuthService.defaultTimeout,
+      isTrue,
+    );
+
+    // 测试注入的覆盖值对所有 action 生效。
+    final overridden = WithuCoupleAuthService(
+      client: MockClient((request) async => _loginResponse()),
+      requestTimeout: const Duration(milliseconds: 5),
+    );
+    expect(
+      overridden.timeoutForAction('logout'),
+      const Duration(milliseconds: 5),
+    );
+    expect(
+      overridden.timeoutForAction('save'),
+      const Duration(milliseconds: 5),
+    );
+  });
+
+  test('a request that never answers times out as a network failure', () async {
+    final storage = _MemorySecureStorage();
+    final auth = WithuCoupleAuthService(
+      // 黑洞连接：请求永远不返回，只能靠超时兜底。
+      client: MockClient((request) => Completer<http.Response>().future),
+      sessionStore: WithuCoupleSessionStore(storage: storage),
+      requestTimeout: const Duration(milliseconds: 50),
+    );
+    await const WithuCoupleConfigStore().save(
+      const WithuCoupleConfig(baseUrl: 'https://withu.example.com'),
+    );
+    final store = WithuCoupleSessionStore(storage: storage);
+    await store.save(
+      const WithuCoupleSession(
+        username: 'alice',
+        sessionId: 'session-id',
+        csrfToken: 'csrf-token',
+      ),
+    );
+
+    await expectLater(
+      auth.getJson('bootstrap'),
+      throwsA(
+        isA<WithuCoupleApiException>().having(
+          (error) => error.code,
+          'code',
+          'withu_network_failed',
+        ),
+      ),
+    );
+  });
+
+  test('an HTML 401 body still expires the session', () async {
+    final storage = _MemorySecureStorage();
+    final client = MockClient((request) async {
+      if (request.url.queryParameters['action'] == 'login') {
+        return _loginResponse();
+      }
+      // PHP 站点在会话失效时可能返回跳转登录页的 HTML，而不是 JSON。
+      return http.Response(
+        '<html><body><a href="/login.php">login</a></body></html>',
+        401,
+        headers: {'content-type': 'text/html; charset=utf-8'},
+      );
+    });
+    final auth = WithuCoupleAuthService(
+      client: client,
+      sessionStore: WithuCoupleSessionStore(storage: storage),
+    );
+    await auth.connect(
+      baseUrl: 'https://withu.example.com',
+      username: 'alice',
+      password: 'password',
+    );
+
+    // 错误码必须由状态码决定：解析不了 body 不等于「响应非法」，
+    // 否则会话永远不会被作废，用户只能手动退出登录。
+    await expectLater(
+      auth.getJson('partner'),
+      throwsA(
+        isA<WithuCoupleApiException>().having(
+          (error) => error.code,
+          'code',
+          'withu_session_expired',
+        ),
+      ),
+    );
+
+    expect(await auth.loadSession(), isNull);
+    expect(storage.values, isEmpty);
+  });
+
+  test('an authenticated 401 does not delete a newer stored session', () async {
+    final storage = _MemorySecureStorage();
+    final store = WithuCoupleSessionStore(storage: storage);
+    await store.save(
+      const WithuCoupleSession(
+        username: 'old',
+        sessionId: 'old-session',
+        csrfToken: 'old-csrf',
+      ),
+    );
+    await const WithuCoupleConfigStore().save(
+      const WithuCoupleConfig(baseUrl: 'https://withu.example.com'),
+    );
+
+    final client = MockClient((request) async {
+      // 请求在途时用户重新登录了另一个账号：存储里已经是新凭证。
+      await store.save(
+        const WithuCoupleSession(
+          username: 'new',
+          sessionId: 'new-session',
+          deviceToken: 'new-device',
+          csrfToken: 'new-csrf',
+        ),
+      );
+      return _jsonResponse({
+        'success': false,
+        'message': 'Login required',
+      }, statusCode: 401);
+    });
+    final auth = WithuCoupleAuthService(
+      client: client,
+      sessionStore: WithuCoupleSessionStore(storage: storage),
+    );
+
+    await expectLater(
+      auth.getJson('bootstrap'),
+      throwsA(
+        isA<WithuCoupleApiException>().having(
+          (error) => error.code,
+          'code',
+          'withu_session_expired',
+        ),
+      ),
+    );
+
+    // 旧会话的 401 只作废它自己，不能把刚落盘的新登录一起删掉。
+    final remaining = await auth.loadSession();
+    expect(remaining?.username, 'new');
+    expect(remaining?.sessionId, 'new-session');
+    expect(remaining?.csrfToken, 'new-csrf');
   });
 }

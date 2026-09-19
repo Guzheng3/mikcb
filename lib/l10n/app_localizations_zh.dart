@@ -231,9 +231,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coupleTimetableLegendPartner => 'TA的课';
 
   @override
-  String get coupleTimetableLegendTogether => '一起上课';
-
-  @override
   String get coupleTimetableLegendFree => '共同空闲';
 
   @override
@@ -300,13 +297,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get coupleTimetableColorsTitle => '叠加颜色';
-
-  @override
-  String get coupleTimetableColorsSubtitle =>
-      '自定义「我的课」「TA的课」「一起上课」在叠加视图中的显示颜色，可按喜好自由搭配';
-
-  @override
   String get partnerImportRequiresSingleProfile => '请导入单课表备份文件，不支持全量备份';
 
   @override
@@ -335,6 +325,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get withuCoupleDisconnect => '退出登录';
+
+  @override
+  String get withuCoupleLogoutUnconfirmed => '已在本机退出登录，但未能通知服务器；服务器上的会话可能仍然有效';
 
   @override
   String get withuCouplePullNow => '立即拉取对方课表';
@@ -1970,6 +1963,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get liveKeepAliveOptionsSubtitle => '用于提升超级岛和提醒在后台场景下的稳定性';
+
+  @override
+  String get liveBackgroundRestrictionTitle => '系统后台限制';
+
+  @override
+  String get liveBackgroundRestrictionSubtitle =>
+      '系统会在应用退到后台后暂停它，通知里的倒计时会停在最后一帧。点按下方入口，在「耗电管理」里选择「允许完全后台行为」。';
+
+  @override
+  String get liveBackgroundRestrictionOpen => '打开耗电管理';
 
   @override
   String get hideFromRecentsTitle => '从最近任务中隐藏应用';
@@ -9866,9 +9869,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get coupleTimetableLegendPartner => '對方課程';
 
   @override
-  String get coupleTimetableLegendTogether => '一起上課';
-
-  @override
   String get coupleTimetableLegendFree => '共同空閒';
 
   @override
@@ -9935,13 +9935,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   }
 
   @override
-  String get coupleTimetableColorsTitle => '疊加顏色';
-
-  @override
-  String get coupleTimetableColorsSubtitle =>
-      '自訂「我的課」「對方課程」「一起上課」在疊加檢視中的顯示顏色，可按喜好自由搭配';
-
-  @override
   String get partnerImportRequiresSingleProfile => '請匯入單一課表備份檔案，不支援全量備份';
 
   @override
@@ -9970,6 +9963,9 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get withuCoupleDisconnect => '登出';
+
+  @override
+  String get withuCoupleLogoutUnconfirmed => '已在此裝置登出，但未能通知伺服器；伺服器上的工作階段可能仍然有效';
 
   @override
   String get withuCouplePullNow => '立即拉取對方課表';
@@ -11591,6 +11587,16 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get liveKeepAliveOptionsSubtitle => '用於提升超級島和提醒在後台場景下的穩定性';
+
+  @override
+  String get liveBackgroundRestrictionTitle => '系統後台限制';
+
+  @override
+  String get liveBackgroundRestrictionSubtitle =>
+      '系統會在應用退到後台後暫停它，通知裡的倒數會停在最後一格。點按下方入口，在「耗電管理」裡選擇「允許完全後台行為」。';
+
+  @override
+  String get liveBackgroundRestrictionOpen => '開啟耗電管理';
 
   @override
   String get hideFromRecentsTitle => '從最近任務中隱藏應用';
@@ -19524,9 +19530,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get coupleTimetableLegendPartner => '對方課程';
 
   @override
-  String get coupleTimetableLegendTogether => '一起上課';
-
-  @override
   String get coupleTimetableLegendFree => '共同空閒';
 
   @override
@@ -19593,13 +19596,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String get coupleTimetableColorsTitle => '疊加顏色';
-
-  @override
-  String get coupleTimetableColorsSubtitle =>
-      '自訂「我的課」「對方課程」「一起上課」在疊加檢視中的顯示顏色，可按喜好自由搭配';
-
-  @override
   String get partnerImportRequiresSingleProfile => '請匯入單一課表備份檔案，不支援全量備份';
 
   @override
@@ -19628,6 +19624,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get withuCoupleDisconnect => '登出';
+
+  @override
+  String get withuCoupleLogoutUnconfirmed => '已在此裝置登出，但未能通知伺服器；伺服器上的工作階段可能仍然有效';
 
   @override
   String get withuCouplePullNow => '立即拉取對方課表';
@@ -21249,6 +21248,16 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get liveKeepAliveOptionsSubtitle => '用於提升超級島和提醒在後台場景下的穩定性';
+
+  @override
+  String get liveBackgroundRestrictionTitle => '系統後台限制';
+
+  @override
+  String get liveBackgroundRestrictionSubtitle =>
+      '系統會在應用退到背景後暫停它，通知裡的倒數會停在最後一格。點按下方入口，在「耗電管理」裡選擇「允許完全背景行為」。';
+
+  @override
+  String get liveBackgroundRestrictionOpen => '開啟耗電管理';
 
   @override
   String get hideFromRecentsTitle => '從最近任務中隱藏應用';

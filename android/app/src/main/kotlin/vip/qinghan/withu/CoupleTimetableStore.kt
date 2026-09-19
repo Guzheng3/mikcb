@@ -30,12 +30,14 @@ data class CoupleWidgetDayCourses(
 enum class CoupleWidgetStatus {
     OK,
     COUPLE_MODE_OFF,
-    NOT_LOGGED_IN;
+    NOT_LOGGED_IN,
+    NOT_BOUND;
 
     companion object {
         fun from(value: String?): CoupleWidgetStatus = when (value) {
             "couple_mode_off" -> COUPLE_MODE_OFF
             "not_logged_in" -> NOT_LOGGED_IN
+            "not_bound" -> NOT_BOUND
             else -> OK
         }
     }
@@ -44,8 +46,8 @@ enum class CoupleWidgetStatus {
 data class CoupleTimetableWidgetSnapshot(
     val myName: String,
     val partnerName: String,
-    val leftColorHex: String?,
-    val rightColorHex: String?,
+    val myGender: String,
+    val partnerGender: String,
     val status: CoupleWidgetStatus,
     val generatedAtMillis: Long,
     val mine: CoupleWidgetDayCourses,
@@ -88,7 +90,8 @@ object CoupleTimetableStore {
             null
         } ?: return null
         // 快照里的 today/tomorrow 是 Flutter 同步那一刻按当时日期烘焙好的具体列表，
-        // App 不打开时跨天、跨周都不会翻转。状态/昵称/配色原生无从得知，继续取快照；
+        // App 不打开时跨天、跨周都不会翻转。状态/昵称原生无从得知，继续取快照
+        // （配色已改为原生固定色，不再来自快照）；
         // 只有当天课程按当前日期与周次在原生侧重算。重算不可用（档案缺失或损坏）时
         // 保留快照列表，退化成旧行为，不会画出空卡。
         if (stored.status != CoupleWidgetStatus.OK) {
@@ -102,8 +105,8 @@ object CoupleTimetableStore {
         return CoupleTimetableWidgetSnapshot(
             myName = json.stringOrEmpty("myName"),
             partnerName = json.stringOrEmpty("partnerName"),
-            leftColorHex = json.stringOrEmpty("leftColorHex").takeIf { it.isNotBlank() },
-            rightColorHex = json.stringOrEmpty("rightColorHex").takeIf { it.isNotBlank() },
+            myGender = json.stringOrEmpty("myGender"),
+            partnerGender = json.stringOrEmpty("partnerGender"),
             status = CoupleWidgetStatus.from(
                 if (json.isNull("status")) null else json.optString("status")
             ),

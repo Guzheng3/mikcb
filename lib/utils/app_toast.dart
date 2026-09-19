@@ -50,23 +50,33 @@ void showAppLightTip(
 ///
 /// Icons are omitted by default so single-line height matches system toast;
 /// pass [icon] or [showKindIcon] when a leading glyph is required.
+///
+/// [context] 可为 null，此时必须传 [overlay]：用于「触发 toast 的控件已经消失」
+/// 的场景（例如弹窗关闭后才拿到异步结果），根 Overlay 随应用存活，仍可作为
+/// 挂载点与主题来源。
 void showAppToast(
-  BuildContext context, {
+  BuildContext? context, {
   required String message,
   String? description,
   AppToastKind kind = AppToastKind.info,
   Duration? duration = _defaultToastDuration,
   IconData? icon,
   bool showKindIcon = false,
+  OverlayState? overlay,
 }) {
+  final host = context ?? overlay?.context;
+  if (host == null) {
+    return;
+  }
   final resolvedIcon =
       icon ?? (showKindIcon ? _defaultIconForKind(kind) : null);
   showHyperosRichSnackBar(
-    context,
+    host,
+    overlay: overlay,
     message: message,
     description: description,
     icon: resolvedIcon,
-    iconColor: resolvedIcon == null ? null : _iconColorForKind(context, kind),
+    iconColor: resolvedIcon == null ? null : _iconColorForKind(host, kind),
     duration: duration ?? _defaultToastDuration,
   );
 }

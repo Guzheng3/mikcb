@@ -233,9 +233,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get coupleTimetableLegendPartner => '相手の授業';
 
   @override
-  String get coupleTimetableLegendTogether => '一緒の授業';
-
-  @override
   String get coupleTimetableLegendFree => '両方とも空き';
 
   @override
@@ -304,13 +301,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get coupleTimetableColorsTitle => '重ね合わせの色';
-
-  @override
-  String get coupleTimetableColorsSubtitle =>
-      '「自分の授業」「相手の授業」「一緒の授業」の重ね合わせ表示での色を自由にカスタマイズできます';
-
-  @override
   String get partnerImportRequiresSingleProfile =>
       '単一の時間割バックアップファイルをインポートしてください。全量バックアップには対応していません';
 
@@ -340,6 +330,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get withuCoupleDisconnect => 'ログアウト';
+
+  @override
+  String get withuCoupleLogoutUnconfirmed =>
+      'この端末ではログアウトしましたが、サーバーに通知できませんでした。サーバー側のセッションが有効なままの可能性があります。';
 
   @override
   String get withuCouplePullNow => '相手の時間割を今すぐ取得';
@@ -2007,6 +2001,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get liveKeepAliveOptionsSubtitle => 'スーパーアイランドとリマインダーのバックグラウンド安定性を向上';
+
+  @override
+  String get liveBackgroundRestrictionTitle => 'システムのバックグラウンド制限';
+
+  @override
+  String get liveBackgroundRestrictionSubtitle =>
+      'アプリがバックグラウンドに移動するとシステムが一時停止させることがあり、通知のカウントダウンが最後のフレームで止まります。下の項目から「電池使用量」で「完全なバックグラウンド動作を許可」を選んでください。';
+
+  @override
+  String get liveBackgroundRestrictionOpen => '電池使用量を開く';
 
   @override
   String get hideFromRecentsTitle => '最近のタスクからアプリを非表示';

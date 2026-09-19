@@ -116,7 +116,7 @@ void main() {
     final anchorKey = GlobalKey();
     late Future<String?> menuResult;
     final sessionProvider = WithuCoupleSessionProvider()
-      ..isLoggedIn = true
+      ..debugSetStatus(WithuCoupleLoginStatus.connected)
       ..serverBaseUrl = 'https://withu.example.com'
       ..userAvatarPath = 'cached-me.png'
       ..partnerAvatarPath = 'cached-partner.svg';
@@ -186,7 +186,7 @@ void main() {
   ) async {
     final anchorKey = GlobalKey();
     final sessionProvider = WithuCoupleSessionProvider()
-      ..hasStoredSession = true
+      ..debugSetStatus(WithuCoupleLoginStatus.staleOffline)
       ..serverBaseUrl = 'https://withu.example.com'
       ..userAvatarPath = 'cached-me.png'
       ..partnerAvatarPath = 'cached-partner.svg';
@@ -241,7 +241,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final timetableProvider = await createInitializedTestProvider(tester);
     final sessionProvider = WithuCoupleSessionProvider()
-      ..isLoggedIn = true
+      ..debugSetStatus(WithuCoupleLoginStatus.connected)
       ..userNickname = 'Ming'
       ..partnerNickname = 'Xiao';
 

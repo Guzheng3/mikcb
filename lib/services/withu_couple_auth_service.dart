@@ -65,22 +65,69 @@ class WithuCoupleAuthService {
     http.Client? client,
     WithuCoupleConfigStore? configStore,
     WithuCoupleSessionStore? sessionStore,
+    this.requestTimeout,
   }) : _client = client ?? createAppHttpClient(),
        _configStore = configStore ?? const WithuCoupleConfigStore(),
        _sessionStore = sessionStore ?? const WithuCoupleSessionStore() {
     _ownsClient = client == null && !isSharedAppHttpClient(_client);
   }
 
+  /// 覆盖所有请求的超时上限（测试注入用）。为 null 时按 action 取
+  /// [_timeoutForAction] 的默认值。
+  ///
+  /// 没有超时的话，黑洞连接会一直挂在 TCP 层默认超时上（可达一两分钟）。
+  final Duration? requestTimeout;
+
+  /// 注销：小请求，且只影响「服务端未确认」的提示，短一点让流程早点落定。
+  static const Duration logoutTimeout = Duration(seconds: 8);
+
+  /// 登录：小请求，但用户在等结果，别急着判失败。
+  static const Duration loginTimeout = Duration(seconds: 20);
+
+  /// 其余请求（bootstrap / 课表拉取与上传 / 历史 / 回滚）：可能携带最多 2MB 的
+  /// 课表内容，慢网下需要更宽裕。
+  static const Duration defaultTimeout = Duration(seconds: 60);
+
+  /// 本次请求该用哪个超时。
+  Duration timeoutForAction(String action) {
+    final override = requestTimeout;
+    if (override != null) {
+      return override;
+    }
+    return switch (action) {
+      'logout' => logoutTimeout,
+      'login' => loginTimeout,
+      _ => defaultTimeout,
+    };
+  }
+
   final http.Client _client;
   final WithuCoupleConfigStore _configStore;
   final WithuCoupleSessionStore _sessionStore;
   late final bool _ownsClient;
-  WithuCoupleSession? _cachedSession;
+
+  /// 并发的相同读取合并成一次，但**不做长期缓存**：会话的唯一真相源是
+  /// [WithuCoupleSessionStore]。本类的实例不止一个（首页 provider、设置页、
+  /// 登录弹窗、自动同步各持一份），一旦各自缓存，别的实例登录或退出后这里就
+  /// 会继续拿着旧凭证发请求，甚至用旧会话的 401 把新登录的凭证删掉。
+  Future<WithuCoupleSession?>? _pendingLoad;
 
   Future<WithuCoupleConfig> loadConfig() => _configStore.load();
 
   Future<WithuCoupleSession?> loadSession() async {
-    return _cachedSession ??= await _sessionStore.load();
+    final pending = _pendingLoad;
+    if (pending != null) {
+      return pending;
+    }
+    final load = _sessionStore.load();
+    _pendingLoad = load;
+    try {
+      return await load;
+    } finally {
+      if (identical(_pendingLoad, load)) {
+        _pendingLoad = null;
+      }
+    }
   }
 
   Future<WithuCoupleDisplayProfile?> loadDisplayProfile() {
@@ -133,7 +180,6 @@ class WithuCoupleAuthService {
     );
     await _configStore.save(config);
     await _sessionStore.save(session);
-    _cachedSession = session;
 
     final user = WithuCoupleUser.fromJson(Map<String, dynamic>.from(rawUser));
     final rawPartner = payload['partner'];
@@ -146,6 +192,8 @@ class WithuCoupleAuthService {
         partnerNickname: partner?.displayName ?? '',
         userAvatar: user.avatar,
         partnerAvatar: partner?.avatar,
+        userGender: WithuCoupleDisplayProfile.genderFromRole(user.role),
+        partnerGender: WithuCoupleDisplayProfile.genderFromRole(partner?.role),
       ),
     );
     return WithuCoupleLoginResult(
@@ -179,25 +227,37 @@ class WithuCoupleAuthService {
     )).payload;
   }
 
-  Future<void> disconnect() async {
-    final session = await loadSession();
-    if (session != null) {
-      try {
-        final config = await _configStore.load();
-        await _request(
-          uri: _actionUri(config.apiUri, 'logout'),
-          method: 'POST',
-          session: session,
-          body: {'_token': session.csrfToken},
-        );
-      } catch (_) {
-        // A stale server session must not keep local credentials alive.
-      }
+  /// 清除本机凭证，不联系服务端。
+  ///
+  /// 退出登录的第一步：先让本地立即生效，界面不必等服务端往返。
+  Future<void> clearLocalCredentials() => _sessionStore.clear();
+
+  /// 请服务端注销 [session]（同时吊销其 withu_device 可信设备），尽力而为，
+  /// 返回服务端是否确认。
+  ///
+  /// 本地凭证可以先清掉：这里用的是调用方捕获的会话快照，不依赖存储。
+  /// 注销响应不会回写凭证（`persistSessionUpdates: false`）——否则服务端一旦
+  /// 在响应里带上新的 Set-Cookie，刚清掉的凭证会被重新写回去。
+  Future<bool> notifyServerLogout(WithuCoupleSession session) async {
+    try {
+      final config = await _configStore.load();
+      await _request(
+        uri: _actionUri(config.apiUri, 'logout'),
+        method: 'POST',
+        session: session,
+        body: {'_token': session.csrfToken},
+        persistSessionUpdates: false,
+      );
+      return true;
+    } catch (_) {
+      // 服务端不可达、CSRF 过期都不影响本地已经完成的退出。
+      return false;
     }
-    await _sessionStore.clear();
-    _cachedSession = null;
   }
 
+  /// 释放网络资源。只有本类的**所有者**可以调用：客户端在 release 构建下
+  /// 由本实例持有，[dispose] 之后借用它的 UI 组件再发请求就会失败。
+  /// 借用的组件（登录弹窗、设置页、情侣中心）不得调用。
   void dispose() {
     if (_ownsClient) {
       _client.close();
@@ -209,6 +269,7 @@ class WithuCoupleAuthService {
     required String method,
     WithuCoupleSession? session,
     Map<String, dynamic>? body,
+    bool persistSessionUpdates = true,
   }) async {
     final request = http.Request(method, uri);
     request.headers['Accept'] = 'application/json';
@@ -225,49 +286,71 @@ class WithuCoupleAuthService {
 
     http.Response response;
     try {
-      final streamed = await _client.send(request);
-      response = await http.Response.fromStream(streamed);
+      // .timeout 覆盖连接、发送与读取整段耗时；超时按网络失败处理。
+      response = await _client
+          .send(request)
+          .then(http.Response.fromStream)
+          .timeout(timeoutForAction(_queryAction(uri)));
     } catch (_) {
       throw const WithuCoupleApiException('withu_network_failed');
     }
-    Map<String, dynamic> payload;
-    try {
-      final text = utf8.decode(response.bodyBytes);
-      final decoded = text.isEmpty ? <String, dynamic>{} : jsonDecode(text);
-      if (decoded is! Map) {
-        throw const FormatException();
-      }
-      payload = Map<String, dynamic>.from(decoded);
-    } catch (_) {
-      throw const WithuCoupleApiException('withu_invalid_response');
-    }
+
+    // 错误码先由 HTTP 状态码决定，再看响应体。
+    // 出错时的响应体经常根本不是 JSON（PHP 致命错误页、网关 502、被跳转到
+    // 登录页的 HTML），先解析 body 会把 401 误判成 withu_invalid_response：
+    // 该作废的会话不作废，该给的提示也给不出来。
+    final payload = _decodePayload(response);
 
     if (response.statusCode != 200) {
       final errorCode = _statusCode(
         response.statusCode,
         action: _queryAction(uri),
       );
-      if (session != null && errorCode == 'withu_session_expired') {
-        await _sessionStore.clear();
-        _cachedSession = null;
+      if (persistSessionUpdates &&
+          session != null &&
+          errorCode == 'withu_session_expired') {
+        await _sessionStore.clearIfSession(session);
       }
       throw WithuCoupleApiException(
         errorCode,
-        serverMessage: payload['message'] as String?,
+        serverMessage: _messageOf(payload),
       );
+    }
+    if (payload == null) {
+      throw const WithuCoupleApiException('withu_invalid_response');
     }
     if (payload['success'] != true) {
       throw WithuCoupleApiException(
         'withu_request_failed',
-        serverMessage: payload['message'] as String?,
+        serverMessage: _messageOf(payload),
       );
     }
 
-    if (session != null) {
+    if (persistSessionUpdates && session != null) {
       await _updateSessionFromResponse(session, response, payload);
     }
     return (response: response, payload: payload);
   }
+
+  /// 解析响应体；不是 JSON 对象时返回 null（由调用方决定如何降级）。
+  Map<String, dynamic>? _decodePayload(http.Response response) {
+    try {
+      final text = utf8.decode(response.bodyBytes);
+      if (text.isEmpty) {
+        return <String, dynamic>{};
+      }
+      final decoded = jsonDecode(text);
+      if (decoded is! Map) {
+        return null;
+      }
+      return Map<String, dynamic>.from(decoded);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? _messageOf(Map<String, dynamic>? payload) =>
+      payload?['message'] as String?;
 
   Future<WithuCoupleSession> _requireSession() async {
     final session = await loadSession();
@@ -283,8 +366,7 @@ class WithuCoupleAuthService {
     Map<String, dynamic> payload,
   ) async {
     if (payload['logged_in'] == false) {
-      await _sessionStore.clear();
-      _cachedSession = null;
+      await _sessionStore.clearIfSession(session);
       throw const WithuCoupleApiException('withu_session_expired');
     }
 
@@ -293,9 +375,10 @@ class WithuCoupleAuthService {
       deviceToken: _cookieValue(response, 'withu_device'),
       csrfToken: (payload['csrf_token'] as String?)?.trim(),
     );
+    // 服务端可能在响应里换了 PHPSESSID（会话续期）或刷新了 CSRF token，
+    // 只有确实拿到新值才回写。
     if (updatedSession.isUsable && updatedSession != session) {
       await _sessionStore.save(updatedSession);
-      _cachedSession = updatedSession;
     }
   }
 
@@ -314,6 +397,8 @@ class WithuCoupleAuthService {
     if (statusCode == 403) {
       return 'withu_couple_account_required';
     }
+    // 服务端 400 也用于 CSRF 过期（`_token` 对不上），但 400 同时是「参数不合法」
+    // 的正常业务错误，无法只凭状态码区分，因此不在这里作废会话。
     return 'withu_http_failed';
   }
 
@@ -324,8 +409,10 @@ class WithuCoupleAuthService {
         '^\\s*${RegExp.escape(name)}=([^;]+)',
         caseSensitive: false,
       ).firstMatch(raw);
-      if (match != null) {
-        return match.group(1)?.trim();
+      final value = match?.group(1)?.trim();
+      // 空值代表服务端在清这个 Cookie，不能当成「新的空会话」写进存储。
+      if (value != null && value.isNotEmpty) {
+        return value;
       }
     }
     return null;

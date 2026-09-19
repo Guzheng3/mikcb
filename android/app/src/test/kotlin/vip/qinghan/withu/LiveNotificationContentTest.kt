@@ -1,5 +1,6 @@
 package vip.qinghan.withu
 
+import java.util.Calendar
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -261,6 +262,173 @@ class LiveNotificationContentTest {
     fun courseWithoutEndTimeIsNeverTreatedAsEnded() {
         // 结束时间缺失时宁可多显示一档候课，也不要提前把课当成已上完。
         assertFalse(liveCourseHasEnded(course(endTime = ""), nowMinutes = 23 * 60 + 59))
+    }
+
+    // --- liveSystemClockBaseMillis -------------------------------------------
+
+    private fun localMillis(
+        year: Int,
+        month: Int,
+        day: Int,
+        hour: Int,
+        minute: Int,
+        second: Int,
+    ): Long = Calendar.getInstance().apply {
+        clear()
+        set(year, month - 1, day, hour, minute, second)
+    }.timeInMillis
+
+    @Test
+    fun duringClassUsesStartOfDayAsClockBase() {
+        // 基准是当天零点 → 正计时读数就是墙上时钟（15:26:31），且带秒。
+        val now = localMillis(2026, 9, 18, 15, 26, 31)
+        val base = liveSystemClockBaseMillis(
+            stage = "duringClass",
+            showCountdown = true,
+            nowMillis = now,
+        )
+
+        assertEquals(localMillis(2026, 9, 18, 0, 0, 0), base)
+        assertEquals(15 * 3600_000L + 26 * 60_000L + 31_000L, now - requireNotNull(base))
+    }
+
+    @Test
+    fun statusBarStageAlsoUsesClockBase() {
+        val now = localMillis(2026, 9, 18, 8, 5, 9)
+
+        assertEquals(
+            localMillis(2026, 9, 18, 0, 0, 0),
+            liveSystemClockBaseMillis(
+                stage = "duringClassStatusBar",
+                showCountdown = true,
+                nowMillis = now,
+            ),
+        )
+    }
+
+    @Test
+    fun clockBaseIsTruncatedToWholeMinute() {
+        // 毫秒/秒位必须清零，否则系统时钟会从一个非整秒的偏移开始走。
+        val base = requireNotNull(
+            liveSystemClockBaseMillis(
+                stage = "duringClass",
+                showCountdown = true,
+                nowMillis = localMillis(2026, 9, 18, 23, 59, 59) + 999L,
+            ),
+        )
+
+        assertEquals(0L, base % 60_000L)
+        // 跨天边界：23:59:59.999 的基准仍是当天零点。
+        assertEquals(localMillis(2026, 9, 18, 0, 0, 0), base)
+    }
+
+    @Test
+    fun beforeClassNeverRequestsSystemClock() {
+        // 提升态（流体云）保持原样：卡片内容只能由 App 填，这一档不碰 when。
+        assertNull(
+            liveSystemClockBaseMillis(
+                stage = "beforeClass",
+                showCountdown = true,
+                nowMillis = localMillis(2026, 9, 18, 9, 55, 0),
+            ),
+        )
+    }
+
+    @Test
+    fun idleAndUnknownStagesDoNotRequestSystemClock() {
+        val now = localMillis(2026, 9, 18, 12, 0, 0)
+
+        assertNull(liveSystemClockBaseMillis(null, showCountdown = true, nowMillis = now))
+        assertNull(liveSystemClockBaseMillis("idle", showCountdown = true, nowMillis = now))
+    }
+
+    @Test
+    fun countdownSwitchOffSuppressesSystemClock() {
+        // 「显示倒计时」关掉时，这一格整体不出现 —— 时钟也不给。
+        assertNull(
+            liveSystemClockBaseMillis(
+                stage = "duringClass",
+                showCountdown = false,
+                nowMillis = localMillis(2026, 9, 18, 12, 0, 0),
+            ),
+        )
+    }
+
+    // --- buildPromotedShadeText ----------------------------------------------
+
+    @Test
+    fun promotedShadeTextLeadsWithCourseNameThenLocation() {
+        // 课前折叠行：课名打头 —— 否则不点箭头根本看不到这节课叫什么。
+        assertEquals(
+            "生物化学 · 高博学楼326",
+            buildPromotedShadeText(
+                courseName = "生物化学",
+                location = "高博学楼326",
+                fallbackParts = listOf("19:55 - 19:58", "赵玲,王三矫"),
+            ),
+        )
+    }
+
+    @Test
+    fun promotedShadeTextSkipsBlankFields() {
+        assertEquals(
+            "生物化学",
+            buildPromotedShadeText("生物化学", "", listOf("19:55 - 19:58")),
+        )
+        assertEquals(
+            "高博学楼326",
+            buildPromotedShadeText("", "高博学楼326", listOf("19:55 - 19:58")),
+        )
+    }
+
+    @Test
+    fun promotedShadeTextFallsBackWhenCourseHasNoNameOrDefaultLocation() {
+        // 课名与地点都缺时退回完整清单，宁可长也不要把正文留空。
+        assertEquals(
+            "即将上课 · 19:55 - 19:58 · 赵玲,王三矫",
+            buildPromotedShadeText(
+                courseName = "",
+                location = "",
+                fallbackParts = listOf("即将上课", "19:55 - 19:58", "赵玲,王三矫"),
+            ),
+        )
+    }
+
+    @Test
+    fun promotedShadeTextCanBeEmptyWhenNothingIsKnown() {
+        assertEquals(
+            "",
+            buildPromotedShadeText("", "", listOf("", "  ")),
+        )
+    }
+
+    // --- liveCardLines --------------------------------------------------------
+
+    @Test
+    fun liveCardLinesKeepsUpToThreeLines() {
+        assertEquals(emptyList<String>(), liveCardLines(emptyList()))
+        assertEquals(listOf("08:00 - 09:40"), liveCardLines(listOf("08:00 - 09:40")))
+        assertEquals(
+            listOf("第一节", "第二节", "第三节"),
+            liveCardLines(listOf("第一节", "第二节", "第三节")),
+        )
+    }
+
+    @Test
+    fun liveCardLinesPacksOverflowIntoThirdLine() {
+        // 卡片只有三个正文槽位：多出来的课程行压进第三行，而不是整条丢掉。
+        assertEquals(
+            listOf("第一节", "第二节", "第三节  第四节"),
+            liveCardLines(listOf("第一节", "第二节", "第三节", "第四节")),
+        )
+    }
+
+    @Test
+    fun liveCardLinesDropsBlankEntries() {
+        assertEquals(
+            listOf("第一节", "第二节"),
+            liveCardLines(listOf("第一节", "", "  ", "第二节")),
+        )
     }
 
     // --- parseClockMinutes（复用卡片解析，锁住行为） ---------------------------

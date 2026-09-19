@@ -125,7 +125,8 @@
                         android:maxLines="2"
                         android:text="@string/widget_no_course_today"
                         android:textColor="@color/widget_couple_text_hint"
-                        android:textSize="11sp"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
                         android:visibility="gone" />
                 </FrameLayout>
 
@@ -172,7 +173,8 @@
                         android:maxLines="2"
                         android:text="@string/widget_no_course_today"
                         android:textColor="@color/widget_couple_text_hint"
-                        android:textSize="11sp"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
                         android:visibility="gone" />
                 </FrameLayout>
 

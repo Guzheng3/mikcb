@@ -48,10 +48,12 @@ final HomeMenuEntry coupleLoginHomeMenuEntry = HomeMenuEntry(
     }
     final connected = await showWithuCoupleLoginSheet(
       context: context,
+      authService: sessionProvider.authService,
       onPullPartner: (service) => service.syncAfterLogin(provider: provider),
     );
     if (connected == true) {
-      unawaited(sessionProvider.restoreSession());
+      // 凭证刚由 connect 落盘，直接按本地凭证收敛登录态。
+      await sessionProvider.refreshFromLocal();
     }
   },
 );

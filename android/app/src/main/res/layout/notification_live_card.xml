@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  非提升态（空闲 / 课中 / 仅状态栏）的自绘折叠卡片。
+
+  为什么自绘：这几档**不申请提升**，所以「带自定义布局会失去提升资格」对它们没有代价
+  （2026-09-18 实机实测，见 LiveUpdatePromotionGate），换来的是不用展开就能看全 ——
+  系统模板在这几档里藏了地点/教师/下一节，课中的分段进度条 ColorOS 更是压根不渲染。
+
+  颜色必须日夜成对（values / values-night）：卡片由 SystemUI 按系统配置渲染，
+  取不到 App 主题，用 ?attr 会落到应用主题上而不是通知卡片上。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="12dp">
+
+    <TextView
+        android:id="@+id/live_card_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/live_card_title"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/live_card_line1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/live_card_body"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/live_card_line2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/live_card_body"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/live_card_line3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/live_card_body"
+        android:textSize="13sp" />
+
+    <ProgressBar
+        android:id="@+id/live_card_progress"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_marginTop="8dp"
+        android:max="1000"
+        android:progress="0"
+        android:progressDrawable="@drawable/live_card_progress_drawable" />
+
+    <TextView
+        android:id="@+id/live_card_footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/live_card_footer"
+        android:textSize="11sp" />
+</LinearLayout>

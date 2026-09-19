@@ -39,13 +39,15 @@ class WithuCoupleTimetableService {
 
   Future<WithuCoupleConfig> loadConfig() => _configStore.load();
 
-  Future<void> disconnect() async {
-    await _authService.disconnect();
+  /// 忘掉「对方课表」的拉取标记，重新连接后需要无条件重拉一次。
+  ///
+  /// 「我的课表」同步点要留着：它记录本机上传到哪个进度，清掉的话重连后自动
+  /// 同步会把本地未上传的改动判成落后版本，直接被云端内容覆盖。换账号的安全性
+  /// 交给 [myTimetableSyncPoint] 的账号校验。
+  ///
+  /// 与退出登录的凭证清理分开：这里只动本地配置，不碰网络，退出流程可以立即完成。
+  Future<void> forgetPartnerPullMarkers() async {
     final config = await _configStore.load();
-    // 只清「对方课表」的拉取标记，重新连接后需要无条件重拉一次。
-    // 「我的课表」同步点要留着：它记录本机上传到哪个进度，清掉的话重连后
-    // 自动同步会把本地未上传的改动判成落后版本，直接被云端内容覆盖。
-    // 换账号的安全性交给 [myTimetableSyncPoint] 的账号校验。
     await _configStore.save(
       config.copyWith(
         clearLastPulledAt: true,

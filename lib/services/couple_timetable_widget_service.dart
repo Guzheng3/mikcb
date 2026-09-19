@@ -7,7 +7,10 @@ import '../logging/app_debug_log.dart';
 import '../logging/app_log_messages.dart';
 import 'app_log_service.dart';
 
-enum CoupleTimetableWidgetStatus { ok, coupleModeOff, notLoggedIn }
+/// 卡片/通知不可用时的成因。原生侧每条 `widget_couple_*` 文案与一个值一一对应，
+/// 所以「开关没开」和「开关开着但拿不到 TA 的课表」必须分开——后者显示
+/// 「未开情侣模式」会让用户按开关找问题，而真正该做的是让 TA 上传课表。
+enum CoupleTimetableWidgetStatus { ok, coupleModeOff, notLoggedIn, notBound }
 
 extension CoupleTimetableWidgetStatusX on CoupleTimetableWidgetStatus {
   String get value {
@@ -18,6 +21,8 @@ extension CoupleTimetableWidgetStatusX on CoupleTimetableWidgetStatus {
         return 'couple_mode_off';
       case CoupleTimetableWidgetStatus.notLoggedIn:
         return 'not_logged_in';
+      case CoupleTimetableWidgetStatus.notBound:
+        return 'not_bound';
     }
   }
 }
@@ -100,8 +105,8 @@ class CoupleTimetableWidgetSnapshot {
 
   final String myName;
   final String partnerName;
-  final String? leftColorHex;
-  final String? rightColorHex;
+  final String myGender;
+  final String partnerGender;
   final CoupleTimetableWidgetStatus status;
   final int generatedAtMillis;
   final CoupleTimetableWidgetDayCourses mine;
@@ -110,8 +115,8 @@ class CoupleTimetableWidgetSnapshot {
   const CoupleTimetableWidgetSnapshot({
     required this.myName,
     required this.partnerName,
-    required this.leftColorHex,
-    required this.rightColorHex,
+    required this.myGender,
+    required this.partnerGender,
     required this.status,
     required this.generatedAtMillis,
     required this.mine,
@@ -124,8 +129,8 @@ class CoupleTimetableWidgetSnapshot {
     return CoupleTimetableWidgetSnapshot(
       myName: defaultMyName,
       partnerName: defaultPartnerName,
-      leftColorHex: null,
-      rightColorHex: null,
+      myGender: '',
+      partnerGender: '',
       status: status,
       generatedAtMillis: DateTime.now().millisecondsSinceEpoch,
       mine: const CoupleTimetableWidgetDayCourses(today: [], tomorrow: []),
@@ -137,8 +142,8 @@ class CoupleTimetableWidgetSnapshot {
     return {
       'myName': myName,
       'partnerName': partnerName,
-      'leftColorHex': leftColorHex,
-      'rightColorHex': rightColorHex,
+      'myGender': myGender,
+      'partnerGender': partnerGender,
       'status': status.value,
       'generatedAtMillis': generatedAtMillis,
       'mine': mine.toJson(),

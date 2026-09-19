@@ -232,9 +232,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get coupleTimetableLegendPartner => '상대방 수업';
 
   @override
-  String get coupleTimetableLegendTogether => '함께 듣는 수업';
-
-  @override
   String get coupleTimetableLegendFree => '공통 공강';
 
   @override
@@ -302,13 +299,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get coupleTimetableColorsTitle => '겹쳐 보기 색상';
-
-  @override
-  String get coupleTimetableColorsSubtitle =>
-      '\'내 수업\', \'상대방 수업\', \'함께 듣는 수업\'의 겹쳐 보기 색상을 자유롭게 설정할 수 있습니다';
-
-  @override
   String get partnerImportRequiresSingleProfile =>
       '단일 시간표 백업 파일을 가져오세요. 전체 백업은 지원하지 않습니다';
 
@@ -338,6 +328,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get withuCoupleDisconnect => '로그아웃';
+
+  @override
+  String get withuCoupleLogoutUnconfirmed =>
+      '이 기기에서는 로그아웃했지만 서버에 알리지 못했습니다. 서버 세션이 아직 유효할 수 있습니다.';
 
   @override
   String get withuCouplePullNow => '상대방 시간표 즉시 가져오기';
@@ -2018,6 +2012,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get liveKeepAliveOptionsSubtitle => '슈퍼아일랜드와 알림의 백그라운드 안정성을 향상시킵니다';
+
+  @override
+  String get liveBackgroundRestrictionTitle => '시스템 백그라운드 제한';
+
+  @override
+  String get liveBackgroundRestrictionSubtitle =>
+      '앱이 백그라운드로 이동하면 시스템이 일시 중지시켜 알림의 카운트다운이 마지막 프레임에서 멈출 수 있습니다. 아래 항목에서 배터리 사용량의 \"완전한 백그라운드 동작 허용\"을 선택하세요.';
+
+  @override
+  String get liveBackgroundRestrictionOpen => '배터리 사용량 열기';
 
   @override
   String get hideFromRecentsTitle => '최근 작업에서 앱 숨기기';

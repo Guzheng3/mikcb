@@ -23,6 +23,8 @@ import android.graphics.Typeface
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Bundle
+import android.view.View
+import android.widget.RemoteViews
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -787,8 +789,8 @@ class LiveUpdateService : Service() {
     /**
      * 常驻空闲形态的内容：情侣卡片「我这一列」的实际渲染结果。
      *
-     * 卡片不可用（从没同步过 / 未登录 / 未开情侣模式）时照搬卡片的不可用文案，不做
-     * 降级 —— 通知说的就是卡片上那句话。
+     * 卡片不可用（从没同步过 / 未登录 / 未开情侣模式 / 对方课表未上传）时照搬卡片的
+     * 不可用文案，不做降级 —— 通知说的就是卡片上那句话。
      */
     private fun liveIdleContent(now: Long): LiveIdleContent {
         val snapshot = CoupleTimetableStore.readSnapshot(applicationContext)
@@ -829,6 +831,8 @@ class LiveUpdateService : Service() {
             setCategory(Notification.CATEGORY_STATUS)
             // 空闲形态不是实时活动，必须让出提升资格：置 true 会让 ColorOS 把这张
             // 卡片也提升成流体云，和「胶囊只显示上课前」的约定冲突。
+            // 【实测 2026-09-18】确实如此：空闲帧按课前帧的写法申请提升后，状态栏立即
+            // 出现流体云胶囊（记录里带上 PROMOTED_ONGOING）。
             setColorized(false)
             setShowWhen(false)
             setWhen(System.currentTimeMillis())
@@ -845,6 +849,16 @@ class LiveUpdateService : Service() {
                 .setBigContentTitle(content.title)
                 .bigText(expandedText)
                 .setSummaryText(content.footer)
+        )
+        // 空闲档同样自绘：系统模板只露第一行正文，多节课时其余要展开才看得到。
+        builder.setCustomContentView(
+            buildLiveCardViews(
+                title = content.title,
+                lines = liveCardLines(content.bodyLines),
+                footer = content.footer,
+                progressUnits = 0,
+                progressMax = 0,
+            )
         )
         return builder.build()
     }
@@ -2037,6 +2051,53 @@ class LiveUpdateService : Service() {
         }
     }
 
+    /**
+     * 非提升态（空闲 / 课中 / 仅状态栏）的自绘折叠卡片。
+     *
+     * 这几档**不申请提升**，所以「带自定义布局会失去提升资格」对它们没有代价
+     * （2026-09-18 实机实测：自定义布局确实会让 ColorOS 拒绝提升，见
+     * [liveShouldRequestColorizedForPromotion] 上方那段记录）。换来的是不用展开就看全：
+     * 系统模板在这几档里藏了地点 / 教师 / 下一节，课中的分段进度条 ColorOS 更是压根
+     * 不渲染（进度值、分段、断点全设了，下拉里仍是一条普通行）。
+     *
+     * 课前那档刻意**不**走这里：它必须保住提升资格，只能交给系统模板渲染。
+     *
+     * @param progressMax 为 0 时不画进度条（空闲与仅状态栏档）。
+     */
+    private fun buildLiveCardViews(
+        title: String,
+        lines: List<String>,
+        footer: String,
+        progressUnits: Int,
+        progressMax: Int,
+    ): RemoteViews {
+        val views = RemoteViews(packageName, R.layout.notification_live_card)
+        views.setTextViewText(R.id.live_card_title, title)
+        val lineIds = listOf(R.id.live_card_line1, R.id.live_card_line2, R.id.live_card_line3)
+        lineIds.forEachIndexed { index, id ->
+            val text = lines.getOrNull(index).orEmpty()
+            views.setTextViewText(id, text)
+            views.setViewVisibility(id, if (text.isBlank()) View.GONE else View.VISIBLE)
+        }
+        views.setTextViewText(R.id.live_card_footer, footer)
+        views.setViewVisibility(
+            R.id.live_card_footer,
+            if (footer.isBlank()) View.GONE else View.VISIBLE,
+        )
+        if (progressMax > 0) {
+            views.setProgressBar(
+                R.id.live_card_progress,
+                progressMax,
+                progressUnits.coerceIn(0, progressMax),
+                false,
+            )
+            views.setViewVisibility(R.id.live_card_progress, View.VISIBLE)
+        } else {
+            views.setViewVisibility(R.id.live_card_progress, View.GONE)
+        }
+        return views
+    }
+
     private fun buildNotification(remainingText: String): Notification {
         val now = System.currentTimeMillis()
         val stage = resolveStage(now)
@@ -2120,14 +2181,19 @@ class LiveUpdateService : Service() {
         } else {
             ""
         }
-        val summaryText = if ((isDuringClass) && classProgress != null && showCountdown) {
-            listOf(
+        // 摘要（下拉卡片顶部那行小字）：课前档承载时间区间与教师 —— 这两个字段刚
+        // 从正文让位给课名与地点，挪到这里才不会从下拉面上消失。其余档维持原样。
+        val summaryText = when {
+            (isDuringClass) && classProgress != null && showCountdown -> listOf(
                 classProgress.nextMilestoneDisplayText,
                 classProgress.finalDismissDisplayText,
                 location.takeIf { it.isNotBlank() }
             ).filterNotNull().joinToString(" · ")
-        } else {
-            listOf(
+            isUpcoming -> listOf(
+                timeRangeText.takeIf { it.isNotBlank() },
+                teacher.takeIf { it.isNotBlank() }
+            ).filterNotNull().joinToString(" · ")
+            else -> listOf(
                 location.takeIf { it.isNotBlank() },
                 teacher.takeIf { it.isNotBlank() },
                 visibleStatusText.takeIf { it.isNotBlank() }
@@ -2166,18 +2232,28 @@ class LiveUpdateService : Service() {
             if (note.isNotBlank()) append("\n").append(getString(R.string.detail_note, note))
         }
 
+        // 课前那帧的下拉正文：课名 · 地点。
+        //
+        // 为什么不是原来那串「状态 · 时间区间 · 地点 · 教师」：折叠行只有一行的额度，
+        // 那串会被系统截断，而**课名**在折叠态里根本不出现（它只在展开态的 bigText
+        // 和流体云卡片上）——用户不点箭头就看不到这节课叫什么。改成课名打头、地点
+        // 跟随，两个短字段一行装得下；时间区间与教师移到摘要（下拉顶部那行小字）里，
+        // 信息不减。
+        //
+        // 卡片不受影响：流体云只读 title + bigText 前两行（见 promotedExpandedDetailText），
+        // text / summaryText 只作用于下拉这一面。这一档仍是不带自定义布局的原生模板，
+        // 提升资格照旧。
         val promotedContentText = if ((isDuringClass) && classProgress != null && showCountdown) {
             listOf(
                 classProgress.compactDisplayText,
                 location.takeIf { it.isNotBlank() }
             ).filterNotNull().joinToString(" · ")
         } else {
-            listOf(
-                visibleStatusText.takeIf { it.isNotBlank() },
-                timeRangeText.takeIf { it.isNotBlank() },
-                location.takeIf { it.isNotBlank() },
-                teacher.takeIf { it.isNotBlank() }
-            ).filterNotNull().joinToString(" · ")
+            buildPromotedShadeText(
+                courseName = courseName,
+                location = location,
+                fallbackParts = listOf(visibleStatusText, timeRangeText, teacher),
+            )
         }
         // 课前卡片正文两行：① 课程名　② 上课地点。第一行是标题里的「即将上课 + 倒计时」。
         //
@@ -2332,9 +2408,23 @@ class LiveUpdateService : Service() {
             // 恒为 false：ColorOS 上置 true 会让通知失去提升资格，
             // 详见 LiveUpdatePromotionGate 里的实机回归记录。
             setColorized(liveShouldRequestColorizedForPromotion(shouldPromote))
+            // 课中两档把时间字段交给 SystemUI 自绘带秒的时钟：进程被 OEM 冻结时
+            // （ColorOS 切后台即挂起），这个读数照常每秒走，且不会和正文里的
+            // 「最近下课 / 整节下课」重复成两个倒计时。基准取当天零点，正计时即为
+            // 墙上时钟。目标档由 liveSystemClockBaseMillis 决定；它保证只在非提升态
+            // 返回值，所以下面的 setShowWhen 仍走原来的语义（提升态不开时间字段）。
+            val systemClockBaseMillis = liveSystemClockBaseMillis(
+                stage = stage,
+                showCountdown = showCountdown,
+                nowMillis = now,
+            )
             setShowWhen(!shouldPromote)
-            setWhen(if (isUpcoming) startAtMillis else endAtMillis)
-            setUsesChronometer(false)
+            setWhen(systemClockBaseMillis ?: if (isUpcoming) startAtMillis else endAtMillis)
+            setUsesChronometer(systemClockBaseMillis != null)
+            if (systemClockBaseMillis != null) {
+                // 正计时（默认值）：基准是当天零点，走出来的就是带秒的当前时间。
+                setChronometerCountDown(false)
+            }
             if (usesProgressExpandedStyle) {
                 val progress = requireNotNull(classProgress)
                 setProgress(progress.progressMax, progress.progressUnits, false)
@@ -2396,6 +2486,33 @@ class LiveUpdateService : Service() {
                     .setBigContentTitle(notificationTitle)
                     .bigText(notificationExpandedText)
                     .setSummaryText(if (showStandardNotification) summaryText else "")
+            )
+        }
+
+        // 非提升态改挂自绘卡片：默认就是展开的样子，不必点箭头。
+        // 课前（shouldPromote）刻意不挂 —— 那一档必须保住提升资格，只能用系统模板。
+        if (!shouldPromote) {
+            val cardLine1 = if (isDuringClass && classProgress != null) {
+                // 「状态 · 地点」，例如「整节下课 14分钟 · 11号楼 11207」。
+                promotedContentText
+            } else {
+                listOf(location, teacher).filter { it.isNotBlank() }.joinToString(" · ")
+            }
+            val cardLine2 = if (isDuringClass) {
+                nextName.takeIf { it.isNotBlank() }
+                    ?.let { getString(R.string.detail_next_course, it) }
+                    .orEmpty()
+            } else {
+                visibleStatusText
+            }
+            builder.setCustomContentView(
+                buildLiveCardViews(
+                    title = courseName,
+                    lines = listOf(cardLine1, cardLine2, note),
+                    footer = summaryText,
+                    progressUnits = classProgress?.progressUnits ?: 0,
+                    progressMax = classProgress?.progressMax ?: 0,
+                )
             )
         }
 

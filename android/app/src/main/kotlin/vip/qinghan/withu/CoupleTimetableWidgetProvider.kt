@@ -5,8 +5,8 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
+import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
 import androidx.core.content.ContextCompat
@@ -39,12 +39,12 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
         val snapshot = CoupleTimetableStore.readSnapshot(context)
         val status = snapshot?.status ?: CoupleWidgetStatus.COUPLE_MODE_OFF
 
-        val leftColor = snapshot?.leftColorHex
-            ?.let(::parseColorOrNull)
-            ?: leftAccentColor(context)
-        val rightColor = snapshot?.rightColorHex
-            ?.let(::parseColorOrNull)
-            ?: rightAccentColor(context)
+        // 昵称配色按性别固定：男生天蓝 #3B82F6，女生粉红 #EC4899。性别取不到
+        // （旧快照 / 未登录）时按左男右女兜底，与历史观感一致。
+        val leftColor = genderAccentColor(context, snapshot?.myGender)
+            ?: maleAccentColor(context)
+        val rightColor = genderAccentColor(context, snapshot?.partnerGender)
+            ?: femaleAccentColor(context)
 
         val leftName = snapshot?.myName?.trim()
             ?.takeIf { it.isNotEmpty() }
@@ -67,7 +67,6 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
             appWidgetId,
             isLeft = true,
             courses = snapshot?.mine,
-            oppositeCourses = snapshot?.partner,
             accentColor = leftColor,
             status = status,
         )
@@ -78,7 +77,6 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
             appWidgetId,
             isLeft = false,
             courses = snapshot?.partner,
-            oppositeCourses = snapshot?.mine,
             accentColor = rightColor,
             status = status,
         )
@@ -126,7 +124,6 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
         appWidgetId: Int,
         isLeft: Boolean,
         courses: CoupleWidgetDayCourses?,
-        oppositeCourses: CoupleWidgetDayCourses?,
         accentColor: Int,
         status: CoupleWidgetStatus,
     ) {
@@ -156,31 +153,33 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
             views.setTextViewText(footerId, display.footerText)
         }
         display.emptyText?.let { views.setTextViewText(emptyId, it) }
+        views.setTextViewTextSize(
+            emptyId,
+            TypedValue.COMPLEX_UNIT_SP,
+            CoupleTimetableDisplayBuilder.HINT_TEXT_SIZE_SP,
+        )
         if (display.items.isEmpty()) {
             views.setViewVisibility(listId, View.GONE)
             views.setViewVisibility(emptyId, View.VISIBLE)
+            // 高度每次都要下发：桌面（AppWidgetHostView）在布局 id 不变时是
+            // 把动作重放到同一个 View 上的，少发一次就会留着上一次的行高。
+            val density = context.resources.displayMetrics.density
+            CoupleTimetableSizingSupport.applyRowHeight(
+                views,
+                emptyId,
+                CoupleTimetableSizingSupport.emptyRowHeightPx(
+                    availableListHeightPx = CoupleTimetableSizingSupport.availableListHeightPx(
+                        context,
+                        appWidgetManager,
+                        appWidgetId,
+                    ),
+                    courseRowHeightPx = CoupleTimetableSizingSupport.COURSE_ROW_HEIGHT_DP * density,
+                    endedNotice = display.emptyEndedNotice,
+                ),
+            )
             if (status == CoupleWidgetStatus.OK) {
                 views.setTextViewText(footerId, display.footerText)
                 views.setViewVisibility(footerId, View.VISIBLE)
-                val oppositeDisplay = CoupleTimetableDisplayBuilder.build(
-                    context,
-                    oppositeCourses ?: CoupleWidgetDayCourses(emptyList(), emptyList()),
-                    status = status,
-                )
-                val sizing = CoupleTimetableSizingSupport.calculateSynced(
-                    context,
-                    appWidgetManager,
-                    appWidgetId,
-                    display,
-                    oppositeDisplay,
-                )
-                val emptyRowHeightPx = sizing.courseRowHeightPx.takeIf { it > 0f }
-                    ?: context.resources.displayMetrics.density * 52f
-                CoupleTimetableSizingSupport.applyRowHeight(
-                    views,
-                    emptyId,
-                    emptyRowHeightPx,
-                )
             } else {
                 views.setViewVisibility(footerId, View.GONE)
             }
@@ -245,14 +244,6 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
         return 1_000_000 + appWidgetId * 2 + if (isLeft) 0 else 1
     }
 
-    private fun parseColorOrNull(value: String): Int? {
-        return try {
-            Color.parseColor(value)
-        } catch (_: IllegalArgumentException) {
-            null
-        }
-    }
-
     companion object {
         const val EXTRA_APP_WIDGET_ID = "couple_widget_app_widget_id"
         const val EXTRA_IS_LEFT = "couple_widget_is_left"
@@ -264,12 +255,20 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
 
         fun findNextRefreshAtMillis(nowMillis: Long): Long = nowMillis + 60_000L
 
-        fun leftAccentColor(context: Context): Int {
-            return ContextCompat.getColor(context, R.color.widget_couple_left_accent)
+        fun maleAccentColor(context: Context): Int {
+            return ContextCompat.getColor(context, R.color.widget_couple_male_accent)
         }
 
-        fun rightAccentColor(context: Context): Int {
-            return ContextCompat.getColor(context, R.color.widget_couple_right_accent)
+        fun femaleAccentColor(context: Context): Int {
+            return ContextCompat.getColor(context, R.color.widget_couple_female_accent)
+        }
+
+        private fun genderAccentColor(context: Context, gender: String?): Int? {
+            return when (gender?.trim()?.lowercase()) {
+                "male" -> maleAccentColor(context)
+                "female" -> femaleAccentColor(context)
+                else -> null
+            }
         }
     }
 }

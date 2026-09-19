@@ -429,6 +429,24 @@ class MainActivity : FlutterActivity() {
                         liveSurfaceBrand(Build.MANUFACTURER, Build.BRAND) ==
                             LiveSurfaceBrand.XIAOMI
                     )
+                    // ColorOS 一系（OPPO / realme / 一加）在应用退到后台后会冻结整个
+                    // 进程（实测 PLA110 / ColorOS 16：切后台后进程 CPU 恒为 0，前台服务
+                    // 与常驻通知都在，但主线程 ticker 不再执行），通知里的倒计时因此停在
+                    // 最后一帧。保活页要针对这一档给出「允许完全后台行为」的指引，
+                    // 判据与流体云文案共用 liveSurfaceBrand。
+                    "isColorOsFamilyDevice" -> result.success(
+                        liveSurfaceBrand(Build.MANUFACTURER, Build.BRAND) ==
+                            LiveSurfaceBrand.COLOROS
+                    )
+                    // 「耗电管理 → 允许完全后台行为」在 ColorOS 16 上挂在应用详情页里。
+                    // 不走 com.oplus.battery 的 PowerUsageModelActivity：那些 Activity
+                    // 需要 com.oplus.permission.safe.SETTINGS（签名级），第三方显式拉起
+                    // 只会拿到 SecurityException（实机已验证），所以统一落到应用详情页，
+                    // 由文案补上「耗电管理」这一步。
+                    "openBackgroundRestrictionSettings" -> {
+                        openAppDetailsSettings()
+                        result.success(true)
+                    }
                     "checkNotificationPermission" -> result.success(hasNotificationPermission())
                     "requestNotificationPermission" -> {
                         if (hasNotificationPermission()) {

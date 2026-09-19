@@ -4747,29 +4747,6 @@ class TimetableProvider with ChangeNotifier {
     });
   }
 
-  Future<void> updatePartnerCoupleColors({
-    String? mineColorHex,
-    String? partnerColorHex,
-    String? togetherColorHex,
-  }) {
-    // 同 updatePartnerWeekOffset：纳入 mutation 门串行化。
-    return _runMutation(() async {
-      await initialize();
-      final binding = _partnerBinding;
-      if (binding == null) {
-        return;
-      }
-      _partnerBinding = binding.copyWith(
-        mineColorHex: mineColorHex,
-        partnerColorHex: partnerColorHex,
-        togetherColorHex: togetherColorHex,
-      );
-      await _profileRepository.savePartnerTimetableBinding(_partnerBinding);
-      notifyListeners();
-      await _syncHomeWidgetSnapshot();
-    });
-  }
-
   Future<void> unlinkPartner() {
     return _runMutation(() async {
       await initialize();

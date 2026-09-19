@@ -35,11 +35,33 @@ internal data class CoupleWidgetDisplay(
     val items: List<CoupleWidgetDisplayItem>,
     val footerText: String,
     val emptyText: String? = null,
+    /**
+     * 空态文案是「今日课程已结束」（今天有课、已上完，且明日没有课可列）。
+     * 这一档文案要在整列垂直居中，与明日有课时上方那条 Notice 观感一致。
+     */
+    val emptyEndedNotice: Boolean = false,
 )
 
 internal object CoupleTimetableDisplayBuilder {
     private const val MAX_VISIBLE_COURSES = 5
     private const val MAX_VISIBLE_COURSES_WITH_NOTICE = 5
+
+    /**
+     * 提示文案（「今日课程已结束」Notice 与整列空态文案）的字号。同一条
+     * 文案在卡片上有两种落法，字号只留这一处，避免两处各改一半后不一样大。
+     */
+    const val HINT_TEXT_SIZE_SP = 16f
+
+    /**
+     * 空态文案是否为「今日课程已结束」：今天本来有课（不是「今日无课」），
+     * 课已全部上完，且明日没有课可列——此时没人再占位，文案可以直接坐到
+     * 整列中间。
+     */
+    fun isEmptyEndedNotice(
+        hasRemainingCourse: Boolean,
+        todayCourseCount: Int,
+        tomorrowCourseCount: Int,
+    ): Boolean = !hasRemainingCourse && todayCourseCount > 0 && tomorrowCourseCount == 0
 
     fun build(
         context: Context,
@@ -54,6 +76,8 @@ internal object CoupleTimetableDisplayBuilder {
                     context.getString(R.string.widget_couple_mode_off)
                 CoupleWidgetStatus.NOT_LOGGED_IN ->
                     context.getString(R.string.widget_couple_not_logged_in)
+                CoupleWidgetStatus.NOT_BOUND ->
+                    context.getString(R.string.widget_couple_not_bound)
                 CoupleWidgetStatus.OK -> ""
             }
             return CoupleWidgetDisplay(
@@ -125,6 +149,11 @@ internal object CoupleTimetableDisplayBuilder {
             items = items,
             footerText = footerText,
             emptyText = if (items.isEmpty()) statusText else null,
+            emptyEndedNotice = isEmptyEndedNotice(
+                hasRemainingCourse = hasRemainingCourse,
+                todayCourseCount = today.size,
+                tomorrowCourseCount = tomorrow.size,
+            ),
         )
     }
 
@@ -150,7 +179,9 @@ internal object CoupleTimetableSizingSupport {
     private const val HEADER_HEIGHT_DP = 20f
     private const val HEADER_TOP_MARGIN_DP = 5f
     private const val FOOTER_HEIGHT_DP = 13f
-    private const val COURSE_ROW_HEIGHT_DP = 52f
+
+    /** 一行课的高度：空态文案贴列首时按这个高度站位。 */
+    const val COURSE_ROW_HEIGHT_DP = 52f
     private const val DIVIDER_TOTAL_DP = 5f
 
     fun calculate(
@@ -245,7 +276,19 @@ internal object CoupleTimetableSizingSupport {
         }
     }
 
-    private fun availableListHeightPx(
+    /**
+     * 空态文案占的高度：今日课程已结束且明日无课时铺满整列，文案因此落在列的
+     * 垂直中点（列里没有别的内容，空出来的位置由居中的文案自己吃掉）；其余
+     * 空态仍按一行课的高度贴在列首。
+     */
+    fun emptyRowHeightPx(
+        availableListHeightPx: Float,
+        courseRowHeightPx: Float,
+        endedNotice: Boolean,
+    ): Float = if (endedNotice) availableListHeightPx else courseRowHeightPx
+
+    /** 列表区可用高度（整列去掉卡片内边距、昵称行与页脚后的部分）。 */
+    fun availableListHeightPx(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetId: Int,
@@ -373,9 +416,9 @@ class CoupleTimetableViewsService : RemoteViewsService() {
         private val accentColor = intent.getIntExtra(
             CoupleTimetableWidgetProvider.EXTRA_ACCENT_COLOR,
             if (isLeft) {
-                CoupleTimetableWidgetProvider.leftAccentColor(context)
+                CoupleTimetableWidgetProvider.maleAccentColor(context)
             } else {
-                CoupleTimetableWidgetProvider.rightAccentColor(context)
+                CoupleTimetableWidgetProvider.femaleAccentColor(context)
             }
         )
         private var items: List<CoupleWidgetDisplayItem> = emptyList()
@@ -547,6 +590,11 @@ class CoupleTimetableViewsService : RemoteViewsService() {
                 R.layout.widget_couple_today_ended_item
             )
             views.setTextViewText(R.id.widget_couple_today_ended, text)
+            views.setTextViewTextSize(
+                R.id.widget_couple_today_ended,
+                TypedValue.COMPLEX_UNIT_SP,
+                CoupleTimetableDisplayBuilder.HINT_TEXT_SIZE_SP,
+            )
             CoupleTimetableSizingSupport.applyRowHeight(
                 views,
                 R.id.widget_couple_today_ended,

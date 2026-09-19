@@ -1,5 +1,7 @@
 package vip.qinghan.withu
 
+import java.util.Calendar
+
 /**
  * 常驻下拉通知的内容组装。
  *
@@ -111,6 +113,87 @@ internal fun liveNextBoundaryMinutes(
         }
         .filter { it > nowMinutes }
         .minOrNull()
+}
+
+/**
+ * 通知时间字段的基准时刻（`setWhen` 的入参）。
+ *
+ * 指到**当天零点**并配合 `setUsesChronometer(true)` + 正计时，SystemUI 会把这一格
+ * 渲染成**带秒的时钟**（`15:26:31`），每秒自走，不依赖 App 进程 —— 与倒计时同样的
+ * 「进程被冻住也还在走」，但读数是当前时间，不会和正文里的「最近下课 / 整节下课」
+ * 重复成一个页面两个倒计时。
+ *
+ * 只覆盖课中两档（`duringClass` / `duringClassStatusBar`）：课前档是提升态
+ * （流体云），那一档不开时间字段，也不该把 `when` 挪走。
+ *
+ * ⚠️ 每天 00:00–00:59 这一小时会退化成 `mm:ss`（显示 `26:31` 而不是 `00:26:31`）：
+ * Chronometer 在小时位为 0 时不渲染小时，这是它自身的格式规则，换基准值绕不过去。
+ * 课表场景（早八到晚十）碰不到，因此接受。
+ */
+internal fun liveSystemClockBaseMillis(
+    stage: String?,
+    showCountdown: Boolean,
+    nowMillis: Long,
+): Long? {
+    if (!showCountdown) {
+        return null
+    }
+    if (stage != "duringClass" && stage != "duringClassStatusBar") {
+        return null
+    }
+    return startOfDayMillis(nowMillis)
+}
+
+/** 当天零点（本机时区）。用于给系统时钟式倒计时打基准。 */
+internal fun startOfDayMillis(nowMillis: Long): Long {
+    return Calendar.getInstance().apply {
+        timeInMillis = nowMillis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+}
+
+/**
+ * 课前那帧的下拉正文（折叠行）：**课名 · 地点**。
+ *
+ * 折叠行只有一行额度，原来那串「状态 · 时间区间 · 地点 · 教师」会被系统截断，而
+ * 课名在折叠态里根本不出现 —— 它只在展开态的 bigText 与流体云卡片上，等于不点箭头
+ * 就看不到这节课叫什么。改成课名打头、地点跟随，两个短字段一行装得下；时间与教师
+ * 挪到摘要行（[summaryText] 那一侧），信息不减。
+ *
+ * 这一层只算下拉文本，不碰 `title` 与 `bigText` —— 流体云卡片读的正是后两者，
+ * 因此文案改动不会影响上岛。
+ *
+ * @param fallbackParts 课名与地点都缺失时的兜底清单（正常课表不会走到）。
+ */
+internal fun buildPromotedShadeText(
+    courseName: String,
+    location: String,
+    fallbackParts: List<String>,
+): String {
+    val primary = listOf(courseName, location)
+        .filter { it.isNotBlank() }
+        .joinToString(" · ")
+    if (primary.isNotBlank()) {
+        return primary
+    }
+    return fallbackParts.filter { it.isNotBlank() }.joinToString(" · ")
+}
+
+/**
+ * 自绘折叠卡片的正文行分配（最多三行）。
+ *
+ * 空闲档在「今天已结束 / 今天没课」时会列明天的课，一节一行；卡片只有三个正文槽位，
+ * 超出的部分压进第三行（那行自己会按宽度省略），比整条丢掉好。
+ */
+internal fun liveCardLines(bodyLines: List<String>): List<String> {
+    val lines = bodyLines.filter { it.isNotBlank() }
+    if (lines.size <= 3) {
+        return lines
+    }
+    return lines.take(2) + lines.drop(2).joinToString("  ")
 }
 
 /**

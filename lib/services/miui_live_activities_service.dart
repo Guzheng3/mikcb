@@ -73,6 +73,37 @@ class MiuiLiveActivitiesService {
     }
   }
 
+  /// ColorOS 一系（OPPO / realme / 一加）在应用退到后台后会冻结进程，通知里的
+  /// 倒计时随之停摆。保活页据此决定要不要给出「允许完全后台行为」的指引；
+  /// 判据与 [isXiaomiFamilyDevice] 一样共用原生 `liveSurfaceBrand`。
+  Future<bool> isColorOsFamilyDevice() async {
+    try {
+      final result = await _channel.invokeMethod('isColorOsFamilyDevice');
+      return result == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 打开「耗电管理」所在的系统页面（ColorOS 上是应用详情页）。
+  ///
+  /// 原生不直接拉 `com.oplus.battery` 的耗电管理 Activity：那些页面需要签名级
+  /// 权限，第三方应用显式拉起只会拿到 SecurityException。
+  Future<void> openBackgroundRestrictionSettings() async {
+    try {
+      await _channel.invokeMethod('openBackgroundRestrictionSettings');
+    } catch (e) {
+      unawaited(
+        AppLogService.instance.warn(
+          'miui_live_open_background_restriction_failed',
+          AppLogMessages.miuiLiveOpenBatterySettingsFailed,
+          extras: {'error': '$e'},
+        ),
+      );
+      appDebugLog('MiuiLive', 'openBackgroundRestrictionSettings failed: $e');
+    }
+  }
+
   Future<bool> checkNotificationPermission() async {
     if (!Platform.isAndroid) return true;
     try {

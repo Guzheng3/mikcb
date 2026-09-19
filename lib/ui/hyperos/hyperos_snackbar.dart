@@ -251,8 +251,12 @@ abstract final class _HyperosToastController {
     }
   }
 
+  /// [overlay] 用于「触发 toast 的控件已经消失」的场景（例如弹窗关闭后才拿到
+  /// 异步结果）：此时 [context] 已失效，但根 Overlay 仍然活着。传入它即可，
+  /// [context] 只作为兜底。
   static void show({
     required BuildContext context,
+    OverlayState? overlay,
     required String message,
     String? description,
     IconData? icon,
@@ -262,7 +266,9 @@ abstract final class _HyperosToastController {
     required Duration duration,
   }) {
     final overlayState =
-        Overlay.maybeOf(context, rootOverlay: true) ?? Overlay.maybeOf(context);
+        overlay ??
+        Overlay.maybeOf(context, rootOverlay: true) ??
+        Overlay.maybeOf(context);
     if (overlayState == null) {
       return;
     }
@@ -546,6 +552,7 @@ void showHyperosSnackBar(
 /// Rich frosted toast with optional icon and secondary line (app toast pattern).
 void showHyperosRichSnackBar(
   BuildContext context, {
+  OverlayState? overlay,
   required String message,
   String? description,
   IconData? icon,
@@ -558,6 +565,7 @@ void showHyperosRichSnackBar(
 }) {
   _HyperosToastController.show(
     context: context,
+    overlay: overlay,
     message: message,
     description: description,
     icon: icon,

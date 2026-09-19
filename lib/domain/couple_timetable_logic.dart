@@ -12,9 +12,6 @@ class MinuteInterval {
 }
 
 class CoupleTimetableLogic {
-  static const String mineColorHexDefault = '#2196F3';
-  static const String partnerColorHexDefault = '#E91E63';
-  static const String togetherColorHexDefault = '#9C27B0';
   static const int minWeekOffset = -15;
   static const int maxWeekOffset = 15;
 

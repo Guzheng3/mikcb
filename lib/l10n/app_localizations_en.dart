@@ -242,9 +242,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get coupleTimetableLegendPartner => 'Partner';
 
   @override
-  String get coupleTimetableLegendTogether => 'Together';
-
-  @override
   String get coupleTimetableLegendFree => 'Shared free';
 
   @override
@@ -318,13 +315,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get coupleTimetableColorsTitle => 'Overlay colors';
-
-  @override
-  String get coupleTimetableColorsSubtitle =>
-      'Choose colors for your courses, partner courses, and shared classes in overlay view';
-
-  @override
   String get partnerImportRequiresSingleProfile =>
       'Please import a single-profile backup, not a full backup';
 
@@ -354,6 +344,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get withuCoupleDisconnect => 'Log out';
+
+  @override
+  String get withuCoupleLogoutUnconfirmed =>
+      'Signed out on this device, but the server could not be reached. The server-side session may still be active.';
 
   @override
   String get withuCouplePullNow => 'Pull partner timetable';
@@ -2087,6 +2081,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get liveKeepAliveOptionsSubtitle =>
       'Used to improve island and reminder stability in background scenarios';
+
+  @override
+  String get liveBackgroundRestrictionTitle => 'System background limits';
+
+  @override
+  String get liveBackgroundRestrictionSubtitle =>
+      'The system may suspend the app once it moves to the background, which freezes the countdown in the notification. Tap the entry below and choose \"Allow full background behaviour\" under Battery usage.';
+
+  @override
+  String get liveBackgroundRestrictionOpen => 'Open battery usage';
 
   @override
   String get hideFromRecentsTitle => 'Hide from Recents';
