@@ -343,6 +343,12 @@ void main() {
         enableLiveActivitySync: false,
       );
       await provider.initialize();
+      // 关闭假期标记：真实日历上可能恰逢法定假期（如 2026-09-26 中秋），
+      // _liveScopeIsHoliday 会在假期日直接返回 null，导致断言 flaky。
+      // 该测试只验证排序优先级，与假期语义无关。
+      await provider.updateSettings(
+        provider.settings.copyWith(enableHolidayMarking: false),
+      );
       final now = _testBaseNow();
       // 自建时间方案：真实课窗口完全可控 = [floor(now), floor(now+2min)]，
       // 解析开始时间永远严格早于预设课 A（floor(now+1min)，必落在下一分钟）。
