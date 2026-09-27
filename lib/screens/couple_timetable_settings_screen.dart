@@ -310,6 +310,8 @@ class _CoupleTimetableSettingsScreenState
 
   /// 开关关闭时若当前正停在 TA 课表，退回我的课表：关闭后课表界面
   /// 回到原来的「轻屿课表」（我的课表），不停留在情侣课表上。
+  /// 极端情况：没有任何非 partner profile 可退时，恢复开关为开启，
+  /// 保持「停在 TA 课表 ⇒ 开关开启」不变量，避免 UI 与内容不一致。
   Future<void> _leavePartnerTimetableIfActive(TimetableProvider provider) async {
     if (provider.activeProfileId != PartnerTimetableService.partnerProfileId) {
       return;
@@ -317,6 +319,10 @@ class _CoupleTimetableSettingsScreenState
     final myProfile = provider.myTimetableProfile;
     if (myProfile != null) {
       await provider.switchProfile(myProfile.id);
+    } else {
+      await provider.updateSettings(
+        provider.settings.copyWith(coupleTimetableOverlayEnabled: true),
+      );
     }
   }
 

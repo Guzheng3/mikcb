@@ -1380,6 +1380,10 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       if (!mounted) {
         return;
       }
+      if (outcome == WidgetLaunchOutcome.coupleModeOff) {
+        await _promptCoupleModeOff();
+        return;
+      }
       if (outcome != WidgetLaunchOutcome.bindingMissing) {
         return;
       }
@@ -1398,6 +1402,36 @@ class _AppEntryScreenState extends State<AppEntryScreen>
         ),
       );
     }
+  }
+
+  /// 情侣模式关闭时点桌面情侣卡片：卡片整块不可用，只把用户带回 App，
+  /// 由这里弹窗引导手动开启（不再由分流逻辑替用户打开开关）。
+  Future<void> _promptCoupleModeOff() async {
+    final l10n = AppLocalizations.of(context)!;
+    final navigator = Navigator.of(context);
+    final confirmed = await showHyperosDialog<bool>(
+      context: context,
+      message: l10n.homeWidgetCoupleModeOffMessage,
+      actions: [
+        HyperosDialogAction(
+          label: l10n.cancelAction,
+          onPressed: () => navigator.pop(false),
+        ),
+        HyperosDialogAction(
+          label: l10n.homeWidgetCoupleModeOffEnable,
+          isPrimary: true,
+          onPressed: () => navigator.pop(true),
+        ),
+      ],
+    );
+    if (confirmed != true || !mounted) {
+      return;
+    }
+    final provider = context.read<TimetableProvider>();
+    await provider.updateSettings(
+      provider.settings.copyWith(coupleTimetableOverlayEnabled: true),
+    );
+    await provider.syncCoupleTimetableWidgetSnapshot();
   }
 
   @override

@@ -3474,6 +3474,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Failed to save the widget binding. Please try again.';
 
   @override
+  String get homeWidgetCoupleModeOffMessage =>
+      'Couple mode is off. Tap the button below to turn it on';
+
+  @override
+  String get homeWidgetCoupleModeOffEnable => 'Turn on couple mode';
+
+  @override
   String get homeWidgetBindingMissingToast =>
       'The timetable bound to this widget is no longer available. Opened normally instead.';
 

@@ -53,6 +53,21 @@ internal object CoupleTimetableDisplayBuilder {
     const val HINT_TEXT_SIZE_SP = 16f
 
     /**
+     * 整卡不可用时的原因文案（未开情侣模式 / 未登录 / 对方课表未上传）。
+     * 这类状态下卡片不分左右两栏，由整卡居中的提示位统一显示这一句。
+     */
+    fun unavailableText(context: Context, status: CoupleWidgetStatus): String =
+        when (status) {
+            CoupleWidgetStatus.COUPLE_MODE_OFF ->
+                context.getString(R.string.widget_couple_mode_off)
+            CoupleWidgetStatus.NOT_LOGGED_IN ->
+                context.getString(R.string.widget_couple_not_logged_in)
+            CoupleWidgetStatus.NOT_BOUND ->
+                context.getString(R.string.widget_couple_not_bound)
+            CoupleWidgetStatus.OK -> ""
+        }
+
+    /**
      * 空态文案是否为「今日课程已结束」：今天本来有课（不是「今日无课」），
      * 课已全部上完，且明日没有课可列——此时没人再占位，文案可以直接坐到
      * 整列中间。
@@ -71,19 +86,10 @@ internal object CoupleTimetableDisplayBuilder {
         maxVisibleCourses: Int = MAX_VISIBLE_COURSES,
     ): CoupleWidgetDisplay {
         if (status != CoupleWidgetStatus.OK) {
-            val text = when (status) {
-                CoupleWidgetStatus.COUPLE_MODE_OFF ->
-                    context.getString(R.string.widget_couple_mode_off)
-                CoupleWidgetStatus.NOT_LOGGED_IN ->
-                    context.getString(R.string.widget_couple_not_logged_in)
-                CoupleWidgetStatus.NOT_BOUND ->
-                    context.getString(R.string.widget_couple_not_bound)
-                CoupleWidgetStatus.OK -> ""
-            }
             return CoupleWidgetDisplay(
                 items = emptyList(),
                 footerText = "",
-                emptyText = text,
+                emptyText = unavailableText(context, status),
             )
         }
 

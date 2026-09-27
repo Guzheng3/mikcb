@@ -2490,13 +2490,21 @@ class _TimetableScreenState extends State<TimetableScreen>
   }
 
   /// 情侣标题点击：在我的/她的课表之间切换。
+  /// 关闭情侣模式后极端情况（无任何非 partner profile）时，恢复开关为
+  /// 开启以保持「停在 TA 课表 ⇒ 开关开启」不变量。
   Future<void> _toggleCoupleTimetable() async {
     final provider = context.read<TimetableProvider>();
-    final targetId =
-        provider.activeProfileId == PartnerTimetableService.partnerProfileId
+    final isHerActive =
+        provider.activeProfileId == PartnerTimetableService.partnerProfileId;
+    final targetId = isHerActive
         ? provider.myTimetableProfile?.id
         : PartnerTimetableService.partnerProfileId;
     if (targetId == null) {
+      if (isHerActive && !provider.settings.coupleTimetableOverlayEnabled) {
+        await provider.updateSettings(
+          provider.settings.copyWith(coupleTimetableOverlayEnabled: true),
+        );
+      }
       return;
     }
     await provider.switchProfile(targetId);

@@ -170,6 +170,73 @@ void main() {
     expect(provider.activeProfileId, before);
   });
 
+  test('情侣模式关闭 + 卡片右半 → coupleModeOff，不自动开启也不切课表', () async {
+    final provider = await createProviderWithPartner();
+    await provider.updateSettings(
+      provider.settings.copyWith(coupleTimetableOverlayEnabled: false),
+    );
+    final before = provider.activeProfileId;
+
+    pendingLaunch = const PendingHomeWidgetLaunch(
+      appWidgetId: 43,
+      side: 'right',
+    );
+    final outcome = await WidgetLaunchRouter.handleWith(provider: provider);
+
+    expect(outcome, WidgetLaunchOutcome.coupleModeOff);
+    expect(provider.settings.coupleTimetableOverlayEnabled, isFalse);
+    expect(provider.activeProfileId, before);
+  });
+
+  test('情侣模式关闭 + 卡片左半 → coupleModeOff，普通打开', () async {
+    final provider = await createProviderWithPartner();
+    await provider.updateSettings(
+      provider.settings.copyWith(coupleTimetableOverlayEnabled: false),
+    );
+    final before = provider.activeProfileId;
+
+    pendingLaunch = const PendingHomeWidgetLaunch(
+      appWidgetId: 44,
+      side: 'left',
+    );
+    final outcome = await WidgetLaunchRouter.handleWith(provider: provider);
+
+    expect(outcome, WidgetLaunchOutcome.coupleModeOff);
+    expect(provider.settings.coupleTimetableOverlayEnabled, isFalse);
+    expect(provider.activeProfileId, before);
+  });
+
+  test('情侣模式关闭 + 卡片行点击带 courseId → 不请求展开课程详情', () async {
+    final provider = await createProvider();
+    const courseId = 'detail-course-mode-off';
+    await provider.addCourse(
+      Course(
+        id: courseId,
+        name: '高数',
+        teacher: '张老师',
+        location: 'A101',
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        startTime: '08:00',
+        endTime: '09:40',
+      ),
+    );
+    await provider.updateSettings(
+      provider.settings.copyWith(coupleTimetableOverlayEnabled: false),
+    );
+
+    pendingLaunch = const PendingHomeWidgetLaunch(
+      appWidgetId: 45,
+      side: 'left',
+      courseId: courseId,
+    );
+    final outcome = await WidgetLaunchRouter.handleWith(provider: provider);
+
+    expect(outcome, WidgetLaunchOutcome.coupleModeOff);
+    expect(provider.hasPendingCourseDetail, isFalse);
+  });
+
   test('卡片左半（当前是我的课表）→ none，普通打开', () async {
     final provider = await createProviderWithPartner();
     final before = provider.activeProfileId;

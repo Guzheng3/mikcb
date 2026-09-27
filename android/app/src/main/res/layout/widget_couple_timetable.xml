@@ -39,6 +39,7 @@
         android:paddingBottom="7dp">
 
         <LinearLayout
+            android:id="@+id/widget_couple_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -85,6 +86,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/widget_couple_columns"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="5dp"
@@ -189,5 +191,22 @@
                     android:textSize="10sp" />
             </LinearLayout>
         </LinearLayout>
+
+        <!-- 整卡不可用态（未开情侣模式 / 未登录 / 对方课表未上传）：
+             收起昵称行与左右两栏，整卡居中显示一句原因，不再分左右。 -->
+        <TextView
+            android:id="@+id/widget_couple_unavailable_hint"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="4"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:textColor="@color/widget_couple_text_hint"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
     </LinearLayout>
 </FrameLayout>

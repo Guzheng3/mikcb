@@ -3330,6 +3330,12 @@ class AppLocalizationsJa extends AppLocalizations {
       'ウィジェットの割り当ての保存に失敗しました。しばらくしてからもう一度お試しください。';
 
   @override
+  String get homeWidgetCoupleModeOffMessage => 'カップルモードがオフです。下のボタンからオンにできます';
+
+  @override
+  String get homeWidgetCoupleModeOffEnable => 'カップルモードをオン';
+
+  @override
   String get homeWidgetBindingMissingToast =>
       'このウィジェットに割り当てた時間割は無効になりました。通常どおり開きました。';
 

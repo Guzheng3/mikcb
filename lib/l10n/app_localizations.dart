@@ -6057,6 +6057,18 @@ abstract class AppLocalizations {
   /// **'保存卡片绑定失败，请稍后重试'**
   String get homeWidgetBindingSaveFailed;
 
+  /// No description provided for @homeWidgetCoupleModeOffMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前未开启情侣模式，可点击下方开启'**
+  String get homeWidgetCoupleModeOffMessage;
+
+  /// No description provided for @homeWidgetCoupleModeOffEnable.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启情侣模式'**
+  String get homeWidgetCoupleModeOffEnable;
+
   /// No description provided for @homeWidgetBindingMissingToast.
   ///
   /// In zh, this message translates to:

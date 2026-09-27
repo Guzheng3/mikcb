@@ -3351,6 +3351,13 @@ class AppLocalizationsKo extends AppLocalizations {
       '위젯 바인딩 저장에 실패했어요. 잠시 후 다시 시도해 주세요.';
 
   @override
+  String get homeWidgetCoupleModeOffMessage =>
+      '커플 모드가 꺼져 있어요. 아래 버튼을 눌러 켤 수 있어요';
+
+  @override
+  String get homeWidgetCoupleModeOffEnable => '커플 모드 켜기';
+
+  @override
   String get homeWidgetBindingMissingToast =>
       '이 위젯에 바인딩된 시간표가 더 이상 없어요. 일반 방식으로 열었어요.';
 

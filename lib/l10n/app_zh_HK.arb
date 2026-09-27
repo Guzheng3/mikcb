@@ -1508,6 +1508,8 @@
   "homeWidgetBindingFollowActive": "跟隨目前課表",
   "homeWidgetBindingEmpty": "桌面上還沒有今日課程卡片，先新增一張再返嚟綁定",
   "homeWidgetBindingSaveFailed": "儲存卡片綁定失敗，請稍後重試",
+  "homeWidgetCoupleModeOffMessage": "目前未開啟情侶模式，可點擊下方開啟",
+  "homeWidgetCoupleModeOffEnable": "開啟情侶模式",
   "homeWidgetBindingMissingToast": "這張卡片綁定的課表已失效，已按普通方式打開",
   "homeWidgetExactAlarmBannerTitle": "精確鬧鐘權限未授予",
   "homeWidgetExactAlarmBannerText": "未授予「鬧鐘和提醒」權限時，課程邊界只能非精確刷新，桌面卡片可能延遲更新，建議授權以保證按課程時間精確刷新",

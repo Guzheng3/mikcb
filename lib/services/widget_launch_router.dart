@@ -14,6 +14,9 @@ enum WidgetLaunchOutcome {
 
   /// 绑定的 TA 课表已解绑/被删 → 回落普通打开。
   bindingMissing,
+
+  /// 情侣卡片点击时情侣模式未开启 → 不做任何切换，由首页弹窗提示手动开启。
+  coupleModeOff,
 }
 
 /// 桌面卡片点击 → App 内分流。
@@ -23,6 +26,7 @@ enum WidgetLaunchOutcome {
 /// 这里按点击位置/卡片绑定分流：
 /// - 情侣卡片右半 → 切到 TA 的课表（主界面直接展示，TA 课表可切换）
 /// - 情侣卡片左半 → 当前停在 TA 课表时切回我的课表，否则普通打开
+/// - 情侣模式未开启时点情侣卡片 → 不做任何切换，交首页弹窗提示手动开启
 /// - 普通卡片按绑定档案 `switchProfile` 直达
 /// - 未绑定 / 绑定已失效 → 普通打开
 class WidgetLaunchRouter {
@@ -46,7 +50,9 @@ class WidgetLaunchRouter {
 
     final outcome = await _resolveOutcome(provider, launch, bindingService);
     // 课表切换完成后才请求详情：此时 getCourseById 才能命中目标课表的课程。
-    _maybeRequestCourseDetailOpen(provider, launch.courseId);
+    if (outcome != WidgetLaunchOutcome.coupleModeOff) {
+      _maybeRequestCourseDetailOpen(provider, launch.courseId);
+    }
     return outcome;
   }
 
@@ -55,6 +61,12 @@ class WidgetLaunchRouter {
     PendingHomeWidgetLaunch launch,
     HomeWidgetBindingService bindingService,
   ) async {
+    // 情侣卡片（原生只在情侣卡片上带 side）在情侣模式关闭时整卡不可用：
+    // 不再像以前那样替用户把开关打开，只交首页弹窗提示手动开启。
+    if (launch.side != null &&
+        !provider.settings.coupleTimetableOverlayEnabled) {
+      return WidgetLaunchOutcome.coupleModeOff;
+    }
     if (launch.side == 'right') {
       return _switchToPartnerTimetable(provider);
     }
@@ -112,12 +124,10 @@ class WidgetLaunchRouter {
     if (!provider.hasPartnerBinding || provider.partnerProfile == null) {
       return WidgetLaunchOutcome.bindingMissing;
     }
-    // 情侣课表开关未开时自动打开：情侣卡片本身是情侣入口，点击即应
-    // 进入情侣视图（对应旧版点击卡片自动开启覆盖层的行为）。
+    // 情侣模式关闭时不再自动开启：卡片此时显示「暂不可使用」，点击只把
+    // 用户带回 App，由首页弹窗提示手动开启（见 WidgetLaunchOutcome）。
     if (!provider.settings.coupleTimetableOverlayEnabled) {
-      await provider.updateSettings(
-        provider.settings.copyWith(coupleTimetableOverlayEnabled: true),
-      );
+      return WidgetLaunchOutcome.coupleModeOff;
     }
     const partnerId = PartnerTimetableService.partnerProfileId;
     if (provider.activeProfileId != partnerId) {

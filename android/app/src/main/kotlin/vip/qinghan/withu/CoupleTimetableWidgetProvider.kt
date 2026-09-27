@@ -39,52 +39,72 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
         val snapshot = CoupleTimetableStore.readSnapshot(context)
         val status = snapshot?.status ?: CoupleWidgetStatus.COUPLE_MODE_OFF
 
-        // 昵称配色按性别固定：男生天蓝 #3B82F6，女生粉红 #EC4899。性别取不到
-        // （旧快照 / 未登录）时按左男右女兜底，与历史观感一致。
-        val leftColor = genderAccentColor(context, snapshot?.myGender)
-            ?: maleAccentColor(context)
-        val rightColor = genderAccentColor(context, snapshot?.partnerGender)
-            ?: femaleAccentColor(context)
+        if (status != CoupleWidgetStatus.OK) {
+            // 整卡不可用（未开情侣模式 / 未登录 / 对方课表未上传）：不分左右两栏，
+            // 收起昵称行与双列，整卡居中显示一句原因。
+            views.setViewVisibility(R.id.widget_couple_header, View.GONE)
+            views.setViewVisibility(R.id.widget_couple_columns, View.GONE)
+            views.setViewVisibility(R.id.widget_couple_unavailable_hint, View.VISIBLE)
+            views.setTextViewText(
+                R.id.widget_couple_unavailable_hint,
+                CoupleTimetableDisplayBuilder.unavailableText(context, status),
+            )
+        } else {
+            // 每次渲染都要把三种可见性下发全：桌面在布局 id 不变时是把动作
+            // 重放到同一个 View 上的，漏发一次就会留着上一状态的可见性。
+            views.setViewVisibility(R.id.widget_couple_header, View.VISIBLE)
+            views.setViewVisibility(R.id.widget_couple_columns, View.VISIBLE)
+            views.setViewVisibility(R.id.widget_couple_unavailable_hint, View.GONE)
 
-        val leftName = snapshot?.myName?.trim()
-            ?.takeIf { it.isNotEmpty() }
-            ?: CoupleTimetableStore.DEFAULT_MY_NAME
-        val rightName = snapshot?.partnerName?.trim()
-            ?.takeIf { it.isNotEmpty() }
-            ?: CoupleTimetableStore.DEFAULT_PARTNER_NAME
-        CoupleTimetableRenderSupport.createNameBitmap(context, leftName, leftColor)?.let {
-            views.setImageViewBitmap(R.id.widget_couple_left_name, it)
-        }
-        CoupleTimetableRenderSupport.createNameBitmap(context, rightName, rightColor)?.let {
-            views.setImageViewBitmap(R.id.widget_couple_right_name, it)
-        }
-        views.setInt(R.id.widget_couple_heart, "setColorFilter", rightColor)
+            // 昵称配色按性别固定：男生天蓝 #3B82F6，女生粉红 #EC4899。性别取不到
+            // （旧快照 / 未登录）时按左男右女兜底，与历史观感一致。
+            val leftColor = genderAccentColor(context, snapshot?.myGender)
+                ?: maleAccentColor(context)
+            val rightColor = genderAccentColor(context, snapshot?.partnerGender)
+                ?: femaleAccentColor(context)
 
-        bindColumn(
-            context,
-            appWidgetManager,
-            views,
-            appWidgetId,
-            isLeft = true,
-            courses = snapshot?.mine,
-            accentColor = leftColor,
-            status = status,
-        )
-        bindColumn(
-            context,
-            appWidgetManager,
-            views,
-            appWidgetId,
-            isLeft = false,
-            courses = snapshot?.partner,
-            accentColor = rightColor,
-            status = status,
-        )
+            val leftName = snapshot?.myName?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?: CoupleTimetableStore.DEFAULT_MY_NAME
+            val rightName = snapshot?.partnerName?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?: CoupleTimetableStore.DEFAULT_PARTNER_NAME
+            CoupleTimetableRenderSupport.createNameBitmap(context, leftName, leftColor)?.let {
+                views.setImageViewBitmap(R.id.widget_couple_left_name, it)
+            }
+            CoupleTimetableRenderSupport.createNameBitmap(context, rightName, rightColor)?.let {
+                views.setImageViewBitmap(R.id.widget_couple_right_name, it)
+            }
+            views.setInt(R.id.widget_couple_heart, "setColorFilter", rightColor)
+
+            bindColumn(
+                context,
+                appWidgetManager,
+                views,
+                appWidgetId,
+                isLeft = true,
+                courses = snapshot?.mine,
+                accentColor = leftColor,
+            )
+            bindColumn(
+                context,
+                appWidgetManager,
+                views,
+                appWidgetId,
+                isLeft = false,
+                courses = snapshot?.partner,
+                accentColor = rightColor,
+            )
+        }
 
         // 整卡可点、左右分流：列容器（含列表下方的空白区）与名字区各自
         // 带 side；列表行经 PendingIntentTemplate 兜底（getViewAt 里逐项
         // 挂 fill intent）；卡片 padding、爱心等残余区域落到 shield 左右
         // 对半（垫在内容之下的透明层）；root 挂 left 作最终保险。
+        // 不可用态下两栏与名字区已收起，左右 shield 落到同一件事（回 App 弹窗
+        // 提示），那种状态下点哪都一样，不再有左右之分。
+        // 注意：这六条必须每次都下发——桌面会把动作重放到同一个 View 上，
+        // 漏发会让上一次的点击区残留下来。
         views.setOnClickPendingIntent(
             R.id.widget_couple_left_shield,
             buildLaunchPendingIntent(context, appWidgetId, isLeft = true)
@@ -125,7 +145,6 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
         isLeft: Boolean,
         courses: CoupleWidgetDayCourses?,
         accentColor: Int,
-        status: CoupleWidgetStatus,
     ) {
         val listId = if (isLeft) {
             R.id.widget_couple_left_list
@@ -146,12 +165,8 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
         val display = CoupleTimetableDisplayBuilder.build(
             context,
             courses ?: CoupleWidgetDayCourses(emptyList(), emptyList()),
-            status = status,
         )
-
-        if (status == CoupleWidgetStatus.OK) {
-            views.setTextViewText(footerId, display.footerText)
-        }
+        views.setTextViewText(footerId, display.footerText)
         display.emptyText?.let { views.setTextViewText(emptyId, it) }
         views.setTextViewTextSize(
             emptyId,
@@ -177,12 +192,7 @@ class CoupleTimetableWidgetProvider : BaseQingyuWidgetProvider() {
                     endedNotice = display.emptyEndedNotice,
                 ),
             )
-            if (status == CoupleWidgetStatus.OK) {
-                views.setTextViewText(footerId, display.footerText)
-                views.setViewVisibility(footerId, View.VISIBLE)
-            } else {
-                views.setViewVisibility(footerId, View.GONE)
-            }
+            views.setViewVisibility(footerId, View.VISIBLE)
             return
         }
 

@@ -3263,6 +3263,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeWidgetBindingSaveFailed => '保存卡片绑定失败，请稍后重试';
 
   @override
+  String get homeWidgetCoupleModeOffMessage => '当前未开启情侣模式，可点击下方开启';
+
+  @override
+  String get homeWidgetCoupleModeOffEnable => '开启情侣模式';
+
+  @override
   String get homeWidgetBindingMissingToast => '这张卡片绑定的课表已失效，已按普通方式打开';
 
   @override
@@ -12884,6 +12890,12 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get homeWidgetBindingSaveFailed => '儲存卡片綁定失敗，請稍後重試';
+
+  @override
+  String get homeWidgetCoupleModeOffMessage => '目前未開啟情侶模式，可點擊下方開啟';
+
+  @override
+  String get homeWidgetCoupleModeOffEnable => '開啟情侶模式';
 
   @override
   String get homeWidgetBindingMissingToast => '這張卡片綁定的課表已失效，已按普通方式打開';
@@ -22545,6 +22557,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get homeWidgetBindingSaveFailed => '儲存卡片綁定失敗，請稍後重試';
+
+  @override
+  String get homeWidgetCoupleModeOffMessage => '目前未開啟情侶模式，可點擊下方開啟';
+
+  @override
+  String get homeWidgetCoupleModeOffEnable => '開啟情侶模式';
 
   @override
   String get homeWidgetBindingMissingToast => '這張卡片綁定的課表已失效，已按普通方式開啟';
