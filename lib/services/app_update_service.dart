@@ -241,6 +241,16 @@ class AppUpdateService {
       await _deleteFileIfExists(file);
 
       client = HttpClient();
+      // 回环地址绕过代理：测试与本地更新源在代理拦截 127.0.0.1 时会返回非 200。
+      // 其余请求必须交回默认解析（HttpClient 未设置 findProxy 时用的就是它）；
+      // 回调返回类型是非空 String，不能用 return null 表示「走默认」。
+      client.findProxy = (uri) {
+        final host = uri.host;
+        if (host == '127.0.0.1' || host == 'localhost' || host == '::1') {
+          return 'DIRECT';
+        }
+        return HttpClient.findProxyFromEnvironment(uri);
+      };
       controller?._setCancelHandler(() => client?.close(force: true));
       final request = await client.getUrl(uri);
       final response = await request.close();
