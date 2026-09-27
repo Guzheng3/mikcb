@@ -2088,23 +2088,33 @@ void main() {
         await gesture.moveBy(const Offset(-130, 0));
         await tester.pump(const Duration(milliseconds: 16));
       }
-      // Week 2 Monday's content is now on screen while still held.
+      // Week 2 Monday's content is now on screen while still held. The deck
+      // layer is what the finger actually sees during the swipe — the real
+      // pager is wrapped in Opacity(0) until the settle hands it back — so the
+      // assertion has to target the deck's card, not the live page copy.
       final viewportWidth =
           tester.view.physicalSize.width / tester.view.devicePixelRatio;
-      expect(
-        tester.getCenter(find.byKey(const ValueKey('day-content-2-1'))).dx,
-        lessThan(viewportWidth),
+      final visibleMonday = find.descendant(
+        of: find.byKey(const ValueKey('day-view-pager-deck')),
+        matching: find.byKey(const ValueKey('day-content-2-1')),
       );
+      expect(visibleMonday, findsOneWidget);
+      expect(tester.getCenter(visibleMonday).dx, lessThan(viewportWidth));
 
-      // Keep dragging: week 2 Tuesday follows without lifting the finger.
+      // Keep dragging: the pager underneath keeps accumulating pages past the
+      // boundary instead of stalling at it. The deck itself only travels one
+      // page and replays the running position when the spring settles, so the
+      // no-freeze signal is the controller's page, not the card positions.
       for (var i = 0; i < 4; i++) {
         await gesture.moveBy(const Offset(-130, 0));
         await tester.pump(const Duration(milliseconds: 16));
       }
-      expect(
-        tester.getCenter(find.byKey(const ValueKey('day-content-2-2'))).dx,
-        lessThan(viewportWidth),
-      );
+      final heldPage = tester
+          .widget<PageView>(find.byKey(const ValueKey('day-view-swipe-area')))
+          .controller
+          ?.page;
+      expect(heldPage, isNotNull);
+      expect(heldPage, greaterThan(7.5));
 
       // Slow down so release settles near the current page, then verify the
       // committed selection lands somewhere inside week 2.
