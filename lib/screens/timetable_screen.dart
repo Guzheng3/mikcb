@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/l10n/service_message_localizer.dart';
 import 'package:flutter/physics.dart';
+import 'package:flutter/scheduler.dart' show Ticker;
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -111,6 +112,7 @@ class _DayPagerFlickRescuePhysics extends _SpringPageScrollPhysics {
   const _DayPagerFlickRescuePhysics({
     required this.takeRescueVelocity,
     super.takeDragStartPage,
+    super.settlePeriod,
     super.parent,
   });
 
@@ -122,6 +124,9 @@ class _DayPagerFlickRescuePhysics extends _SpringPageScrollPhysics {
     return _DayPagerFlickRescuePhysics(
       takeRescueVelocity: takeRescueVelocity,
       takeDragStartPage: takeDragStartPage,
+      // 必须透传：PageView 每次 build 都会重新 apply physics，漏掉就会静默
+      // 回落到全应用默认的 0.4s 弹簧，天课表的 period 设置形同虚设。
+      settlePeriod: settlePeriod,
       parent: buildParent(ancestor),
     );
   }
@@ -162,11 +167,11 @@ class _SpringPageScrollPhysics extends PageScrollPhysics {
 
   final double settlePeriod;
 
-  /// A short backward drag commits to the neighbor page. The standard 50%
-  /// threshold makes the timetable feel inert because most swipes end with
-  /// very low pointer velocity after decelerating through the course grid.
-  static const double dragSnapFraction = 0.16;
-  static const double forwardDragSnapFraction = 0.42;
+  /// 前/后向都只要拖过 13.14% 就翻页。标准 50% 阈值会让课表显得迟顿，
+  /// 因为多数滑动穿过课程网格减速后指针速度已经很低。两个方向保留为
+  /// 独立参数，虽然目前取值相同。
+  static const double dragSnapFraction = 0.1314;
+  static const double forwardDragSnapFraction = 0.1314;
 
   final _PagerDragStartPageReader? takeDragStartPage;
 
@@ -361,6 +366,11 @@ class _TimetableScreenState extends State<TimetableScreen>
   DateTime? _dayPagerRescueArmedAt;
   double? _dayPagerDragStartPage;
 
+  /// 日 deck 专用的揭示锚点（整页）。与 [_dayPagerDragStartPage] 不同，它在
+  /// 新滑动接手未完成的弹簧回弹时**不**重新指向：基准不变 ⇒ 揭示进度连续，
+  /// 接手瞬间卡片不会被打回起点。
+  double? _dayDeckAnchorPage;
+
   /// 单次手势只允许一次日切换点击震感的闩锁。onPageChanged 在滑过每个页
   /// 中点时都会触发：快速甩动一次跨两页、或甩动后弹簧回弹再越过中点，
   /// 都会连响两次。指针按下 / 星期栏拖动开始时重新武装，settle 提交后也
@@ -370,15 +380,16 @@ class _TimetableScreenState extends State<TimetableScreen>
       _DayPagerFlickRescuePhysics(
         takeRescueVelocity: _takeDayPagerRescueVelocity,
         takeDragStartPage: () => _dayPagerDragStartPage,
+        // 与周课表 pager 对齐：0.52s 临界弹簧，松手后走完整过渡。
+        settlePeriod: 0.52,
         parent: const ClampingScrollPhysics(),
       );
   late final _SpringPageScrollPhysics _weekPagerPhysics =
       _SpringPageScrollPhysics(
         takeDragStartPage: () =>
             _weekPagerDragStartPage ?? _weekPagerPendingDragStartPage,
-        // OPPO-style home settle: slightly faster than the app-wide spring so
-        // the page locks to the finger release without a long visible tail.
-        settlePeriod: 0.32,
+        // 松手后走完整 0.52s 临界弹簧，滑到位而不是瞬间锁页。
+        settlePeriod: 0.52,
         parent: const ClampingScrollPhysics(),
       );
 
@@ -409,6 +420,12 @@ class _TimetableScreenState extends State<TimetableScreen>
   /// paint a duplicate settled week beside the pager's real card.
   double? _weekPagerPendingDragStartPage;
 
+  /// 周 deck 专用的揭示锚点（整页）。翻页阈值仍用
+  /// [_weekPagerDragStartPage]（跟随手指按下的实际位置），而 deck 的揭示
+  /// 进度用它：接手一次未完成的滑动时基准不变，进度不会归零，卡片也就不会
+  /// 在接手那一帧突然跳位。
+  double? _weekDeckAnchorPage;
+
   /// the deck's AnimatedBuilder re-runs even though the pager page is
   /// integral (no controller notification fires there).
   final ValueNotifier<int> _weekDeckReleaseTick = ValueNotifier<int>(0);
@@ -436,6 +453,24 @@ class _TimetableScreenState extends State<TimetableScreen>
   bool _dayDeckHoldScheduled = false;
   double _dayViewAnchorFraction = 0.5;
   bool _isDaySwipeAnimating = false;
+
+  /// 「先加速补完，再跟手」的驱动器（周/日 pager 共用）：上一次滑动还在回弹时
+  /// 新手指按下，按帧把剩余行程增量叠到 pager 位置上，旧卡继续飞出去；手指真正
+  /// 拖动或抬起时结束，位置（若走完则精确的整页）无缝交给手指/弹簧。
+  Ticker? _pagerSettleFastForwardTicker;
+  PageController? _pagerSettleFastForwardPager;
+  double _pagerSettleFastForwardTargetPixels = 0;
+  bool _pagerSettleFastForwardForward = true;
+  int? _pagerSettleFastForwardPointer;
+  double _pagerSettleFastForwardLastFraction = 0;
+
+  /// 真实拖拽是否已经产生位移。`DragScrollActivity` 在收到第一帧 update 之前会
+  /// 断言 lastDetails 必须是 DragUpdateDetails，所以曲线必须等这个信号到了才能
+  /// 起跑（见 [_armPagerSettleFastForward]）。
+  bool _pagerSettleFastForwardArmed = false;
+
+  /// 起跑瞬间的剩余行程：用来识别「位置在往反方向退」（手指回拉、程序化跳页）。
+  double _pagerSettleFastForwardInitialRemaining = 0;
 
   /// 底栏点选的内嵌页 id（非 null 时内容区切换为该页，玻璃坞常驻）。
   String? _dockInlinePageId;
@@ -600,6 +635,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     _courseDetailProvider?.removeListener(_maybeShowPendingCourseDetail);
     _courseDetailProvider = null;
     WidgetsBinding.instance.removeObserver(this);
+    _pagerSettleFastForwardTicker?.dispose();
     _homePullQuickImportCancel?.call();
     _homePullSettleSpring?.dispose();
     _weekPageController.removeListener(_handleWeekPageControllerChanged);
@@ -1175,6 +1211,7 @@ class _TimetableScreenState extends State<TimetableScreen>
           _weekDeckSettleRebuildScheduled = false;
           _weekPagerDragStartPage = null;
           _weekPagerPendingDragStartPage = null;
+          _weekDeckAnchorPage = null;
           _lastObservedWeekPage = settledWeek - 1;
           _weekPageController.jumpToPage(settledWeek - 1);
         }
@@ -1251,6 +1288,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     // next open would start with a stale start page (and the snap physics read
     // it too).
     _dayPagerDragStartPage = null;
+    _dayDeckAnchorPage = null;
     setState(() {
       _selectedWeekForDayView = null;
       _selectedDayOfWeek = null;
@@ -1725,6 +1763,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     // 星期栏刮擦也是一次手势：整段拖动只保留一次日切换点击震感。
     _daySwipeHapticFired = false;
     _dayPagerDragStartPage = controller.page?.roundToDouble();
+    _dayDeckAnchorPage = _dayPagerDragStartPage;
     _weekdayBarDrag = controller.position.drag(details, () {
       _weekdayBarDrag = null;
     });
@@ -1772,11 +1811,195 @@ class _TimetableScreenState extends State<TimetableScreen>
     drag?.cancel();
   }
 
-  double? _pagerDragStartPageFromMetrics(ScrollMetrics metrics) {
-    final pageUnit = metrics is PageMetrics
+  double _pagerPageUnitFromMetrics(ScrollMetrics metrics) {
+    return metrics is PageMetrics
         ? math.max(1, metrics.viewportDimension * metrics.viewportFraction)
         : math.max(1, metrics.viewportDimension);
+  }
+
+  double? _pagerDragStartPageFromMetrics(ScrollMetrics metrics) {
+    final pageUnit = _pagerPageUnitFromMetrics(metrics);
     return pageUnit <= 0 ? null : metrics.pixels / pageUnit;
+  }
+
+  /// 上一次滑动还没落定就被新手指按下时，剩余行程的补完时长：旧卡在这段时间
+  /// 里加速跑完退场（「飞出去」）。
+  static const Duration _pendingSettleFastForwardDuration = Duration(
+    milliseconds: 160,
+  );
+
+  /// 接手未完成滑动时要「加速补完」的目标整页；行程已结束（停在整页）时返回
+  /// null。弹簧不会越过自己的目标，而 [direction]（回弹中每一帧的 scrollDelta
+  /// 符号）就是行进方向，据此取整页得到的就是弹簧原本的目标。
+  double? _pendingSettleFastForwardTarget(
+    PageController controller,
+    double direction,
+  ) {
+    if (!controller.hasClients || !controller.position.hasContentDimensions) {
+      return null;
+    }
+    final position = controller.position;
+    final page = _pagerDragStartPageFromMetrics(position);
+    if (page == null || (page - page.roundToDouble()).abs() <= 0.0001) {
+      return null;
+    }
+    final target = direction > 0
+        ? page.ceilToDouble()
+        : direction < 0
+        ? page.floorToDouble()
+        : page.roundToDouble();
+    // 越界的整页不存在（学期首/末页的越界回弹交给父 physics），夹回范围内。
+    return target
+        .clamp(0.0, position.maxScrollExtent / _pagerPageUnitFromMetrics(position))
+        .toDouble();
+  }
+
+  /// 接手未完成滑动时新手指按下：把剩余行程加速补完，旧卡「飞出去」。
+  ///
+  /// 不能用 `animateTo`/ScrollActivity：按下这一个事件里手势竞技场只有一个成员，
+  /// PageView 的拖拽识别器立刻赢下并 `hold()`+`drag()` 住 position，任何
+  /// ScrollActivity 都会被它顶掉，位置就此冻在接手那一帧（实测 activity 会从
+  /// DrivenScrollActivity 变成 DragScrollActivity 且 pixels 不再变化）。
+  /// 改成自己按帧把位移**增量**叠加上去：增量位移和真实手指拖拽走的是同一条路
+  /// （`applyUserOffset`），两者天然叠加而不是互相覆盖。
+  ///
+  /// 曲线不在这里起跑：按下这一刻 position 上还是 DragScrollActivity 的
+  /// DragStartDetails，写入会撞断言。等真实拖拽产生第一帧位移后再起跑，见
+  /// [_armPagerSettleFastForward]。
+  void _beginPagerSettleFastForward(
+    PageController controller,
+    double direction,
+    PointerDownEvent event,
+  ) {
+    if (_pagerSettleFastForwardPager != null) {
+      // 已经在补完中：第二根手指不重启曲线。
+      return;
+    }
+    final target = _pendingSettleFastForwardTarget(controller, direction);
+    if (target == null) {
+      return;
+    }
+    final position = controller.position;
+    _pagerSettleFastForwardPager = controller;
+    _pagerSettleFastForwardTargetPixels =
+        target * _pagerPageUnitFromMetrics(position);
+    _pagerSettleFastForwardForward = direction >= 0;
+    _pagerSettleFastForwardPointer = event.pointer;
+    _pagerSettleFastForwardArmed = false;
+    _pagerSettleFastForwardInitialRemaining = 0;
+    _pagerSettleFastForwardLastFraction = 0;
+  }
+
+  /// 真实拖拽产生了第一帧位移：`ScrollDragController` 此时才把 lastDetails 换成
+  /// DragUpdateDetails，position 也才可以被叠加写入。剩余行程从这一刻开始起跑。
+  void _armPagerSettleFastForward(PageController controller) {
+    if (_pagerSettleFastForwardArmed ||
+        !identical(_pagerSettleFastForwardPager, controller) ||
+        !controller.hasClients) {
+      return;
+    }
+    final position = controller.position;
+    final forward = _pagerSettleFastForwardForward;
+    final remaining = forward
+        ? _pagerSettleFastForwardTargetPixels - position.pixels
+        : position.pixels - _pagerSettleFastForwardTargetPixels;
+    if (remaining <= 0) {
+      // 手指一上来就把这一页拖过头了，没什么可补的。
+      _endPagerSettleFastForward();
+      return;
+    }
+    _pagerSettleFastForwardInitialRemaining = remaining;
+    _pagerSettleFastForwardLastFraction = 0;
+    _pagerSettleFastForwardArmed = true;
+    final ticker = _pagerSettleFastForwardTicker ??= createTicker(
+      _tickPagerSettleFastForward,
+    );
+    if (ticker.isActive) {
+      ticker.stop();
+    }
+    // Ticker 重新 start 后 elapsed 从 0 重新起算，正好是这条曲线的起点。
+    ticker.start();
+  }
+
+  void _tickPagerSettleFastForward(Duration elapsed) {
+    final controller = _pagerSettleFastForwardPager;
+    if (controller == null || !controller.hasClients) {
+      _endPagerSettleFastForward();
+      return;
+    }
+    final position = controller.position as ScrollPositionWithSingleContext;
+    final forward = _pagerSettleFastForwardForward;
+    final remaining = forward
+        ? _pagerSettleFastForwardTargetPixels - position.pixels
+        : position.pixels - _pagerSettleFastForwardTargetPixels;
+    // 手指已经把这一页拖过头了：补完到此为止，剩下的交给弹簧。
+    if (remaining <= 0) {
+      _endPagerSettleFastForward();
+      return;
+    }
+    // 位置在往反方向退（手指回拉、或别处跳了页）：不跟它较劲，交回手指/弹簧。
+    if (remaining >
+        _pagerSettleFastForwardInitialRemaining + kTouchSlop) {
+      _endPagerSettleFastForward();
+      return;
+    }
+    final progress =
+        (elapsed.inMicroseconds /
+                _pendingSettleFastForwardDuration.inMicroseconds)
+            .clamp(0.0, 1.0);
+    if (progress >= 1.0 || remaining <= 0.5) {
+      // 落整页：pixels 必须是精确的整页值，deck 才会判定滑动结束并交回真实卡片。
+      position.applyUserOffset(forward ? -remaining : remaining);
+      _endPagerSettleFastForward();
+      return;
+    }
+    final fraction = Curves.easeOutCubic.transform(progress);
+    final step =
+        (fraction - _pagerSettleFastForwardLastFraction) /
+        (1 - _pagerSettleFastForwardLastFraction);
+    _pagerSettleFastForwardLastFraction = fraction;
+    if (step <= 0) {
+      return;
+    }
+    position.applyUserOffset(forward ? -remaining * step : remaining * step);
+  }
+
+  void _endPagerSettleFastForward() {
+    _pagerSettleFastForwardTicker?.stop();
+    _pagerSettleFastForwardPager = null;
+    _pagerSettleFastForwardPointer = null;
+    _pagerSettleFastForwardArmed = false;
+    _pagerSettleFastForwardInitialRemaining = 0;
+    _pagerSettleFastForwardLastFraction = 0;
+  }
+
+  /// 手指抬离/取消：补完结束，位置（可能已经落整页）交给弹簧。
+  void _releasePagerSettleFastForward(PointerEvent event) {
+    if (_pagerSettleFastForwardPointer != event.pointer) {
+      return;
+    }
+    _endPagerSettleFastForward();
+  }
+
+  void _beginWeekSettleFastForward(PointerDownEvent event) {
+    if (!_isWeekDeckActive()) {
+      return;
+    }
+    _beginPagerSettleFastForward(
+      _weekPageController,
+      _weekSwipeDirection,
+      event,
+    );
+  }
+
+  void _beginDaySettleFastForward(
+    PageController controller,
+    PointerDownEvent event,
+  ) {
+    if (!_isDayDeckActive(controller)) {
+      return;
+    }
+    _beginPagerSettleFastForward(controller, _daySwipeDirection, event);
   }
 
   /// One-shot read of the armed rescue velocity for [_dayPagerPhysics].
@@ -3820,10 +4043,10 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
   }
 
-  // Card reveal tuning, shared by the week and day swipe decks and the
-  // one-shot profile-switch reveal: the lower card holds its seed state until
-  // the travelling card has covered _cardPagerAppearStart of the page, then
-  // ramps 85% -> 100% and 0.52% -> 100% opacity over the remaining travel.
+  // Card reveal tuning. The swipe decks use _cardPagerMinScale /
+  // _cardPagerAppearOpacity directly against the drag progress (no dead zone);
+  // _cardPagerAppearStart / _cardPagerMaxBlurSigma are only still used by the
+  // one-shot profile-switch reveal, which keeps its hold-then-ramp shape.
   static const double _cardPagerAppearStart = 0.1314;
   static const double _cardPagerAppearOpacity = 0.0052;
   static const double _cardPagerMaxBlurSigma = 14;
@@ -3916,17 +4139,24 @@ class _TimetableScreenState extends State<TimetableScreen>
               if (notification is ScrollUpdateNotification &&
                   notification.scrollDelta != 0) {
                 _weekSwipeDirection = notification.scrollDelta! > 0 ? 1 : -1;
+                _armPagerSettleFastForward(_weekPageController);
                 // First real horizontal movement promotes the pending
                 // start page: vertical drags on the course grid also
                 // surface as a horizontal ScrollStart and must never arm
                 // the swipe deck (which would paint a duplicate week).
                 // A fast follow-up swipe can begin while the previous spring
-                // is still settling. Its ScrollStart is real, so replace the
-                // stale previous start point; otherwise the deck keeps using
-                // the old page and the card appears frozen for one swipe.
+                // is still settling. Its ScrollStart is real, so the snap
+                // physics re-points at where the finger landed (跟着手)，但
+                // deck 的揭示锚点保持上一次的值：若改成当前分数页，走卡会
+                // 瞬间被拉回那一小段，正在升起的卡也会被打回起始态。
                 if (_weekPagerPendingDragStartPage != null &&
                     _weekPagerDragStartPage != _weekPagerPendingDragStartPage) {
-                  _weekPagerDragStartPage = _weekPagerPendingDragStartPage;
+                  final touchPage = _weekPagerPendingDragStartPage!;
+                  _weekPagerDragStartPage = touchPage;
+                  final anchor = _weekDeckAnchorPage;
+                  if (anchor == null || (touchPage - anchor).abs() >= 1.0) {
+                    _weekDeckAnchorPage = touchPage.roundToDouble();
+                  }
                   _weekPagerPendingDragStartPage = null;
                   _weekDeckSettleRebuildArmed = true;
                   _weekDeckSettleRebuildScheduled = false;
@@ -4048,6 +4278,15 @@ class _TimetableScreenState extends State<TimetableScreen>
               onHorizontalDragCancel: _cancelWeekdayBarDrag,
             ),
           ),
+        // 上一次滑动还在回弹时新手指按下：把剩余行程加速补完（旧卡「飞出
+        // 去」）。放在最上层且 translucent，因此下方所有手势的命中都不受影响。
+        Listener(
+          key: const ValueKey('week-pager-settle-fast-forward'),
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: _beginWeekSettleFastForward,
+          onPointerUp: _releasePagerSettleFastForward,
+          onPointerCancel: _releasePagerSettleFastForward,
+        ),
       ],
     );
   }
@@ -4105,12 +4344,20 @@ class _TimetableScreenState extends State<TimetableScreen>
         ]),
         builder: (context, _) {
           if (_isWeekDeckActive()) {
-            final startPage = _weekPagerDragStartPage ?? 0;
+            // 揭示锚点：接手未完成的滑动时不重新指向（进度连续），但一次
+            // 手势内跨过整页时必须推进，否则 delta 会被 clamp 在 1.0，来卡
+            // 会停在原地不再揭示。
+            var startPage = _weekDeckAnchorPage ?? 0;
             final activePage =
                 _weekPageController.hasClients &&
                     _weekPageController.position.hasContentDimensions
                 ? (_weekPageController.page ?? startPage)
                 : startPage;
+            if (activePage - startPage >= 1.0) {
+              startPage = activePage.floorToDouble();
+            } else if (startPage - activePage >= 1.0) {
+              startPage = activePage.ceilToDouble();
+            }
             final maxIndex = settings.semesterWeekCount;
             final outgoingIndex = startPage.round();
             if (maxIndex <= 0 ||
@@ -4340,21 +4587,13 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// Lower-layer reveal curve shared by the week and day decks. Mirrors the
-  /// [_cardPagerAppearStart] dead zone: the lower card holds its seed state
-  /// until the upper layer has travelled that fraction of the page, then ramps
-  /// to full over the remaining travel.
-  double _deckAppearProgress(double progress) {
-    return ((progress - _cardPagerAppearStart) / (1.0 - _cardPagerAppearStart))
-        .clamp(0.0, 1.0)
-        .toDouble();
-  }
-
   /// Week swipe z-order stack; see [_buildWeekPagerDeck] for the
   /// choreography.
   ///
-  /// Both cards keep the cross-dissolve (scale + opacity) while the moving
-  /// card also travels horizontally:
+  /// The revealed card stays put and grows back to full size underneath the
+  /// outgoing card, so the stack reads as one card sliding off the top of the
+  /// next. There is no dead zone: the reveal answers the very first pixel of
+  /// the drag instead of waiting for a threshold.
   /// - Forward (left swipe): the current week follows the finger out to the
   ///   left while it fades; the next week rises in place underneath.
   /// - Backward (right swipe): the previous week slides in from the left while
@@ -4398,16 +4637,15 @@ class _TimetableScreenState extends State<TimetableScreen>
       );
     }
 
-    // Forward (left swipe): the current week slides out to the left while it
-    // fades over the next week, which rises in place underneath (scale
-    // 85%->100%, opacity 0.52%->100% after the 13.14% dead zone).
+    // Forward (left swipe): the outgoing week tracks the finger 1:1, the next
+    // week is revealed in place underneath it — growing from 85% to full size
+    // and fading in from the first pixel of the drag.
     if (direction > 0) {
       final progress = delta.clamp(0.0, 1.0).toDouble();
-      final appear = _deckAppearProgress(progress);
       final incomingScale =
-          _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appear;
+          _cardPagerMinScale + (1.0 - _cardPagerMinScale) * progress;
       final incomingOpacity =
-          _cardPagerAppearOpacity + (1.0 - _cardPagerAppearOpacity) * appear;
+          _cardPagerAppearOpacity + (1.0 - _cardPagerAppearOpacity) * progress;
       final outgoingOpacity =
           _cardPagerAppearOpacity +
           (1.0 - _cardPagerAppearOpacity) * (1.0 - progress);
@@ -4432,11 +4670,10 @@ class _TimetableScreenState extends State<TimetableScreen>
     // Backward (right swipe): the previous week slides in from the left while
     // it fades in; the current week recedes in place underneath.
     final progress = (-delta).clamp(0.0, 1.0).toDouble();
-    final appear = _deckAppearProgress(progress);
     final incomingScale =
-        _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appear;
+        _cardPagerMinScale + (1.0 - _cardPagerMinScale) * progress;
     final incomingOpacity =
-        _cardPagerAppearOpacity + (1.0 - _cardPagerAppearOpacity) * appear;
+        _cardPagerAppearOpacity + (1.0 - _cardPagerAppearOpacity) * progress;
     final outgoingScale = 1.0 - (1.0 - _cardPagerMinScale) * progress;
     final outgoingOpacity =
         _cardPagerAppearOpacity +
@@ -4512,8 +4749,14 @@ class _TimetableScreenState extends State<TimetableScreen>
             return const SizedBox.shrink();
           }
           if (_isDayDeckActive(controller)) {
-            final startPage = _dayPagerDragStartPage!;
+            var startPage = _dayDeckAnchorPage ?? 0;
             final activePage = controller.page ?? startPage;
+            // 同周课表：一次手势内跨过整页时推进锚点，避免揭示被 clamp。
+            if (activePage - startPage >= 1.0) {
+              startPage = activePage.floorToDouble();
+            } else if (startPage - activePage >= 1.0) {
+              startPage = activePage.ceilToDouble();
+            }
             final viewportWidth = controller.position.viewportDimension;
             if (viewportWidth <= 0) return const SizedBox.shrink();
             final delta = activePage - startPage;
@@ -4565,6 +4808,7 @@ class _TimetableScreenState extends State<TimetableScreen>
   void _completeDayDeckSettle() {
     if (!mounted) return;
     _dayPagerDragStartPage = null;
+    _dayDeckAnchorPage = null;
     _dayDeckReleaseTick.value += 1;
     setState(() {});
   }
@@ -4598,14 +4842,10 @@ class _TimetableScreenState extends State<TimetableScreen>
     return card;
   }
 
-  /// Day swipe z-order stack; see [_buildDayPagerDeck].
-  ///
-  /// - Forward (left swipe): the outgoing day follows the finger out to the
-  ///   left on the top layer while it fades; the next day rises in place
-  ///   underneath.
-  /// - Backward (right swipe): the previous day slides in from the left on the
-  ///   top layer while it fades in; the outgoing day recedes in place
-  ///   underneath.
+  /// Day swipe z-order stack; see [_buildDayPagerDeck]. Same choreography as
+  /// [_buildWeekDeckStack]: the outgoing card follows the finger, the revealed
+  /// card grows back to full size in place underneath it, and the reveal has
+  /// no dead zone.
   Widget _buildDayDeckStack({
     required TimetableProvider provider,
     required TimetableSettings settings,
@@ -4637,17 +4877,16 @@ class _TimetableScreenState extends State<TimetableScreen>
 
     if (direction > 0) {
       final progress = delta.clamp(0.0, 1.0).toDouble();
-      final appear = _deckAppearProgress(progress);
       return Stack(
         fit: StackFit.expand,
         children: [
           deckCard(
             outgoingIndex + 1,
             translateX: 0,
-            scale: _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appear,
+            scale: _cardPagerMinScale + (1.0 - _cardPagerMinScale) * progress,
             opacity:
                 _cardPagerAppearOpacity +
-                (1.0 - _cardPagerAppearOpacity) * appear,
+                (1.0 - _cardPagerAppearOpacity) * progress,
           ),
           deckCard(
             outgoingIndex,
@@ -4661,7 +4900,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
 
     final progress = (-delta).clamp(0.0, 1.0).toDouble();
-    final appear = _deckAppearProgress(progress);
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -4676,10 +4914,10 @@ class _TimetableScreenState extends State<TimetableScreen>
         deckCard(
           outgoingIndex - 1,
           translateX: -(1.0 - progress) * viewportWidth,
-          scale: _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appear,
+          scale: _cardPagerMinScale + (1.0 - _cardPagerMinScale) * progress,
           opacity:
               _cardPagerAppearOpacity +
-              (1.0 - _cardPagerAppearOpacity) * appear,
+              (1.0 - _cardPagerAppearOpacity) * progress,
         ),
       ],
     );
@@ -4993,6 +5231,9 @@ class _TimetableScreenState extends State<TimetableScreen>
                     _dayPagerRescueArmedAt = null;
                     // 新手势重新允许一次日切换点击震感。
                     _daySwipeHapticFired = false;
+                    // 上一次滑动还在回弹：先把剩余行程加速补完（旧卡飞出去），
+                    // 新手势随后从目标整页接管。
+                    _beginDaySettleFastForward(controller, event);
                     _dayPagerFlickProbes[event.pointer] = _DayPagerFlickProbe(
                       VelocityTracker.withKind(event.kind)
                         ..addPosition(event.timeStamp, event.position),
@@ -5018,6 +5259,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                     }
                   },
                   onPointerUp: (event) {
+                    _releasePagerSettleFastForward(event);
                     final probe = _dayPagerFlickProbes.remove(event.pointer);
                     if (probe == null) {
                       return;
@@ -5059,6 +5301,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                     }
                   },
                   onPointerCancel: (event) {
+                    _releasePagerSettleFastForward(event);
                     _dayPagerRescueVelocityX = 0;
                     _dayPagerRescueArmedAt = null;
                     final probe = _dayPagerFlickProbes.remove(event.pointer);
@@ -5083,6 +5326,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                           _daySwipeDirection = notification.scrollDelta! > 0
                               ? 1
                               : -1;
+                          _armPagerSettleFastForward(controller);
                         }
                         // 拦截 update 继续冒泡：HyperosRootPage 的触边震动
                         // 监听会在学期首/末日到达页边界时再计一次
@@ -5092,9 +5336,19 @@ class _TimetableScreenState extends State<TimetableScreen>
                       }
                       if (notification is ScrollStartNotification &&
                           notification.dragDetails != null) {
-                        _dayPagerDragStartPage = _pagerDragStartPageFromMetrics(
+                        final touchPage = _pagerDragStartPageFromMetrics(
                           notification.metrics,
                         );
+                        _dayPagerDragStartPage = touchPage;
+                        // 同周课表：阈值基准跟随手指按下的位置，揭示锚点则
+                        // 保持不变，接手未完成的滑动时进度才连续。
+                        if (touchPage != null) {
+                          final dayAnchor = _dayDeckAnchorPage;
+                          if (dayAnchor == null ||
+                              (touchPage - dayAnchor).abs() >= 1.0) {
+                            _dayDeckAnchorPage = touchPage.roundToDouble();
+                          }
+                        }
                         if (kDebugMode) {
                           final metrics = notification.metrics;
                           final page = metrics.viewportDimension == 0
@@ -8329,6 +8583,7 @@ class _TimetableScreenState extends State<TimetableScreen>
       // the pager's own slide instead of a stale deck takeover.
       _weekPagerDragStartPage = null;
       _weekPagerPendingDragStartPage = null;
+      _weekDeckAnchorPage = null;
       if (animatePage) {
         await _weekPageController.animateToPage(
           targetWeek - 1,
@@ -8430,6 +8685,7 @@ class _TimetableScreenState extends State<TimetableScreen>
       _weekDeckSettleRebuildScheduled = false;
       _weekPagerDragStartPage = null;
       _weekPagerPendingDragStartPage = null;
+      _weekDeckAnchorPage = null;
       _lastObservedWeekPage = targetPage;
       _weekPageController.jumpToPage(targetPage);
     });

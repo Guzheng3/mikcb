@@ -126,7 +126,9 @@ void main() {
       );
 
       await gesture.up();
-      for (var frame = 0; frame < 24; frame++) {
+      // 观察窗口盖满 0.52s 弹簧的整个回弹过程（48 × 32ms = 1536ms），
+      // 否则断言会在弹簧仍在运行时就判定「已稳定」。
+      for (var frame = 0; frame < 48; frame++) {
         await tester.pump(const Duration(milliseconds: 32));
         // The deck card, fixed axis, or restored pager axis must cover every
         // settle frame. A missing axis here appears on device as a blink.
@@ -206,7 +208,7 @@ void main() {
       expect(incomingSize.height / viewportSize.height, lessThan(0.96));
 
       await gesture.up();
-      for (var frame = 0; frame < 24; frame++) {
+      for (var frame = 0; frame < 48; frame++) {
         await tester.pump(const Duration(milliseconds: 32));
       }
       expect(
@@ -230,7 +232,7 @@ void main() {
     },
   );
 
-  testWidgets('fast follow-up swipe retargets the deck start page', (
+  testWidgets('fast follow-up swipe fast-forwards the pending settle', (
     tester,
   ) async {
     final provider = TimetableProvider(
@@ -267,23 +269,49 @@ void main() {
     await tester.pump();
 
     final pageViewFinder = find.byKey(const ValueKey('week-page-view'));
+    final controller = tester.widget<PageView>(pageViewFinder).controller!;
     final viewportCenter = tester.getCenter(pageViewFinder);
     final first = await tester.startGesture(viewportCenter);
-    await first.moveBy(const Offset(-760, 0));
+    await first.moveBy(const Offset(-200, 0));
     await tester.pump();
     await first.up();
+    // 弹簧：第一帧只对齐 ticker 起算时间，第二帧才开始位移。
+    await tester.pump(const Duration(milliseconds: 16));
+    await tester.pump(const Duration(milliseconds: 48));
+    expect(controller.page!, lessThan(1.0));
 
-    // Start the next swipe before the first spring settles. The deck must
-    // rebase on the fractional landing page, not keep the original page 0.
+    final incoming = find.byKey(const ValueKey('week-page-2')).last;
+    final pendingWidth = tester.getRect(incoming).width;
+    final pendingPage = controller.page!;
+
+    // 上一次滑动还没落定时新手指按下：真实拖拽还没产生位移（DragScrollActivity
+    // 的 lastDetails 仍停在 DragStartDetails），补完曲线按兵不动，位置先冻住。
     final second = await tester.startGesture(viewportCenter);
-    await second.moveBy(const Offset(-80, 0));
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 32));
+    await tester.pump(const Duration(milliseconds: 32));
+    expect(controller.page!, closeTo(pendingPage, 0.0001));
 
-    expect(find.byKey(const ValueKey('week-page-3')).last, findsOneWidget);
-    await second.up();
-    for (var frame = 0; frame < 24; frame++) {
+    // 手指一动，真实拖拽产生第一帧位移：剩余行程立刻开始加速补完（旧卡继续飞
+    // 出去，而不是被冻在接手那一帧）。首帧只对齐 ticker 起算时间。
+    await second.moveBy(const Offset(-6, 0));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 32));
+    expect(tester.getRect(incoming).width, greaterThan(pendingWidth));
+
+    // 160ms 内补完并精确落在整页上；原本的 0.52s 弹簧此时远没到整页。
+    for (var frame = 0; frame < 8; frame++) {
       await tester.pump(const Duration(milliseconds: 32));
     }
+    expect(controller.page!, closeTo(1.0, 0.001));
+
+    // 手指接管后继续拖一把再抬：仍然只落整页，不会中途卡住。
+    await second.moveBy(const Offset(-40, 0));
+    await tester.pump();
+    await second.up();
+    for (var frame = 0; frame < 48; frame++) {
+      await tester.pump(const Duration(milliseconds: 32));
+    }
+    expect(controller.page!, closeTo(controller.page!.roundToDouble(), 0.001));
   });
 
   testWidgets('backward pager recedes outgoing while left neighbor stays centered', (
