@@ -232,162 +232,174 @@ void main() {
     },
   );
 
-  testWidgets('fast follow-up swipe fast-forwards the pending settle', (
-    tester,
-  ) async {
-    final provider = TimetableProvider(
-      autoInitialize: false,
-      enableLiveActivitySync: false,
-    );
-    await provider.updateTimetableSettings(
-      provider.settings.copyWith(
-        homeNavigationForm: HomeNavigationForm.classic,
-        timetableAutoFitSectionHeight: true,
-        homePageWallpaperPath: '',
-      ),
-    );
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<TimetableProvider>.value(value: provider),
-        ],
-        child: const MaterialApp(
-          localizationsDelegates: [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
+  testWidgets(
+    'fast follow-up swipe keeps the settle motion and follows the finger',
+    (tester) async {
+      final provider = TimetableProvider(
+        autoInitialize: false,
+        enableLiveActivitySync: false,
+      );
+      await provider.updateTimetableSettings(
+        provider.settings.copyWith(
+          homeNavigationForm: HomeNavigationForm.classic,
+          timetableAutoFitSectionHeight: true,
+          homePageWallpaperPath: '',
+        ),
+      );
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<TimetableProvider>.value(value: provider),
           ],
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: Locale('zh'),
-          home: FrostedAppearanceScope(
-            appearance: FrostedAppearance.defaults,
-            child: TimetableScreen(enableProgressTimer: false),
+          child: const MaterialApp(
+            localizationsDelegates: [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: Locale('zh'),
+            home: FrostedAppearanceScope(
+              appearance: FrostedAppearance.defaults,
+              child: TimetableScreen(enableProgressTimer: false),
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pump();
+      );
+      await tester.pump();
 
-    final pageViewFinder = find.byKey(const ValueKey('week-page-view'));
-    final controller = tester.widget<PageView>(pageViewFinder).controller!;
-    final viewportCenter = tester.getCenter(pageViewFinder);
-    final first = await tester.startGesture(viewportCenter);
-    await first.moveBy(const Offset(-200, 0));
-    await tester.pump();
-    await first.up();
-    // 弹簧：第一帧只对齐 ticker 起算时间，第二帧才开始位移。
-    await tester.pump(const Duration(milliseconds: 16));
-    await tester.pump(const Duration(milliseconds: 48));
-    expect(controller.page!, lessThan(1.0));
+      final pageViewFinder = find.byKey(const ValueKey('week-page-view'));
+      final controller = tester.widget<PageView>(pageViewFinder).controller!;
+      final pageUnit = tester.getRect(pageViewFinder).width;
+      final viewportCenter = tester.getCenter(pageViewFinder);
+      final first = await tester.startGesture(viewportCenter);
+      await first.moveBy(const Offset(-200, 0));
+      await tester.pump();
+      await first.up();
+      // 弹簧：第一帧只对齐 ticker 起算时间，第二帧才开始位移。
+      await tester.pump(const Duration(milliseconds: 16));
+      await tester.pump(const Duration(milliseconds: 48));
+      expect(controller.page, lessThan(1.0));
 
-    final incoming = find.byKey(const ValueKey('week-page-2')).last;
-    final pendingWidth = tester.getRect(incoming).width;
-    final pendingPage = controller.page!;
+      // 让弹簧走到半页附近（速度仍可观）新手指再按下：这是「连续滑动」的
+      // 典型时机，也是旧的纯 1:1 实现里接手即冻结的场景。
+      for (var frame = 0; frame < 48 && controller.page! < 0.45; frame++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      final pendingPage = controller.page!;
+      expect(pendingPage, greaterThan(0.44));
 
-    // 上一次滑动还没落定时新手指按下：真实拖拽还没产生位移（DragScrollActivity
-    // 的 lastDetails 仍停在 DragStartDetails），补完曲线按兵不动，位置先冻住。
-    final second = await tester.startGesture(viewportCenter);
-    await tester.pump(const Duration(milliseconds: 32));
-    await tester.pump(const Duration(milliseconds: 32));
-    expect(controller.page!, closeTo(pendingPage, 0.0001));
-
-    // 手指一动，真实拖拽产生第一帧位移：剩余行程立刻开始加速补完（旧卡继续飞
-    // 出去，而不是被冻在接手那一帧）。首帧只对齐 ticker 起算时间。
-    await second.moveBy(const Offset(-6, 0));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 32));
-    expect(tester.getRect(incoming).width, greaterThan(pendingWidth));
-
-    // 160ms 内补完并精确落在整页上；原本的 0.52s 弹簧此时远没到整页。
-    for (var frame = 0; frame < 8; frame++) {
+      // 上一次滑动还没落定就被新手指按下：弹簧被拖拽接管，位置冻在接手那一帧
+      // （补速曲线要等第一帧真实拖拽位移才起跑，规避 DragScrollActivity 的
+      // lastDetails 断言）。
+      final second = await tester.startGesture(viewportCenter);
       await tester.pump(const Duration(milliseconds: 32));
-    }
-    expect(controller.page!, closeTo(1.0, 0.001));
+      expect(controller.page, closeTo(pendingPage, 0.0001));
 
-    // 手指接管后继续拖一把再抬：仍然只落整页，不会中途卡住。
-    await second.moveBy(const Offset(-40, 0));
-    await tester.pump();
-    await second.up();
-    for (var frame = 0; frame < 48; frame++) {
-      await tester.pump(const Duration(milliseconds: 32));
-    }
-    expect(controller.page!, closeTo(controller.page!.roundToDouble(), 0.001));
-  });
+      // 首帧真实拖拽：手指走 30px 页面就走 30px（补速首帧只对齐 ticker 起算）。
+      final beforeMove = controller.page!;
+      await second.moveBy(const Offset(-30, 0));
+      await tester.pump();
+      expect(controller.page! - beforeMove, closeTo(30 / pageUnit, 0.003));
 
-  testWidgets('backward pager recedes outgoing while left neighbor stays centered', (
-    tester,
-  ) async {
-    final provider = TimetableProvider(
-      autoInitialize: false,
-      enableLiveActivitySync: false,
-    );
-    await provider.updateTimetableSettings(
-      provider.settings.copyWith(
-        homeNavigationForm: HomeNavigationForm.classic,
-        timetableAutoFitSectionHeight: true,
-        homePageWallpaperPath: '',
-      ),
-    );
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<TimetableProvider>.value(value: provider),
-        ],
-        child: const MaterialApp(
-          localizationsDelegates: [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
+      // 手指按住不动的 192ms 里，剩余行程按弹簧自己的速度继续补完（速度连续）：
+      // 位置仍在明显前进——「连着上一张的动作继续，不要暂停」——但没有火箭式
+      // 一步到位。
+      final afterMove = controller.page!;
+      for (var frame = 0; frame < 6; frame++) {
+        await tester.pump(const Duration(milliseconds: 32));
+      }
+      expect(controller.page! - afterMove, greaterThan(12 / pageUnit));
+      // 补完停在整页前半像素（保持分数页，deck 不交回），不精确落页。
+      expect(controller.page, lessThan(1.0));
+
+      // 手指不抬，继续滑过整页：deck 锚点推进，切换连续到下一页；抬手后落在
+      // 再下一整页（snap 基准已随锚点推进，而不是 round 回刚跨过的这一页）。
+      await second.moveBy(Offset(-pageUnit * 0.45, 0));
+      await tester.pump();
+      await second.up();
+      for (var frame = 0; frame < 48; frame++) {
+        await tester.pump(const Duration(milliseconds: 32));
+      }
+      expect(controller.page, closeTo(2.0, 0.001));
+    },
+  );
+
+  testWidgets(
+    'backward pager recedes outgoing while left neighbor stays centered',
+    (tester) async {
+      final provider = TimetableProvider(
+        autoInitialize: false,
+        enableLiveActivitySync: false,
+      );
+      await provider.updateTimetableSettings(
+        provider.settings.copyWith(
+          homeNavigationForm: HomeNavigationForm.classic,
+          timetableAutoFitSectionHeight: true,
+          homePageWallpaperPath: '',
+        ),
+      );
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<TimetableProvider>.value(value: provider),
           ],
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: Locale('zh'),
-          home: FrostedAppearanceScope(
-            appearance: FrostedAppearance.defaults,
-            child: TimetableScreen(enableProgressTimer: false),
+          child: const MaterialApp(
+            localizationsDelegates: [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: Locale('zh'),
+            home: FrostedAppearanceScope(
+              appearance: FrostedAppearance.defaults,
+              child: TimetableScreen(enableProgressTimer: false),
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
-    final pageViewFinder = find.byKey(const ValueKey('week-page-view'));
-    tester.widget<PageView>(pageViewFinder).controller!.jumpToPage(1);
-    await tester.pump();
-    final viewportCenter = tester.getCenter(pageViewFinder);
-    final gesture = await tester.startGesture(viewportCenter);
-    await gesture.moveBy(const Offset(200, 0));
-    await tester.pump(const Duration(milliseconds: 16));
+      final pageViewFinder = find.byKey(const ValueKey('week-page-view'));
+      tester.widget<PageView>(pageViewFinder).controller!.jumpToPage(1);
+      await tester.pump();
+      final viewportCenter = tester.getCenter(pageViewFinder);
+      final gesture = await tester.startGesture(viewportCenter);
+      await gesture.moveBy(const Offset(200, 0));
+      await tester.pump(const Duration(milliseconds: 16));
 
-    final outgoing = find.byKey(const ValueKey('week-page-2')).last;
-    final incoming = find.byKey(const ValueKey('week-page-1')).last;
-    expect(outgoing, findsOneWidget);
-    expect(incoming, findsOneWidget);
-    expect(tester.getCenter(outgoing).dx, closeTo(viewportCenter.dx, 1.0));
-    // 仅当前页保持居中；后向滑动时左邻页按 pager 位移（-页宽 + 手势 200）。
-    expect(
-      tester.getCenter(incoming).dx,
-      closeTo(
-        viewportCenter.dx - tester.getRect(pageViewFinder).size.width + 200,
-        1.0,
-      ),
-    );
-    final viewportSize = tester.getRect(pageViewFinder).size;
-    final outgoingSize = tester.getRect(outgoing).size;
-    final incomingSize = tester.getRect(incoming).size;
-    expect(outgoingSize.width / viewportSize.width, closeTo(0.967, 0.03));
-    expect(outgoingSize.height / viewportSize.height, closeTo(0.967, 0.03));
-    // 后向滑动时左邻页缩小到 ~0.87 并随 pager 位移（当前页保持居中全尺寸）。
-    expect(incomingSize.width / viewportSize.width, closeTo(0.87, 0.03));
-    expect(incomingSize.height / viewportSize.height, closeTo(0.87, 0.03));
+      final outgoing = find.byKey(const ValueKey('week-page-2')).last;
+      final incoming = find.byKey(const ValueKey('week-page-1')).last;
+      expect(outgoing, findsOneWidget);
+      expect(incoming, findsOneWidget);
+      expect(tester.getCenter(outgoing).dx, closeTo(viewportCenter.dx, 1.0));
+      // 仅当前页保持居中；后向滑动时左邻页按 pager 位移（-页宽 + 手势 200）。
+      expect(
+        tester.getCenter(incoming).dx,
+        closeTo(
+          viewportCenter.dx - tester.getRect(pageViewFinder).size.width + 200,
+          1.0,
+        ),
+      );
+      final viewportSize = tester.getRect(pageViewFinder).size;
+      final outgoingSize = tester.getRect(outgoing).size;
+      final incomingSize = tester.getRect(incoming).size;
+      expect(outgoingSize.width / viewportSize.width, closeTo(0.967, 0.03));
+      expect(outgoingSize.height / viewportSize.height, closeTo(0.967, 0.03));
+      // 后向滑动时左邻页缩小到 ~0.87 并随 pager 位移（当前页保持居中全尺寸）。
+      expect(incomingSize.width / viewportSize.width, closeTo(0.87, 0.03));
+      expect(incomingSize.height / viewportSize.height, closeTo(0.87, 0.03));
 
-    await gesture.up();
-    await tester.pump(const Duration(seconds: 2));
-    // 手势仅 200px（<页宽一半），释放后 pager 回弹到当前页，
-    // 左邻页保持缩放态而非放大到满宽。
-    expect(
-      tester.getRect(incoming).width / viewportSize.width,
-      closeTo(0.87, 0.03),
-    );
-  });
+      await gesture.up();
+      await tester.pump(const Duration(seconds: 2));
+      // 手势仅 200px（<页宽一半），释放后 pager 回弹到当前页，
+      // 左邻页保持缩放态而非放大到满宽。
+      expect(
+        tester.getRect(incoming).width / viewportSize.width,
+        closeTo(0.87, 0.03),
+      );
+    },
+  );
 }

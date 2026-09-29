@@ -18,7 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/l10n/service_message_localizer.dart';
 import 'package:flutter/physics.dart';
-import 'package:flutter/scheduler.dart' show Ticker;
+import 'package:flutter/scheduler.dart' show SchedulerPhase, Ticker;
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -167,11 +167,11 @@ class _SpringPageScrollPhysics extends PageScrollPhysics {
 
   final double settlePeriod;
 
-  /// 前/后向都只要拖过 13.14% 就翻页。标准 50% 阈值会让课表显得迟顿，
+  /// 前/后向都只要拖过 5.2% 就翻页。标准 50% 阈值会让课表显得迟顿，
   /// 因为多数滑动穿过课程网格减速后指针速度已经很低。两个方向保留为
   /// 独立参数，虽然目前取值相同。
-  static const double dragSnapFraction = 0.1314;
-  static const double forwardDragSnapFraction = 0.1314;
+  static const double dragSnapFraction = 0.052;
+  static const double forwardDragSnapFraction = 0.052;
 
   final _PagerDragStartPageReader? takeDragStartPage;
 
@@ -220,9 +220,12 @@ class _SpringPageScrollPhysics extends PageScrollPhysics {
           // A long zero-velocity drag still follows standard paging.
           page = page.roundToDouble();
         } else if (dragDelta >= forwardDragSnapFraction) {
-          page = startPage + 1;
+          // 落「下一整页」而不是 startPage + 1：接手未完成的滑动时
+          // [takeDragStartPage] 是手指按下的分数页（例如 1.5），加一得到 2.5，
+          // 再四舍五入就变成了 3.0，一次小滑动会飞过一整页。
+          page = startPage.floorToDouble() + 1;
         } else if (dragDelta <= -dragSnapFraction) {
-          page = startPage + dragDelta.sign;
+          page = startPage.ceilToDouble() - 1;
         }
       }
     }
@@ -454,23 +457,37 @@ class _TimetableScreenState extends State<TimetableScreen>
   double _dayViewAnchorFraction = 0.5;
   bool _isDaySwipeAnimating = false;
 
-  /// 「先加速补完，再跟手」的驱动器（周/日 pager 共用）：上一次滑动还在回弹时
-  /// 新手指按下，按帧把剩余行程增量叠到 pager 位置上，旧卡继续飞出去；手指真正
-  /// 拖动或抬起时结束，位置（若走完则精确的整页）无缝交给手指/弹簧。
-  Ticker? _pagerSettleFastForwardTicker;
-  PageController? _pagerSettleFastForwardPager;
-  double _pagerSettleFastForwardTargetPixels = 0;
-  bool _pagerSettleFastForwardForward = true;
-  int? _pagerSettleFastForwardPointer;
-  double _pagerSettleFastForwardLastFraction = 0;
+  /// 「带速度接手」（周/日 pager 共用）：上一次滑动的弹簧还在回弹时新手指按下，
+  /// DragScrollActivity 会丢掉弹簧速度并把位置冻在接手那一帧——卡片从回弹速度
+  /// 瞬间跌到 0，等手指起步再从 0 加速，用户感知为「挺一下」。接手后按帧把
+  /// 剩余行程以指数趋近补上（时间常数 τ = 剩余/弹簧当前速度，接手帧速度恰为
+  /// 弹簧速度，速度连续），手指增量走拖拽路径天然 1:1 叠加其上；反向回拉或
+  /// 抬手即停，剩余尾巴交给松手弹簧（snap 阈值 0.052 能接住近目标的位置）。
+  Ticker? _pagerSettleCarryTicker;
+  PageController? _pagerSettleCarryPager;
+  double _pagerSettleCarryTargetPixels = 0;
+  bool _pagerSettleCarryForward = true;
+  int? _pagerSettleCarryPointer;
+  bool _pagerSettleCarryArmed = false;
+  double _pagerSettleCarryInitialRemaining = 0;
 
-  /// 真实拖拽是否已经产生位移。`DragScrollActivity` 在收到第一帧 update 之前会
-  /// 断言 lastDetails 必须是 DragUpdateDetails，所以曲线必须等这个信号到了才能
-  /// 起跑（见 [_armPagerSettleFastForward]）。
-  bool _pagerSettleFastForwardArmed = false;
+  /// 指数趋近的时间常数（微秒）：τ = R0/v0。只向下保护；不加向上钳制——
+  /// 钳上限会让接手初速高于弹簧实际速度，反过来制造速度跳变。
+  double _pagerSettleCarryTauUs = 0;
+  Duration _pagerSettleCarryLastElapsed = Duration.zero;
 
-  /// 起跑瞬间的剩余行程：用来识别「位置在往反方向退」（手指回拉、程序化跳页）。
-  double _pagerSettleFastForwardInitialRemaining = 0;
+  /// 补完的总时长保险丝：指数尾巴拖太长时停掉，位置交给手指/松手弹簧。
+  static const Duration _pagerSettleCarryMaxDuration = Duration(
+    milliseconds: 500,
+  );
+
+  /// 弹簧当前速度采样：只取 ballistic 帧（dragDetails == null 且通知来自
+  /// transient 回调阶段——弹簧由 ticker 驱动；拖拽与程序化写入不在该阶段）。
+  /// 双帧后向差分在强减速段有 ~10% 低估，carry 因此略慢于弹簧——宁慢勿跳。
+  Duration? _pagerSettleSampleTime;
+  double? _pagerSettleSamplePixels;
+  double _pagerSettleSampleVelocity = 0;
+  double _pagerSettleSamplePrevVelocity = 0;
 
   /// 底栏点选的内嵌页 id（非 null 时内容区切换为该页，玻璃坞常驻）。
   String? _dockInlinePageId;
@@ -635,7 +652,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     _courseDetailProvider?.removeListener(_maybeShowPendingCourseDetail);
     _courseDetailProvider = null;
     WidgetsBinding.instance.removeObserver(this);
-    _pagerSettleFastForwardTicker?.dispose();
+    _pagerSettleCarryTicker?.dispose();
     _homePullQuickImportCancel?.call();
     _homePullSettleSpring?.dispose();
     _weekPageController.removeListener(_handleWeekPageControllerChanged);
@@ -1822,19 +1839,33 @@ class _TimetableScreenState extends State<TimetableScreen>
     return pageUnit <= 0 ? null : metrics.pixels / pageUnit;
   }
 
-  /// 上一次滑动还没落定就被新手指按下时，剩余行程的补完时长：旧卡在这段时间
-  /// 里加速跑完退场（「飞出去」）。
-  static const Duration _pendingSettleFastForwardDuration = Duration(
-    milliseconds: 160,
-  );
+  /// 记录弹簧当前速度（仅 ballistic 帧：dragDetails == null 且通知来自
+  /// transient 回调阶段——弹簧由 ticker 驱动，拖拽/程序化写入不在该阶段）。
+  void _samplePagerSettleVelocity(ScrollMetrics metrics) {
+    final binding = WidgetsBinding.instance;
+    if (binding.schedulerPhase != SchedulerPhase.transientCallbacks) {
+      return;
+    }
+    final now = binding.currentFrameTimeStamp;
+    final lastTime = _pagerSettleSampleTime;
+    final lastPixels = _pagerSettleSamplePixels;
+    _pagerSettleSampleTime = now;
+    _pagerSettleSamplePixels = metrics.pixels;
+    if (lastTime == null || lastPixels == null) {
+      return;
+    }
+    final dtUs = now.inMicroseconds - lastTime.inMicroseconds;
+    if (dtUs <= 0) {
+      return;
+    }
+    _pagerSettleSamplePrevVelocity = _pagerSettleSampleVelocity;
+    _pagerSettleSampleVelocity = (metrics.pixels - lastPixels) / (dtUs / 1e6);
+  }
 
-  /// 接手未完成滑动时要「加速补完」的目标整页；行程已结束（停在整页）时返回
-  /// null。弹簧不会越过自己的目标，而 [direction]（回弹中每一帧的 scrollDelta
-  /// 符号）就是行进方向，据此取整页得到的就是弹簧原本的目标。
-  double? _pendingSettleFastForwardTarget(
-    PageController controller,
-    double direction,
-  ) {
+  /// 接手时要续跑的目标整页；行程已结束（停在整页）时返回 null。弹簧
+  /// （临界阻尼）不会越过自己的目标，而 [direction]（回弹中每帧的
+  /// scrollDelta 符号）就是行进方向，据此取整页得到的就是弹簧原本的目标。
+  double? _pagerSettleCarryTarget(PageController controller, double direction) {
     if (!controller.hasClients || !controller.position.hasContentDimensions) {
       return null;
     }
@@ -1850,69 +1881,78 @@ class _TimetableScreenState extends State<TimetableScreen>
         : page.roundToDouble();
     // 越界的整页不存在（学期首/末页的越界回弹交给父 physics），夹回范围内。
     return target
-        .clamp(0.0, position.maxScrollExtent / _pagerPageUnitFromMetrics(position))
+        .clamp(
+          0.0,
+          position.maxScrollExtent / _pagerPageUnitFromMetrics(position),
+        )
         .toDouble();
   }
 
-  /// 接手未完成滑动时新手指按下：把剩余行程加速补完，旧卡「飞出去」。
-  ///
-  /// 不能用 `animateTo`/ScrollActivity：按下这一个事件里手势竞技场只有一个成员，
-  /// PageView 的拖拽识别器立刻赢下并 `hold()`+`drag()` 住 position，任何
-  /// ScrollActivity 都会被它顶掉，位置就此冻在接手那一帧（实测 activity 会从
-  /// DrivenScrollActivity 变成 DragScrollActivity 且 pixels 不再变化）。
-  /// 改成自己按帧把位移**增量**叠加上去：增量位移和真实手指拖拽走的是同一条路
-  /// （`applyUserOffset`），两者天然叠加而不是互相覆盖。
+  /// 新手指按下且 deck 未落定：登记「带速度接手」意图，初速度取刚采到的
+  /// 弹簧速度（两帧平均去抖）。
   ///
   /// 曲线不在这里起跑：按下这一刻 position 上还是 DragScrollActivity 的
   /// DragStartDetails，写入会撞断言。等真实拖拽产生第一帧位移后再起跑，见
-  /// [_armPagerSettleFastForward]。
-  void _beginPagerSettleFastForward(
+  /// [_armPagerSettleCarry]。
+  void _beginPagerSettleCarry(
     PageController controller,
     double direction,
     PointerDownEvent event,
   ) {
-    if (_pagerSettleFastForwardPager != null) {
-      // 已经在补完中：第二根手指不重启曲线。
+    if (_pagerSettleCarryPager != null) {
+      // 已经在接手中：第二根手指不重启。
       return;
     }
-    final target = _pendingSettleFastForwardTarget(controller, direction);
+    if (direction == 0) {
+      return;
+    }
+    final target = _pagerSettleCarryTarget(controller, direction);
     if (target == null) {
       return;
     }
+    final v0 = _pagerSettleSamplePrevVelocity == 0
+        ? _pagerSettleSampleVelocity
+        : (_pagerSettleSampleVelocity + _pagerSettleSamplePrevVelocity) / 2;
+    // 弹簧已近乎停住（冻结不可感知），或方向对不上（状态异常）：不补。
+    if (v0.abs() < 150 || (v0 > 0) != (direction > 0)) {
+      return;
+    }
     final position = controller.position;
-    _pagerSettleFastForwardPager = controller;
-    _pagerSettleFastForwardTargetPixels =
-        target * _pagerPageUnitFromMetrics(position);
-    _pagerSettleFastForwardForward = direction >= 0;
-    _pagerSettleFastForwardPointer = event.pointer;
-    _pagerSettleFastForwardArmed = false;
-    _pagerSettleFastForwardInitialRemaining = 0;
-    _pagerSettleFastForwardLastFraction = 0;
+    final pageUnit = _pagerPageUnitFromMetrics(position);
+    final remaining = (target * pageUnit - position.pixels).abs();
+    _pagerSettleCarryPager = controller;
+    _pagerSettleCarryTargetPixels = target * pageUnit;
+    _pagerSettleCarryForward = direction > 0;
+    _pagerSettleCarryPointer = event.pointer;
+    _pagerSettleCarryTauUs = math.max((remaining / v0.abs()) * 1e6, 70000);
+    _pagerSettleCarryArmed = false;
+    _pagerSettleCarryInitialRemaining = 0;
+    _pagerSettleCarryLastElapsed = Duration.zero;
   }
 
   /// 真实拖拽产生了第一帧位移：`ScrollDragController` 此时才把 lastDetails 换成
-  /// DragUpdateDetails，position 也才可以被叠加写入。剩余行程从这一刻开始起跑。
-  void _armPagerSettleFastForward(PageController controller) {
-    if (_pagerSettleFastForwardArmed ||
-        !identical(_pagerSettleFastForwardPager, controller) ||
+  /// DragUpdateDetails，position 也才可以被叠加写入。剩余行程从这一刻起跑。
+  void _armPagerSettleCarry(PageController controller) {
+    if (_pagerSettleCarryArmed ||
+        !identical(_pagerSettleCarryPager, controller) ||
         !controller.hasClients) {
       return;
     }
-    final position = controller.position;
-    final forward = _pagerSettleFastForwardForward;
+    final position = controller.position as ScrollPositionWithSingleContext;
+    final forward = _pagerSettleCarryForward;
     final remaining = forward
-        ? _pagerSettleFastForwardTargetPixels - position.pixels
-        : position.pixels - _pagerSettleFastForwardTargetPixels;
+        ? _pagerSettleCarryTargetPixels - position.pixels
+        : position.pixels - _pagerSettleCarryTargetPixels;
     if (remaining <= 0) {
       // 手指一上来就把这一页拖过头了，没什么可补的。
-      _endPagerSettleFastForward();
+      _endPagerSettleCarry();
       return;
     }
-    _pagerSettleFastForwardInitialRemaining = remaining;
-    _pagerSettleFastForwardLastFraction = 0;
-    _pagerSettleFastForwardArmed = true;
-    final ticker = _pagerSettleFastForwardTicker ??= createTicker(
-      _tickPagerSettleFastForward,
+    _pagerSettleCarryInitialRemaining = remaining;
+    _pagerSettleCarryArmed = true;
+    _pagerSettleCarryLastElapsed = Duration.zero;
+    final ticker = _pagerSettleCarryTicker ??= createTicker(
+      _tickPagerSettleCarry,
     );
     if (ticker.isActive) {
       ticker.stop();
@@ -1921,85 +1961,75 @@ class _TimetableScreenState extends State<TimetableScreen>
     ticker.start();
   }
 
-  void _tickPagerSettleFastForward(Duration elapsed) {
-    final controller = _pagerSettleFastForwardPager;
+  void _tickPagerSettleCarry(Duration elapsed) {
+    final controller = _pagerSettleCarryPager;
     if (controller == null || !controller.hasClients) {
-      _endPagerSettleFastForward();
+      _endPagerSettleCarry();
       return;
     }
     final position = controller.position as ScrollPositionWithSingleContext;
-    final forward = _pagerSettleFastForwardForward;
+    final forward = _pagerSettleCarryForward;
     final remaining = forward
-        ? _pagerSettleFastForwardTargetPixels - position.pixels
-        : position.pixels - _pagerSettleFastForwardTargetPixels;
-    // 手指已经把这一页拖过头了：补完到此为止，剩下的交给弹簧。
-    if (remaining <= 0) {
-      _endPagerSettleFastForward();
+        ? _pagerSettleCarryTargetPixels - position.pixels
+        : position.pixels - _pagerSettleCarryTargetPixels;
+    // 已到/越过目标；或手指在往回拉（回拉量超过 slop）：交回手指/弹簧。
+    if (remaining <= 0 ||
+        remaining > _pagerSettleCarryInitialRemaining + kTouchSlop) {
+      _endPagerSettleCarry();
       return;
     }
-    // 位置在往反方向退（手指回拉、或别处跳了页）：不跟它较劲，交回手指/弹簧。
-    if (remaining >
-        _pagerSettleFastForwardInitialRemaining + kTouchSlop) {
-      _endPagerSettleFastForward();
+    if (remaining <= 0.5) {
+      // 停在整页前半像素、保持分数页：位置一旦成为整页，deck 会判定「滑动
+      // 结束」交回真实卡片，手指还按着的连续滑动就此断掉（后面全是无编排的
+      // 普通平移，观感即「切换断了」）。停在分数页上：手指继续滑过整页时，
+      // deck 构建里的锚点推进自然接管（切换连续）；此时抬手 dragDelta 已
+      // ≥ 0.5，snap 照样落到这一整页。
+      _endPagerSettleCarry();
       return;
     }
-    final progress =
-        (elapsed.inMicroseconds /
-                _pendingSettleFastForwardDuration.inMicroseconds)
-            .clamp(0.0, 1.0);
-    if (progress >= 1.0 || remaining <= 0.5) {
-      // 落整页：pixels 必须是精确的整页值，deck 才会判定滑动结束并交回真实卡片。
-      position.applyUserOffset(forward ? -remaining : remaining);
-      _endPagerSettleFastForward();
+    if (elapsed > _pagerSettleCarryMaxDuration) {
+      _endPagerSettleCarry();
       return;
     }
-    final fraction = Curves.easeOutCubic.transform(progress);
-    final step =
-        (fraction - _pagerSettleFastForwardLastFraction) /
-        (1 - _pagerSettleFastForwardLastFraction);
-    _pagerSettleFastForwardLastFraction = fraction;
-    if (step <= 0) {
-      return;
-    }
-    position.applyUserOffset(forward ? -remaining * step : remaining * step);
+    final dtUs =
+        (elapsed.inMicroseconds - _pagerSettleCarryLastElapsed.inMicroseconds)
+            .clamp(1, 50000);
+    _pagerSettleCarryLastElapsed = elapsed;
+    // 指数趋近：每帧走掉「当前剩余」的固定比例，初速度恰为 τ = R0/v0 时的
+    // 弹簧速度；手指增量已走在拖拽路径上，这里只补弹簧自己的那一份。
+    final step = remaining * (1 - math.exp(-dtUs / _pagerSettleCarryTauUs));
+    position.applyUserOffset(forward ? -step : step);
   }
 
-  void _endPagerSettleFastForward() {
-    _pagerSettleFastForwardTicker?.stop();
-    _pagerSettleFastForwardPager = null;
-    _pagerSettleFastForwardPointer = null;
-    _pagerSettleFastForwardArmed = false;
-    _pagerSettleFastForwardInitialRemaining = 0;
-    _pagerSettleFastForwardLastFraction = 0;
+  void _endPagerSettleCarry() {
+    _pagerSettleCarryTicker?.stop();
+    _pagerSettleCarryPager = null;
+    _pagerSettleCarryPointer = null;
+    _pagerSettleCarryArmed = false;
+    _pagerSettleCarryInitialRemaining = 0;
+    _pagerSettleCarryLastElapsed = Duration.zero;
   }
 
-  /// 手指抬离/取消：补完结束，位置（可能已经落整页）交给弹簧。
-  void _releasePagerSettleFastForward(PointerEvent event) {
-    if (_pagerSettleFastForwardPointer != event.pointer) {
+  /// 手指抬离/取消：接手结束，位置（可能已落整页）交给手指/松手弹簧。
+  void _releasePagerSettleCarry(PointerEvent event) {
+    if (_pagerSettleCarryPointer != event.pointer) {
       return;
     }
-    _endPagerSettleFastForward();
+    _endPagerSettleCarry();
   }
 
-  void _beginWeekSettleFastForward(PointerDownEvent event) {
+  void _beginWeekSettleCarry(PointerDownEvent event) {
     if (!_isWeekDeckActive()) {
       return;
     }
-    _beginPagerSettleFastForward(
-      _weekPageController,
-      _weekSwipeDirection,
-      event,
-    );
+    _beginPagerSettleCarry(_weekPageController, _weekSwipeDirection, event);
   }
 
-  void _beginDaySettleFastForward(
-    PageController controller,
-    PointerDownEvent event,
-  ) {
+  void _beginDaySettleCarry(PageController controller, PointerDownEvent event) {
     if (!_isDayDeckActive(controller)) {
       return;
     }
-    _beginPagerSettleFastForward(controller, _daySwipeDirection, event);
+    _beginPagerSettleCarry(controller, _daySwipeDirection, event);
   }
 
   /// One-shot read of the armed rescue velocity for [_dayPagerPhysics].
@@ -3466,44 +3496,44 @@ class _TimetableScreenState extends State<TimetableScreen>
                 region: HomePageBackgroundScope.timetable,
               ),
               child: RepaintBoundary(
-                  child: Row(
-                    children: visibleDays.asMap().entries.map((entry) {
-                      final dayIndex = entry.key;
-                      final dayOfWeek = entry.value;
-                      final dayCourses = _getCoursesForDay(
-                        provider.courses,
+                child: Row(
+                  children: visibleDays.asMap().entries.map((entry) {
+                    final dayIndex = entry.key;
+                    final dayOfWeek = entry.value;
+                    final dayCourses = _getCoursesForDay(
+                      provider.courses,
+                      week,
+                      dayOfWeek,
+                      settings,
+                    );
+                    final displayItems = _buildHomeDayDisplayItems(
+                      provider: provider,
+                      settings: settings,
+                      week: week,
+                      dayOfWeek: dayOfWeek,
+                      myCourses: dayCourses,
+                    );
+                    return SizedBox(
+                      width: dayWidth,
+                      child: _buildDayColumn(
                         week,
                         dayOfWeek,
+                        displayItems,
                         settings,
-                      );
-                      final displayItems = _buildHomeDayDisplayItems(
-                        provider: provider,
-                        settings: settings,
-                        week: week,
-                        dayOfWeek: dayOfWeek,
-                        myCourses: dayCourses,
-                      );
-                      return SizedBox(
-                        width: dayWidth,
-                        child: _buildDayColumn(
-                          week,
-                          dayOfWeek,
-                          displayItems,
-                          settings,
-                          settings.showConflictBadgeOnTimetable,
-                          sectionHeight,
-                          cardInset,
-                          provider,
-                          animateCourseEntrance: animateCourseEntrance,
-                          dayIndex: dayIndex,
-                          dayCount: visibleDays.length,
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                        settings.showConflictBadgeOnTimetable,
+                        sectionHeight,
+                        cardInset,
+                        provider,
+                        animateCourseEntrance: animateCourseEntrance,
+                        dayIndex: dayIndex,
+                        dayCount: visibleDays.length,
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
             ),
+          ),
         ],
       ),
     );
@@ -4139,7 +4169,13 @@ class _TimetableScreenState extends State<TimetableScreen>
               if (notification is ScrollUpdateNotification &&
                   notification.scrollDelta != 0) {
                 _weekSwipeDirection = notification.scrollDelta! > 0 ? 1 : -1;
-                _armPagerSettleFastForward(_weekPageController);
+                if (notification.dragDetails == null) {
+                  // 纯 ballistic 帧：采样弹簧当前速度，供接手时续速。
+                  _samplePagerSettleVelocity(notification.metrics);
+                } else {
+                  // 首帧真实拖拽位移：接手曲线可以开始写入了。
+                  _armPagerSettleCarry(_weekPageController);
+                }
                 // First real horizontal movement promotes the pending
                 // start page: vertical drags on the course grid also
                 // surface as a horizontal ScrollStart and must never arm
@@ -4165,7 +4201,14 @@ class _TimetableScreenState extends State<TimetableScreen>
               }
               if (notification is ScrollEndNotification) {
                 _weekPagerPendingDragStartPage = null;
-                _finalizeWeekPageSettled(provider);
+                // 接手（新手指顶掉回弹中的弹簧，ballistic→hold）也会派发一次
+                // ScrollEnd：此刻位置还停在分数页上，deck 仍处于过渡中。不能在
+                // 这里提交落定周——可见周 notifier 翻转 + 网格偏移归零正好砸在
+                // 新手势起步的那一帧；等接手者自己落定时的 ScrollEnd 再提交
+                // （与日课表侧 _settleDayViewPage 的 isScrolling 重试同意）。
+                if (!_isWeekDeckActive()) {
+                  _finalizeWeekPageSettled(provider);
+                }
               }
             }
             return false;
@@ -4278,14 +4321,14 @@ class _TimetableScreenState extends State<TimetableScreen>
               onHorizontalDragCancel: _cancelWeekdayBarDrag,
             ),
           ),
-        // 上一次滑动还在回弹时新手指按下：把剩余行程加速补完（旧卡「飞出
-        // 去」）。放在最上层且 translucent，因此下方所有手势的命中都不受影响。
+        // 上一次滑动还在回弹时新手指按下：登记「带速度接手」。放在最上层且
+        // translucent，因此下方所有手势的命中都不受影响。
         Listener(
-          key: const ValueKey('week-pager-settle-fast-forward'),
+          key: const ValueKey('week-pager-settle-carry'),
           behavior: HitTestBehavior.translucent,
-          onPointerDown: _beginWeekSettleFastForward,
-          onPointerUp: _releasePagerSettleFastForward,
-          onPointerCancel: _releasePagerSettleFastForward,
+          onPointerDown: _beginWeekSettleCarry,
+          onPointerUp: _releasePagerSettleCarry,
+          onPointerCancel: _releasePagerSettleCarry,
         ),
       ],
     );
@@ -4355,8 +4398,13 @@ class _TimetableScreenState extends State<TimetableScreen>
                 : startPage;
             if (activePage - startPage >= 1.0) {
               startPage = activePage.floorToDouble();
+              // snap 阈值基准同步推进：手指已带着揭示动画越过整页，抬手时应
+              // 继续往前落（floor(startPage)+1），而不是按旧基准 round 回刚
+              // 跨过的这一页、跟揭示动画打架。
+              _weekPagerDragStartPage = startPage;
             } else if (startPage - activePage >= 1.0) {
               startPage = activePage.ceilToDouble();
+              _weekPagerDragStartPage = startPage;
             }
             final maxIndex = settings.semesterWeekCount;
             final outgoingIndex = startPage.round();
@@ -4751,11 +4799,14 @@ class _TimetableScreenState extends State<TimetableScreen>
           if (_isDayDeckActive(controller)) {
             var startPage = _dayDeckAnchorPage ?? 0;
             final activePage = controller.page ?? startPage;
-            // 同周课表：一次手势内跨过整页时推进锚点，避免揭示被 clamp。
+            // 同周课表：一次手势内跨过整页时推进锚点，避免揭示被 clamp；
+            // snap 基准同步推进，抬手继续往前落而不是 round 回刚跨过的页。
             if (activePage - startPage >= 1.0) {
               startPage = activePage.floorToDouble();
+              _dayPagerDragStartPage = startPage;
             } else if (startPage - activePage >= 1.0) {
               startPage = activePage.ceilToDouble();
+              _dayPagerDragStartPage = startPage;
             }
             final viewportWidth = controller.position.viewportDimension;
             if (viewportWidth <= 0) return const SizedBox.shrink();
@@ -5231,9 +5282,9 @@ class _TimetableScreenState extends State<TimetableScreen>
                     _dayPagerRescueArmedAt = null;
                     // 新手势重新允许一次日切换点击震感。
                     _daySwipeHapticFired = false;
-                    // 上一次滑动还在回弹：先把剩余行程加速补完（旧卡飞出去），
-                    // 新手势随后从目标整页接管。
-                    _beginDaySettleFastForward(controller, event);
+                    // 上一次滑动还在回弹：登记「带速度接手」，接手帧速度与
+                    // 弹簧连续，不再先冻一下。
+                    _beginDaySettleCarry(controller, event);
                     _dayPagerFlickProbes[event.pointer] = _DayPagerFlickProbe(
                       VelocityTracker.withKind(event.kind)
                         ..addPosition(event.timeStamp, event.position),
@@ -5259,7 +5310,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                     }
                   },
                   onPointerUp: (event) {
-                    _releasePagerSettleFastForward(event);
+                    _releasePagerSettleCarry(event);
                     final probe = _dayPagerFlickProbes.remove(event.pointer);
                     if (probe == null) {
                       return;
@@ -5301,7 +5352,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                     }
                   },
                   onPointerCancel: (event) {
-                    _releasePagerSettleFastForward(event);
+                    _releasePagerSettleCarry(event);
                     _dayPagerRescueVelocityX = 0;
                     _dayPagerRescueArmedAt = null;
                     final probe = _dayPagerFlickProbes.remove(event.pointer);
@@ -5326,7 +5377,13 @@ class _TimetableScreenState extends State<TimetableScreen>
                           _daySwipeDirection = notification.scrollDelta! > 0
                               ? 1
                               : -1;
-                          _armPagerSettleFastForward(controller);
+                          if (notification.dragDetails == null) {
+                            // 纯 ballistic 帧：采样弹簧当前速度。
+                            _samplePagerSettleVelocity(notification.metrics);
+                          } else {
+                            // 首帧真实拖拽位移：接手曲线可以开始写入了。
+                            _armPagerSettleCarry(controller);
+                          }
                         }
                         // 拦截 update 继续冒泡：HyperosRootPage 的触边震动
                         // 监听会在学期首/末日到达页边界时再计一次
@@ -8205,7 +8262,7 @@ class _TimetableScreenState extends State<TimetableScreen>
               ),
           ],
         ),
-                    ),
+      ),
     );
   }
 
@@ -8260,8 +8317,8 @@ class _TimetableScreenState extends State<TimetableScreen>
       button: true,
       label: l10n.glassDockExtraButtonSemanticLabel,
       child: SizedBox(
-      width: 56,
-      height: 56,
+        width: 56,
+        height: 56,
         child: HyperosFrostedSurface(
           borderRadius: BorderRadius.circular(28),
           tint: HyperosBlurredHeader.sheetTintColor(context, withBlur: useBlur),
@@ -8475,50 +8532,50 @@ class _TimetableScreenState extends State<TimetableScreen>
               ],
             ),
             child: ClipRRect(
+              borderRadius: borderRadius,
+              child: HyperosFrostedSurface(
+                borderRadius: borderRadius,
+                tint: frostedTint,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: InkWell(
+                    key: const ValueKey('back-to-current-week-button'),
+                    onTap: () => _jumpToCurrentWeek(provider),
                     borderRadius: borderRadius,
-                    child: HyperosFrostedSurface(
-                      borderRadius: borderRadius,
-                      tint: frostedTint,
-                      child: Material(
-                        type: MaterialType.transparency,
-                        child: InkWell(
-                          key: const ValueKey('back-to-current-week-button'),
-                          onTap: () => _jumpToCurrentWeek(provider),
-                          borderRadius: borderRadius,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8,
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.my_location_rounded,
-                                  size: 15,
-                                  color: colorScheme.primary.withValues(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.my_location_rounded,
+                            size: 15,
+                            color: colorScheme.primary.withValues(
                               alpha: colorScheme.primary.a * contentOpacity,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  l10n.backToCurrentWeekAction,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: colorScheme.onSurface.withValues(
-                                alpha: colorScheme.onSurface.a * contentOpacity,
-                                    ),
-                                    height: 1,
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
-                        ),
+                          const SizedBox(width: 4),
+                          Text(
+                            l10n.backToCurrentWeekAction,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: colorScheme.onSurface.withValues(
+                                alpha: colorScheme.onSurface.a * contentOpacity,
+                              ),
+                              height: 1,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
