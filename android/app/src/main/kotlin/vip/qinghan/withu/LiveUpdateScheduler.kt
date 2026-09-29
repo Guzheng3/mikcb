@@ -699,7 +699,7 @@ object LiveUpdateScheduler {
         try {
             val settingsJson = JSONObject(snapshotJson).optJSONObject("settings")
             if (settingsJson != null) {
-                UmengDiagnosticReporter.record(
+                AppDiagnosticReporter.record(
                     context = context.applicationContext,
                     category = "live_update_snapshot_settings",
                     message = DiagnosticLogMessages.LIVE_UPDATE_SNAPSHOT_SETTINGS,
@@ -711,7 +711,7 @@ object LiveUpdateScheduler {
                 )
             }
         } catch (_: Exception) {}
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = context.applicationContext,
             category = "live_update_snapshot_synced",
             message = DiagnosticLogMessages.LIVE_UPDATE_SNAPSHOT_SYNCED,
@@ -741,7 +741,7 @@ object LiveUpdateScheduler {
             .remove(KEY_SNAPSHOT_JSON)
             .remove(KEY_SNAPSHOT_VERSION)
             .apply()
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = context.applicationContext,
             category = "live_update_snapshot_cleared",
             message = DiagnosticLogMessages.LIVE_UPDATE_SNAPSHOT_CLEARED,
@@ -756,7 +756,7 @@ object LiveUpdateScheduler {
     }
 
     fun handleAlarm(context: Context) {
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = context.applicationContext,
             category = "live_update_alarm_triggered",
             message = DiagnosticLogMessages.LIVE_UPDATE_ALARM_TRIGGERED,
@@ -837,7 +837,7 @@ object LiveUpdateScheduler {
     }
 
     fun onLiveUpdateStopped(context: Context) {
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = context.applicationContext,
             category = "live_update_scheduler_resume",
             message = DiagnosticLogMessages.LIVE_UPDATE_SCHEDULER_RESUME,
@@ -961,7 +961,7 @@ object LiveUpdateScheduler {
         }
         if (shouldStopStaleSessions && snapshot.semesterStartMillis == null) {
             stopRunningLiveUpdate(context)
-            UmengDiagnosticReporter.record(
+            AppDiagnosticReporter.record(
                 context = context.applicationContext,
                 category = "live_update_semester_start_missing",
                 message = DiagnosticLogMessages.LIVE_UPDATE_SEMESTER_START_MISSING,
@@ -976,7 +976,7 @@ object LiveUpdateScheduler {
             if (shouldStopStaleSessions) {
                 stopRunningLiveUpdate(context)
             }
-            UmengDiagnosticReporter.record(
+            AppDiagnosticReporter.record(
                 context = context.applicationContext,
                 category = "live_update_reschedule_holiday",
                 message = DiagnosticLogMessages.LIVE_UPDATE_RESCHEDULE_HOLIDAY,
@@ -987,7 +987,7 @@ object LiveUpdateScheduler {
         val activeSelection = findActiveSelection(context, snapshot, now)
         if (allowImmediateStart) {
             if (activeSelection != null) {
-                UmengDiagnosticReporter.record(
+                AppDiagnosticReporter.record(
                     context = context.applicationContext,
                     category = "live_update_reschedule_active",
                     message = DiagnosticLogMessages.LIVE_UPDATE_RESCHEDULE_ACTIVE,
@@ -1010,7 +1010,7 @@ object LiveUpdateScheduler {
             }
             if (shouldStopStaleSessions) {
                 stopRunningLiveUpdate(context)
-                UmengDiagnosticReporter.record(
+                AppDiagnosticReporter.record(
                     context = context.applicationContext,
                     category = "live_update_stopped_no_active_selection",
                     message = DiagnosticLogMessages.LIVE_UPDATE_STOPPED_NO_ACTIVE_SELECTION,
@@ -1024,7 +1024,7 @@ object LiveUpdateScheduler {
         applyDueAutoQuickAction(context, snapshot, now)
 
         val nextSelection = findNextSelection(context, snapshot, now) ?: return false
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = context.applicationContext,
             category = "live_update_reschedule_scheduled",
             message = DiagnosticLogMessages.LIVE_UPDATE_RESCHEDULE_SCHEDULED,
@@ -1123,7 +1123,7 @@ object LiveUpdateScheduler {
             parseSnapshot(JSONObject(snapshotJson))
         } catch (e: Exception) {
             Log.w(TAG, DiagnosticLogMessages.LOG_PARSE_SNAPSHOT_FAILED, e)
-            UmengDiagnosticReporter.report(
+            AppDiagnosticReporter.report(
                 context = context.applicationContext,
                 category = "live_update_snapshot_parse_failed",
                 message = DiagnosticLogMessages.LIVE_UPDATE_SNAPSHOT_PARSE_FAILED,
@@ -1146,7 +1146,7 @@ object LiveUpdateScheduler {
             .apply()
         cancelScheduledAlarm(context)
         context.stopService(Intent(context, LiveUpdateService::class.java))
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = context.applicationContext,
             category = "live_update_snapshot_invalidated_after_upgrade",
             message = DiagnosticLogMessages.LIVE_UPDATE_SNAPSHOT_INVALIDATED,
@@ -2201,7 +2201,7 @@ object LiveUpdateScheduler {
 
     private fun startForegroundService(context: Context, payload: LiveUpdatePayload): Boolean {
         return try {
-            UmengDiagnosticReporter.record(
+            AppDiagnosticReporter.record(
                 context = context.applicationContext,
                 category = "live_update_payload_selected",
                 message = DiagnosticLogMessages.LIVE_UPDATE_PAYLOAD_SELECTED,
@@ -2225,7 +2225,7 @@ object LiveUpdateScheduler {
             true
         } catch (e: Exception) {
             Log.w(TAG, DiagnosticLogMessages.LOG_START_LIVE_UPDATE_SERVICE_FAILED, e)
-            UmengDiagnosticReporter.report(
+            AppDiagnosticReporter.report(
                 context = context.applicationContext,
                 category = "live_update_scheduler_start_failed",
                 message = DiagnosticLogMessages.LIVE_UPDATE_SCHEDULER_START_FAILED,

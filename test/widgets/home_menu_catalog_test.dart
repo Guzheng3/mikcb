@@ -11,13 +11,9 @@ void main() {
   });
 
   test('default order resolves entirely from catalog', () {
-    for (final id in HomeGridMenu.defaultActions) {
+    for (final id in HomeMenuDefaults.defaultActions) {
       expect(homeMenuEntryById(id), isNotNull, reason: '默认排列含未知 id: $id');
     }
-  });
-
-  test('pinned settings entry stays resolvable', () {
-    expect(homeMenuEntryById(HomeGridMenu.pinnedActionId), isNotNull);
   });
 
   test('couple login entry leads the top menu only while the switch is on', () {
@@ -36,7 +32,7 @@ void main() {
       isNot(contains('withuCoupleLogin')),
     );
 
-    // 登录入口是瞬态条目，不进八宫格持久化候选目录。
+    // 登录入口是瞬态条目，不进持久化候选目录。
     expect(
       kHomeMenuCatalog.map((entry) => entry.id),
       isNot(contains('withuCoupleLogin')),
@@ -47,39 +43,26 @@ void main() {
     final memoryEntry = homeMenuEntryById('memoryStats');
     expect(memoryEntry, isNotNull);
 
-    // 正式版（非诊断包名）：条目不可见，解析时被丢弃。
+    // 诊断入口不进默认菜单排列，仅玻璃坞/设置页开发者组可达。
+    expect(HomeMenuDefaults.defaultActions, isNot(contains('memoryStats')));
+
+    // 正式版（非诊断包名）：条目不可见。
     MemoryStatsService.debugSetCachedDiagnosticsBuild(false);
     addTearDown(() => MemoryStatsService.debugSetCachedDiagnosticsBuild(null));
     expect(memoryEntry!.visible(), isFalse);
-    final releaseResolved = resolveHomeGridMenuEntries(
-      TimetableSettings.defaults().copyWith(
-        homeGridMenuActions: ['overview', 'memoryStats', 'support'],
-      ),
-    );
-    expect(releaseResolved.map((e) => e.id), isNot(contains('memoryStats')));
-    expect(releaseResolved.map((e) => e.id), contains('overview'));
+    expect(resolveHomeMenuEntries().map((e) => e.id), isNot(contains('memoryStats')));
 
-    // 调试/性能版（诊断包名）：条目恢复可见、可被解析进八宫格。
+    // 调试/性能版（诊断包名）：条目恢复可见。
     MemoryStatsService.debugSetCachedDiagnosticsBuild(true);
     expect(memoryEntry.visible(), isTrue);
-    final debugResolved = resolveHomeGridMenuEntries(
-      TimetableSettings.defaults().copyWith(
-        homeGridMenuActions: ['overview', 'memoryStats', 'support'],
-      ),
-    );
-    expect(debugResolved.map((e) => e.id), contains('memoryStats'));
   });
 
-  test('resolver falls back to defaults on empty config and drops junk', () {
-    final fallback = resolveHomeGridMenuEntries(TimetableSettings.defaults());
-    expect(fallback.length, HomeGridMenu.defaultActions.length);
-
-    final cleaned = resolveHomeGridMenuEntries(
-      TimetableSettings.defaults().copyWith(
-        homeGridMenuActions: ['overview', 'no_such_entry'],
-      ),
-    );
-    expect(cleaned.map((e) => e.id), containsAll(['overview']));
-    expect(cleaned.map((e) => e.id), isNot(contains('no_such_entry')));
+  test('resolver returns exactly the visible default actions in order', () {
+    final resolved = resolveHomeMenuEntries();
+    final expected = [
+      for (final id in HomeMenuDefaults.defaultActions)
+        if (homeMenuEntryById(id)!.visible()) id,
+    ];
+    expect(resolved.map((e) => e.id), expected);
   });
 }

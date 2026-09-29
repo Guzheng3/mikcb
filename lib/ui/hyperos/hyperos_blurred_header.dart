@@ -8,7 +8,7 @@ import 'frosted/frosted_header_background.dart';
 import 'frosted/liquid_glass_degradation.dart';
 export 'frosted/frosted_appearance.dart';
 export 'frosted/frosted_header_background.dart'
-    show FrostedHeaderBackground, HyperosFrostedSurface;
+    show FrostedHeaderBackground, HyperosFrostedSurface, UndimmedBackdropCapture;
 // HyperosFrostedPanelScope is exported via frosted_appearance.dart above.
 import 'hyperos_miuix_spec.dart';
 import 'hyperos_theme.dart';
@@ -148,30 +148,11 @@ abstract final class HyperosBlurredHeader {
     return _appearanceOf(context).sheetBarrierAlpha;
   }
 
-  /// Soft black dim behind liquid-glass modals (sheets, select popups, dialogs).
-  ///
-  /// Stronger scrims muddy refraction because the glass samples through the
-  /// barrier. Fully transparent barriers make the modal hard to spot as a
-  /// modal. Keep this lighter than the gaussian default (~0.20).
-  static const liquidGlassModalBarrierAlpha = 0.10;
-
   /// Modal scrim shared by home menu, sheets, dialogs, and select popups.
   ///
-  /// - **Gaussian**: black scrim from [FrostedAppearance.sheetBarrierAlpha]
-  ///   (外观与配色), matching the home top-right menu.
-  /// - **Liquid glass**: fixed light dim ([liquidGlassModalBarrierAlpha]).
-  ///   Just enough hierarchy that every popup reads as the same modal, without
-  ///   a heavy grey wash that flattens the refractive glass.
+  /// Black scrim from [FrostedAppearance.sheetBarrierAlpha] (外观与配色),
+  /// matching the home top-right menu.
   static Color modalBarrierColor(BuildContext context) {
-    final appearance = _appearanceOf(context);
-    // Keep the liquid-glass light scrim only while the real refractive glass
-    // is in use; once the system degrades glass to a solid (accessibility /
-    // reduce-motion / high-contrast), the heavier gaussian scrim gives the
-    // now-opaque modal the hierarchy it needs.
-    if (appearance.glassMode == FrostedGlassMode.liquidGlass &&
-        !LiquidGlassDegradation.shouldDegrade(context)) {
-      return Colors.black.withValues(alpha: liquidGlassModalBarrierAlpha);
-    }
     return Colors.black.withValues(alpha: sheetBarrierAlphaOf(context));
   }
 
@@ -246,17 +227,6 @@ abstract final class HyperosBlurredHeader {
     }
     final surface = base ?? HyperosColors.card(context);
     return surface.withValues(alpha: 0.52);
-  }
-
-  /// Nested tile wash when the parent sheet already uses liquid glass.
-  ///
-  /// Must stay translucent — solid secondaryVariant reads as dead blocks.
-  static Color nestedLiquidTileTintColor(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    if (isDark) {
-      return Colors.white.withValues(alpha: 0.12);
-    }
-    return Colors.white.withValues(alpha: 0.28);
   }
 
   /// Frosted tint for home timetable regions over a full-screen backdrop.

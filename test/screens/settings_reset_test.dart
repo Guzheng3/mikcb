@@ -33,15 +33,8 @@ void main() {
       homePageWallpaperPath: '/tmp/wallpaper.png',
       // 外观
       appThemeMode: AppThemeMode.dark,
-      themeSeedColor: '#FF0000',
       frostedBlurEnabled: false,
       frostedSheetBlurSigma: 20,
-      liquidGlassPopupEnabled: false,
-      liquidGlassSelectSheetEnabled: true,
-      liquidGlassSheetDialogEnabled: false,
-      liquidGlassHomeChromeEnabled: false,
-      liquidGlassDockEnabled: false,
-      liquidGlassPickerButtonsEnabled: false,
       // 首页与导航（自外观页拆出的独立恢复作用域）
       homeNavigationForm: HomeNavigationForm.glassDock,
       homeTitleStyle: HomeTitleStyle.brand,
@@ -172,16 +165,8 @@ void main() {
     );
 
     expect(result.appThemeMode, defaults.appThemeMode);
-    expect(result.themeSeedColor, defaults.themeSeedColor);
     expect(result.frostedBlurEnabled, defaults.frostedBlurEnabled);
     expect(result.frostedSheetBlurSigma, defaults.frostedSheetBlurSigma);
-    // 液态玻璃作用范围开关一并回到默认（面板关、其余开）。
-    expect(result.liquidGlassPopupEnabled, isTrue);
-    expect(result.liquidGlassSelectSheetEnabled, isFalse);
-    expect(result.liquidGlassSheetDialogEnabled, isTrue);
-    expect(result.liquidGlassHomeChromeEnabled, isTrue);
-    expect(result.liquidGlassDockEnabled, isTrue);
-    expect(result.liquidGlassPickerButtonsEnabled, isTrue);
 
     // 首页与导航的字段保持「脏」值：导航形态已拆到独立 scope。
     final dirty = dirtySettings();
@@ -210,7 +195,6 @@ void main() {
     // 外观字段不被导航页连带重置。
     final dirty = dirtySettings();
     expect(result.appThemeMode, dirty.appThemeMode);
-    expect(result.themeSeedColor, dirty.themeSeedColor);
     expect(result.frostedSheetBlurSigma, dirty.frostedSheetBlurSigma);
     expect(result.courseCardFontSize, dirty.courseCardFontSize);
     expectUntouchedEssentials(result);

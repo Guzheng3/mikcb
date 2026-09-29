@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:university_timetable/ui/hyperos/frosted/frosted_appearance.dart';
-import 'package:university_timetable/models/liquid_glass_tuning.dart';
 import 'package:university_timetable/models/class_reminder.dart';
 
 /// Bundled default wallpaper used when no user wallpaper is configured.
@@ -26,45 +25,6 @@ enum AppFontMode {
   serif,
   songti,
   monospace,
-}
-
-enum ForuiTheme {
-  neutral,
-  zinc,
-  slate,
-  blue,
-  green,
-  orange,
-  red,
-  rose,
-  violet,
-  yellow,
-}
-
-extension ForuiThemeX on ForuiTheme {
-  String get value => name;
-
-  /// Representative brand hex for this forui theme; synced into [TimetableSettings.themeSeedColor]
-  /// and used to seed the Material ColorScheme so Material accents follow the forui theme.
-  String get seedHex => switch (this) {
-    ForuiTheme.neutral => '#171717',
-    ForuiTheme.zinc => '#18181B',
-    ForuiTheme.slate => '#0F172B',
-    ForuiTheme.blue => '#1447E6',
-    ForuiTheme.green => '#5EA500',
-    ForuiTheme.orange => '#F54A00',
-    ForuiTheme.red => '#E7000B',
-    ForuiTheme.rose => '#EC003F',
-    ForuiTheme.violet => '#7F22FE',
-    ForuiTheme.yellow => '#FCC800',
-  };
-
-  static ForuiTheme fromValue(String? value) {
-    return ForuiTheme.values.firstWhere(
-      (item) => item.value == value,
-      orElse: () => ForuiTheme.blue,
-    );
-  }
 }
 
 enum HomeTitleStyle { classic, brand }
@@ -105,83 +65,28 @@ enum TimetableHomeViewMode { week, day }
 /// 药丸导航，滑动/点击即可切换周课表、日课表与设置。
 enum HomeNavigationForm { classic, glassDock }
 
-/// 首页右上角「更多」菜单形态：
-/// - [list] 锚定在按钮下方的列表弹窗（当前设计）；
-/// - [grid] 底部弹出的八宫格图标瓷贴（v2.0.5.5 已发布版本的样式）。
-enum HomeMenuStyle { list, grid }
-
-extension HomeMenuStyleX on HomeMenuStyle {
-  String get value => switch (this) {
-    HomeMenuStyle.list => 'list',
-    HomeMenuStyle.grid => 'grid',
-  };
-
-  static HomeMenuStyle fromValue(String? value) {
-    return HomeMenuStyle.values.firstWhere(
-      (item) => item.value == value,
-      orElse: () => HomeMenuStyle.list,
-    );
-  }
-}
-
-/// 八宫格菜单的槽位约束与默认排列。
+/// 首页右上角「更多」列表菜单的默认动作 id 排列。
 ///
-/// id 是稳定持久化主键（内置九项沿用旧 HomeTopMenuAction.name，其余
-/// 来自 UI 目录 kHomeMenuCatalog）；模型层不感知具体条目含义（避免
-/// 反向依赖 widgets），未知 id 由 UI 层解析时丢弃。
-abstract final class HomeGridMenu {
-  /// 八宫格最多容纳的按钮数量（4 列 × 2 行）。
-  static const int maxSlots = 8;
-
-  /// 钉死的「课表设置」入口 id。
-  ///
-  /// 它是回到八宫格自定义编辑器的唯一稳定路径（设置 → 外观 → 自定义
-  /// 八宫格按钮）。若允许移除，用户把可达设置的入口删光后就再也进不了
-  /// 编辑器重新加回——先有鸡还是先有蛋的死锁。因此任何持久化排列都
-  /// 强制包含它（仍可拖动排序，只是不可移除）。
-  static const String pinnedActionId = 'settings';
-
-  /// v2.0.5.5 已发布版本的默认排列（不含后来新增的任务入口）。
+/// id 是稳定主键（内置项沿用旧 HomeTopMenuAction.name，其余来自 UI
+/// 目录 kHomeMenuCatalog）；模型层不感知具体条目含义（避免反向依赖
+/// widgets），未知 id 由 UI 层解析时丢弃。
+abstract final class HomeMenuDefaults {
+  /// 已发布版本的默认排列（不含后来新增的任务入口）。
   static const List<String> defaultActions = [
     'overview',
     'statistics',
     'addCourse',
     'exams',
     'importCourses',
-    pinnedActionId,
+    'settings',
   ];
-
-  /// 去重、剔除非字符串项并截断到 [maxSlots]，最后保证钉住项在场。
-  /// 空输入保持空表——渲染层会把空表回退成 [defaultActions]（本身
-  /// 含钉住项），缺 key 与脏数据走同一条路。
-  static List<String> normalize(Iterable<Object?>? raw) {
-    if (raw == null) {
-      return const <String>[];
-    }
-    final unique = <String>[];
-    for (final item in raw) {
-      if (item is String && item.isNotEmpty && !unique.contains(item)) {
-        unique.add(item);
-      }
-    }
-    if (unique.length > maxSlots) {
-      unique.removeRange(maxSlots, unique.length);
-    }
-    if (!unique.contains(pinnedActionId)) {
-      if (unique.length >= maxSlots) {
-        unique.removeLast();
-      }
-      unique.add(pinnedActionId);
-    }
-    return List<String>.unmodifiable(unique);
-  }
 }
 
 /// 玻璃坞底栏按钮的槽位约束与默认排列。
 ///
-/// id 语义：'day' / 'week' 是视图切换动作，其余 id 走八宫格目录
+/// id 语义：'day' / 'week' 是视图切换动作，其余 id 走首页菜单目录
 /// （kHomeMenuCatalog，含 'settings'）。空排列合法——渲染层回退到
-/// [defaultActions]，因此不做钉住补位（区别于八宫格的 normalize）。
+/// [defaultActions]，因此不做钉住补位。
 abstract final class HomeDockMenu {
   /// 底栏最多容纳的按钮数量（含视图切换与页面入口）。
   static const int maxSlots = 5;
@@ -544,38 +449,6 @@ extension LiveBeforeClassQuickActionX on LiveBeforeClassQuickAction {
   }
 }
 
-/// Visual surface style for course cards.
-///
-/// 只保留两档：实体卡片与高斯模糊。旧版本的「半透明」「玻璃（液态玻璃）」
-/// 档位已下线，读取旧配置时分别并入这两档（见
-/// [CourseCardSurfaceStyleX.fromValue]）。
-enum CourseCardSurfaceStyle {
-  /// Solid opaque card with gradient wash (default).
-  solid,
-
-  /// Gaussian blur backdrop over the page background.
-  gaussian,
-}
-
-extension CourseCardSurfaceStyleX on CourseCardSurfaceStyle {
-  String get value => name;
-
-  static CourseCardSurfaceStyle fromValue(String? value) {
-    // 旧档位迁移：半透明并入实体卡片；玻璃 / 液态玻璃并入高斯模糊。
-    switch (value) {
-      case 'translucent':
-        return CourseCardSurfaceStyle.solid;
-      case 'glass':
-      case 'liquidGlass':
-        return CourseCardSurfaceStyle.gaussian;
-    }
-    return CourseCardSurfaceStyle.values.firstWhere(
-      (item) => item.value == value,
-      orElse: () => CourseCardSurfaceStyle.solid,
-    );
-  }
-}
-
 enum CourseCardVerticalAlign { top, center, bottom, spaceEvenly }
 
 extension CourseCardVerticalAlignX on CourseCardVerticalAlign {
@@ -860,264 +733,6 @@ class SectionTime {
   String get displayText => '$startTime-$endTime';
 }
 
-class SavedTheme {
-  final String id;
-  final String name;
-  final ThemeConfig config;
-  final DateTime createdAt;
-
-  SavedTheme({
-    required this.id,
-    required this.name,
-    required this.config,
-    required this.createdAt,
-  });
-
-  /// 兼容旧版本的 themeData getter
-  Map<String, dynamic> get themeData => config.toJson();
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'themeData': config.toJson(),
-    'createdAt': createdAt.toIso8601String(),
-  };
-
-  factory SavedTheme.fromJson(Map<String, dynamic> json) {
-    final rawId = json['id'];
-    final rawName = json['name'];
-    if (rawId is! String || rawId.trim().isEmpty) {
-      throw const FormatException('missing theme id');
-    }
-    if (rawName is! String || rawName.trim().isEmpty) {
-      throw const FormatException('missing theme name');
-    }
-    final rawThemeData = json['themeData'];
-    if (rawThemeData is! Map) {
-      throw const FormatException('missing themeData');
-    }
-    final themeDataJson = Map<String, dynamic>.from(rawThemeData);
-    final rawCreated = json['createdAt'];
-    if (rawCreated is! String || rawCreated.trim().isEmpty) {
-      throw const FormatException('missing theme createdAt');
-    }
-    final parsedCreated = DateTime.tryParse(rawCreated);
-    if (parsedCreated == null) {
-      throw FormatException('invalid theme createdAt: $rawCreated');
-    }
-    return SavedTheme(
-      id: rawId,
-      name: rawName,
-      config: ThemeConfig.fromJson(themeDataJson),
-      createdAt: parsedCreated,
-    );
-  }
-}
-
-/// 类型化的主题配置，替代 Map。
-class ThemeConfig {
-  final int version;
-  final String? seedColor;
-  final String? backgroundColor;
-  final String? unifiedCardColor;
-  final bool? useUnifiedCardColor;
-  final String? themeMode; // "system" / "light" / "dark"
-  final String? courseCardTitleColorLight;
-  final String? courseCardTitleColorDark;
-  final String? courseCardDetailColorLight;
-  final String? courseCardDetailColorDark;
-  final String? weekdayBarFontColorLight;
-  final String? weekdayBarFontColorDark;
-  final String? weekdayBarAccentColorLight;
-  final String? weekdayBarAccentColorDark;
-  final String? timeAxisFontColorLight;
-  final String? timeAxisFontColorDark;
-  final bool? linkCourseCardColors;
-  final bool? hideWeekends;
-  final String? spacingMode;
-  final String? timeDisplayMode;
-
-  const ThemeConfig({
-    this.version = 2,
-    this.seedColor,
-    this.backgroundColor,
-    this.unifiedCardColor,
-    this.useUnifiedCardColor,
-    this.themeMode,
-    this.courseCardTitleColorLight,
-    this.courseCardTitleColorDark,
-    this.courseCardDetailColorLight,
-    this.courseCardDetailColorDark,
-    this.weekdayBarFontColorLight,
-    this.weekdayBarFontColorDark,
-    this.weekdayBarAccentColorLight,
-    this.weekdayBarAccentColorDark,
-    this.timeAxisFontColorLight,
-    this.timeAxisFontColorDark,
-    this.linkCourseCardColors,
-    this.hideWeekends,
-    this.spacingMode,
-    this.timeDisplayMode,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'v': version,
-    if (seedColor != null) 'seed': seedColor,
-    if (backgroundColor != null) 'bg': backgroundColor,
-    if (unifiedCardColor != null) 'uc': unifiedCardColor,
-    if (useUnifiedCardColor != null) 'ucOn': useUnifiedCardColor,
-    if (themeMode != null) 'mode': themeMode,
-    if (courseCardTitleColorLight != null) 'ccl': courseCardTitleColorLight,
-    if (courseCardTitleColorDark != null) 'ccd': courseCardTitleColorDark,
-    if (courseCardDetailColorLight != null) 'cdl': courseCardDetailColorLight,
-    if (courseCardDetailColorDark != null) 'cdd': courseCardDetailColorDark,
-    if (weekdayBarFontColorLight != null) 'wbl': weekdayBarFontColorLight,
-    if (weekdayBarFontColorDark != null) 'wbd': weekdayBarFontColorDark,
-    if (weekdayBarAccentColorLight != null) 'wal': weekdayBarAccentColorLight,
-    if (weekdayBarAccentColorDark != null) 'wad': weekdayBarAccentColorDark,
-    if (timeAxisFontColorLight != null) 'tal': timeAxisFontColorLight,
-    if (timeAxisFontColorDark != null) 'tad': timeAxisFontColorDark,
-    if (linkCourseCardColors != null) 'link': linkCourseCardColors,
-    if (hideWeekends != null) 'hideWeekend': hideWeekends,
-    if (spacingMode != null) 'spacing': spacingMode,
-    if (timeDisplayMode != null) 'timeDisplay': timeDisplayMode,
-  };
-
-  factory ThemeConfig.fromJson(Map<String, dynamic> json) {
-    final version = json['v'] as int? ?? 1;
-    if (version == 1) {
-      // v1: 仅颜色
-      return ThemeConfig(
-        version: 1,
-        courseCardTitleColorLight: json['ccl'] as String?,
-        courseCardTitleColorDark: json['ccd'] as String?,
-        courseCardDetailColorLight: json['cdl'] as String?,
-        courseCardDetailColorDark: json['cdd'] as String?,
-        weekdayBarFontColorLight: json['wbl'] as String?,
-        weekdayBarFontColorDark: json['wbd'] as String?,
-        weekdayBarAccentColorLight: json['wal'] as String?,
-        weekdayBarAccentColorDark: json['wad'] as String?,
-        timeAxisFontColorLight: json['tal'] as String?,
-        timeAxisFontColorDark: json['tad'] as String?,
-        linkCourseCardColors: json['link'] as bool?,
-      );
-    }
-    // v2: 完整主题
-    return ThemeConfig(
-      seedColor: json['seed'] as String?,
-      backgroundColor: json['bg'] as String?,
-      unifiedCardColor: json['uc'] as String?,
-      useUnifiedCardColor: json['ucOn'] as bool?,
-      themeMode: json['mode'] as String?,
-      courseCardTitleColorLight: json['ccl'] as String?,
-      courseCardTitleColorDark: json['ccd'] as String?,
-      courseCardDetailColorLight: json['cdl'] as String?,
-      courseCardDetailColorDark: json['cdd'] as String?,
-      weekdayBarFontColorLight: json['wbl'] as String?,
-      weekdayBarFontColorDark: json['wbd'] as String?,
-      weekdayBarAccentColorLight: json['wal'] as String?,
-      weekdayBarAccentColorDark: json['wad'] as String?,
-      timeAxisFontColorLight: json['tal'] as String?,
-      timeAxisFontColorDark: json['tad'] as String?,
-      linkCourseCardColors: json['link'] as bool?,
-      hideWeekends: json['hideWeekend'] as bool?,
-      spacingMode: json['spacing'] as String?,
-      timeDisplayMode: json['timeDisplay'] as String?,
-    );
-  }
-
-  /// 从当前设置创建 ThemeConfig
-  factory ThemeConfig.fromSettings(TimetableSettings settings) => ThemeConfig(
-    seedColor: settings.themeSeedColor,
-    backgroundColor: settings.timetablePageBackgroundColor,
-    unifiedCardColor: settings.timetableUnifiedCardColor,
-    useUnifiedCardColor: settings.timetableUseUnifiedCardColor,
-    themeMode: settings.appThemeMode.value,
-    courseCardTitleColorLight: settings.courseCardTitleColorLight,
-    courseCardTitleColorDark: settings.courseCardTitleColorDark,
-    courseCardDetailColorLight: settings.courseCardDetailColorLight,
-    courseCardDetailColorDark: settings.courseCardDetailColorDark,
-    weekdayBarFontColorLight: settings.weekdayBarFontColorLight,
-    weekdayBarFontColorDark: settings.weekdayBarFontColorDark,
-    weekdayBarAccentColorLight: settings.weekdayBarAccentColorLight,
-    weekdayBarAccentColorDark: settings.weekdayBarAccentColorDark,
-    timeAxisFontColorLight: settings.timeAxisFontColorLight,
-    timeAxisFontColorDark: settings.timeAxisFontColorDark,
-    linkCourseCardColors: settings.linkCourseCardColors,
-    hideWeekends: settings.timetableHideWeekends,
-    spacingMode: settings.timetableCourseSpacingMode.value,
-    timeDisplayMode: settings.timetableSectionTimeDisplayMode.value,
-  );
-
-  /// 应用主题到当前设置
-  TimetableSettings applyToSettings(TimetableSettings current) {
-    return current.copyWith(
-      themeSeedColor: seedColor ?? current.themeSeedColor,
-      timetablePageBackgroundColor:
-          backgroundColor ?? current.timetablePageBackgroundColor,
-      timetableUnifiedCardColor:
-          unifiedCardColor ?? current.timetableUnifiedCardColor,
-      timetableUseUnifiedCardColor:
-          useUnifiedCardColor ?? current.timetableUseUnifiedCardColor,
-      appThemeMode: themeMode != null
-          ? AppThemeModeX.fromValue(themeMode)
-          : current.appThemeMode,
-      courseCardTitleColorLight:
-          courseCardTitleColorLight ?? current.courseCardTitleColorLight,
-      courseCardTitleColorDark:
-          courseCardTitleColorDark ?? current.courseCardTitleColorDark,
-      courseCardDetailColorLight:
-          courseCardDetailColorLight ?? current.courseCardDetailColorLight,
-      courseCardDetailColorDark:
-          courseCardDetailColorDark ?? current.courseCardDetailColorDark,
-      weekdayBarFontColorLight:
-          weekdayBarFontColorLight ?? current.weekdayBarFontColorLight,
-      weekdayBarFontColorDark:
-          weekdayBarFontColorDark ?? current.weekdayBarFontColorDark,
-      weekdayBarAccentColorLight:
-          weekdayBarAccentColorLight ?? current.weekdayBarAccentColorLight,
-      weekdayBarAccentColorDark:
-          weekdayBarAccentColorDark ?? current.weekdayBarAccentColorDark,
-      timeAxisFontColorLight:
-          timeAxisFontColorLight ?? current.timeAxisFontColorLight,
-      timeAxisFontColorDark:
-          timeAxisFontColorDark ?? current.timeAxisFontColorDark,
-      linkCourseCardColors:
-          linkCourseCardColors ?? current.linkCourseCardColors,
-      timetableHideWeekends: hideWeekends ?? current.timetableHideWeekends,
-      timetableCourseSpacingMode: spacingMode != null
-          ? TimetableCourseSpacingMode.values.firstWhere(
-              (e) => e.value == spacingMode,
-              orElse: () => current.timetableCourseSpacingMode,
-            )
-          : current.timetableCourseSpacingMode,
-      timetableSectionTimeDisplayMode: timeDisplayMode != null
-          ? SectionTimeDisplayMode.values.firstWhere(
-              (e) => e.value == timeDisplayMode,
-              orElse: () => current.timetableSectionTimeDisplayMode,
-            )
-          : current.timetableSectionTimeDisplayMode,
-    );
-  }
-
-  /// 提取主题预览色块
-  List<String> get previewColors {
-    final colors = <String>[];
-    if (seedColor != null) colors.add(seedColor!);
-    if (courseCardTitleColorLight != null) {
-      colors.add(courseCardTitleColorLight!);
-    }
-    if (courseCardDetailColorLight != null) {
-      colors.add(courseCardDetailColorLight!);
-    }
-    if (weekdayBarFontColorLight != null) colors.add(weekdayBarFontColorLight!);
-    if (weekdayBarAccentColorLight != null) {
-      colors.add(weekdayBarAccentColorLight!);
-    }
-    return colors.take(4).toList();
-  }
-}
-
 class TimetableSettings {
   // 颜色默认值常量
   static const String defaultCourseCardTitleColor = '#FFFFFF';
@@ -1134,14 +749,10 @@ class TimetableSettings {
   static const double defaultFrostedSheetBarrierAlpha = 0.20;
   static const bool defaultFrostedBlurEnabled = true;
 
-  /// 液态玻璃作用范围默认值：下拉选择小弹窗开；对话式全屏选择面板关
-  /// （大面积折射长列表默认保持磨砂）；其余家族维持既有行为（开）。
-  static const bool defaultLiquidGlassPopupEnabled = true;
-  static const bool defaultLiquidGlassSelectSheetEnabled = false;
-  static const bool defaultLiquidGlassSheetDialogEnabled = true;
-  static const bool defaultLiquidGlassHomeChromeEnabled = true;
-  static const bool defaultLiquidGlassDockEnabled = true;
-  static const bool defaultLiquidGlassPickerButtonsEnabled = true;
+  /// 应用主题色（唯一选项：蓝）。历史上的主题色选择器/主题库已删除，
+  /// 此值不再随用户设置变化；旧数据中的其他主题色在读取时被丢弃。
+  static const String defaultThemeSeedColor = '#2563EB';
+
   static const double defaultPageTransitionSpeed = 1;
   static const double minPageTransitionSpeed = 0.5;
   static const double maxPageTransitionSpeed = 2.5;
@@ -1188,13 +799,6 @@ class TimetableSettings {
   final TimetableHomeViewMode timetableHomeViewMode;
   final HomeNavigationForm homeNavigationForm;
 
-  /// 首页右上角「更多」菜单形态（列表弹窗 / 八宫格瓷贴）。
-  final HomeMenuStyle homeMenuStyle;
-
-  /// 八宫格菜单的按钮排列（动作 id，见 [HomeGridMenu]）。
-  /// 空表表示使用 [HomeGridMenu.defaultActions] 的默认排列。
-  final List<String> homeGridMenuActions;
-
   /// 玻璃坞底栏按钮排列（'day'/'week' 为视图动作，其余为目录 id）。
   final List<String> glassDockActions;
 
@@ -1210,7 +814,7 @@ class TimetableSettings {
   final bool glassDockShowWeekTab;
 
   /// 玻璃坞独立圆形按钮（extraButton）打开的入口 id。
-  /// 默认 'addCourse' 走首页添加课程弹层；其余 id 由八宫格目录分发，
+  /// 默认 'addCourse' 走首页添加课程弹层；其余 id 由首页菜单目录分发，
   /// 未知/不可见 id 运行时回退添加课程弹层。结构 Tab（day/week/settings）
   /// 不允许作为按钮目标，由 UI 层过滤。圆钮可另选自定义图标：
   /// [glassDockButtonIconName] 存 Miuix 扩展图标名（小驼峰），null =
@@ -1287,8 +891,6 @@ class TimetableSettings {
   ///
   /// 关闭时回到「随课程起停」的旧行为 —— 无课、课上完、假期都不显示通知。
   final bool livePermanentNotificationEnabled;
-  final String themeSeedColor;
-  final ForuiTheme foruiTheme;
   final String timetablePageBackgroundColor;
   final HomePageBackgroundFill homePageBackgroundFill;
   final String? homePageBackgroundImagePath;
@@ -1343,14 +945,6 @@ class TimetableSettings {
     sheetTintAlpha: frostedSheetTintAlpha,
     sheetBarrierAlpha: frostedSheetBarrierAlpha,
     blurEnabled: frostedBlurEnabled,
-    glassMode: frostedGlassMode,
-    liquidGlassTuning: liquidGlassTuning,
-    liquidGlassPopupEnabled: liquidGlassPopupEnabled,
-    liquidGlassSelectSheetEnabled: liquidGlassSelectSheetEnabled,
-    liquidGlassSheetDialogEnabled: liquidGlassSheetDialogEnabled,
-    liquidGlassHomeChromeEnabled: liquidGlassHomeChromeEnabled,
-    liquidGlassDockEnabled: liquidGlassDockEnabled,
-    liquidGlassPickerButtonsEnabled: liquidGlassPickerButtonsEnabled,
   );
 
   final bool linkCourseCardColors; // 标题和详情颜色是否关联
@@ -1359,25 +953,10 @@ class TimetableSettings {
   final double frostedSheetBarrierAlpha;
   final bool frostedBlurEnabled;
 
-  final FrostedGlassMode frostedGlassMode;
-
-  /// 液态玻璃作用范围开关（见 [FrostedAppearance] 同名字段）。
-  final bool liquidGlassPopupEnabled;
-  final bool liquidGlassSelectSheetEnabled;
-  final bool liquidGlassSheetDialogEnabled;
-  final bool liquidGlassHomeChromeEnabled;
-  final bool liquidGlassDockEnabled;
-  final bool liquidGlassPickerButtonsEnabled;
-  final CourseCardSurfaceStyle courseCardSurfaceStyle;
-  final LiquidGlassPreset liquidGlassPreset;
-  final LiquidGlassTuning? liquidGlassTuning;
   final bool homePageHeaderBlurEnabled;
   final bool homePageWeekdayBarBlurEnabled;
   final bool homePageTimeColumnBlurEnabled;
   final bool homePageBackdropFollowsWeekPager;
-  final List<SavedTheme> savedThemes; // 保存的主题列表
-  final String? themeCheckpointName; // 当前主题来源名称（预设或保存的主题）
-  final ThemeConfig? themeCheckpointConfig; // 应用主题时的配置快照
 
   const TimetableSettings({
     required this.sections,
@@ -1421,8 +1000,6 @@ class TimetableSettings {
     this.homeTitleStyle = HomeTitleStyle.classic,
     this.timetableHomeViewMode = TimetableHomeViewMode.week,
     this.homeNavigationForm = HomeNavigationForm.classic,
-    this.homeMenuStyle = HomeMenuStyle.list,
-    this.homeGridMenuActions = const <String>[],
     this.glassDockActions = HomeDockMenu.defaultActions,
     this.glassDockShowDayTab = true,
     this.glassDockShowSettingsTab = true,
@@ -1478,8 +1055,6 @@ class TimetableSettings {
     this.liveBeforeClassQuickAction = LiveBeforeClassQuickAction.none,
     this.liveBeforeClassQuickActionAutoMinutes = 0,
     this.livePermanentNotificationEnabled = true,
-    this.themeSeedColor = '#2563EB',
-    this.foruiTheme = ForuiTheme.blue,
     this.timetablePageBackgroundColor = '#F8FAFC',
     this.homePageBackgroundFill = HomePageBackgroundFill.color,
     this.homePageBackgroundImagePath,
@@ -1515,24 +1090,10 @@ class TimetableSettings {
     this.frostedSheetTintAlpha = defaultFrostedSheetTintAlpha,
     this.frostedSheetBarrierAlpha = defaultFrostedSheetBarrierAlpha,
     this.frostedBlurEnabled = defaultFrostedBlurEnabled,
-    this.frostedGlassMode = FrostedGlassMode.frosted,
-    this.liquidGlassPopupEnabled = defaultLiquidGlassPopupEnabled,
-    this.liquidGlassSelectSheetEnabled = defaultLiquidGlassSelectSheetEnabled,
-    this.liquidGlassSheetDialogEnabled = defaultLiquidGlassSheetDialogEnabled,
-    this.liquidGlassHomeChromeEnabled = defaultLiquidGlassHomeChromeEnabled,
-    this.liquidGlassDockEnabled = defaultLiquidGlassDockEnabled,
-    this.liquidGlassPickerButtonsEnabled =
-        defaultLiquidGlassPickerButtonsEnabled,
-    this.courseCardSurfaceStyle = CourseCardSurfaceStyle.solid,
-    this.liquidGlassPreset = LiquidGlassPreset.standard,
-    this.liquidGlassTuning,
     this.homePageHeaderBlurEnabled = false,
     this.homePageWeekdayBarBlurEnabled = false,
     this.homePageTimeColumnBlurEnabled = false,
     this.homePageBackdropFollowsWeekPager = false,
-    this.savedThemes = const [],
-    this.themeCheckpointName,
-    this.themeCheckpointConfig,
   });
 
   factory TimetableSettings.defaults() {
@@ -1595,8 +1156,6 @@ class TimetableSettings {
       'homeTitleStyle': homeTitleStyle.value,
       'timetableHomeViewMode': timetableHomeViewMode.value,
       'homeNavigationForm': homeNavigationForm.value,
-      'homeMenuStyle': homeMenuStyle.value,
-      'homeGridMenuActions': homeGridMenuActions,
       'glassDockActions': glassDockActions,
       'glassDockShowDayTab': glassDockShowDayTab,
       'glassDockShowSettingsTab': glassDockShowSettingsTab,
@@ -1655,8 +1214,6 @@ class TimetableSettings {
       'liveBeforeClassQuickActionAutoMinutes':
           liveBeforeClassQuickActionAutoMinutes,
       'livePermanentNotificationEnabled': livePermanentNotificationEnabled,
-      'themeSeedColor': themeSeedColor,
-      'foruiTheme': foruiTheme.value,
       'timetablePageBackgroundColor': timetablePageBackgroundColor,
       'homePageBackgroundFill': homePageBackgroundFill.value,
       if (homePageBackgroundImagePath != null)
@@ -1693,26 +1250,10 @@ class TimetableSettings {
       'frostedSheetTintAlpha': frostedSheetTintAlpha,
       'frostedSheetBarrierAlpha': frostedSheetBarrierAlpha,
       'frostedBlurEnabled': frostedBlurEnabled,
-      'frostedGlassMode': frostedGlassMode.value,
-      'liquidGlassPopupEnabled': liquidGlassPopupEnabled,
-      'liquidGlassSelectSheetEnabled': liquidGlassSelectSheetEnabled,
-      'liquidGlassSheetDialogEnabled': liquidGlassSheetDialogEnabled,
-      'liquidGlassHomeChromeEnabled': liquidGlassHomeChromeEnabled,
-      'liquidGlassDockEnabled': liquidGlassDockEnabled,
-      'liquidGlassPickerButtonsEnabled': liquidGlassPickerButtonsEnabled,
-      'courseCardSurfaceStyle': courseCardSurfaceStyle.value,
-      'liquidGlassPreset': liquidGlassPreset.value,
-      if (liquidGlassTuning != null)
-        'liquidGlassTuning': liquidGlassTuning!.toJson(),
       'homePageHeaderBlurEnabled': homePageHeaderBlurEnabled,
       'homePageWeekdayBarBlurEnabled': homePageWeekdayBarBlurEnabled,
       'homePageTimeColumnBlurEnabled': homePageTimeColumnBlurEnabled,
       'homePageBackdropFollowsWeekPager': homePageBackdropFollowsWeekPager,
-      'savedThemes': savedThemes.map((t) => t.toJson()).toList(),
-      if (themeCheckpointName != null)
-        'themeCheckpointName': themeCheckpointName,
-      if (themeCheckpointConfig != null)
-        'themeCheckpointConfig': themeCheckpointConfig!.toJson(),
     };
   }
 
@@ -1844,7 +1385,6 @@ class TimetableSettings {
       homeNavigationForm: HomeNavigationFormX.fromValue(
         json['homeNavigationForm'] as String?,
       ),
-      homeMenuStyle: HomeMenuStyleX.fromValue(json['homeMenuStyle'] as String?),
       glassDockActions: HomeDockMenu.normalize(
         (json['glassDockActions'] as List<Object?>?) ??
             [
@@ -1853,10 +1393,6 @@ class TimetableSettings {
               if (json['glassDockShowWeekTab'] as bool? ?? true) 'week',
             ],
       ),
-      homeGridMenuActions: HomeGridMenu.normalize(
-        json['homeGridMenuActions'] as List<Object?>?,
-      ),
-
       glassDockShowDayTab: json['glassDockShowDayTab'] as bool? ?? true,
       glassDockShowSettingsTab:
           json['glassDockShowSettingsTab'] as bool? ?? true,
@@ -1972,8 +1508,6 @@ class TimetableSettings {
           (json['liveBeforeClassQuickActionAutoMinutes'] as num?)?.toInt() ?? 0,
       livePermanentNotificationEnabled:
           json['livePermanentNotificationEnabled'] as bool? ?? true,
-      themeSeedColor: json['themeSeedColor'] as String? ?? '#2563EB',
-      foruiTheme: ForuiThemeX.fromValue(json['foruiTheme'] as String?),
       timetablePageBackgroundColor:
           json['timetablePageBackgroundColor'] as String? ?? '#F8FAFC',
       homePageBackgroundFill: HomePageBackgroundFillX.fromValue(
@@ -2052,38 +1586,6 @@ class TimetableSettings {
           defaultFrostedSheetBarrierAlpha,
       frostedBlurEnabled:
           json['frostedBlurEnabled'] as bool? ?? defaultFrostedBlurEnabled,
-      frostedGlassMode: FrostedGlassModeX.fromValue(
-        json['frostedGlassMode'] as String?,
-      ),
-      liquidGlassPopupEnabled:
-          json['liquidGlassPopupEnabled'] as bool? ??
-          defaultLiquidGlassPopupEnabled,
-      liquidGlassSelectSheetEnabled:
-          json['liquidGlassSelectSheetEnabled'] as bool? ??
-          defaultLiquidGlassSelectSheetEnabled,
-      liquidGlassSheetDialogEnabled:
-          json['liquidGlassSheetDialogEnabled'] as bool? ??
-          defaultLiquidGlassSheetDialogEnabled,
-      liquidGlassHomeChromeEnabled:
-          json['liquidGlassHomeChromeEnabled'] as bool? ??
-          defaultLiquidGlassHomeChromeEnabled,
-      liquidGlassDockEnabled:
-          json['liquidGlassDockEnabled'] as bool? ??
-          defaultLiquidGlassDockEnabled,
-      liquidGlassPickerButtonsEnabled:
-          json['liquidGlassPickerButtonsEnabled'] as bool? ??
-          defaultLiquidGlassPickerButtonsEnabled,
-      courseCardSurfaceStyle: CourseCardSurfaceStyleX.fromValue(
-        json['courseCardSurfaceStyle'] as String?,
-      ),
-      liquidGlassPreset: LiquidGlassPresetX.fromValue(
-        json['liquidGlassPreset'] as String?,
-      ),
-      liquidGlassTuning: json['liquidGlassTuning'] != null
-          ? LiquidGlassTuning.fromJson(
-              json['liquidGlassTuning'] as Map<String, dynamic>,
-            )
-          : null,
       homePageHeaderBlurEnabled:
           json['homePageHeaderBlurEnabled'] as bool? ?? false,
       homePageWeekdayBarBlurEnabled:
@@ -2092,30 +1594,6 @@ class TimetableSettings {
           json['homePageTimeColumnBlurEnabled'] as bool? ?? false,
       homePageBackdropFollowsWeekPager:
           json['homePageBackdropFollowsWeekPager'] as bool? ?? false,
-      savedThemes: (() {
-        final raw = json['savedThemes'];
-        if (raw is! List) return const <SavedTheme>[];
-        final out = <SavedTheme>[];
-        for (final t in raw) {
-          try {
-            if (t is! Map) continue;
-            out.add(SavedTheme.fromJson(Map<String, dynamic>.from(t)));
-          } catch (_) {
-            continue;
-          }
-        }
-        return out;
-      })(),
-      themeCheckpointName: json['themeCheckpointName'] as String?,
-      themeCheckpointConfig: (() {
-        final r = json['themeCheckpointConfig'];
-        if (r is! Map) return null;
-        try {
-          return ThemeConfig.fromJson(Map<String, dynamic>.from(r));
-        } catch (_) {
-          return null;
-        }
-      })(),
     );
   }
 
@@ -2169,8 +1647,6 @@ class TimetableSettings {
     HomeTitleStyle? homeTitleStyle,
     TimetableHomeViewMode? timetableHomeViewMode,
     HomeNavigationForm? homeNavigationForm,
-    HomeMenuStyle? homeMenuStyle,
-    List<String>? homeGridMenuActions,
     List<String>? glassDockActions,
     bool? glassDockShowDayTab,
     bool? glassDockShowSettingsTab,
@@ -2226,8 +1702,6 @@ class TimetableSettings {
     LiveBeforeClassQuickAction? liveBeforeClassQuickAction,
     int? liveBeforeClassQuickActionAutoMinutes,
     bool? livePermanentNotificationEnabled,
-    String? themeSeedColor,
-    ForuiTheme? foruiTheme,
     String? timetablePageBackgroundColor,
     HomePageBackgroundFill? homePageBackgroundFill,
     String? homePageBackgroundImagePath,
@@ -2265,24 +1739,10 @@ class TimetableSettings {
     double? frostedSheetTintAlpha,
     double? frostedSheetBarrierAlpha,
     bool? frostedBlurEnabled,
-    FrostedGlassMode? frostedGlassMode,
-    bool? liquidGlassPopupEnabled,
-    bool? liquidGlassSelectSheetEnabled,
-    bool? liquidGlassSheetDialogEnabled,
-    bool? liquidGlassHomeChromeEnabled,
-    bool? liquidGlassDockEnabled,
-    bool? liquidGlassPickerButtonsEnabled,
-    CourseCardSurfaceStyle? courseCardSurfaceStyle,
-    LiquidGlassPreset? liquidGlassPreset,
-    LiquidGlassTuning? liquidGlassTuning,
     bool? homePageHeaderBlurEnabled,
     bool? homePageWeekdayBarBlurEnabled,
     bool? homePageTimeColumnBlurEnabled,
     bool? homePageBackdropFollowsWeekPager,
-    List<SavedTheme>? savedThemes,
-    String? themeCheckpointName,
-    ThemeConfig? themeCheckpointConfig,
-    bool clearThemeCheckpoint = false,
   }) {
     // 联动开时详情字色必须与标题字色一致：设置页在联动下本就同步写入，
     // 但旧版本数据 / 主题备份可能残留「联动开、详情色不同」的脏状态，渲染
@@ -2361,11 +1821,6 @@ class TimetableSettings {
       timetableHomeViewMode:
           timetableHomeViewMode ?? this.timetableHomeViewMode,
       homeNavigationForm: homeNavigationForm ?? this.homeNavigationForm,
-      homeMenuStyle: homeMenuStyle ?? this.homeMenuStyle,
-      // 写入也过一遍归一：钉住项不因调用方疏漏而丢失（解析路径同）。
-      homeGridMenuActions: homeGridMenuActions == null
-          ? this.homeGridMenuActions
-          : HomeGridMenu.normalize(homeGridMenuActions),
       glassDockActions: glassDockActions == null
           ? this.glassDockActions
           : HomeDockMenu.normalize(glassDockActions),
@@ -2476,8 +1931,6 @@ class TimetableSettings {
           this.liveBeforeClassQuickActionAutoMinutes,
       livePermanentNotificationEnabled:
           livePermanentNotificationEnabled ?? this.livePermanentNotificationEnabled,
-      themeSeedColor: themeSeedColor ?? this.themeSeedColor,
-      foruiTheme: foruiTheme ?? this.foruiTheme,
       timetablePageBackgroundColor:
           timetablePageBackgroundColor ?? this.timetablePageBackgroundColor,
       homePageBackgroundFill:
@@ -2545,24 +1998,6 @@ class TimetableSettings {
       frostedSheetBarrierAlpha:
           frostedSheetBarrierAlpha ?? this.frostedSheetBarrierAlpha,
       frostedBlurEnabled: frostedBlurEnabled ?? this.frostedBlurEnabled,
-      frostedGlassMode: frostedGlassMode ?? this.frostedGlassMode,
-      liquidGlassPopupEnabled:
-          liquidGlassPopupEnabled ?? this.liquidGlassPopupEnabled,
-      liquidGlassSelectSheetEnabled:
-          liquidGlassSelectSheetEnabled ?? this.liquidGlassSelectSheetEnabled,
-      liquidGlassSheetDialogEnabled:
-          liquidGlassSheetDialogEnabled ?? this.liquidGlassSheetDialogEnabled,
-      liquidGlassHomeChromeEnabled:
-          liquidGlassHomeChromeEnabled ?? this.liquidGlassHomeChromeEnabled,
-      liquidGlassDockEnabled:
-          liquidGlassDockEnabled ?? this.liquidGlassDockEnabled,
-      liquidGlassPickerButtonsEnabled:
-          liquidGlassPickerButtonsEnabled ??
-          this.liquidGlassPickerButtonsEnabled,
-      courseCardSurfaceStyle:
-          courseCardSurfaceStyle ?? this.courseCardSurfaceStyle,
-      liquidGlassPreset: liquidGlassPreset ?? this.liquidGlassPreset,
-      liquidGlassTuning: liquidGlassTuning ?? this.liquidGlassTuning,
       homePageHeaderBlurEnabled:
           homePageHeaderBlurEnabled ?? this.homePageHeaderBlurEnabled,
       homePageWeekdayBarBlurEnabled:
@@ -2572,51 +2007,10 @@ class TimetableSettings {
       homePageBackdropFollowsWeekPager:
           homePageBackdropFollowsWeekPager ??
           this.homePageBackdropFollowsWeekPager,
-      savedThemes: savedThemes ?? this.savedThemes,
-      themeCheckpointName: clearThemeCheckpoint
-          ? null
-          : (themeCheckpointName ?? this.themeCheckpointName),
-      themeCheckpointConfig: clearThemeCheckpoint
-          ? null
-          : (themeCheckpointConfig ?? this.themeCheckpointConfig),
     );
   }
 
   int get sectionCount => sections.length;
-
-  /// 检查当前主题设置是否与检查点不同（即用户修改过）
-  bool get hasThemeModifications {
-    if (themeCheckpointConfig == null) return false;
-    final currentConfig = ThemeConfig.fromSettings(this);
-    final checkpoint = themeCheckpointConfig!;
-
-    // 只比较检查点中非 null 的字段
-    bool differs(String? Function(ThemeConfig c) getter) {
-      final checkpointVal = getter(checkpoint);
-      if (checkpointVal == null) return false; // 检查点未设置的字段不比较
-      return getter(currentConfig) != checkpointVal;
-    }
-
-    return differs((c) => c.seedColor) ||
-        differs((c) => c.backgroundColor) ||
-        differs((c) => c.unifiedCardColor) ||
-        differs((c) => c.useUnifiedCardColor?.toString()) ||
-        differs((c) => c.themeMode) ||
-        differs((c) => c.courseCardTitleColorLight) ||
-        differs((c) => c.courseCardTitleColorDark) ||
-        differs((c) => c.courseCardDetailColorLight) ||
-        differs((c) => c.courseCardDetailColorDark) ||
-        differs((c) => c.weekdayBarFontColorLight) ||
-        differs((c) => c.weekdayBarFontColorDark) ||
-        differs((c) => c.weekdayBarAccentColorLight) ||
-        differs((c) => c.weekdayBarAccentColorDark) ||
-        differs((c) => c.timeAxisFontColorLight) ||
-        differs((c) => c.timeAxisFontColorDark) ||
-        differs((c) => c.linkCourseCardColors?.toString()) ||
-        differs((c) => c.hideWeekends?.toString()) ||
-        differs((c) => c.spacingMode) ||
-        differs((c) => c.timeDisplayMode);
-  }
 
   LiveDisplaySettings get beforeClassDisplaySettings => LiveDisplaySettings(
     showCourseName: liveShowCourseName,

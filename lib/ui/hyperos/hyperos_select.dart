@@ -14,8 +14,6 @@ import 'hyperos_theme.dart';
 import 'hyperos_tokens.dart';
 import 'hyperos_widgets.dart';
 import '../../widgets/miuix_date_picker_sheet.dart';
-import 'frosted/liquid_glass_degradation.dart';
-import 'liquid/hyperos_liquid_glass_surface.dart';
 
 /// Row padding for [HyperosSelectTile] (and similar chevron rows).
 ///
@@ -119,8 +117,8 @@ Future<T?> showHyperosSelectPopup<T>({
     barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
     barrierColor: Colors.transparent,
     // No route-level transition: the popup runs its own spring + alpha
-    // animation internally. A route FadeTransition would wrap the glass in an
-    // Opacity layer that degrades the LiquidGlass shader (black flash).
+    // animation internally. A route FadeTransition would wrap the frosted
+    // surface in an Opacity layer, which blocks the backdrop capture.
     transitionDuration: Duration.zero,
     pageBuilder: (dialogContext, animation, secondaryAnimation) {
       return FrostedAppearanceScope(
@@ -446,11 +444,8 @@ class SelectPopupRevealClipper extends CustomClipper<Path> {
 
 /// Glass background for the select popup.
 ///
-/// Renders the appropriate surface based on [FrostedGlassMode]:
-/// - **liquidGlass**: [HyperosLiquidGlassSurface] with the shared modal role.
-/// - **frosted / gaussian**: [BackdropFilter] blur + tint scrim.
-/// - **translucent**: lighter blur + minimal tint.
-/// - **blur disabled**: solid [HyperosColors.surfaceContainer].
+/// Renders a frosted surface ([BackdropFilter] blur + tint scrim) or, when
+/// backdrop blur is disabled, a solid [HyperosColors.surfaceContainer].
 class HyperosSelectPopupGlass extends StatelessWidget {
   const HyperosSelectPopupGlass({
     super.key,
@@ -463,29 +458,8 @@ class HyperosSelectPopupGlass extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appearance = FrostedAppearanceScope.of(context);
     final borderRadius = BorderRadius.circular(cornerRadius);
     final useBlur = HyperosBlurredHeader.backdropBlurEnabled(context);
-
-    // Liquid glass owns its own blur/refraction and must not be gated by the
-    // platform BackdropFilter capability. Otherwise anchored popups become
-    // solid surfaces on desktop while sheets and headers keep their glass.
-    // 「液态玻璃作用范围 → 下拉选择弹窗」关闭时回退磨砂/实底材质。
-    final useLiquidGlass =
-        appearance.glassMode == FrostedGlassMode.liquidGlass &&
-        appearance.liquidGlassPopupEnabled &&
-        !LiquidGlassDegradation.shouldDegrade(context);
-
-    if (useLiquidGlass) {
-      return HyperosLiquidGlassSurface(
-        role: HyperosLiquidGlassRole.modal,
-        borderRadius: cornerRadius,
-        // Sample the same undimmed modal capture as every other popup.
-        useAncestorBackdropGroup: true,
-        instantUnderlay: true,
-        child: child,
-      );
-    }
 
     // Blur disabled → solid opaque surface.
     if (!useBlur) {
@@ -575,9 +549,6 @@ Future<T?> showHyperosSelectSheet<T>({
 
       return HyperosSheetFrame(
         chrome: HyperosSheetChrome.floating,
-        // 对话式选择面板走「液态玻璃作用范围 → 全屏选择面板」开关
-        //（默认关）：预设主题/字体等长列表弹窗默认保持磨砂材质。
-        liquidGlassGroup: HyperosSheetLiquidGlassGroup.selectSheet,
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,

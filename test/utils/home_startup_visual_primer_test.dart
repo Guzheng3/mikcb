@@ -4,66 +4,8 @@ import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/utils/home_page_background.dart';
 import 'package:university_timetable/utils/home_page_backdrop_image_store.dart';
 import 'package:university_timetable/utils/home_startup_visual_primer.dart';
-import 'package:university_timetable/widgets/preblurred_wallpaper_glass.dart';
 
 void main() {
-  group('resolveHomePreblurSigma', () {
-    test('高斯课程卡优先决定 sigma', () {
-      expect(
-        resolveHomePreblurSigma(
-          gaussianCardsDrive: true,
-          liquidGlassChrome: true,
-          sheetBlurSigma: 15,
-          liquidGlassTunedBlur: 8,
-        ),
-        15,
-      );
-    });
-
-    test('液态玻璃 chrome 使用调校值并夹紧到 2-24', () {
-      expect(
-        resolveHomePreblurSigma(
-          gaussianCardsDrive: false,
-          liquidGlassChrome: true,
-          sheetBlurSigma: 15,
-          liquidGlassTunedBlur: 0.5,
-        ),
-        2.0,
-      );
-      expect(
-        resolveHomePreblurSigma(
-          gaussianCardsDrive: false,
-          liquidGlassChrome: true,
-          sheetBlurSigma: 15,
-          liquidGlassTunedBlur: 99,
-        ),
-        24.0,
-      );
-    });
-
-    test('无高斯卡且非液态玻璃时回退 sheet sigma', () {
-      expect(
-        resolveHomePreblurSigma(
-          gaussianCardsDrive: false,
-          liquidGlassChrome: false,
-          sheetBlurSigma: 12,
-          liquidGlassTunedBlur: null,
-        ),
-        12,
-      );
-      // 液态玻璃但无调校值：同样回退 sheet sigma（与首页内联逻辑一致）。
-      expect(
-        resolveHomePreblurSigma(
-          gaussianCardsDrive: false,
-          liquidGlassChrome: true,
-          sheetBlurSigma: 9,
-          liquidGlassTunedBlur: null,
-        ),
-        9,
-      );
-    });
-  });
-
   group('HomeStartupVisualPrimer.prime', () {
     testWidgets('warms the bundled default wallpaper into the image cache', (
       tester,

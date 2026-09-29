@@ -255,30 +255,6 @@ class PreblurredWallpaperCache {
   }
 }
 
-/// Resolves the sigma the shared pre-blur wallpaper bitmap is built with,
-/// from pure settings inputs (no [BuildContext]).
-///
-/// Single source of truth for 'which [PreblurredWallpaperCache] entry will the
-/// home page actually request', so the cold-start primer can warm the exact
-/// same bitmap ahead of the first frame. Mirrors the in-build resolution in
-/// timetable_screen's homePreblurSigma closure: gaussian course cards define
-/// the sigma first, then the liquid-glass chrome tuning (clamped to the same
-/// 2-24 range), otherwise the frosted sheet sigma.
-double resolveHomePreblurSigma({
-  required bool gaussianCardsDrive,
-  required bool liquidGlassChrome,
-  required double sheetBlurSigma,
-  required double? liquidGlassTunedBlur,
-}) {
-  if (gaussianCardsDrive) {
-    return sheetBlurSigma;
-  }
-  if (liquidGlassChrome && liquidGlassTunedBlur != null) {
-    return liquidGlassTunedBlur.clamp(2.0, 24.0).toDouble();
-  }
-  return sheetBlurSigma;
-}
-
 /// Pre-blurred wallpaper handed to course-card glass fills.
 @immutable
 class PreblurredWallpaperData {

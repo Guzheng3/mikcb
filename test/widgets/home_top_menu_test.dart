@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/providers/timetable_provider.dart';
 import 'package:university_timetable/providers/withu_couple_session_provider.dart';
 import 'package:university_timetable/ui/hyperos/hyperos.dart';
-import 'package:university_timetable/ui/hyperos/liquid/hyperos_liquid_glass_surface.dart';
 import 'package:university_timetable/widgets/home_menu_catalog.dart';
 import 'package:university_timetable/widgets/home_top_menu.dart';
 
@@ -18,7 +16,7 @@ void main() {
   testWidgets('home action menu renders resolved entries as Miuix list rows '
       'without per-row blur', (tester) async {
     final anchorKey = GlobalKey();
-    final entries = resolveHomeGridMenuEntries(TimetableSettings.defaults());
+    final entries = resolveHomeMenuEntries();
 
     await tester.pumpWidget(
       TestApp(
@@ -45,7 +43,7 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    // 与八宫格共享同一份自定义排列（默认 6 项，任务清单不在其中）。
+    // 默认排列固定 6 项，任务清单不在其中。
     // The anchored popup owns exactly one glass surface — no row adds its
     // own blur while the list moves.
     expect(find.byType(HyperosPressableRow), findsNWidgets(6));
@@ -77,7 +75,7 @@ void main() {
   testWidgets('home action menu rows remain tappable', (tester) async {
     final anchorKey = GlobalKey();
     late Future<String?> menuResult;
-    final entries = resolveHomeGridMenuEntries(TimetableSettings.defaults());
+    final entries = resolveHomeMenuEntries();
 
     await tester.pumpWidget(
       TestApp(
@@ -366,74 +364,22 @@ void main() {
     );
   });
 
-  testWidgets(
-    'home action menu honors custom order and groups rows by category',
-    (tester) async {
-      final anchorKey = GlobalKey();
-      late Future<String?> menuResult;
-      final entries = resolveHomeGridMenuEntries(
-        TimetableSettings.defaults().copyWith(
-          // copyWith 会钉住 settings，这里断言的是自定义排列顺序本身；
-          // tasks(courseRecolor 属 features) → settings(preferences)
-          // 的分类交界处应插一个分组间隔。
-          homeGridMenuActions: ['tasks', 'courseRecolor', 'settings'],
-        ),
-      );
-
-      await tester.pumpWidget(
-        TestApp(
-          home: Builder(
-            builder: (context) {
-              return Center(
-                child: ElevatedButton(
-                  key: anchorKey,
-                  onPressed: () {
-                    menuResult = showHomeTopMenuSheet(
-                      context,
-                      entries: entries,
-                      anchorKey: anchorKey,
-                    );
-                  },
-                  child: const Text('Open'),
-                ),
-              );
-            },
-          ),
-        ),
-      );
-
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      // 只渲染用户选择的入口，顺序与持久化一致。
-      expect(find.text('任务清单'), findsOneWidget);
-      expect(find.text('课表重新配色'), findsOneWidget);
-      expect(find.text('课表设置'), findsOneWidget);
-
-      await tester.tap(find.text('任务清单'));
-      await tester.pumpAndSettle();
-
-      expect(await menuResult, 'tasks');
-    },
-  );
-
-  testWidgets('liquid menu anchors its single popup with legibility fill', (
+  testWidgets('menu anchors its single popup with legibility fill', (
     tester,
   ) async {
     final anchorKey = GlobalKey();
-    const liquidAppearance = FrostedAppearance(
+    const gaussianAppearance = FrostedAppearance(
       sheetBlurSigma: 15,
       sheetTintAlpha: 0.7,
       sheetBarrierAlpha: 0.2,
-      glassMode: FrostedGlassMode.liquidGlass,
     );
 
     await tester.pumpWidget(
       TestApp(
         home: FrostedAppearanceScope(
-          appearance: liquidAppearance,
+          appearance: gaussianAppearance,
           // Keep the appearance scope above this nested navigator so the
-          // dialog route can resolve the same liquid-glass settings as the
+          // dialog route can resolve the same glass settings as the
           // page chrome. The outer TestApp navigator would otherwise place
           // the dialog above this scope.
           child: Navigator(
@@ -444,9 +390,7 @@ void main() {
                   onPressed: () {
                     showHomeTopMenuSheet(
                       context,
-                      entries: resolveHomeGridMenuEntries(
-                        TimetableSettings.defaults(),
-                      ),
+                      entries: resolveHomeMenuEntries(),
                       anchorKey: anchorKey,
                     );
                   },
@@ -462,194 +406,9 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    final outerGlass = tester.widget<HyperosLiquidGlassSurface>(
-      find.byType(HyperosLiquidGlassSurface),
-    );
-    expect(outerGlass.role, HyperosLiquidGlassRole.modal);
-    // 152cd9b4 起弹窗与 Sheet 的液态玻璃不再叠加可读性衬底，保持通透材质
-    // 与首页标题/星期栏统一（选择弹窗同为 contentLegibilityFill=false）。
-    expect(outerGlass.contentLegibilityFill, isFalse);
-    expect(find.byType(HyperosLiquidGlassSurface), findsOneWidget);
+    // 锚定弹窗只拥有一个玻璃面（跟随当前玻璃模式统一材质），
+    // 列表移动时不逐行加模糊。
+    expect(find.byType(HyperosSelectPopupGlass), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
-
-  testWidgets('grid menu renders default six tiles without tasks entry', (
-    tester,
-  ) async {
-    final anchorKey = GlobalKey();
-    late Future<String?> menuResult;
-
-    await tester.pumpWidget(
-      TestApp(
-        home: Builder(
-          builder: (context) {
-            return Center(
-              child: ElevatedButton(
-                key: anchorKey,
-                onPressed: () {
-                  menuResult = showHomeTopGridMenuSheet(
-                    context,
-                    entries: resolveHomeGridMenuEntries(
-                      TimetableSettings.defaults(),
-                    ),
-                  );
-                },
-                child: const Text('Open'),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('Open'));
-    await tester.pumpAndSettle();
-
-    // 默认排列：6 个瓷贴，任务清单不在其中（列表菜单独有）。
-    for (final title in const [
-      '课程总览',
-      '课程统计',
-      '添加课程',
-      '考试安排',
-      '导入课程',
-      '课表设置',
-    ]) {
-      expect(find.text(title), findsOneWidget);
-    }
-    expect(find.text('任务清单'), findsNothing);
-    expect(find.byIcon(Icons.dashboard_customize_rounded), findsOneWidget);
-
-    await tester.tap(find.text('课程总览'));
-    await tester.pumpAndSettle();
-
-    expect(await menuResult, 'overview');
-  });
-
-  testWidgets('grid menu honors custom order', (tester) async {
-    final anchorKey = GlobalKey();
-    late Future<String?> menuResult;
-
-    await tester.pumpWidget(
-      TestApp(
-        home: Builder(
-          builder: (context) {
-            return Center(
-              child: ElevatedButton(
-                key: anchorKey,
-                onPressed: () {
-                  menuResult = showHomeTopGridMenuSheet(
-                    context,
-                    entries: resolveHomeGridMenuEntries(
-                      TimetableSettings.defaults().copyWith(
-                        homeMenuStyle: HomeMenuStyle.grid,
-                        // copyWith 会钉住 settings，这里断言的是自定义
-                        // 排列顺序本身，settings 在尾部不影响本例。
-                        homeGridMenuActions: ['tasks', 'courseRecolor'],
-                      ),
-                    ),
-                  );
-                },
-                child: const Text('Open'),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('Open'));
-    await tester.pumpAndSettle();
-
-    // 自定义排列只渲染用户选择的入口，顺序与持久化一致。
-    expect(find.text('任务清单'), findsOneWidget);
-    expect(find.text('课表重新配色'), findsOneWidget);
-
-    await tester.tap(find.text('任务清单'));
-    await tester.pumpAndSettle();
-
-    expect(await menuResult, 'tasks');
-  });
-
-  testWidgets('grid menu tile icons follow the theme seed color', (
-    tester,
-  ) async {
-    final anchorKey = GlobalKey();
-
-    await tester.pumpWidget(
-      TestApp(
-        home: Builder(
-          builder: (context) {
-            return Center(
-              child: ElevatedButton(
-                key: anchorKey,
-                onPressed: () {
-                  showHomeTopGridMenuSheet(
-                    context,
-                    entries: resolveHomeGridMenuEntries(
-                      TimetableSettings.defaults(),
-                    ),
-                    themeSeedHex: '#1447E6',
-                  );
-                },
-                child: const Text('Open'),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('Open'));
-    await tester.pumpAndSettle();
-
-    // 可读的主题 seed 直接作为瓷贴图标色（默认蓝）。
-    expect(
-      tester.widget<Icon>(find.byIcon(Icons.dashboard_customize_rounded)).color,
-      const Color(0xFF1447E6),
-    );
-  });
-
-  testWidgets(
-    'grid menu tile icons fall back to chrome ink for unreadable seeds',
-    (tester) async {
-      final anchorKey = GlobalKey();
-
-      await tester.pumpWidget(
-        TestApp(
-          home: Builder(
-            builder: (context) {
-              return Center(
-                child: ElevatedButton(
-                  key: anchorKey,
-                  onPressed: () {
-                    showHomeTopGridMenuSheet(
-                      context,
-                      entries: resolveHomeGridMenuEntries(
-                        TimetableSettings.defaults(),
-                      ),
-                      // 亮黄在浅色磨砂瓷贴上不可读，回落玻璃墨色。
-                      themeSeedHex: '#FCC800',
-                    );
-                  },
-                  child: const Text('Open'),
-                ),
-              );
-            },
-          ),
-        ),
-      );
-
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      final iconContext = tester.element(
-        find.byIcon(Icons.dashboard_customize_rounded),
-      );
-      expect(
-        tester
-            .widget<Icon>(find.byIcon(Icons.dashboard_customize_rounded))
-            .color,
-        Theme.of(iconContext).colorScheme.onSurface,
-      );
-    },
-  );
 }

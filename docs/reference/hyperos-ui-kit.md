@@ -421,7 +421,7 @@ return HyperosSubpage(
 - 可折叠顶栏要让 `MiuixTopAppBar.scrollBehavior` 与内容树中的 `MiuixScrollBehaviorListener` 共享同一个 behavior。
 - `MiuixOverlayDialog` / `MiuixOverlayBottomSheet` 使用声明式 `show` + `onDismissRequest`，不要自行寻找命令式替代 API。
 - `MiuixNavigationBar` / `MiuixFloatingNavigationBar` 的子项数量必须满足库的约束（2–5）。
-- 图标优先 `MiuixIcons.basic` 或经过确认的 `MiuixIcons.extended.byName`；`MiuixIcon` 的 `icon` / `vector` / `child` 三种来源只能传一种。
+- 图标优先 `MiuixIcons.basic`，或经 `miuixIconByName`（`ui/hyperos/miuix_icon_compat.dart`）按小驼峰名取 Material 图标；不要再使用 `MiuixIcons.extended`（156×5 字重的矢量路径表，release AOT 约 1.29 MB，已弃用）。`MiuixIcon` 的 `icon` / `vector` / `child` 三种来源只能传一种。
 - 颜色优先语义角色，不要把 `Color(0x...)` 直接散落在页面中；自研页面优先走 `HyperosColors`。
 - 新页面是否合规以 `docs/reference/hyperos-page-compliance.json` 和 `python tool/hyperos_audit.py` 为准，不以单次截图或对话印象为准。
 

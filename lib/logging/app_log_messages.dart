@@ -3,7 +3,6 @@
 /// UI display is localized via [AppLogMessageLocalizer].
 abstract final class AppLogMessages {
   static const appLoggerInitialized = 'log_app_logger_initialized';
-  static const privacyConsentUpdated = 'log_privacy_consent_updated';
   static const appLogRecordingEnabled = 'log_app_log_recording_enabled';
   static const appLogRecordingRemainsEnabled =
       'log_app_log_recording_remains_enabled';
@@ -95,8 +94,6 @@ const Map<String, String> appLogFieldLabels = {
   'version': 'log_field_version',
   'buildNumber': 'log_field_build_number',
   'loggingEnabled': 'log_field_logging_enabled',
-  'privacyAccepted': 'log_field_privacy_accepted',
-  'accepted': 'log_field_accepted',
   'previous': 'log_field_previous',
   'truncated': 'log_field_truncated',
   'truncatedHint': 'log_field_truncated_hint',

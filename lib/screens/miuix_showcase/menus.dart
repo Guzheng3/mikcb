@@ -215,7 +215,7 @@ class _MenusShowcaseState extends State<MenusShowcase> {
                     MiuixDropdownItem(text: '删除'),
                   ],
                 ),
-                child: MiuixIcon(vector: MiuixIcons.extended.byName('more')),
+                child: MiuixIcon(icon: miuixIconByName('more')),
               ),
             ],
           ),
@@ -227,7 +227,7 @@ class _MenusShowcaseState extends State<MenusShowcase> {
             endActions: [
               MiuixOverlayIconCascadingDropdownMenu(
                 entry: cascadingEntry,
-                child: MiuixIcon(vector: MiuixIcons.extended.byName('more')),
+                child: MiuixIcon(icon: miuixIconByName('more')),
               ),
             ],
           ),

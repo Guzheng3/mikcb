@@ -20,7 +20,7 @@ class _NavigationShowcaseState extends State<NavigationShowcase> {
   int _railIndex = 0;
   late final MiuixNavigationRailState _railState;
 
-  // 图标名称使用 MiuixIcons.extended 内置图标。
+  // 图标名称使用 [miuixIconByName] 名称映射。
   static const _floatingDestinations = [
     (icon: 'home', label: '首页'),
     (icon: 'search', label: '发现'),
@@ -120,7 +120,7 @@ class _NavigationShowcaseState extends State<NavigationShowcase> {
                     selected: _navIndex == 0,
                     onPressed: () => setState(() => _navIndex = 0),
                     icon: MiuixIcon(
-                      vector: MiuixIcons.extended.byName('home'),
+                      icon: miuixIconByName('home'),
                       size: 24,
                     ),
                     label: '首页',
@@ -129,7 +129,7 @@ class _NavigationShowcaseState extends State<NavigationShowcase> {
                     selected: _navIndex == 1,
                     onPressed: () => setState(() => _navIndex = 1),
                     icon: MiuixIcon(
-                      vector: MiuixIcons.extended.byName('search'),
+                      icon: miuixIconByName('search'),
                       size: 24,
                     ),
                     label: '发现',
@@ -138,7 +138,7 @@ class _NavigationShowcaseState extends State<NavigationShowcase> {
                     selected: _navIndex == 2,
                     onPressed: () => setState(() => _navIndex = 2),
                     icon: MiuixIcon(
-                      vector: MiuixIcons.extended.byName('contacts'),
+                      icon: miuixIconByName('contacts'),
                       size: 24,
                     ),
                     label: '我的',
@@ -165,7 +165,7 @@ class _NavigationShowcaseState extends State<NavigationShowcase> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           MiuixIcon(
-                            vector: MiuixIcons.extended.byName(
+                            icon: miuixIconByName(
                               _floatingDestinations[_floatingIndex].icon,
                             ),
                             size: 48,
@@ -189,7 +189,7 @@ class _NavigationShowcaseState extends State<NavigationShowcase> {
                               onPressed: () =>
                                   setState(() => _floatingIndex = i),
                               icon: MiuixIcon(
-                                vector: MiuixIcons.extended.byName(dest.icon),
+                                icon: miuixIconByName(dest.icon),
                                 size: 24,
                               ),
                               label: dest.label,
@@ -230,7 +230,7 @@ class _NavigationShowcaseState extends State<NavigationShowcase> {
                                 selected: _railIndex == i,
                                 onPressed: () => setState(() => _railIndex = i),
                                 icon: MiuixIcon(
-                                  vector: MiuixIcons.extended.byName(
+                                  icon: miuixIconByName(
                                     dest.icon,
                                   ),
                                   size: 24,
@@ -248,7 +248,7 @@ class _NavigationShowcaseState extends State<NavigationShowcase> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 MiuixIcon(
-                                  vector: MiuixIcons.extended.byName(
+                                  icon: miuixIconByName(
                                     _railDestinations[_railIndex].icon,
                                   ),
                                   size: 48,

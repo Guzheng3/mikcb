@@ -328,77 +328,74 @@ void main() {
     );
   });
 
-  test(
-    'during and end live display settings always follow before class',
-    () {
-      // 课中/下课没有独立配置：整套 liveDuringEnd* 字段与其序列化已删除，
-      // duringEndDisplaySettings 恒等于课前那一份。
-      final settings = TimetableSettings.defaults().copyWith(
-        liveShowCourseName: false,
-        liveShowLocation: false,
-        liveCountdownTextStyle: LiveCountdownTextStyle.secondOnlyShort,
-        liveUseShortName: true,
-        liveMiuiIslandLabelFontSize: 17,
-      );
+  test('during and end live display settings always follow before class', () {
+    // 课中/下课没有独立配置：整套 liveDuringEnd* 字段与其序列化已删除，
+    // duringEndDisplaySettings 恒等于课前那一份。
+    final settings = TimetableSettings.defaults().copyWith(
+      liveShowCourseName: false,
+      liveShowLocation: false,
+      liveCountdownTextStyle: LiveCountdownTextStyle.secondOnlyShort,
+      liveUseShortName: true,
+      liveMiuiIslandLabelFontSize: 17,
+    );
 
-      final restored = TimetableSettings.fromJson(settings.toJson());
-      final beforeClass = restored.beforeClassDisplaySettings;
-      final duringEnd = restored.duringEndDisplaySettings;
+    final restored = TimetableSettings.fromJson(settings.toJson());
+    final beforeClass = restored.beforeClassDisplaySettings;
+    final duringEnd = restored.duringEndDisplaySettings;
 
-      // 课前侧按设置取值，课中/下课逐项跟随（往返后依然如此）。
-      expect(beforeClass.showCourseName, isFalse);
-      expect(beforeClass.useShortName, isTrue);
-      expect(beforeClass.miuiIslandLabelFontSize, 17);
-      expect(duringEnd.showCourseName, beforeClass.showCourseName);
-      expect(duringEnd.showLocation, beforeClass.showLocation);
-      expect(duringEnd.showCountdown, beforeClass.showCountdown);
-      expect(duringEnd.showStageText, beforeClass.showStageText);
-      expect(duringEnd.useShortName, beforeClass.useShortName);
-      expect(duringEnd.hidePrefixText, beforeClass.hidePrefixText);
-      expect(duringEnd.countdownTextStyle, beforeClass.countdownTextStyle);
-      expect(
-        duringEnd.duringClassTimeDisplayMode,
-        beforeClass.duringClassTimeDisplayMode,
-      );
-      expect(
-        duringEnd.enableMiuiIslandLabelImage,
-        beforeClass.enableMiuiIslandLabelImage,
-      );
-      expect(duringEnd.miuiIslandLabelStyle, beforeClass.miuiIslandLabelStyle);
-      expect(
-        duringEnd.miuiIslandLabelContent,
-        beforeClass.miuiIslandLabelContent,
-      );
-      expect(
-        duringEnd.miuiIslandLabelFontColor,
-        beforeClass.miuiIslandLabelFontColor,
-      );
-      expect(
-        duringEnd.miuiIslandLabelFontWeight,
-        beforeClass.miuiIslandLabelFontWeight,
-      );
-      expect(
-        duringEnd.miuiIslandLabelFontSize,
-        beforeClass.miuiIslandLabelFontSize,
-      );
-      expect(
-        duringEnd.miuiIslandLabelOffsetX,
-        beforeClass.miuiIslandLabelOffsetX,
-      );
-      expect(
-        duringEnd.miuiIslandLabelOffsetY,
-        beforeClass.miuiIslandLabelOffsetY,
-      );
-      expect(
-        duringEnd.miuiIslandExpandedIconMode,
-        beforeClass.miuiIslandExpandedIconMode,
-      );
-      expect(
-        duringEnd.miuiIslandExpandedIconPath,
-        beforeClass.miuiIslandExpandedIconPath,
-      );
-    },
-  );
+    // 课前侧按设置取值，课中/下课逐项跟随（往返后依然如此）。
+    expect(beforeClass.showCourseName, isFalse);
+    expect(beforeClass.useShortName, isTrue);
+    expect(beforeClass.miuiIslandLabelFontSize, 17);
+    expect(duringEnd.showCourseName, beforeClass.showCourseName);
+    expect(duringEnd.showLocation, beforeClass.showLocation);
+    expect(duringEnd.showCountdown, beforeClass.showCountdown);
+    expect(duringEnd.showStageText, beforeClass.showStageText);
+    expect(duringEnd.useShortName, beforeClass.useShortName);
+    expect(duringEnd.hidePrefixText, beforeClass.hidePrefixText);
+    expect(duringEnd.countdownTextStyle, beforeClass.countdownTextStyle);
+    expect(
+      duringEnd.duringClassTimeDisplayMode,
+      beforeClass.duringClassTimeDisplayMode,
+    );
+    expect(
+      duringEnd.enableMiuiIslandLabelImage,
+      beforeClass.enableMiuiIslandLabelImage,
+    );
+    expect(duringEnd.miuiIslandLabelStyle, beforeClass.miuiIslandLabelStyle);
+    expect(
+      duringEnd.miuiIslandLabelContent,
+      beforeClass.miuiIslandLabelContent,
+    );
+    expect(
+      duringEnd.miuiIslandLabelFontColor,
+      beforeClass.miuiIslandLabelFontColor,
+    );
+    expect(
+      duringEnd.miuiIslandLabelFontWeight,
+      beforeClass.miuiIslandLabelFontWeight,
+    );
+    expect(
+      duringEnd.miuiIslandLabelFontSize,
+      beforeClass.miuiIslandLabelFontSize,
+    );
+    expect(
+      duringEnd.miuiIslandLabelOffsetX,
+      beforeClass.miuiIslandLabelOffsetX,
+    );
+    expect(
+      duringEnd.miuiIslandLabelOffsetY,
+      beforeClass.miuiIslandLabelOffsetY,
+    );
+    expect(
+      duringEnd.miuiIslandExpandedIconMode,
+      beforeClass.miuiIslandExpandedIconMode,
+    );
+    expect(
+      duringEnd.miuiIslandExpandedIconPath,
+      beforeClass.miuiIslandExpandedIconPath,
+    );
+  });
 
   test('legacy during/end keys are ignored except the time display mode', () {
     // 旧存档：follow 关掉、且各 liveDuringEnd* 字段另有取值。
@@ -413,7 +410,8 @@ void main() {
       'liveDuringEndShowCourseName': false,
       'liveDuringEndShowLocation': false,
       'liveDuringEndUseShortName': false,
-      'liveDuringEndTimeDisplayMode': LiveDuringClassTimeDisplayMode.total.value,
+      'liveDuringEndTimeDisplayMode':
+          LiveDuringClassTimeDisplayMode.total.value,
       'liveDuringEndMiuiIslandLabelFontSize': 17,
       'liveDuringEndMiuiIslandExpandedIconPath': '/tmp/during-end.png',
     });
@@ -426,7 +424,10 @@ void main() {
     expect(duringEnd.showCourseName, beforeClass.showCourseName);
     expect(duringEnd.showLocation, beforeClass.showLocation);
     expect(duringEnd.useShortName, beforeClass.useShortName);
-    expect(duringEnd.miuiIslandLabelFontSize, beforeClass.miuiIslandLabelFontSize);
+    expect(
+      duringEnd.miuiIslandLabelFontSize,
+      beforeClass.miuiIslandLabelFontSize,
+    );
     expect(
       duringEnd.miuiIslandExpandedIconPath,
       beforeClass.miuiIslandExpandedIconPath,
@@ -450,37 +451,6 @@ void main() {
     });
 
     expect(restored.timetableCourseCardGap, 2.0);
-  });
-
-  test('removed course-card styles migrate to the two surviving tiers', () {
-    TimetableSettings restore(String value) => TimetableSettings.fromJson({
-      ...TimetableSettings.defaults().toJson(),
-      'courseCardSurfaceStyle': value,
-    });
-
-    // 半透明并入实体卡片；玻璃 / 液态玻璃并入高斯模糊。
-    expect(
-      restore('translucent').courseCardSurfaceStyle,
-      CourseCardSurfaceStyle.solid,
-    );
-    expect(
-      restore('glass').courseCardSurfaceStyle,
-      CourseCardSurfaceStyle.gaussian,
-    );
-    expect(
-      restore('liquidGlass').courseCardSurfaceStyle,
-      CourseCardSurfaceStyle.gaussian,
-    );
-  });
-
-  test('gaussian course-card style survives json round trip', () {
-    final settings = TimetableSettings.defaults().copyWith(
-      courseCardSurfaceStyle: CourseCardSurfaceStyle.gaussian,
-    );
-
-    final restored = TimetableSettings.fromJson(settings.toJson());
-
-    expect(restored.courseCardSurfaceStyle, CourseCardSurfaceStyle.gaussian);
   });
 
   test('mirror preset resolves built-in and custom prefixes', () {
@@ -509,366 +479,6 @@ void main() {
 
     expect(restored.appUpdateMirrorPreset, AppUpdateMirrorPreset.custom.value);
     expect(restored.appUpdateMirrorUrlPrefix, 'https://mirror.example.com/');
-  });
-
-  group('ThemeConfig', () {
-    test('roundtrip preserves all fields', () {
-      const original = ThemeConfig(
-        seedColor: '#FF0000',
-        backgroundColor: '#FFFFFF',
-        unifiedCardColor: '#00FF00',
-        useUnifiedCardColor: true,
-        themeMode: 'dark',
-        courseCardTitleColorLight: '#111111',
-        courseCardTitleColorDark: '#EEEEEE',
-        courseCardDetailColorLight: '#222222',
-        courseCardDetailColorDark: '#DDDDDD',
-        weekdayBarFontColorLight: '#333333',
-        weekdayBarFontColorDark: '#CCCCCC',
-        weekdayBarAccentColorLight: '#444444',
-        weekdayBarAccentColorDark: '#BBBBBB',
-        timeAxisFontColorLight: '#555555',
-        timeAxisFontColorDark: '#AAAAAA',
-        linkCourseCardColors: false,
-        hideWeekends: true,
-        spacingMode: 'wide',
-        timeDisplayMode: 'startOnly',
-      );
-
-      final restored = ThemeConfig.fromJson(original.toJson());
-
-      expect(restored.version, original.version);
-      expect(restored.seedColor, original.seedColor);
-      expect(restored.backgroundColor, original.backgroundColor);
-      expect(restored.unifiedCardColor, original.unifiedCardColor);
-      expect(restored.useUnifiedCardColor, original.useUnifiedCardColor);
-      expect(restored.themeMode, original.themeMode);
-      expect(
-        restored.courseCardTitleColorLight,
-        original.courseCardTitleColorLight,
-      );
-      expect(
-        restored.courseCardTitleColorDark,
-        original.courseCardTitleColorDark,
-      );
-      expect(
-        restored.courseCardDetailColorLight,
-        original.courseCardDetailColorLight,
-      );
-      expect(
-        restored.courseCardDetailColorDark,
-        original.courseCardDetailColorDark,
-      );
-      expect(
-        restored.weekdayBarFontColorLight,
-        original.weekdayBarFontColorLight,
-      );
-      expect(
-        restored.weekdayBarFontColorDark,
-        original.weekdayBarFontColorDark,
-      );
-      expect(
-        restored.weekdayBarAccentColorLight,
-        original.weekdayBarAccentColorLight,
-      );
-      expect(
-        restored.weekdayBarAccentColorDark,
-        original.weekdayBarAccentColorDark,
-      );
-      expect(restored.timeAxisFontColorLight, original.timeAxisFontColorLight);
-      expect(restored.timeAxisFontColorDark, original.timeAxisFontColorDark);
-      expect(restored.linkCourseCardColors, original.linkCourseCardColors);
-      expect(restored.hideWeekends, original.hideWeekends);
-      expect(restored.spacingMode, original.spacingMode);
-      expect(restored.timeDisplayMode, original.timeDisplayMode);
-    });
-
-    test('v1 compat parses correctly', () {
-      final v1 = {
-        'v': 1,
-        'ccl': '#FFFFFF',
-        'ccd': '#000000',
-        'cdl': '#CCCCCC',
-        'cdd': '#333333',
-        'wbl': '#AAAAAA',
-        'wbd': '#555555',
-        'tal': '#BBBBBB',
-        'tad': '#444444',
-        'link': true,
-      };
-
-      final config = ThemeConfig.fromJson(v1);
-
-      expect(config.version, 1);
-      expect(config.courseCardTitleColorLight, '#FFFFFF');
-      expect(config.courseCardTitleColorDark, '#000000');
-      expect(config.courseCardDetailColorLight, '#CCCCCC');
-      expect(config.courseCardDetailColorDark, '#333333');
-      expect(config.weekdayBarFontColorLight, '#AAAAAA');
-      expect(config.weekdayBarFontColorDark, '#555555');
-      expect(config.timeAxisFontColorLight, '#BBBBBB');
-      expect(config.timeAxisFontColorDark, '#444444');
-      expect(config.linkCourseCardColors, true);
-      // v1 不包含这些字段
-      expect(config.seedColor, isNull);
-      expect(config.backgroundColor, isNull);
-      expect(config.weekdayBarAccentColorLight, isNull);
-    });
-
-    test('fromSettings -> applyToSettings is identity', () {
-      final settings = TimetableSettings.defaults().copyWith(
-        themeSeedColor: '#FF0000',
-        timetablePageBackgroundColor: '#FFFFFF',
-        courseCardTitleColorLight: '#111111',
-        weekdayBarAccentColorLight: '#2563EB',
-        weekdayBarAccentColorDark: '#93C5FD',
-      );
-
-      final config = ThemeConfig.fromSettings(settings);
-      final restored = config.applyToSettings(settings);
-
-      expect(restored.themeSeedColor, settings.themeSeedColor);
-      expect(
-        restored.timetablePageBackgroundColor,
-        settings.timetablePageBackgroundColor,
-      );
-      expect(
-        restored.courseCardTitleColorLight,
-        settings.courseCardTitleColorLight,
-      );
-      expect(
-        restored.weekdayBarAccentColorLight,
-        settings.weekdayBarAccentColorLight,
-      );
-      expect(
-        restored.weekdayBarAccentColorDark,
-        settings.weekdayBarAccentColorDark,
-      );
-    });
-
-    test('previewColors returns up to 4 colors', () {
-      const config = ThemeConfig(
-        seedColor: '#FF0000',
-        courseCardTitleColorLight: '#00FF00',
-        courseCardDetailColorLight: '#0000FF',
-        weekdayBarFontColorLight: '#FFFF00',
-        weekdayBarAccentColorLight: '#FF00FF',
-      );
-
-      final colors = config.previewColors;
-      expect(colors.length, 4);
-      expect(colors[0], '#FF0000');
-      expect(colors[1], '#00FF00');
-      expect(colors[2], '#0000FF');
-      expect(colors[3], '#FFFF00');
-    });
-  });
-
-  group('SavedTheme', () {
-    test('roundtrip preserves config', () {
-      final original = SavedTheme(
-        id: '123',
-        name: 'Test Theme',
-        config: const ThemeConfig(
-          seedColor: '#FF0000',
-          weekdayBarAccentColorLight: '#2563EB',
-        ),
-        createdAt: DateTime(2024),
-      );
-
-      final restored = SavedTheme.fromJson(original.toJson());
-
-      expect(restored.id, original.id);
-      expect(restored.name, original.name);
-      expect(restored.config.seedColor, original.config.seedColor);
-      expect(
-        restored.config.weekdayBarAccentColorLight,
-        original.config.weekdayBarAccentColorLight,
-      );
-      expect(restored.createdAt, original.createdAt);
-    });
-
-    test('themeData getter returns config toJson', () {
-      final theme = SavedTheme(
-        id: '123',
-        name: 'Test',
-        config: const ThemeConfig(seedColor: '#FF0000'),
-        createdAt: DateTime.now(),
-      );
-
-      expect(theme.themeData, theme.config.toJson());
-    });
-  });
-
-  group('hasThemeModifications', () {
-    test('returns false when no checkpoint', () {
-      final settings = TimetableSettings.defaults();
-      expect(settings.themeCheckpointConfig, isNull);
-      expect(settings.hasThemeModifications, isFalse);
-    });
-
-    test('returns false when settings match checkpoint', () {
-      const checkpoint = ThemeConfig(
-        seedColor: '#FF0000',
-        backgroundColor: '#FFFFFF',
-        courseCardTitleColorLight: '#111111',
-      );
-
-      final settings = TimetableSettings.defaults().copyWith(
-        themeSeedColor: '#FF0000',
-        timetablePageBackgroundColor: '#FFFFFF',
-        courseCardTitleColorLight: '#111111',
-        themeCheckpointName: 'Test Theme',
-        themeCheckpointConfig: checkpoint,
-      );
-
-      expect(settings.hasThemeModifications, isFalse);
-    });
-
-    test('returns true when a checkpoint field is modified', () {
-      const checkpoint = ThemeConfig(
-        seedColor: '#FF0000',
-        backgroundColor: '#FFFFFF',
-      );
-
-      final settings = TimetableSettings.defaults().copyWith(
-        themeSeedColor: '#00FF00', // 修改了
-        timetablePageBackgroundColor: '#FFFFFF',
-        themeCheckpointName: 'Test Theme',
-        themeCheckpointConfig: checkpoint,
-      );
-
-      expect(settings.hasThemeModifications, isTrue);
-    });
-
-    test('returns false when only non-checkpoint fields differ', () {
-      // checkpoint 只设置 seedColor，其他字段为 null
-      const checkpoint = ThemeConfig(seedColor: '#FF0000');
-
-      final settings = TimetableSettings.defaults().copyWith(
-        themeSeedColor: '#FF0000', // 与 checkpoint 一致
-        courseCardTitleColorLight: '#999999', // checkpoint 中为 null，不应比较
-        themeCheckpointName: 'Test Theme',
-        themeCheckpointConfig: checkpoint,
-      );
-
-      expect(settings.hasThemeModifications, isFalse);
-    });
-
-    test('handles boolean fields correctly', () {
-      const checkpoint = ThemeConfig(
-        useUnifiedCardColor: true,
-        linkCourseCardColors: true,
-        hideWeekends: false,
-      );
-
-      final settingsUnmodified = TimetableSettings.defaults().copyWith(
-        timetableUseUnifiedCardColor: true,
-        linkCourseCardColors: true,
-        timetableHideWeekends: false,
-        themeCheckpointName: 'Test',
-        themeCheckpointConfig: checkpoint,
-      );
-
-      final settingsModified = TimetableSettings.defaults().copyWith(
-        timetableUseUnifiedCardColor: false, // 修改了
-        linkCourseCardColors: true,
-        timetableHideWeekends: false,
-        themeCheckpointName: 'Test',
-        themeCheckpointConfig: checkpoint,
-      );
-
-      expect(settingsUnmodified.hasThemeModifications, isFalse);
-      expect(settingsModified.hasThemeModifications, isTrue);
-    });
-  });
-
-  group('clearThemeCheckpoint', () {
-    test('clears both checkpoint fields', () {
-      final settings = TimetableSettings.defaults().copyWith(
-        themeCheckpointName: 'Test Theme',
-        themeCheckpointConfig: const ThemeConfig(seedColor: '#FF0000'),
-      );
-
-      expect(settings.themeCheckpointName, isNotNull);
-      expect(settings.themeCheckpointConfig, isNotNull);
-
-      final cleared = settings.copyWith(clearThemeCheckpoint: true);
-
-      expect(cleared.themeCheckpointName, isNull);
-      expect(cleared.themeCheckpointConfig, isNull);
-    });
-
-    test('preserves checkpoint when clearThemeCheckpoint is false', () {
-      final settings = TimetableSettings.defaults().copyWith(
-        themeCheckpointName: 'Test Theme',
-        themeCheckpointConfig: const ThemeConfig(seedColor: '#FF0000'),
-      );
-
-      final preserved = settings.copyWith();
-
-      expect(preserved.themeCheckpointName, 'Test Theme');
-      expect(preserved.themeCheckpointConfig?.seedColor, '#FF0000');
-    });
-
-    test('clearThemeCheckpoint takes priority over provided values', () {
-      final settings = TimetableSettings.defaults().copyWith(
-        themeCheckpointName: 'Old Theme',
-        themeCheckpointConfig: const ThemeConfig(seedColor: '#FF0000'),
-      );
-
-      // 即使传入新值，clearThemeCheckpoint: true 也会清空
-      final cleared = settings.copyWith(
-        clearThemeCheckpoint: true,
-        themeCheckpointName: 'New Theme',
-        themeCheckpointConfig: const ThemeConfig(seedColor: '#00FF00'),
-      );
-
-      expect(cleared.themeCheckpointName, isNull);
-      expect(cleared.themeCheckpointConfig, isNull);
-    });
-  });
-
-  group('themeCheckpoint serialization', () {
-    test('roundtrip preserves checkpoint fields', () {
-      const checkpoint = ThemeConfig(
-        seedColor: '#FF0000',
-        backgroundColor: '#FFFFFF',
-        courseCardTitleColorLight: '#111111',
-        weekdayBarAccentColorLight: '#2563EB',
-      );
-
-      final settings = TimetableSettings.defaults().copyWith(
-        themeCheckpointName: 'Blue Theme',
-        themeCheckpointConfig: checkpoint,
-      );
-
-      final restored = TimetableSettings.fromJson(settings.toJson());
-
-      expect(restored.themeCheckpointName, 'Blue Theme');
-      expect(restored.themeCheckpointConfig, isNotNull);
-      expect(restored.themeCheckpointConfig!.seedColor, '#FF0000');
-      expect(restored.themeCheckpointConfig!.backgroundColor, '#FFFFFF');
-      expect(
-        restored.themeCheckpointConfig!.courseCardTitleColorLight,
-        '#111111',
-      );
-      expect(
-        restored.themeCheckpointConfig!.weekdayBarAccentColorLight,
-        '#2563EB',
-      );
-    });
-
-    test('handles null checkpoint in JSON', () {
-      final json = TimetableSettings.defaults().toJson();
-      // 默认值没有 checkpoint 字段
-      expect(json.containsKey('themeCheckpointName'), isFalse);
-      expect(json.containsKey('themeCheckpointConfig'), isFalse);
-
-      final restored = TimetableSettings.fromJson(json);
-      expect(restored.themeCheckpointName, isNull);
-      expect(restored.themeCheckpointConfig, isNull);
-    });
   });
 
   test('home page background settings roundtrip in json', () {
@@ -915,126 +525,18 @@ void main() {
     );
   });
 
-  group('home top menu style settings', () {
-    test('defaults to list style with empty grid order', () {
-      final settings = TimetableSettings.defaults();
-
-      expect(settings.homeMenuStyle, HomeMenuStyle.list);
-      expect(settings.homeGridMenuActions, isEmpty);
-    });
-
-    test('menu style roundtrips in json', () {
-      final settings = TimetableSettings.defaults().copyWith(
-        homeMenuStyle: HomeMenuStyle.grid,
-        // copyWith 会补回钉住的「课表设置」。
-        homeGridMenuActions: ['tasks', 'overview', 'addCourse'],
-      );
-
-      final restored = TimetableSettings.fromJson(settings.toJson());
-      expect(restored.homeMenuStyle, HomeMenuStyle.grid);
-      expect(restored.homeGridMenuActions, [
-        'tasks',
-        'overview',
-        'addCourse',
-        HomeGridMenu.pinnedActionId,
-      ]);
-    });
-
-    test('grid order dedupes but leaves id validity to the ui layer', () {
-      // 模型层只做结构归一（去重/截断/剔除非字符串）；未知 id 是否有效
-      // 属于 UI 知识，由 resolveHomeGridMenuActions 在渲染时丢弃。
+  group('home top menu legacy settings', () {
+    test('legacy menu style and grid order keys are ignored on import', () {
+      // 八宫格形态与按钮排列自定义已移除；旧版本备份 JSON 里的这两个
+      // 字段被 fromJson 直接忽略，不参与归一化也不再回写。
       final json = TimetableSettings.defaults().toJson()
-        ..['homeGridMenuActions'] = [
-          'overview',
-          'bogus_action',
-          'overview',
-          'support',
-        ];
+        ..['homeMenuStyle'] = 'grid'
+        ..['homeGridMenuActions'] = ['tasks', 'overview'];
 
       final restored = TimetableSettings.fromJson(json);
-      expect(restored.homeGridMenuActions, [
-        'overview',
-        'bogus_action',
-        'support',
-        HomeGridMenu.pinnedActionId,
-      ]);
-    });
-
-    test('grid order caps at max slots', () {
-      final json = TimetableSettings.defaults().toJson()
-        ..['homeGridMenuActions'] = [
-          'update',
-          'overview',
-          'statistics',
-          'addCourse',
-          'exams',
-          'importCourses',
-          'tasks',
-          'settings',
-          'support',
-        ];
-
-      final restored = TimetableSettings.fromJson(json);
-      expect(restored.homeGridMenuActions.length, HomeGridMenu.maxSlots);
-      expect(restored.homeGridMenuActions.last, 'settings');
-    });
-
-    test('non-string entries are dropped', () {
-      final json = TimetableSettings.defaults().toJson()
-        ..['homeGridMenuActions'] = <Object?>['exams', 42, null, 'support'];
-
-      final restored = TimetableSettings.fromJson(json);
-      expect(restored.homeGridMenuActions, [
-        'exams',
-        'support',
-        HomeGridMenu.pinnedActionId,
-      ]);
-    });
-
-    test('settings entry is pinned back when missing', () {
-      // 钉住「课表设置」是防呆：删光可达设置的入口后，用户就再也进不了
-      // 自定义编辑器（先有鸡还是先有蛋）。解析路径强制补回。
-      final json = TimetableSettings.defaults().toJson()
-        ..['homeGridMenuActions'] = ['overview', 'tasks', 'support'];
-
-      final restored = TimetableSettings.fromJson(json);
-      expect(restored.homeGridMenuActions, [
-        'overview',
-        'tasks',
-        'support',
-        HomeGridMenu.pinnedActionId,
-      ]);
-    });
-
-    test('pinned entry evicts the last slot when grid is full', () {
-      // 满 8 个且没有 settings：挤掉末位补回钉住项，保证不超槽。
-      final json = TimetableSettings.defaults().toJson()
-        ..['homeGridMenuActions'] = [
-          'update',
-          'overview',
-          'statistics',
-          'addCourse',
-          'exams',
-          'importCourses',
-          'tasks',
-          'support',
-        ];
-
-      final restored = TimetableSettings.fromJson(json);
-      expect(restored.homeGridMenuActions.length, HomeGridMenu.maxSlots);
-      expect(restored.homeGridMenuActions.last, HomeGridMenu.pinnedActionId);
-      // 满槽时被挤掉的是末位的 support——钉住项优先级高于普通条目。
-      expect(restored.homeGridMenuActions.contains('support'), isFalse);
-    });
-
-    test('copyWith also enforces the pinned entry on write', () {
-      final settings = TimetableSettings.defaults().copyWith(
-        homeGridMenuActions: ['tasks'],
-      );
-      expect(settings.homeGridMenuActions, [
-        'tasks',
-        HomeGridMenu.pinnedActionId,
-      ]);
+      final serialized = restored.toJson();
+      expect(serialized.containsKey('homeMenuStyle'), isFalse);
+      expect(serialized.containsKey('homeGridMenuActions'), isFalse);
     });
   });
 
@@ -1177,19 +679,6 @@ void main() {
       final changed = base.copyWith(courseCardDetailColorLight: '#123456');
       expect(changed.courseCardDetailColorLight, '#123456');
       expect(changed.courseCardTitleColorLight, '#FFFFFF');
-    });
-
-    test('applyToSettings heals a corrupt linked theme config', () {
-      const config = ThemeConfig(
-        courseCardTitleColorLight: '#FFFFFF',
-        courseCardDetailColorLight: '#000000',
-        linkCourseCardColors: true,
-      );
-      final applied = config.applyToSettings(TimetableSettings.defaults());
-      expect(
-        applied.courseCardDetailColorLight,
-        applied.courseCardTitleColorLight,
-      );
     });
 
     test('liveBeforeClassQuickAction both value round-trips', () {

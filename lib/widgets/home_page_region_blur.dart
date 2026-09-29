@@ -4,11 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/timetable_settings.dart';
 import '../ui/hyperos/hyperos_blurred_header.dart';
-import '../ui/hyperos/liquid/hyperos_liquid_glass_surface.dart';
 import '../utils/home_page_background.dart';
-
-// Course chrome tests reference the glass mode through this library.
-export '../ui/hyperos/frosted/frosted_appearance.dart' show FrostedGlassMode;
 
 /// Reserved clearance between the weekday chrome band and the course grid.
 ///
@@ -16,37 +12,21 @@ export '../ui/hyperos/frosted/frosted_appearance.dart' show FrostedGlassMode;
 /// weekday glass. Keep this value so glass/cards are not flush.
 const homePageFrostedRegionSeamOverlap = 4.0;
 
-/// Extra glass painted above the chrome glass band's top edge so the liquid
-/// glass specular fringe is clipped off-screen instead of showing a 1px
-/// hairline seam.
+/// Extra frosted glass painted above the chrome band's top edge so the edge
+/// is clipped off-screen instead of showing a 1px hairline seam.
 const homePageChromeGlassTopEdgeOverdraw = 4.0;
 
-/// Extra glass painted beyond the band's left/right edges, outside the
-/// visible ClipRect, so the liquid-glass shape corners never cross the
-/// visible band.
+/// Extra frosted glass painted beyond the band's left/right edges, outside
+/// the visible ClipRect.
 ///
-/// The package's shaders only refract / edge-light within `thickness` pixels
-/// of the shape boundary; at the band's corners that displacement clamps
-/// against the backdrop capture and the edge-lighting pass paints a diagonal
-/// fringe ("picture frame" / triangle lines) that gets worse as thickness
-/// grows (max slider 40) and blur shrinks. Painting the glass far enough
-/// beyond the left/right edges (>= max thickness + margin) moves every
-/// corner off-screen while the top/bottom edges stay visible, so thickness
-/// tuning still changes the band's edge refraction instead of flattening
-/// the whole band.
+/// Painting past the left/right edges keeps the band's shape boundary (and
+/// any edge artefact there) off-screen, so the visible band reads as one
+/// continuous frosted sheet with no hairline seams at the sides.
 const homePageChromeGlassEdgeOverdraw = 48.0;
-
-/// Extra glass painted BELOW the band's bottom edge, outside the visible
-/// ClipRect.
-///
-/// Kept for API completeness; the preview narrow strip no longer hides the
-/// bottom edge — it keeps the edge at the band boundary (like the home page)
-/// and caps thickness proportionally so the rim-light stays a thin sheen.
-const homePageChromeGlassBottomEdgeOverdraw = 48.0;
 
 /// Whether any home chrome frosted band should paint over the wallpaper.
 ///
-/// Time column is intentionally excluded: it never uses blur / liquid glass.
+/// Time column is intentionally excluded: it never uses blur.
 bool homePageHasAnyChromeBlur(
   TimetableSettings settings, {
   required bool hasBackdrop,
@@ -62,14 +42,12 @@ bool homePageHasAnyChromeBlur(
 /// swap so the backdrop capture is stable before showing the frost.
 ///
 /// Zero when nothing frosted paints (no backdrop, global blur off, or both
-/// chrome bands off). Gaussian settles in one frame; liquid glass needs two.
+/// chrome bands off). Otherwise settles in one frame.
 int homePageChromeSettleFrameCount({
   required bool hasBackdrop,
   required bool frostedBlurEnabled,
   required bool headerBlurEnabled,
   required bool weekdayBarBlurEnabled,
-  required FrostedGlassMode glassMode,
-  bool homeChromeLiquidGlassEnabled = true,
 }) {
   if (!hasBackdrop || !frostedBlurEnabled) {
     return 0;
@@ -77,10 +55,7 @@ int homePageChromeSettleFrameCount({
   if (!headerBlurEnabled && !weekdayBarBlurEnabled) {
     return 0;
   }
-  // 「液态玻璃作用范围 → 首页玻璃带」关闭时按高斯磨砂结算。
-  final chromeIsLiquid = glassMode == FrostedGlassMode.liquidGlass &&
-      homeChromeLiquidGlassEnabled;
-  return chromeIsLiquid ? 2 : 1;
+  return 1;
 }
 
 HomePageBackgroundVisual homePageRegionChromeVisual({
@@ -133,11 +108,11 @@ HomePageBackgroundVisual homePageRegionChromeVisual({
   return (top: titleBandBottom, height: math.max(0, weekdayBarHeight));
 }
 
-/// One continuous frosted / liquid-glass chrome mask for the home timetable.
+/// One continuous frosted chrome mask for the home timetable.
 ///
-/// Covers status bar + title and/or the weekday bar only. The glass layer is
-/// physically bounded to that band (not a full-screen ClipPath), so liquid
-/// glass / BackdropFilter cannot bleed into the course grid.
+/// Covers status bar + title and/or the weekday bar only. The frosted layer is
+/// physically bounded to that band (not a full-screen ClipPath), so the blur
+/// cannot bleed into the course grid.
 class HomePageContinuousChromeFrostedOverlay extends StatelessWidget {
   const HomePageContinuousChromeFrostedOverlay({
     required this.headerBlurEnabled,
@@ -181,13 +156,10 @@ class HomePageContinuousChromeFrostedOverlay extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Push the glass beyond the visible band on the left and right
-              // so the shape's corners (the source of the diagonal
-              // "triangle" fringe / picture-frame streaks at high thickness)
-              // stay off-screen and are clipped. The top keeps its small
-              // hairline-seam overdraw; the bottom edge stays at the band
-              // boundary so thickness tuning keeps its visible edge
-              // refraction (see homePageChromeGlassEdgeOverdraw).
+              // Push the frost beyond the visible band on the left and right
+              // so its shape boundary stays off-screen and is clipped. The
+              // top keeps its small hairline-seam overdraw; the bottom edge
+              // stays at the band boundary.
               Positioned(
                 top: -homePageChromeGlassTopEdgeOverdraw,
                 left: -homePageChromeGlassEdgeOverdraw,
@@ -203,7 +175,7 @@ class HomePageContinuousChromeFrostedOverlay extends StatelessWidget {
   }
 }
 
-/// The chrome glass *material* — liquid glass or gaussian frost, per settings.
+/// The chrome glass *material* — frosted frost per settings.
 ///
 /// Public so the settings previews can paint the same material as the home
 /// page while positioning the band themselves:
@@ -211,38 +183,16 @@ class HomePageContinuousChromeFrostedOverlay extends StatelessWidget {
 /// status-bar inset and home-page constants, neither of which applies inside a
 /// scaled-down preview box.
 class HomePageChromeGlassFill extends StatelessWidget {
-  const HomePageChromeGlassFill({
-    this.borderRadius = 0,
-    this.useAncestorBackdropGroup = false,
-    this.maxThickness,
-    super.key,
-  });
-
-  /// Sample the nearest [BackdropGroup]'s full-size backdrop instead of the
-  /// band's own clipped bounds.
-  ///
-  /// The home page's band sits on the physical screen edges, so its own-bounds
-  /// backdrop capture never clamps visibly. Inside a settings preview the band
-  /// is a small interior rectangle: refraction displacement past its bounds
-  /// then clamps against the band's own edges and streaks all four into a
-  /// "picture frame". Setting this to true makes the band sample a full-size
-  /// grouped capture (wallpaper layer + [UndimmedBackdropCapture] inside the
-  /// group) so the displacement range stays inside the captured backdrop.
-  final bool useAncestorBackdropGroup;
-
-  final double? maxThickness;
+  const HomePageChromeGlassFill({this.borderRadius = 0, super.key});
 
   /// Corner radius of the glass shape itself. The chrome band is square (0);
-  /// the day-view summary card reuses this material with its card radius —
-  /// the liquid-glass shape must be rounded at the source, an outer ClipRRect
-  /// alone leaves square refraction / edge lighting.
+  /// the day-view summary card reuses this material with its card radius.
   final double borderRadius;
 
   /// Polarity-correct legibility wash colour over raw wallpaper.
   ///
-  /// The home chrome band itself no longer paints this scrim: in liquid-glass
-  /// mode it is plain glass, the same material as every other surface, and
-  /// chrome text contrast is handled by ink polarity
+  /// The home chrome band itself no longer paints this scrim: chrome text
+  /// contrast is handled by ink polarity
   /// ([homePageChromeForegroundForLuminance]). Kept public for surfaces that
   /// float directly on un-blurred wallpaper and still want a legibility wash —
   /// e.g. the wallpaper picker's header buttons.
@@ -261,23 +211,10 @@ class HomePageChromeGlassFill extends StatelessWidget {
 
   /// Wash colour a pre-blur stand-in must paint to read as this material.
   ///
-  /// Mirrors [build] exactly. The gaussian-frost path tints with
-  /// [HyperosBlurredHeader.homePageRegionTintColor]. The liquid-glass path is
-  /// just the header glassColor's milky tint — the band paints no extra
-  /// legibility scrim any more, so neither does the stand-in.
+  /// Mirrors [build]: the frosted path tints with
+  /// [HyperosBlurredHeader.homePageRegionTintColor].
   static Color standInWashColor(BuildContext context) {
     final useBlur = HyperosBlurredHeader.backdropBlurEnabled(context);
-    final appearance = FrostedAppearanceScope.of(context);
-    // 与 [HomePageChromeGlassFill.build] 同判：家族开关关 → 磨砂洗色。
-    if (useBlur &&
-        appearance.glassMode == FrostedGlassMode.liquidGlass &&
-        appearance.liquidGlassHomeChromeEnabled) {
-      return HyperosLiquidGlassSurface.settingsForRole(
-        role: HyperosLiquidGlassRole.header,
-        brightness: Theme.of(context).brightness,
-        tuning: appearance.liquidGlassTuning,
-      ).glassColor;
-    }
     return HyperosBlurredHeader.homePageRegionTintColor(
       context,
       withBlur: useBlur,
@@ -287,24 +224,8 @@ class HomePageChromeGlassFill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final useBlur = HyperosBlurredHeader.backdropBlurEnabled(context);
-    final appearance = FrostedAppearanceScope.of(context);
-    // 「液态玻璃作用范围 → 首页玻璃带」关闭时回退磨砂材质。
-    final useLiquidGlass =
-        useBlur &&
-        appearance.glassMode == FrostedGlassMode.liquidGlass &&
-        appearance.liquidGlassHomeChromeEnabled;
 
     const fill = SizedBox.expand();
-
-    if (useLiquidGlass) {
-      return HyperosLiquidGlassSurface(
-        role: HyperosLiquidGlassRole.header,
-        borderRadius: borderRadius,
-        useAncestorBackdropGroup: useAncestorBackdropGroup,
-        maxThickness: maxThickness,
-        child: fill,
-      );
-    }
 
     final frost = FrostedHeaderBackground(
       blurEnabled: useBlur,

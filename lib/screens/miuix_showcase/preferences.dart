@@ -47,7 +47,7 @@ class _PreferencesShowcaseState extends State<PreferencesShowcase> {
                 title: '通用列表项',
                 summary: '可点击、可带起始图标与末尾操作',
                 startAction: MiuixIcon(
-                  vector: MiuixIcons.extended.byName('info'),
+                  icon: miuixIconByName('info'),
                 ),
                 insideMargin: _itemMargin,
                 onClick: () {},
@@ -90,7 +90,7 @@ class _PreferencesShowcaseState extends State<PreferencesShowcase> {
                 title: '账号与安全',
                 summary: '密码、双重验证',
                 startAction: MiuixIcon(
-                  vector: MiuixIcons.extended.byName('lock'),
+                  icon: miuixIconByName('lock'),
                 ),
                 insideMargin: _itemMargin,
                 onClick: () {},
@@ -100,7 +100,7 @@ class _PreferencesShowcaseState extends State<PreferencesShowcase> {
                 title: '通用设置',
                 summary: '通知、存储、电池',
                 startAction: MiuixIcon(
-                  vector: MiuixIcons.extended.byName('settings'),
+                  icon: miuixIconByName('settings'),
                 ),
                 insideMargin: _itemMargin,
                 onClick: () {},

@@ -169,14 +169,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.3.3"
-  fast_gbk:
-    dependency: "direct main"
-    description:
-      name: fast_gbk
-      sha256: "3f0dc0309986f615404ea8d1fccf00a535dc00ee90b88d71492866bd95586489"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.0.0"
   ffi:
     dependency: transitive
     description:
@@ -526,14 +518,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "6.1.0"
-  liquid_glass_widgets:
-    dependency: "direct main"
-    description:
-      name: liquid_glass_widgets
-      sha256: "6eb319af884c7269403089873dfe7a2d948cbbf384b856ea3518d4a187aa5314"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.30.2"
   logging:
     dependency: transitive
     description:

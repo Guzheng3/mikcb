@@ -7,15 +7,13 @@ import 'hyperos_miuix_spec.dart';
 import 'hyperos_motion.dart';
 import 'hyperos_theme.dart';
 import 'hyperos_tokens.dart';
-import 'frosted/liquid_glass_degradation.dart';
 import 'hyperos_widgets.dart';
-import 'liquid/hyperos_liquid_glass_surface.dart';
 
-/// Extra height painted below an edge-flush glass sheet's bottom edge so the
-/// liquid-glass specular fringe along the straight bottom side lands outside
-/// the panel's clip and is cut — otherwise that fringe shows as a 1px
-/// hairline seam where the panel meets the screen bottom (same failure as the
-/// top edge, see `homePageChromeGlassTopEdgeOverdraw`).
+/// Extra height painted below an edge-flush sheet's bottom edge so any frosted
+/// fringe along the straight bottom side lands outside the panel's clip and is
+/// cut — otherwise it can show as a 1px hairline seam where the panel meets the
+/// screen bottom (same failure as the top edge, see
+/// `homePageChromeGlassTopEdgeOverdraw`).
 const hyperosEdgeSheetBottomOverdraw = 4.0;
 
 /// Marks descendants as sitting on a frosted (blur + milky tint) panel.
@@ -46,16 +44,6 @@ enum HyperosSheetChrome {
   /// Edge-flush panel: full width, top corners only, sits on screen bottom.
   /// Preferred for home timetable menus and action sheets.
   edge,
-}
-
-/// 本框的液态玻璃材质受「液态玻璃作用范围」哪一档开关控制。
-enum HyperosSheetLiquidGlassGroup {
-  /// 底部弹窗与对话框（showHyperosSheet / HyperosDialog 系，默认开）。
-  sheetDialog,
-
-  /// 对话式全屏选择面板——预设主题、字体等长列表选择弹窗（默认关：
-  /// 大面积折射在长列表上偏炫且更费电，默认保持经典磨砂）。
-  selectSheet,
 }
 
 /// Provides default [HyperosSheetChrome] for nested [HyperosSheetFrame]s.
@@ -97,9 +85,6 @@ class HyperosSheetFrame extends StatelessWidget {
     this.maxHeight,
     this.frosted = true,
     this.chrome,
-    this.liquidGlassRole = HyperosLiquidGlassRole.modal,
-    this.liquidGlassContentLegibilityFill = false,
-    this.liquidGlassGroup = HyperosSheetLiquidGlassGroup.sheetDialog,
   });
 
   final Widget child;
@@ -112,33 +97,6 @@ class HyperosSheetFrame extends StatelessWidget {
 
   /// When null, uses [HyperosSheetChromeScope] or [HyperosSheetChrome.floating].
   final HyperosSheetChrome? chrome;
-
-  /// Material role used when [frosted] resolves to liquid glass.
-  ///
-  /// All modal shells default to [HyperosLiquidGlassRole.modal] so dialogs,
-  /// action sheets, and pickers share one clear material. Override this only
-  /// for a deliberately different embedded surface.
-  final HyperosLiquidGlassRole liquidGlassRole;
-
-  /// Whether liquid-glass content receives the extra opaque legibility fill.
-  ///
-  /// Defaults to false so every sheet/dialog uses the same clear material as
-  /// the home chrome band (9de96b8 / A 方案通透统一). Set true explicitly
-  /// only for a deliberately milky panel.
-  final bool liquidGlassContentLegibilityFill;
-
-  /// 「液态玻璃作用范围」开关档位：本框液态材质跟随弹窗对话框（默认）
-  /// 还是对话式全屏选择面板（预设主题等长列表选择弹窗）。
-  final HyperosSheetLiquidGlassGroup liquidGlassGroup;
-
-  /// 本框当前是否允许使用液态玻璃材质（全局模式 × 家族开关）。
-  bool _liquidGlassAllowed(FrostedAppearance appearance) =>
-      switch (liquidGlassGroup) {
-        HyperosSheetLiquidGlassGroup.sheetDialog =>
-          appearance.liquidGlassSheetDialogEnabled,
-        HyperosSheetLiquidGlassGroup.selectSheet =>
-          appearance.liquidGlassSelectSheetEnabled,
-      };
 
   @override
   Widget build(BuildContext context) {
@@ -268,27 +226,6 @@ class HyperosSheetFrame extends StatelessWidget {
     required BuildContext context,
     required BorderRadius borderRadius,
   }) {
-    final appearance = FrostedAppearanceScope.of(context);
-
-    // Liquid glass mode: real-time refraction shader panel. Checked before
-    // the gaussian blur gate because liquid glass carries its own blur —
-    // gating it on backdropBlurEnabled (liveBlurSupported && blurEnabled)
-    // would make the frame a solid gray slab on desktop/web while the nested
-    // tiles keep rendering liquid glass.
-    // 「液态玻璃作用范围」对应家族开关关闭时，整框回退磨砂/实底材质。
-    if (appearance.glassMode == FrostedGlassMode.liquidGlass &&
-        _liquidGlassAllowed(appearance) &&
-        !LiquidGlassDegradation.shouldDegrade(context)) {
-      return HyperosLiquidGlassSurface(
-        role: liquidGlassRole,
-        borderRadius: borderRadius.topLeft.x,
-        instantUnderlay: true,
-        useAncestorBackdropGroup: true,
-        contentLegibilityFill: liquidGlassContentLegibilityFill,
-        child: const SizedBox.expand(),
-      );
-    }
-
     final useBlur = HyperosBlurredHeader.backdropBlurEnabled(context);
 
     // Blur off → solid opaque panel (no translucent scrim over the page).
@@ -319,29 +256,6 @@ class HyperosSheetFrame extends StatelessWidget {
     required BorderRadius borderRadius,
     required Widget content,
   }) {
-    final appearance = FrostedAppearanceScope.of(context);
-
-    // Liquid glass mode: real-time refraction shader panel. Checked before
-    // the gaussian blur gate because liquid glass carries its own blur —
-    // gating it on backdropBlurEnabled (liveBlurSupported && blurEnabled)
-    // would make the frame a solid gray slab on desktop/web while nested
-    // tiles keep rendering liquid glass.
-    // 「液态玻璃作用范围」对应家族开关关闭时，整框回退磨砂/实底材质。
-    if (appearance.glassMode == FrostedGlassMode.liquidGlass &&
-        _liquidGlassAllowed(appearance) &&
-        !LiquidGlassDegradation.shouldDegrade(context)) {
-      return HyperosFrostedPanelScope(
-        child: HyperosLiquidGlassSurface(
-          role: liquidGlassRole,
-          borderRadius: borderRadius.topLeft.x,
-          instantUnderlay: true,
-          useAncestorBackdropGroup: true,
-          contentLegibilityFill: liquidGlassContentLegibilityFill,
-          child: content,
-        ),
-      );
-    }
-
     final useBlur = HyperosBlurredHeader.backdropBlurEnabled(context);
 
     // Blur off → solid opaque panel (no translucent scrim over the page).

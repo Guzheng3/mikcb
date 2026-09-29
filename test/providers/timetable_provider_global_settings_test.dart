@@ -116,27 +116,17 @@ void main() {
     expect(provider.settings.courseCardFontSize, 11.5);
   });
 
-  test('updateSettings (batch/theme path) also only pins changed fields',
-      () async {
+  test('updateSettings (batch path) also only pins changed fields', () async {
     final provider = await createProvider();
     await provider.updateGlobalTimetableSettings(
-      TimetableSettings.defaults().copyWith(
-        themeSeedColor: '#FF0000',
-        courseCardFontSize: 15,
-      ),
+      TimetableSettings.defaults().copyWith(courseCardFontSize: 15),
     );
 
-    // 批量路径（主题导入等）改字号。
+    // 批量路径改字号。
     await provider.updateSettings(
       provider.settings.copyWith(courseCardFontSize: 21),
     );
     expect(provider.settings.courseCardFontSize, 21);
-
-    // 种子色仍是继承态：全局改，课表跟。
-    await provider.updateGlobalTimetableSettings(
-      provider.globalSettings!.copyWith(themeSeedColor: '#00FF00'),
-    );
-    expect(provider.settings.themeSeedColor, '#00FF00');
   });
 
   test('global settings persist across provider instances', () async {

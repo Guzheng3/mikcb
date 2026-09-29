@@ -683,30 +683,6 @@ class _LiveTestingSettingsScreenState extends State<_LiveTestingSettingsScreen>
                             ? null
                             : _startCourseIslandTest,
                       ),
-                      if (!kReleaseMode) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          l10n.liveTestingUmengHint,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
-                          children: [
-                            HyperosButton(
-                              label: l10n.liveTestingCrashAction,
-                              variant: HyperosButtonVariant.secondary,
-                              onPressed: () => _triggerUmengTestCrash(context),
-                            ),
-                            HyperosButton(
-                              label: l10n.liveTestingAnrAction,
-                              variant: HyperosButtonVariant.secondary,
-                              onPressed: () => _triggerUmengTestAnr(context),
-                            ),
-                          ],
-                        ),
-                      ],
                     ],
                   ),
                 ),
@@ -1190,28 +1166,6 @@ class _DebugValueRow extends StatelessWidget {
       ),
     );
   }
-}
-
-Future<void> _triggerUmengTestCrash(BuildContext context) async {
-  if (!context.mounted) return;
-  showAppToast(
-    context,
-    message: AppLocalizations.of(context)!.liveTestingCrashSoon,
-    kind: AppToastKind.warning,
-  );
-  await Future<void>.delayed(const Duration(milliseconds: 300));
-  await UmengAnalyticsService.triggerTestCrash();
-}
-
-Future<void> _triggerUmengTestAnr(BuildContext context) async {
-  if (!context.mounted) return;
-  showAppToast(
-    context,
-    message: AppLocalizations.of(context)!.liveTestingAnrSoon,
-    kind: AppToastKind.warning,
-  );
-  await Future<void>.delayed(const Duration(milliseconds: 300));
-  await UmengAnalyticsService.triggerTestAnr();
 }
 
 void _showLiveTestingTriggerResult(

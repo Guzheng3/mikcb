@@ -14,31 +14,16 @@ abstract final class DiagnosticLogLevels {
   static const DiagnosticLogLevel verbose = 'verbose';
 }
 
-class UmengAnalyticsService {
-  UmengAnalyticsService._();
+/// 本地应用诊断：事件只写入设备私有目录的日志文件，不上传任何远端服务。
+class AppDiagnosticService {
+  AppDiagnosticService._();
 
   static const MethodChannel _channel = MethodChannel(
-    'vip.qinghan.withu/umeng_analytics',
+    'vip.qinghan.withu/app_diagnostics',
   );
 
-  static bool _initialized = false;
   static final Map<String, DateTime> _lastReportAt = {};
   static const Duration _reportThrottleWindow = Duration(minutes: 2);
-
-  static Future<void> initializeIfNeeded() async {
-    if (_initialized || defaultTargetPlatform != TargetPlatform.android) {
-      return;
-    }
-
-    try {
-      await _channel.invokeMethod<bool>('initializeIfNeeded');
-      _initialized = true;
-    } on MissingPluginException {
-      // Ignore when the platform implementation is unavailable.
-    } catch (_) {
-      // Keep startup resilient even if analytics init fails.
-    }
-  }
 
   static Future<void> reportUnhandledError(
     Object error,
@@ -52,7 +37,7 @@ class UmengAnalyticsService {
       error: error,
       stackTrace: stackTrace,
     );
-    if (!_initialized || defaultTargetPlatform != TargetPlatform.android) {
+    if (defaultTargetPlatform != TargetPlatform.android) {
       return;
     }
     await _reportCustomLog(
@@ -84,7 +69,7 @@ class UmengAnalyticsService {
       error: error,
       stackTrace: stackTrace,
     );
-    if (!_initialized || defaultTargetPlatform != TargetPlatform.android) {
+    if (defaultTargetPlatform != TargetPlatform.android) {
       return;
     }
     await _reportCustomLog(
@@ -214,21 +199,5 @@ class UmengAnalyticsService {
     } catch (_) {
       return false;
     }
-  }
-
-  static Future<void> triggerTestCrash() async {
-    if (defaultTargetPlatform != TargetPlatform.android) {
-      return;
-    }
-    await initializeIfNeeded();
-    await _channel.invokeMethod<void>('triggerTestCrash');
-  }
-
-  static Future<void> triggerTestAnr() async {
-    if (defaultTargetPlatform != TargetPlatform.android) {
-      return;
-    }
-    await initializeIfNeeded();
-    await _channel.invokeMethod<void>('triggerTestAnr');
   }
 }

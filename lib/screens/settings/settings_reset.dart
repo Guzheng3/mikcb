@@ -38,7 +38,6 @@ TimetableSettings applySettingsReset(
   const d = _settingsDefaults;
   return switch (scope) {
     SettingsResetScope.courseCard => current.copyWith(
-      courseCardSurfaceStyle: d.courseCardSurfaceStyle,
       courseCardShowName: d.courseCardShowName,
       courseCardShowTeacher: d.courseCardShowTeacher,
       courseCardShowLocation: d.courseCardShowLocation,
@@ -89,24 +88,15 @@ TimetableSettings applySettingsReset(
       homePageWallpaperPath: d.homePageWallpaperPath,
       clearHomePageBackgroundImagePath: true,
     ),
-    // 外观页瘦身后的范围：主题模式 / 字体 / 主题种子色与玻璃质感。
+    // 外观页瘦身后的范围：主题模式 / 字体 / 玻璃质感。
+    // 主题色已固定为 TimetableSettings.defaultThemeSeedColor，不参与重置。
     SettingsResetScope.appearance => current.copyWith(
       appThemeMode: d.appThemeMode,
       appFontMode: d.appFontMode,
-      foruiTheme: d.foruiTheme,
-      themeSeedColor: d.themeSeedColor,
-      frostedGlassMode: d.frostedGlassMode,
       frostedBlurEnabled: d.frostedBlurEnabled,
       frostedSheetBlurSigma: d.frostedSheetBlurSigma,
       frostedSheetTintAlpha: d.frostedSheetTintAlpha,
       frostedSheetBarrierAlpha: d.frostedSheetBarrierAlpha,
-      liquidGlassTuning: d.liquidGlassTuning,
-      liquidGlassPopupEnabled: d.liquidGlassPopupEnabled,
-      liquidGlassSelectSheetEnabled: d.liquidGlassSelectSheetEnabled,
-      liquidGlassSheetDialogEnabled: d.liquidGlassSheetDialogEnabled,
-      liquidGlassHomeChromeEnabled: d.liquidGlassHomeChromeEnabled,
-      liquidGlassDockEnabled: d.liquidGlassDockEnabled,
-      liquidGlassPickerButtonsEnabled: d.liquidGlassPickerButtonsEnabled,
     ),
     // 已删除 UI 的字段（设置 Tab、右上角菜单形态、内容避让布局、
     // 日/周布尔开关——已被 glassDockActions 取代）不纳入任何 scope。

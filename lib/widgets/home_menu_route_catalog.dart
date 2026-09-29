@@ -4,7 +4,6 @@ import 'package:university_timetable/screens/add_course_screen.dart';
 import 'package:university_timetable/screens/add_exam_screen.dart';
 import 'package:university_timetable/screens/add_schedule_item_screen.dart';
 import 'package:university_timetable/screens/add_task_screen.dart';
-import 'package:university_timetable/screens/advanced_material_settings_screen.dart';
 import 'package:university_timetable/screens/changelog_screen.dart';
 import 'package:university_timetable/screens/couple_timetable_settings_screen.dart';
 import 'package:university_timetable/screens/course_conflict_screen.dart';
@@ -26,7 +25,7 @@ import 'package:university_timetable/screens/time_scheme_management_screen.dart'
 import 'package:university_timetable/screens/timetable_profiles_screen.dart';
 import 'package:university_timetable/screens/user_guide_screen.dart';
 
-/// 八宫格/玻璃坞的页面路由目录：集中维护「入口 id → 目标页面」映射。
+/// 首页菜单/玻璃坞的页面路由目录：集中维护「入口 id → 目标页面」映射。
 ///
 /// 拆分自 `home_menu_catalog.dart`：目录本体只保留条目元数据与分发逻辑，
 /// 屏幕类 import 集中到这里，消除 widgets → screens 的 27 处依赖以及
@@ -68,7 +67,7 @@ final Map<String, WidgetBuilder> kInlineDockPages = {
 /// id 对应的内嵌页构建器；未登记返回 null（调用方回退为推入路由）。
 WidgetBuilder? inlineDockPageFor(String id) => kInlineDockPages[id];
 
-/// 目录页构造器注册表：id → 页面实例。八宫格条目经 [homePage] 取页，
+/// 目录页构造器注册表：id → 页面实例。菜单条目经 [homePage] 取页，
 /// 拆分后 home_menu_catalog.dart 不再直接 import 任何 screen。
 final Map<String, Widget Function()> kHomeCatalogPages = {
   'overviewPage': () => const CourseOverviewScreen(),
@@ -91,7 +90,6 @@ final Map<String, Widget Function()> kHomeCatalogPages = {
   'coupleTimetablePage': () => const CoupleTimetableSettingsScreen(),
   'settingsPage': _buildSettingsScreen,
   'statisticsSettingsPage': () => const StatisticsSettingsScreen(),
-  'advancedMaterialSettingsPage': () => const AdvancedMaterialSettingsScreen(),
   'aboutPage': () => const AboutScreen(),
   'changelogPage': () => const ChangelogScreen(),
   'userGuidePage': () => const UserGuideScreen(),
@@ -111,7 +109,7 @@ Widget homePage(String key) {
 }
 
 /// 设置页注册表（依赖倒置）：timetable_settings_screen.dart 在库加载即
-/// 登记设置首页构造器与私有子页工厂，八宫格/玻璃坞目录经此回调取页，
+/// 登记设置首页构造器与私有子页工厂，首页菜单/玻璃坞目录经此回调取页，
 /// 避免本文件反向 import 设置页构成目录 ↔ 设置页的循环依赖。
 Widget? Function(String id)? _settingsSubpageResolver;
 Widget Function()? _settingsScreenBuilderOverride;

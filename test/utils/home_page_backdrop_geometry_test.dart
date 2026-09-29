@@ -41,7 +41,6 @@ void main() {
           frostedBlurEnabled: true,
           headerBlurEnabled: true,
           weekdayBarBlurEnabled: false,
-          glassMode: FrostedGlassMode.gaussian,
         ),
         0,
       );
@@ -51,7 +50,6 @@ void main() {
           frostedBlurEnabled: false,
           headerBlurEnabled: true,
           weekdayBarBlurEnabled: true,
-          glassMode: FrostedGlassMode.liquidGlass,
         ),
         0,
       );
@@ -64,20 +62,18 @@ void main() {
           frostedBlurEnabled: true,
           headerBlurEnabled: false,
           weekdayBarBlurEnabled: false,
-          glassMode: FrostedGlassMode.gaussian,
         ),
         0,
       );
     });
 
-    test('gaussian needs one settle frame; liquid needs two', () {
+    test('any frosted band needs one settle frame', () {
       expect(
         homePageChromeSettleFrameCount(
           hasBackdrop: true,
           frostedBlurEnabled: true,
           headerBlurEnabled: true,
           weekdayBarBlurEnabled: false,
-          glassMode: FrostedGlassMode.gaussian,
         ),
         1,
       );
@@ -87,9 +83,8 @@ void main() {
           frostedBlurEnabled: true,
           headerBlurEnabled: false,
           weekdayBarBlurEnabled: true,
-          glassMode: FrostedGlassMode.liquidGlass,
         ),
-        2,
+        1,
       );
     });
   });
@@ -115,7 +110,6 @@ void main() {
         homePageWallpaperPath: r'C:\does\not\exist\wallpaper.jpg',
         homePageHeaderBlurEnabled: true,
         frostedBlurEnabled: true,
-        frostedGlassMode: FrostedGlassMode.liquidGlass,
       );
       final readiness = await prepareHomePageVisualReadiness(settings);
       // hasHomePageBackdropImage uses existsSync; missing file → empty.

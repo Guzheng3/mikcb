@@ -47,7 +47,7 @@ void _seedInitializedPrefs(TimetableSettings settings) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const homeWidgetChannel = MethodChannel('vip.qinghan.withu/home_widget');
-  const analyticsChannel = MethodChannel('vip.qinghan.withu/umeng_analytics');
+  const analyticsChannel = MethodChannel('vip.qinghan.withu/app_diagnostics');
   const liveChannel = MethodChannel('vip.qinghan.withu/miui_live');
 
   setUp(() {

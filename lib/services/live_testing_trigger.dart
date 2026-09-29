@@ -7,8 +7,8 @@ import '../logging/app_log_messages.dart';
 import '../models/course.dart';
 import '../models/timetable_settings.dart';
 import '../providers/timetable_provider.dart';
+import '../services/app_diagnostic_service.dart';
 import '../services/miui_live_activities_service.dart';
-import '../services/umeng_analytics_service.dart';
 import 'live_testing_fixture_service.dart';
 
 enum LiveTestingTriggerStatus { success, inFlight, error }
@@ -170,7 +170,7 @@ Future<LiveTestingTriggerResult> triggerLiveUpdateProductionRefresh({
           '$homeHint',
     );
   } catch (error, stackTrace) {
-    await UmengAnalyticsService.reportDiagnostic(
+    await AppDiagnosticService.reportDiagnostic(
       'live_update_test_failed',
       AppLogMessages.liveUpdateTestFailed,
       error: error,
@@ -364,7 +364,7 @@ Future<LiveTestingTriggerResult> triggerLiveUpdateCourseTest({
       ),
     );
   } catch (error, stackTrace) {
-    await UmengAnalyticsService.reportDiagnostic(
+    await AppDiagnosticService.reportDiagnostic(
       'live_update_test_failed',
       AppLogMessages.liveUpdateTestFailed,
       error: error,

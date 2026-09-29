@@ -7,9 +7,8 @@ import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/providers/timetable_provider.dart';
 import 'package:university_timetable/screens/timetable_screen.dart';
 import 'package:university_timetable/ui/hyperos/frosted/frosted_appearance.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
-// 玻璃坞底栏现只有 日/周 两个 Tab（设置入口走 ⋮ 八宫格菜单），
+// 玻璃坞底栏现只有 日/周 两个 Tab（设置入口走 ⋮ 列表菜单），
 // 原三个「设置 Tab」场景（渲染/切回/日→设置→日）随该 Tab 一并删除。
 void main() {
   /// 泵起玻璃坞应用并返回其 provider（供测试读取 currentWeek 等）。
@@ -47,7 +46,7 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.byType(GlassTabBar), findsOneWidget);
+    expect(find.text('日课表'), findsOneWidget);
     return provider;
   }
 

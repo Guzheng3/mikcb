@@ -15,7 +15,7 @@ class ThemingShowcase extends StatelessWidget {
       ('动态取色', 'MiuixThemeController · 种子色 → 整套配色', const _DynamicThemePage()),
       ('文本样式', 'MiuixTextStyles 全部预设', const _TextStylesPage()),
       ('配色角色', 'MiuixColors 全部语义角色', const _ColorRolesPage()),
-      ('图标浏览', 'MiuixIcons.extended · 5 字重', const _IconBrowserPage()),
+      ('图标浏览', '可选图标名 → Material 图标', const _IconBrowserPage()),
     ];
     return ShowcasePage(
       title: '主题 Theming',
@@ -360,42 +360,18 @@ class _ColorChip extends StatelessWidget {
   }
 }
 
-/// 图标浏览：按字重展示 MiuixIcons.extended 全部图标。
-class _IconBrowserPage extends StatefulWidget {
+/// 图标浏览：展示可选图标名与其 Material 字形。
+class _IconBrowserPage extends StatelessWidget {
   const _IconBrowserPage();
-
-  @override
-  State<_IconBrowserPage> createState() => _IconBrowserPageState();
-}
-
-class _IconBrowserPageState extends State<_IconBrowserPage> {
-  MiuixIconWeight _weight = MiuixIconWeight.regular;
-
-  static const _weightNames = ['Light', 'Normal', 'Regular', 'Medium', 'Demi'];
-  static const _weights = [
-    MiuixIconWeight.light,
-    MiuixIconWeight.normal,
-    MiuixIconWeight.regular,
-    MiuixIconWeight.medium,
-    MiuixIconWeight.demibold,
-  ];
 
   @override
   Widget build(BuildContext context) {
     final c = MiuixTheme.of(context).colors;
-    final names = MiuixIcons.extended.names;
+    final names = kMiuixIconNames;
     return _SubPage(
       title: '图标浏览',
-      subtitle: '${names.length} 个扩展图标 · 5 字重',
+      subtitle: '${names.length} 个可选图标',
       children: [
-        const MiuixSmallTitle('字重'),
-        _Pad(
-          child: MiuixTabRow(
-            tabs: _weightNames,
-            selectedTabIndex: _weights.indexOf(_weight),
-            onTabSelected: (i) => setState(() => _weight = _weights[i]),
-          ),
-        ),
         const MiuixSmallTitle('全部图标'),
         _Pad(
           child: Wrap(
@@ -408,7 +384,7 @@ class _IconBrowserPageState extends State<_IconBrowserPage> {
                   child: Column(
                     children: [
                       MiuixIcon(
-                        vector: MiuixIcons.extended.byName(name, _weight),
+                        icon: miuixIconByName(name),
                         size: 28,
                         tint: c.onBackground,
                       ),

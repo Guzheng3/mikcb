@@ -37,16 +37,6 @@
         <domain includeSubdomains="false">10.0.2.2</domain>
     </domain-config>
 
-    <!-- Umeng analytics endpoints (native SDK, plaintext fallback). Keep the
-         scope tight: umeng.com/uc.cn/ucweb.com are Umeng-owned hosts. Do NOT
-         add broad CDNs (e.g. *.aliyuncs.com) here - those are shared by third
-         parties and would open a plaintext exfiltration channel. -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">umeng.com</domain>
-        <domain includeSubdomains="true">uc.cn</domain>
-        <domain includeSubdomains="true">ucweb.com</domain>
-    </domain-config>
-
     <!-- HTTP-only campus portals (course import WebView). -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="false">211.86.128.194</domain>

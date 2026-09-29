@@ -3,7 +3,7 @@ part of '../timetable_settings_screen.dart';
 /// 「首页与导航」二级页：从「外观」迁出的结构性设置（设置 IA 重构）。
 ///
 /// 迁入条目：首页导航形态、玻璃坞独立圆钮显隐与功能/图标、底栏按钮编排、
-/// 右上角菜单形态（homeMenuStyle）与八宫格自定义、首页标题样式。
+/// 首页标题样式。右上角「⋮」菜单固定为锚定列表弹窗，无自定义项。
 class _HomeNavigationSettingsScreen extends StatefulWidget {
   const _HomeNavigationSettingsScreen();
 
@@ -15,7 +15,7 @@ class _HomeNavigationSettingsScreen extends StatefulWidget {
 class _HomeNavigationSettingsScreenState
     extends State<_HomeNavigationSettingsScreen> {
   /// Visual groups on this page (not one card per control).
-  /// 0 nav form · 1 dock tabs ＋ grid-menu customize · 2 home title · 3 reset.
+  /// 0 nav form · 1 dock tabs（仅玻璃坞） · 2 home title · 3 reset.
   static const _homeNavigationSectionCount = 4;
 
   late final TimetableProvider _timetableProvider;
@@ -95,175 +95,116 @@ class _HomeNavigationSettingsScreenState
           ),
         ],
       ),
-      // 底栏（仅玻璃坞）与右上角「⋮」菜单：玻璃坞最多 5 个按钮自由编排
-      // （含 日/周 视图切换与目录全部条目）；菜单可在「列表 / 八宫格」
-      // 间切换，八宫格下提供按钮自定义入口。
-      1 => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (isGlassDock) ...[
-            const HyperosSectionGap(),
-            HyperosSettingsBlock(
-              title: l10n.glassDockCustomizeSectionTitle,
-              child: HyperosListGroup(
-                children: [
-                  HyperosSwitchTile(
-                    title: l10n.glassDockShowAddButtonTitle,
-                    subtitle: l10n.glassDockShowAddButtonSubtitle,
-                    value: _draft.glassDockShowAddButton,
-                    onChanged: (value) {
-                      _updateDraft(
-                        _draft.copyWith(glassDockShowAddButton: value),
-                      );
-                    },
-                  ),
-                  HyperosListTile(
-                    title: l10n.glassDockCustomizeTitle,
-                    details: l10n.homeGridCustomizeDetails(
-                      resolveGlassDockActionIds(_draft).length,
-                      HomeDockMenu.maxSlots,
-                    ),
-                    onTap: () async {
-                      await HyperosNavigation.push(
-                        context,
-                        settings: const RouteSettings(
-                          name: '/settings/glass-dock',
-                        ),
-                        builder: (_) => _GlassDockEditorScreen(
-                          initialIds: resolveGlassDockActionIds(_draft),
-                          onChanged: (ids) {
-                            _updateDraft(
-                              _draft.copyWith(glassDockActions: ids),
-                            );
-                          },
-                        ),
-                      );
-                      if (!mounted) return;
-                      setState(() {
-                        _draft = context.read<TimetableProvider>().settings;
-                      });
-                    },
-                  ),
-                  if (_draft.glassDockShowAddButton) ...[
-                    HyperosSelectTile<String>(
-                      label: l10n.glassDockRoundActionLabel,
-                      items: {
-                        l10n.homeMenuAddCourseTitle: 'addCourse',
-                        for (final entry in kHomeMenuCatalog)
-                          if (entry.visible()) entry.title(l10n): entry.id,
-                      },
-                      value: _draft.glassDockButtonEntryId.isEmpty
-                          ? 'addCourse'
-                          : _draft.glassDockButtonEntryId,
-                      onChanged: (value) {
-                        _updateDraft(
-                          _draft.copyWith(glassDockButtonEntryId: value),
-                        );
-                      },
-                    ),
-                    HyperosListTile(
-                      title: l10n.glassDockButtonIconTitle,
-                      details:
-                          _draft.glassDockButtonIconName ??
-                          l10n.glassDockButtonIconDefault,
-                      onTap: () async {
-                        await HyperosNavigation.push(
-                          context,
-                          settings: const RouteSettings(
-                            name: '/settings/glass-dock-icon',
-                          ),
-                          builder: (_) => _GlassDockIconPickerScreen(
-                            initialName: _draft.glassDockButtonIconName,
-                            onChanged: (name) {
-                              if (name == null) {
-                                _updateDraft(
-                                  _draft.copyWith(
-                                    clearGlassDockButtonIconName: true,
-                                  ),
-                                );
-                              } else {
-                                _updateDraft(
-                                  _draft.copyWith(
-                                    glassDockButtonIconName: name,
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                        );
-                        if (!mounted) return;
-                        setState(() {
-                          _draft =
-                              context.read<TimetableProvider>().settings;
-                        });
-                      },
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-          const HyperosSectionGap(),
-          HyperosSettingsBlock(
-            title: l10n.homeMenuCustomizeSectionTitle,
-            child: HyperosListGroup(
+      // 底栏（仅玻璃坞）：最多 5 个按钮自由编排（含 日/周 视图切换与
+      // 目录全部条目）；右上角「⋮」菜单固定为锚定列表弹窗，无自定义项。
+      1 => isGlassDock
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 菜单形态选择：列表（锚定弹窗）/ 八宫格（底部弹层）。
-                // 8833fcd 曾把 ⋮ 菜单收敛为八宫格唯一形态并移除引导页
-                // 卡片；应用户要求恢复双形态与设置入口。
-                HyperosSelectTile<HomeMenuStyle>(
-                  label: l10n.homeMenuStyleLabel,
-                  items: {
-                    l10n.homeMenuStyleList: HomeMenuStyle.list,
-                    l10n.homeMenuStyleGrid: HomeMenuStyle.grid,
-                  },
-                  value: _draft.homeMenuStyle,
-                  onChanged: (value) {
-                    _updateDraft(_draft.copyWith(homeMenuStyle: value));
-                  },
-                ),
-                // 菜单内容自定义：列表与八宫格两种形态共享同一份排列
-                // （homeGridMenuActions），编辑器与持久化无需区分形态。
-                HyperosListTile(
-                  title: l10n.homeMenuCustomizeTitle,
-                  details: l10n.homeGridCustomizeDetails(
-                    resolveHomeGridMenuEntries(_draft).length,
-                    HomeGridMenu.maxSlots,
-                  ),
-                  onTap: () async {
-                    await HyperosNavigation.push(
-                      context,
-                      settings: const RouteSettings(
-                        name: '/settings/home-menu',
-                      ),
-                      builder: (_) => _HomeGridMenuEditorScreen(
-                        initialIds: [
-                          for (final entry in resolveHomeGridMenuEntries(
-                            _draft,
-                          ))
-                            entry.id,
-                        ],
-                        // 预览瓷贴跟随草稿当前的主题 seed，与实机八宫格同色。
-                        themeSeedHex: _draft.themeSeedColor,
-                        onChanged: (ids) {
+                const HyperosSectionGap(),
+                HyperosSettingsBlock(
+                  title: l10n.glassDockCustomizeSectionTitle,
+                  child: HyperosListGroup(
+                    children: [
+                      HyperosSwitchTile(
+                        title: l10n.glassDockShowAddButtonTitle,
+                        subtitle: l10n.glassDockShowAddButtonSubtitle,
+                        value: _draft.glassDockShowAddButton,
+                        onChanged: (value) {
                           _updateDraft(
-                            _draft.copyWith(homeGridMenuActions: ids),
+                            _draft.copyWith(glassDockShowAddButton: value),
                           );
                         },
                       ),
-                    );
-                    if (!mounted) return;
-                    setState(() {
-                      _draft = context.read<TimetableProvider>().settings;
-                    });
-                  },
+                      HyperosListTile(
+                        title: l10n.glassDockCustomizeTitle,
+                        details: l10n.homeGridCustomizeDetails(
+                          resolveGlassDockActionIds(_draft).length,
+                          HomeDockMenu.maxSlots,
+                        ),
+                        onTap: () async {
+                          await HyperosNavigation.push(
+                            context,
+                            settings: const RouteSettings(
+                              name: '/settings/glass-dock',
+                            ),
+                            builder: (_) => _GlassDockEditorScreen(
+                              initialIds: resolveGlassDockActionIds(_draft),
+                              onChanged: (ids) {
+                                _updateDraft(
+                                  _draft.copyWith(glassDockActions: ids),
+                                );
+                              },
+                            ),
+                          );
+                          if (!mounted) return;
+                          setState(() {
+                            _draft = context.read<TimetableProvider>().settings;
+                          });
+                        },
+                      ),
+                      if (_draft.glassDockShowAddButton) ...[
+                        HyperosSelectTile<String>(
+                          label: l10n.glassDockRoundActionLabel,
+                          items: {
+                            l10n.homeMenuAddCourseTitle: 'addCourse',
+                            for (final entry in kHomeMenuCatalog)
+                              if (entry.visible()) entry.title(l10n): entry.id,
+                          },
+                          value: _draft.glassDockButtonEntryId.isEmpty
+                              ? 'addCourse'
+                              : _draft.glassDockButtonEntryId,
+                          onChanged: (value) {
+                            _updateDraft(
+                              _draft.copyWith(glassDockButtonEntryId: value),
+                            );
+                          },
+                        ),
+                        HyperosListTile(
+                          title: l10n.glassDockButtonIconTitle,
+                          details:
+                              _draft.glassDockButtonIconName ??
+                              l10n.glassDockButtonIconDefault,
+                          onTap: () async {
+                            await HyperosNavigation.push(
+                              context,
+                              settings: const RouteSettings(
+                                name: '/settings/glass-dock-icon',
+                              ),
+                              builder: (_) => _GlassDockIconPickerScreen(
+                                initialName: _draft.glassDockButtonIconName,
+                                onChanged: (name) {
+                                  if (name == null) {
+                                    _updateDraft(
+                                      _draft.copyWith(
+                                        clearGlassDockButtonIconName: true,
+                                      ),
+                                    );
+                                  } else {
+                                    _updateDraft(
+                                      _draft.copyWith(
+                                        glassDockButtonIconName: name,
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            );
+                            if (!mounted) return;
+                            setState(() {
+                              _draft =
+                                  context.read<TimetableProvider>().settings;
+                            });
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ],
-            ),
-          ),
-        ],
-      ),
+            )
+          : const SizedBox.shrink(),
       // 首页标题样式：预览 + 选择，自外观页原样迁入。
       2 => Column(
         mainAxisSize: MainAxisSize.min,

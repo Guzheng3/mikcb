@@ -6,7 +6,7 @@ import 'common.dart';
 /// 显示类组件演示：Text / Card / Badge / Divider / SmallTitle / BasicComponent。
 ///
 /// 所有文本统一引用 miuix 文本样式预设；所有图标使用 [MiuixIcon] +
-/// [MiuixIcons.extended] 矢量图标（不再使用 Material 默认图标）；同组演示均
+/// [miuixIconByName] 名称映射；同组演示均
 /// 用 [GroupCard] 收拢为圆角卡片，与 miuix 设置页布局保持一致。
 class DisplayShowcase extends StatelessWidget {
   const DisplayShowcase({super.key});
@@ -168,7 +168,7 @@ class DisplayShowcase extends StatelessWidget {
                       ? const MiuixBadge()
                       : MiuixBadge(child: MiuixText(label)),
                   child: MiuixIcon(
-                    vector: MiuixIcons.extended.byName(name),
+                    icon: miuixIconByName(name),
                     size: 28,
                     tint: colors.onBackground,
                   ),
@@ -281,7 +281,7 @@ class DisplayShowcase extends StatelessWidget {
           startAction: Padding(
             padding: const EdgeInsets.only(right: 12),
             child: MiuixIcon(
-              vector: MiuixIcons.extended.byName('contacts'),
+              icon: miuixIconByName('contacts'),
               size: 24,
               tint: colors.onBackground,
             ),

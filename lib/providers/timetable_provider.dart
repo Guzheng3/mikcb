@@ -178,7 +178,7 @@ class ScheduleDateRuleSaveResult {
 ///
 /// | # | 关注点 | 锚点成员 |
 /// |---|---|---|
-/// | 1 | 主题与外观 | `applyThemeWithUndo` / `saveTheme` / `renameTheme` |
+/// | 1 | 主题与外观 | `updateSettings` |
 /// | 2 | 派生查询 | `courseGroups` / `uniqueTeachers` / `activeTimeScheme` |
 /// | 3 | 生命周期/初始化 | `initialize` / `handleAppResumed` / `_loadDeferredData` |
 /// | 4 | 时间方案解析 | `resolveCourseTimeScheme` / `matchLocationTime` |
@@ -306,45 +306,8 @@ class TimetableProvider with ChangeNotifier {
   /// 全局显示设置原始值（未经课表覆盖）。null = 尚未配置。
   TimetableSettings? get globalSettings => _globalSettings;
 
-  // 主题撤销状态（仅保存主题相关字段，避免误回滚其他设置）
-  ThemeConfig? _undoThemeConfig;
-  String? _undoThemeName;
-  Timer? _undoTimer;
-
   /// 持久化写入纪元，用于检测 write-after-write 竞争
   int _writeEpoch = 0;
-
-  /// 是否有待撤销的主题变更
-  bool get hasPendingUndo => _undoThemeConfig != null;
-
-  /// 撤销主题名称
-  String? get undoThemeName => _undoThemeName;
-
-  /// 应用主题并保存撤销状态
-  Future<void> applyThemeWithUndo(
-    TimetableSettings newSettings, {
-    String? themeName,
-  }) async {
-    _undoThemeConfig = ThemeConfig.fromSettings(_settings);
-    _undoThemeName = themeName;
-    _undoTimer?.cancel();
-    _undoTimer = Timer(const Duration(seconds: 2), () {
-      _undoThemeConfig = null;
-      _undoThemeName = null;
-      notifyListeners();
-    });
-    await updateSettings(newSettings);
-  }
-
-  /// 撤销主题变更
-  Future<void> undoThemeChange() async {
-    if (_undoThemeConfig == null) return;
-    final restored = _undoThemeConfig!.applyToSettings(_settings);
-    _undoThemeConfig = null;
-    _undoThemeName = null;
-    _undoTimer?.cancel();
-    await updateSettings(restored);
-  }
 
   /// 批量更新设置（用于主题导入 / 撤销 / 传输合并）。
   ///
@@ -420,54 +383,6 @@ class TimetableProvider with ChangeNotifier {
       }
       unawaited(_syncLiveScheduleSnapshot());
       unawaited(_updateLiveActivity(syncScheduleSnapshot: false));
-    });
-  }
-
-  /// 保存主题
-  Future<void> saveTheme(String name, Map<String, dynamic> themeData) {
-    return _runMutation(() async {
-      final theme = SavedTheme(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: name,
-        config: ThemeConfig.fromJson(themeData),
-        createdAt: DateTime.now(),
-      );
-      final updatedThemes = [..._settings.savedThemes, theme];
-      _settings = _settings.copyWith(savedThemes: updatedThemes);
-      await _persistActiveProfileState();
-      notifyListeners();
-    });
-  }
-
-  /// 删除主题
-  Future<void> deleteTheme(String themeId) {
-    return _runMutation(() async {
-      final updatedThemes = _settings.savedThemes
-          .where((theme) => theme.id != themeId)
-          .toList();
-      _settings = _settings.copyWith(savedThemes: updatedThemes);
-      await _persistActiveProfileState();
-      notifyListeners();
-    });
-  }
-
-  /// 重命名主题
-  Future<void> renameTheme(String themeId, String newName) {
-    return _runMutation(() async {
-      final updatedThemes = _settings.savedThemes.map((theme) {
-        if (theme.id == themeId) {
-          return SavedTheme(
-            id: theme.id,
-            name: newName,
-            config: theme.config,
-            createdAt: theme.createdAt,
-          );
-        }
-        return theme;
-      }).toList();
-      _settings = _settings.copyWith(savedThemes: updatedThemes);
-      await _persistActiveProfileState();
-      notifyListeners();
     });
   }
 
@@ -1068,7 +983,6 @@ class TimetableProvider with ChangeNotifier {
   void dispose() {
     _holidayService.onRemoteHolidayDataUpdated = null;
     _liveActivityTimer?.cancel();
-    _undoTimer?.cancel();
     super.dispose();
   }
 
@@ -1158,7 +1072,6 @@ class TimetableProvider with ChangeNotifier {
   /// - sections / activeTimeSchemeId：由时间方案系统管理；
   /// - semesterWeekCount / semesterStartDate：每份课表自己的学期；
   /// - timetableHomeViewMode / timetableLastViewedDayOfWeek：浏览状态；
-  /// - savedThemes / themeCheckpoint*：课表自己的主题库。
   static const Set<String> _profileOwnedSettingKeys = {
     'sections',
     'activeTimeSchemeId',
@@ -1166,9 +1079,6 @@ class TimetableProvider with ChangeNotifier {
     'semesterStartDate',
     'timetableHomeViewMode',
     'timetableLastViewedDayOfWeek',
-    'savedThemes',
-    'themeCheckpointName',
-    'themeCheckpointConfig',
   };
 
   static bool _jsonEquals(Object? left, Object? right) {

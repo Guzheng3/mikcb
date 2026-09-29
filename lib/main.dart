@@ -7,7 +7,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/l10n/service_message_localizer.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -40,7 +39,7 @@ import 'services/debug_deep_link_service.dart';
 import 'services/app_migration_service.dart';
 import 'services/storage_service.dart';
 import 'services/android_animation_scale_service.dart';
-import 'services/umeng_analytics_service.dart';
+import 'services/app_diagnostic_service.dart';
 import 'services/withu_couple_auth_service.dart';
 import 'services/withu_couple_auto_sync_service.dart';
 import 'services/withu_couple_timetable_service.dart';
@@ -139,12 +138,6 @@ String _windowTitleForPackage(PackageInfo packageInfo, AppLocalizations l10n) {
 /// 纯色底上不触发 ANR。
 final Completer<void> _firstFrameReleased = Completer<void>();
 
-/// 玻璃 shader 预热 Future：runApp 后才启动（首帧是自绘启动画面、无玻璃
-/// 组件，不必挡在首帧前——低配机上多 pass shader 预热可达数百毫秒，是
-/// 启动白屏的大头）。首页换入前由启动流程 await 收口，保证首页玻璃首帧
-/// 依旧无占位闪烁；失败已被 catchError 吞掉，await 恒完成。
-Future<void> _glassShadersWarm = Future.value();
-
 void _releaseFirstFrame({required bool forced}) {
   if (_firstFrameReleased.isCompleted) return;
   _firstFrameReleased.complete();
@@ -235,7 +228,7 @@ Future<void> main() async {
           );
         }),
       );
-      // 预热诊断包名判定缓存：八宫格目录用它同步过滤调试/性能版专属
+      // 预热诊断包名判定缓存：菜单目录用它同步过滤调试/性能版专属
       // 入口（内存监控），不 await，晚到前该入口按不可见处理（保守）。
       unawaited(MemoryStatsService.warmDiagnosticsBuildCache());
       FairMemoryService.instance.ensureInitialized();
@@ -262,7 +255,7 @@ Future<void> main() async {
           ),
         );
         unawaited(
-          UmengAnalyticsService.reportUnhandledError(
+          AppDiagnosticService.reportUnhandledError(
             details.exception,
             stackTrace,
             category: 'flutter_framework_error',
@@ -280,7 +273,7 @@ Future<void> main() async {
           ),
         );
         unawaited(
-          UmengAnalyticsService.reportUnhandledError(
+          AppDiagnosticService.reportUnhandledError(
             error,
             stackTrace,
             category: 'flutter_platform_error',
@@ -292,8 +285,6 @@ Future<void> main() async {
       if (!kReleaseMode) {
         setupBlackBox();
       }
-      // liquid_glass_widgets 的 AdaptiveGlass 自行处理引擎自适应
-      // （Impeller 真折射 / Skia 轻量 shader / frosted 回退），无需启动探测。
       late final PackageInfo packageInfo;
       try {
         packageInfo = await PackageInfo.fromPlatform();
@@ -323,7 +314,7 @@ Future<void> main() async {
           '${packageInfo.buildNumber} package=${packageInfo.packageName}',
         ),
       );
-      // 依赖倒置登记：八宫格目录（widgets 层）经此回调取设置库私有子页，
+      // 依赖倒置登记：菜单目录（widgets 层）经此回调取设置库私有子页，
       // 拆分后 home_menu_catalog 不再直接 import 设置页（消除 widgets →
       // screens 循环依赖）。登记唯一的显式入口，早于任何菜单渲染。
       registerSettingsPages(
@@ -331,30 +322,8 @@ Future<void> main() async {
         subpageById: settingsSubpageById,
       );
       runApp(
-        LiquidGlassWidgets.wrap(
-          child: MyApp(
-            packageInfo: packageInfo,
-            timetableProvider: timetableProvider,
-          ),
-          // MaterialApp 集成：让玻璃组件跟随应用 ThemeMode（而非系统亮度）。
-          brightnessResolver: Theme.maybeBrightnessOf,
-        ),
-      );
-      // 玻璃 shader 预热放到启动画面展示期间并行跑（失败只记日志不阻断，
-      // 玻璃按未预热降级，绝不能因此卡死换页）。
-      _glassShadersWarm = LiquidGlassWidgets.initialize().catchError((
-        Object error,
-        StackTrace stackTrace,
-      ) {
-        unawaited(
-          AppLogService.instance.error(
-            'liquid_glass_warmup_failed',
-            '玻璃 shader 预热失败：$error',
-            error: error,
-            stackTrace: stackTrace,
-          ),
+        MyApp(packageInfo: packageInfo, timetableProvider: timetableProvider),
         );
-      });
       unawaited(_warmUpAfterFirstFrame(packageInfo));
     },
     (error, stackTrace) {
@@ -367,7 +336,7 @@ Future<void> main() async {
         ),
       );
       unawaited(
-        UmengAnalyticsService.reportUnhandledError(
+        AppDiagnosticService.reportUnhandledError(
           error,
           stackTrace,
           category: 'flutter_zone_error',
@@ -895,8 +864,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
         return;
       }
 
-      final hasAcceptedPrivacy = await _storageService
-          .hasAcceptedPrivacyPolicy();
       final hasSeenGuide = await _storageService.hasSeenUserGuide();
       if (!mounted) {
         return;
@@ -904,19 +871,15 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       final provider = context.read<TimetableProvider>();
 
       // 老用户快速路径：等待本地课表快照完成后再进入主界面。
-      if (hasAcceptedPrivacy && hasSeenGuide) {
+      if (hasSeenGuide) {
         await provider.initialize();
         // 启动画面保持到首页视觉资产（壁纸位图 / 预模糊磨砂 / 墨色亮度采样）
         // 就绪：放行后的第一帧必须是完整界面，不允许露出主题兜底的半成品
         // 底色。prime 内部有预算与异常兜底，不会拖死启动管线。
         await HomeStartupVisualPrimer.prime(provider.settings);
         _withuAutoSyncService.bind(provider);
-        // 收口玻璃预热：启动画面期间并行，首页换入前必须完成。
-        await _glassShadersWarm;
         _revealHomeOnce();
         unawaited(_checkWithuAppUpdate());
-        unawaited(AppLogService.instance.updatePrivacyAccepted(true));
-        unawaited(UmengAnalyticsService.initializeIfNeeded());
         unawaited(_checkPendingExternalImport());
         unawaited(_checkPendingWidgetLaunch());
         unawaited(
@@ -938,7 +901,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
         _storageService.isAppDataEffectivelyEmpty(),
         _storageService.hasCompletedOnboarding(),
         _storageService.hasHandledPackageMigration(),
-        Future<bool>.value(hasAcceptedPrivacy),
         Future<bool>.value(hasSeenGuide),
       ]);
 
@@ -948,8 +910,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       await Future.wait([providerInitFuture, legacyPackageFuture]);
       await HomeStartupVisualPrimer.prime(provider.settings);
       _withuAutoSyncService.bind(provider);
-      // 收口玻璃预热：启动画面期间并行，首页换入前必须完成。
-      await _glassShadersWarm;
       _revealHomeOnce();
       final legacyPackage = await legacyPackageFuture;
       final shouldShowMigrationGuide =
@@ -994,18 +954,9 @@ class _AppEntryScreenState extends State<AppEntryScreen>
       }
 
       final guideCompleted = await _openGuide(
-        requirePrivacyConsent: !hasAcceptedPrivacy,
-        initialPrivacyChecked: hasAcceptedPrivacy,
         markGuideSeenAfterExit: !hasSeenGuide,
       );
       if (!mounted || !guideCompleted) {
-        return;
-      }
-
-      if (await _storageService.hasAcceptedPrivacyPolicy()) {
-        unawaited(UmengAnalyticsService.initializeIfNeeded());
-      }
-      if (!mounted) {
         return;
       }
 
@@ -1157,38 +1108,17 @@ class _AppEntryScreenState extends State<AppEntryScreen>
     }
   }
 
-  Future<bool> _openGuide({
-    required bool requirePrivacyConsent,
-    required bool initialPrivacyChecked,
-    required bool markGuideSeenAfterExit,
-  }) async {
-    final action = await Navigator.of(context).push<GuideAction>(
+  Future<bool> _openGuide({required bool markGuideSeenAfterExit}) async {
+    await Navigator.of(context).push<void>(
       HyperosPageRoute(
         settings: const RouteSettings(name: '/user-guide'),
-        builder: (_) => UserGuideScreen(
-          requirePrivacyConsent: requirePrivacyConsent,
-          initialPrivacyChecked: initialPrivacyChecked,
-          onImportCourses: _runCourseImportFlow,
-          onRestoreBackup: () => _runBackupImportFlow(
-            forcedMode: _BackupImportMode.replaceCurrent,
-          ),
-        ),
+        builder: (_) => const UserGuideScreen(),
         fullscreenDialog: true,
       ),
     );
 
     if (!mounted) {
       return false;
-    }
-
-    if (requirePrivacyConsent) {
-      if (action != null) {
-        await _storageService.setAcceptedPrivacyPolicy(true);
-        await AppLogService.instance.updatePrivacyAccepted(true);
-        await UmengAnalyticsService.initializeIfNeeded();
-      } else {
-        return false;
-      }
     }
 
     if (markGuideSeenAfterExit) {
@@ -1299,16 +1229,6 @@ class _AppEntryScreenState extends State<AppEntryScreen>
     return false;
   }
 
-  Future<bool> _runCourseImportFlow() async {
-    final imported = await Navigator.of(context).push<bool>(
-      HyperosPageRoute(
-        settings: const RouteSettings(name: '/courses/import'),
-        builder: (_) => const CourseImportScreen(),
-      ),
-    );
-    return imported == true;
-  }
-
   Future<void> _checkPendingExternalImport() async {
     try {
       const channel = MethodChannel('vip.qinghan.withu/miui_live');
@@ -1406,32 +1326,40 @@ class _AppEntryScreenState extends State<AppEntryScreen>
 
   /// 情侣模式关闭时点桌面情侣卡片：卡片整块不可用，只把用户带回 App，
   /// 由这里弹窗引导手动开启（不再由分流逻辑替用户打开开关）。
+  ///
+  /// 弹窗不给按钮，只放一行「情侣模式」+ 开关：开关状态就是设置本身，
+  /// 拨动即落库并刷新卡片快照，弹窗本身不自动关闭（点外部收起）。
   Future<void> _promptCoupleModeOff() async {
     final l10n = AppLocalizations.of(context)!;
-    final navigator = Navigator.of(context);
-    final confirmed = await showHyperosDialog<bool>(
+    final provider = context.read<TimetableProvider>();
+    var enabled = provider.settings.coupleTimetableOverlayEnabled;
+    await showHyperosDialog<void>(
       context: context,
-      message: l10n.homeWidgetCoupleModeOffMessage,
-      actions: [
-        HyperosDialogAction(
-          label: l10n.cancelAction,
-          onPressed: () => navigator.pop(false),
+      body: StatefulBuilder(
+        builder: (context, setSheetState) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.homeWidgetCoupleModeOffMessage),
+            const SizedBox(height: 12),
+            HyperosSwitchTile(
+              title: l10n.coupleModeTitle,
+              value: enabled,
+              onChanged: (value) {
+                setSheetState(() => enabled = value);
+                unawaited(() async {
+                  await provider.updateSettings(
+                    provider.settings.copyWith(
+                      coupleTimetableOverlayEnabled: value,
         ),
-        HyperosDialogAction(
-          label: l10n.homeWidgetCoupleModeOffEnable,
-          isPrimary: true,
-          onPressed: () => navigator.pop(true),
+                  );
+                  await provider.syncCoupleTimetableWidgetSnapshot();
+                }());
+              },
         ),
       ],
+        ),
+      ),
     );
-    if (confirmed != true || !mounted) {
-      return;
-    }
-    final provider = context.read<TimetableProvider>();
-    await provider.updateSettings(
-      provider.settings.copyWith(coupleTimetableOverlayEnabled: true),
-    );
-    await provider.syncCoupleTimetableWidgetSnapshot();
   }
 
   @override

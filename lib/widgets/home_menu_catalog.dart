@@ -29,7 +29,7 @@ export 'home_menu_route_catalog.dart'
         resolveSettingsSubpage;
 
 /// Conditional top-menu action: shown only while the couple overlay is on.
-/// It intentionally stays out of the persistent grid menu catalog.
+/// It intentionally stays out of the persistent menu catalog.
 final HomeMenuEntry coupleLoginHomeMenuEntry = HomeMenuEntry(
   id: 'withuCoupleLogin',
   title: (l10n) => l10n.withuCoupleLoginMenuTitle,
@@ -58,15 +58,14 @@ final HomeMenuEntry coupleLoginHomeMenuEntry = HomeMenuEntry(
   },
 );
 
-/// 八宫格候选目录：应用内所有适合作为独立入口的二级页面与功能。
+/// 首页菜单候选目录：应用内所有适合作为独立入口的二级页面与功能。
 ///
 /// 原则：
 /// - 只收「点进去就有用」的完整页面；中间态流程页（如扫码发送需要先
 ///   携带 payload）与调试/演示页不收；
-/// - 内置九项沿用旧的 id（旧列表菜单的动作名），老用户已保存的
-///   排列无需迁移；addCourse 与 update 的实际导航仍由首页宿主处理，
-///   以保留日视图选中日期、更新检查等上下文；
-/// - 新增入口只要在 [kHomeMenuCatalog] 追加一条即可进入编辑器候选。
+/// - 内置条目沿用旧的 id（旧列表菜单的动作名）；addCourse 与 update 的
+///   实际导航仍由首页宿主处理，以保留日视图选中日期、更新检查等上下文；
+/// - 新增入口只要在 [kHomeMenuCatalog] 追加一条即可被菜单/玻璃坞复用。
 final List<HomeMenuEntry> kHomeMenuCatalog = [
   // ── 功能入口 ──────────────────────────────────────────────
   HomeMenuEntry(
@@ -110,7 +109,7 @@ final List<HomeMenuEntry> kHomeMenuCatalog = [
     title: (l10n) => l10n.courseRecolorTileTitle,
     icon: Icons.style_rounded,
     category: HomeMenuEntryCategory.features,
-    // 直接弹「课表重新配色」弹层（非页面）：八宫格/底栏圆钮/坞 Tab 的
+    // 直接弹「课表重新配色」弹层（非页面）：列表菜单/底栏圆钮/坞 Tab 的
     // 分发都走 entry.open，弹层在当前页上方浮现，空课表时内部 toast 提示。
     open: showCourseRecolorSheet,
   ),
@@ -299,15 +298,6 @@ final List<HomeMenuEntry> kHomeMenuCatalog = [
     open: (context) =>
         pushHomeMenuPage(context, homePage('statisticsSettingsPage')),
   ),
-  HomeMenuEntry(
-    id: 'advancedMaterialSettings',
-    title: (l10n) => l10n.advancedMaterialTitle,
-    icon: Icons.auto_awesome_outlined,
-    category: HomeMenuEntryCategory.preferences,
-    open: (context) =>
-        pushHomeMenuPage(context, homePage('advancedMaterialSettingsPage')),
-  ),
-
   // ── 关于与支持 ────────────────────────────────────────────
   HomeMenuEntry(
     id: 'aboutApp',
@@ -346,7 +336,7 @@ final List<HomeMenuEntry> kHomeMenuCatalog = [
         pushHomeMenuPage(context, homePage('openSourceLicensesPage')),
   ),
   // 内存监控与设置页开发者组同源门控：仅 .debug/.profile 包名（调试版、
-  // 性能版）可见，正式版用户不得经八宫格绕过该限制。
+  // 性能版）可见，正式版用户不得经菜单目录绕过该限制。
   HomeMenuEntry(
     id: 'memoryStats',
     title: (l10n) => l10n.memoryStatsEntryTitle,
@@ -357,7 +347,7 @@ final List<HomeMenuEntry> kHomeMenuCatalog = [
   ),
 ];
 
-/// 设置库内部的私有子页通过该工厂暴露给八宫格目录，避免为导航把一批
+/// 设置库内部的私有子页通过该工厂暴露给菜单目录，避免为导航把一批
 /// 子页类改成公有。
 HomeMenuEntry _settingsSubpageEntry({
   required String id,
@@ -392,36 +382,21 @@ HomeMenuEntry? homeMenuEntryById(String? id) {
   return null;
 }
 
-/// 把设置里持久化的八宫格排列解析成目录条目：丢弃未知 id、保持用户
-/// 排序；空表或全部失效时回退到 v2.0.5.5 的默认排列。
-List<HomeMenuEntry> resolveHomeGridMenuEntries(TimetableSettings settings) {
-  final resolved = <HomeMenuEntry>[];
-  for (final id in settings.homeGridMenuActions) {
-    final entry = homeMenuEntryById(id);
-    // visible() 门控：调试/性能版专属条目在正式版被就地丢弃，即使 id
-    // 是从旧设备迁移过来的持久化数据。
-    if (entry != null && entry.visible() && !resolved.contains(entry)) {
-      resolved.add(entry);
-    }
-  }
-  // 自愈：历史版本对「空排列」执行 normalize 时会钉入 'settings'，把
-  // 从未配置过的档位固化成单入口；叠加八宫格编辑器入口一度缺失，用户
-  // 无法自行恢复。这种「只剩钉住项」的档位视作未配置，回退默认八项。
-  final degenerate =
-      resolved.length == 1 && resolved.single.id == HomeGridMenu.pinnedActionId;
-  if (resolved.isEmpty || degenerate) {
-    return [for (final id in HomeGridMenu.defaultActions) homeMenuEntryById(id)]
-        .whereType<HomeMenuEntry>()
-        .where((entry) => entry.visible())
-        .toList(growable: false);
-  }
-  return List.unmodifiable(resolved);
+/// 首页右上角「更多」列表菜单的默认条目：按 [HomeMenuDefaults.defaultActions]
+/// 顺序解析目录；不可见条目（如正式版下的诊断工具）就地丢弃。
+List<HomeMenuEntry> resolveHomeMenuEntries() {
+  return [
+    for (final id in HomeMenuDefaults.defaultActions)
+      if (homeMenuEntryById(id) case final HomeMenuEntry entry
+          when entry.visible())
+        entry,
+  ];
 }
 
 /// Entries shown by the timetable top-right menu. The couple login action is
 /// transient: it leads the menu only while the overlay switch is on.
 List<HomeMenuEntry> resolveHomeTopMenuEntries(TimetableSettings settings) {
-  final entries = resolveHomeGridMenuEntries(settings);
+  final entries = resolveHomeMenuEntries();
   if (!settings.coupleTimetableOverlayEnabled) {
     return entries;
   }

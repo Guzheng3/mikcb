@@ -135,7 +135,6 @@ flutter build apk --release --flavor prod --target-platform android-arm64
 - Android Notification / Foreground Service / AlarmClock
 - GitHub Actions
 - GitHub Releases
-- 友盟移动统计 / U-APM
 
 ## 使用建议
 

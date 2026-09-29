@@ -108,7 +108,7 @@ internal object BeforeClassQuickActionRestore {
                 .apply()
         }
         if (applied || autoFailureReportedKeys.add(triggerKeyMillis)) {
-            UmengDiagnosticReporter.record(
+            AppDiagnosticReporter.record(
                 context = context.applicationContext,
                 category = "live_update_before_class_quick_action",
                 message = DiagnosticLogMessages.LIVE_UPDATE_BEFORE_CLASS_QUICK_ACTION,
@@ -248,7 +248,7 @@ internal object BeforeClassQuickActionRestore {
         val restored = silentRestored && dndRestored
         if (restored) {
             clearPending(context)
-            UmengDiagnosticReporter.record(
+            AppDiagnosticReporter.record(
                 context = context.applicationContext,
                 category = "live_update_before_class_quick_action_restored",
                 message = DiagnosticLogMessages.LIVE_UPDATE_BEFORE_CLASS_QUICK_ACTION_RESTORED,

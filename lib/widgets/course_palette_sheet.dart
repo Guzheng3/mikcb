@@ -103,13 +103,12 @@ class _CoursePaletteSheetBodyState extends State<_CoursePaletteSheetBody> {
                           isSelected: _selectedHex == colorHex,
                           selectionBorder: theme.colors.foreground,
                           borderColor: theme.colors.border,
-                          onTap: () =>
-                              setState(() => _selectedHex = colorHex),
+                          onTap: () => setState(() => _selectedHex = colorHex),
                         ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _SectionLabel(text: l10n.colorGroupAll),
+                  _SectionLabel(text: l10n.courseColorPaletteAllLabel),
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
@@ -120,16 +119,15 @@ class _CoursePaletteSheetBodyState extends State<_CoursePaletteSheetBody> {
                           isSelected: _selectedHex == colorHex,
                           selectionBorder: theme.colors.foreground,
                           borderColor: theme.colors.border,
-                          onTap: () =>
-                              setState(() => _selectedHex = colorHex),
+                          onTap: () => setState(() => _selectedHex = colorHex),
                         ),
                       _PaletteChip(
-                        colorHex: kPresetCourseColorHexes
-                                .contains(_selectedHex)
+                        colorHex: kPresetCourseColorHexes.contains(_selectedHex)
                             ? null
                             : _selectedHex,
-                        isSelected: !kPresetCourseColorHexes
-                            .contains(_selectedHex),
+                        isSelected: !kPresetCourseColorHexes.contains(
+                          _selectedHex,
+                        ),
                         selectionBorder: theme.colors.foreground,
                         borderColor: theme.colors.border,
                         onTap: _openCustomPicker,
@@ -163,8 +161,7 @@ class _CoursePaletteSheetBodyState extends State<_CoursePaletteSheetBody> {
                 child: HyperosButton(
                   label: l10n.useThisColor,
                   expand: true,
-                  onPressed: () =>
-                      Navigator.of(context).pop(_selectedHex),
+                  onPressed: () => Navigator.of(context).pop(_selectedHex),
                 ),
               ),
             ],
@@ -221,8 +218,9 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text,
-        style: theme.typography.body.xs2
-            .copyWith(color: theme.colors.mutedForeground),
+        style: theme.typography.body.xs2.copyWith(
+          color: theme.colors.mutedForeground,
+        ),
       ),
     );
   }
@@ -252,8 +250,8 @@ class _PaletteChip extends StatelessWidget {
     const size = 36.0;
     // 占位井用浅灰 secondaryVariant；colors.secondary 是兼容垫片上的
     // 深色 M3 强调色，浅色弹窗里会像一颗黑块。
-    final parsed = tryParseHexColor(colorHex) ??
-        HyperosColors.secondaryVariant(context);
+    final parsed =
+        tryParseHexColor(colorHex) ?? HyperosColors.secondaryVariant(context);
     // 浅色阶上白色对勾不可见，按亮度切换勾色（与卡片墨色守卫同思路）。
     final checkColor = parsed.computeLuminance() > 0.5
         ? const Color(0xFF1A1A1A)

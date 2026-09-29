@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:university_timetable/services/import_random_color_preferences.dart';
 import 'package:university_timetable/utils/course_color_palette.dart';
 import 'package:university_timetable/utils/hex_color.dart';
 
 void main() {
   group('kPresetCourseColorHexes', () {
-    test('数量达到 100，随机导入取色范围足够大', () {
+    test('数量达到 100，手动调色盘可选范围足够大', () {
       expect(kPresetCourseColorHexes.length, greaterThanOrEqualTo(100));
     });
 
@@ -55,135 +54,52 @@ void main() {
     });
   });
 
-  group('kCourseColorGroups', () {
-    test('活泼系/马卡龙系默认且不含灰黑色', () {
-      expect(ImportRandomColorPreferences.defaultGroupId, 'vibrant');
-
-      const neutralHexes = <String>{
-        '#CBD5E1',
-        '#94A3B8',
-        '#607D8B',
-        '#64748B',
-        '#475569',
-        '#334155',
-        '#D6D3D1',
-        '#A8A29E',
-        '#78716C',
-        '#795548',
-        '#57534E',
-        '#44403C',
-      };
-      const colorGroups = <List<String>>[
-        kPastelCourseColorGroupHexes,
-        kVibrantCourseColorGroupHexes,
-      ];
-      for (final groupHexes in colorGroups) {
-        for (final hex in groupHexes) {
-          expect(neutralHexes, isNot(contains(hex)), reason: '$hex 是灰黑色');
-        }
+  group('kRandomCourseColorHexes（随机配色唯一色板）', () {
+    test('恰好 30 色，全部合法可解析且无重复', () {
+      expect(kRandomCourseColorHexes, hasLength(30));
+      final pattern = RegExp(r'^#[0-9A-F]{6}$');
+      final seen = <String>{};
+      for (final hex in kRandomCourseColorHexes) {
+        expect(pattern.hasMatch(hex), isTrue, reason: '非法色值: $hex');
+        expect(tryParseHexColor(hex), isNotNull, reason: '解析失败: $hex');
+        expect(seen.add(hex.toUpperCase()), isTrue, reason: '重复色值: $hex');
       }
     });
 
-    test('组 id 唯一且不占用「全部颜色」保留 id', () {
-      final ids = kCourseColorGroups.map((group) => group.id).toSet();
-      expect(ids, hasLength(kCourseColorGroups.length));
-      expect(ids, isNot(contains(kCourseColorGroupAllId)));
-    });
-
-    test('每组色数足够随机取色、组内不重复、且全部 ⊆ 全量色板', () {
+    test('全部 ⊆ 手动调色盘全量色板（随机抽到的色都能手动再现）', () {
       final fullPalette = kPresetCourseColorHexes
           .map((hex) => hex.toUpperCase())
           .toSet();
-      for (final group in kCourseColorGroups) {
-        expect(
-          group.hexes.length,
-          greaterThanOrEqualTo(15),
-          reason: '${group.id} 色数过少',
-        );
-        final seenInGroup = <String>{};
-        for (final hex in group.hexes) {
-          final key = hex.toUpperCase();
+      for (final hex in kRandomCourseColorHexes) {
           expect(
             fullPalette,
-            contains(key),
-            reason: '${group.id} 的 $hex 不在全量色板中',
-          );
-          expect(
-            seenInGroup.add(key),
-            isTrue,
-            reason: '${group.id} 组内重复: $hex',
+          contains(hex.toUpperCase()),
+          reason: '$hex 不在全量色板中',
           );
         }
-      }
     });
 
-    test('courseColorGroupPalette：all 与未知 id 兜底回全量，预设组原样返回', () {
+    test('不含灰黑中性色（随机抽到的色都带明显色相）', () {
+      for (final hex in kRandomCourseColorHexes) {
       expect(
-        courseColorGroupPalette(kCourseColorGroupAllId),
-        same(kPresetCourseColorHexes),
+          courseCardInkIsNeutral(tryParseHexColor(hex)!),
+          isFalse,
+          reason: '$hex 是灰黑中性色',
       );
-      expect(
-        courseColorGroupPalette('nonexistent'),
-        same(kPresetCourseColorHexes),
-      );
-      for (final group in kCourseColorGroups) {
-        expect(courseColorGroupPalette(group.id), same(group.hexes));
-      }
-    });
-  });
-
-  group('鲜艳观感组（多巴胺/落日/海洋）', () {
-    const vividGroups = <String, List<String>>{
-      'dopamine': kDopamineCourseColorGroupHexes,
-      'sunset': kSunsetCourseColorGroupHexes,
-      'ocean': kOceanCourseColorGroupHexes,
-    };
-
-    /// 灰调（slate/stone 全阶）与土棕/橄榄调（琥珀黄青柠的 600-700 深阶）——
-    /// 用户明确反感「屎色」，鲜艳组一律不得掺入这些观感发脏的阶位。
-    const muddyHexes = <String>{
-      '#CBD5E1',
-      '#94A3B8',
-      '#607D8B',
-      '#64748B',
-      '#475569',
-      '#334155',
-      '#D6D3D1',
-      '#A8A29E',
-      '#78716C',
-      '#795548',
-      '#57534E',
-      '#44403C',
-      '#CA8A04',
-      '#A16207',
-      '#65A30D',
-      '#4D7C0F',
-      '#B45309',
-      '#D97706',
-    };
-
-    test('不掺灰调/土棕/橄榄等发脏颜色', () {
-      vividGroups.forEach((id, hexes) {
-        for (final hex in hexes) {
-          expect(muddyHexes, isNot(contains(hex)), reason: '$id 掺入发脏色: $hex');
         }
       });
-    });
 
     test('每色按最佳黑白墨对比度 ≥ 3:1（随机导入后守卫必能配出可读墨色）', () {
-      vividGroups.forEach((id, hexes) {
-        for (final hex in hexes) {
+      for (final hex in kRandomCourseColorHexes) {
           final card = tryParseHexColor(hex)!;
-          final bestInk = bestContrastCourseCardInk(card);
           expect(
-            courseCardContrastRatio(bestInk, card),
+          courseCardContrastRatio(bestContrastCourseCardInk(card), card),
             greaterThanOrEqualTo(3.0),
-            reason: '$id 的 $hex 黑白墨均不可读',
+          reason: '$hex 黑白墨均不可读',
           );
         }
       });
     });
-  });
 
   group('bestContrastCourseCardInk', () {
     test('浅色底回落近黑墨，深色底回落白墨（预览与实心卡隐身线回落同款）', () {

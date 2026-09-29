@@ -140,7 +140,7 @@ object FairMemoryAdapter {
                 handleFairMemoryIntent(context.applicationContext, intent)
             } catch (error: Exception) {
                 Log.e(TAG, "handleFairMemoryIntent failed", error)
-                UmengDiagnosticReporter.report(
+                AppDiagnosticReporter.report(
                     context = context.applicationContext,
                     category = "fair_memory_handle_failed",
                     message = DiagnosticLogMessages.FAIR_MEMORY_HANDLE_FAILED,
@@ -175,7 +175,7 @@ object FairMemoryAdapter {
         val heapAlloc = extra.getInt("heapAlloc", -1)
         val heapCapacity = extra.getInt("heapCapacity", -1)
 
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = context,
             category = "fair_memory_event",
             message = DiagnosticLogMessages.FAIR_MEMORY_EVENT_RECEIVED,
@@ -239,7 +239,7 @@ object FairMemoryAdapter {
         } catch (error: Exception) {
             handledOk = false
             Log.e(TAG, "fair-memory business handling failed", error)
-            UmengDiagnosticReporter.report(
+            AppDiagnosticReporter.report(
                 context = context,
                 category = "fair_memory_business_failed",
                 message = DiagnosticLogMessages.FAIR_MEMORY_BUSINESS_FAILED,

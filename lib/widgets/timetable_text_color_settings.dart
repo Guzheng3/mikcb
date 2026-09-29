@@ -82,7 +82,6 @@ class TimetableTextColorSettings extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 12),
         ],
 
@@ -221,16 +220,16 @@ class _ModeColorSettings extends StatelessWidget {
     final rows = <Widget>[
       // 课卡标题/详情与页面字色分属两页，同一字段只在一页可编辑。
       if (showCourseCardRows) ...[
-        _ColorSettingRow(
+        TimetableTextColorRow(
           label: l10n.textColorCourseCardTitle,
           currentColor: titleColor,
           defaultValue: defaultTitleColor,
           onColorSelected: onTitleColorChanged,
           bgColorForContrast: settings.timetableUseUnifiedCardColor
               ? settings.timetableUnifiedCardColor
-              : settings.themeSeedColor,
+              : TimetableSettings.defaultThemeSeedColor,
         ),
-        _ColorSettingRow(
+        TimetableTextColorRow(
           label: l10n.textColorCourseCardDetail,
           currentColor: detailColor,
           defaultValue: defaultDetailColor,
@@ -238,24 +237,24 @@ class _ModeColorSettings extends StatelessWidget {
           onColorSelected: onDetailColorChanged,
           bgColorForContrast: settings.timetableUseUnifiedCardColor
               ? settings.timetableUnifiedCardColor
-              : settings.themeSeedColor,
+              : TimetableSettings.defaultThemeSeedColor,
         ),
       ] else ...[
-        _ColorSettingRow(
+        TimetableTextColorRow(
           label: l10n.textColorWeekdayBar,
           currentColor: weekdayColor,
           defaultValue: defaultWeekdayColor,
           onColorSelected: onWeekdayColorChanged,
           bgColorForContrast: settings.timetablePageBackgroundColor,
         ),
-        _ColorSettingRow(
+        TimetableTextColorRow(
           label: l10n.textColorWeekdayBarAccent,
           currentColor: accentColor,
           defaultValue: defaultAccentColor,
           onColorSelected: onAccentColorChanged,
           bgColorForContrast: settings.timetablePageBackgroundColor,
         ),
-        _ColorSettingRow(
+        TimetableTextColorRow(
           label: l10n.textColorTimeAxis,
           currentColor: timeAxisColor,
           defaultValue: defaultTimeAxisColor,
@@ -274,8 +273,13 @@ class _ModeColorSettings extends StatelessWidget {
   }
 }
 
-class _ColorSettingRow extends StatelessWidget {
-  const _ColorSettingRow({
+/// 单条文字颜色行：左侧标签 + 右侧当前色块，点色块打开全色盘（含「恢复默认」）。
+///
+/// 公开是为了让「课程卡片」设置页的颜色区块也能放一条课卡字色快捷入口
+/// （与课卡底色并列），两处共用同一套取色交互与默认值复位。
+class TimetableTextColorRow extends StatelessWidget {
+  const TimetableTextColorRow({
+    super.key,
     required this.label,
     required this.currentColor,
     required this.onColorSelected,

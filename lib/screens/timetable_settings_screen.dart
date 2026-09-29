@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_miuix/miuix.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/l10n/holiday_log_localizer.dart';
@@ -22,13 +21,11 @@ import '../services/home_widget_service.dart';
 import '../services/home_widget_binding_service.dart';
 import '../services/miui_live_activities_service.dart';
 import '../services/app_log_service.dart';
-import '../services/umeng_analytics_service.dart';
 import '../utils/app_toast.dart';
 import '../utils/hex_color.dart';
 import '../utils/home_page_background.dart';
 import '../utils/managed_image_storage.dart';
 import '../widgets/home_menu_catalog.dart';
-import '../widgets/home_top_menu.dart';
 import '../widgets/wallpaper_position_picker_sheet.dart';
 import '../widgets/preblurred_wallpaper_glass.dart';
 import '../ui/app_fonts.dart';
@@ -37,7 +34,6 @@ import '../widgets/frosted_sheet_settings_preview.dart';
 import '../ui/hyperos/hyperos.dart';
 import '../widgets/semester_week_count_picker_sheet.dart';
 import '../widgets/miuix_date_picker_sheet.dart';
-import '../widgets/theme_manage_sheets.dart';
 import '../widgets/timetable_text_color_settings.dart';
 import '../widgets/timetable_week_preview.dart';
 import '../widgets/course_field_picker_sheet.dart';
@@ -59,11 +55,9 @@ import 'timetable_profiles_screen.dart';
 import 'hyperos_showcase_screen.dart';
 import 'miuix_showcase_screen.dart';
 import 'user_guide_screen.dart';
-import 'advanced_material_settings_screen.dart';
 
 part 'settings/settings_appearance.dart';
 part 'settings/settings_home_navigation.dart';
-part 'settings/settings_home_menu_editor.dart';
 part 'settings/settings_glass_dock_editor.dart';
 part 'settings/settings_glass_dock_icon_editor.dart';
 part 'settings/settings_reset.dart';
@@ -92,7 +86,7 @@ String formatLiveTimeCorrection(AppLocalizations l10n, int seconds) {
 /// 课表自身配置过的字段仍然课表优先。
 enum SettingsScope { profile, global }
 
-/// 八宫格等外部入口直达设置子页的工厂。
+/// 首页菜单目录等外部入口直达设置子页的工厂。
 ///
 /// 各子页类保持库内私有，这里按稳定 id 暴露；未知 id 返回 null，
 /// 由调用方决定回退行为（例如打开设置首页）。
@@ -429,7 +423,7 @@ class TimetableSettingsScreen extends StatelessWidget {
             children: [
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('favoritesFill')!,
+                  miuixIconByName('favoritesFill')!,
                   HyperosIconColors.purple,
                 ),
                 title: l10n.coupleTimetableEntryTitle,
@@ -445,7 +439,7 @@ class TimetableSettingsScreen extends StatelessWidget {
               ),
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('layers')!,
+                  miuixIconByName('layers')!,
                   HyperosIconColors.blue,
                 ),
                 title: l10n.timetableManagement,
@@ -463,7 +457,7 @@ class TimetableSettingsScreen extends StatelessWidget {
               // hub 一级位；「课表页面」内的同名入口并存，指向同一页面。
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('timer')!,
+                  miuixIconByName('timer')!,
                   HyperosIconColors.teal,
                 ),
                 title: l10n.timeSchemeEntryTitle,
@@ -478,7 +472,7 @@ class TimetableSettingsScreen extends StatelessWidget {
               ),
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('favorites')!,
+                  miuixIconByName('favorites')!,
                   HyperosIconColors.yellow,
                 ),
                 title: l10n.holidaySettingsEntryTitle,
@@ -507,7 +501,7 @@ class TimetableSettingsScreen extends StatelessWidget {
             children: [
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('settings')!,
+                  miuixIconByName('settings')!,
                   HyperosIconColors.teal,
                 ),
                 title: l10n.globalSettingsTitle,
@@ -523,7 +517,7 @@ class TimetableSettingsScreen extends StatelessWidget {
               ),
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('gridView')!,
+                  miuixIconByName('gridView')!,
                   HyperosIconColors.purple,
                 ),
                 title: l10n.courseCardSettingsTitle,
@@ -531,7 +525,7 @@ class TimetableSettingsScreen extends StatelessWidget {
               ),
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('months')!,
+                  miuixIconByName('months')!,
                   HyperosIconColors.orange,
                 ),
                 title: l10n.timetablePageSettingsTitle,
@@ -557,7 +551,7 @@ class TimetableSettingsScreen extends StatelessWidget {
               _LiveEntryTile(onTap: openLiveSettings),
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('home')!,
+                  miuixIconByName('home')!,
                   HyperosIconColors.green,
                 ),
                 title: l10n.homeWidgetEntryTitle,
@@ -580,7 +574,7 @@ class TimetableSettingsScreen extends StatelessWidget {
             children: [
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('theme')!,
+                  miuixIconByName('theme')!,
                   HyperosIconColors.blue,
                 ),
                 title: l10n.appearanceEntryTitle,
@@ -588,7 +582,7 @@ class TimetableSettingsScreen extends StatelessWidget {
               ),
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('sidebar')!,
+                  miuixIconByName('sidebar')!,
                   HyperosIconColors.teal,
                 ),
                 title: l10n.homeNavigationTitle,
@@ -596,7 +590,7 @@ class TimetableSettingsScreen extends StatelessWidget {
               ),
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('tune')!,
+                  miuixIconByName('tune')!,
                   HyperosIconColors.indigo,
                 ),
                 title: l10n.generalSettingsTitle,
@@ -617,7 +611,7 @@ class TimetableSettingsScreen extends StatelessWidget {
             children: [
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('convertFile')!,
+                  miuixIconByName('convertFile')!,
                   HyperosIconColors.green,
                 ),
                 title: l10n.dataTransferEntryTitle,
@@ -638,7 +632,7 @@ class TimetableSettingsScreen extends StatelessWidget {
             children: [
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('info')!,
+                  miuixIconByName('info')!,
                   HyperosIconColors.blue,
                 ),
                 title: l10n.aboutEntryTitle,
@@ -646,7 +640,7 @@ class TimetableSettingsScreen extends StatelessWidget {
               ),
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('notes')!,
+                  miuixIconByName('notes')!,
                   HyperosIconColors.cyan,
                 ),
                 title: l10n.userGuideEntryTitle,
@@ -654,7 +648,7 @@ class TimetableSettingsScreen extends StatelessWidget {
               ),
               _MiuixSettingsPreference(
                 startAction: _settingsIconBadge(
-                  MiuixIcons.extended.byName('report')!,
+                  miuixIconByName('report')!,
                   HyperosIconColors.teal,
                 ),
                 title: l10n.diagnosticsEntryTitle,
@@ -711,7 +705,7 @@ class _SemesterSettingsScreen extends StatelessWidget {
                 children: [
                   _MiuixSettingsPreference(
                     startAction: _settingsIconBadge(
-                      MiuixIcons.extended.byName('months')!,
+                      miuixIconByName('months')!,
                       HyperosIconColors.blue,
                     ),
                     title: settings.semesterStartDate == null
@@ -729,7 +723,7 @@ class _SemesterSettingsScreen extends StatelessWidget {
                   ),
                   _MiuixSettingsPreference(
                     startAction: _settingsIconBadge(
-                      MiuixIcons.extended.byName('weeks')!,
+                      miuixIconByName('weeks')!,
                       HyperosIconColors.indigo,
                     ),
                     title: l10n.selectSemesterWeekCountTitle,
@@ -746,7 +740,7 @@ class _SemesterSettingsScreen extends StatelessWidget {
                   // 纠偏动作放组末，避免与「开学日期 / 周数」配置同权。
                   _MiuixSettingsPreference(
                     startAction: _settingsIconBadge(
-                      MiuixIcons.extended.byName('refresh')!,
+                      miuixIconByName('refresh')!,
                       HyperosIconColors.teal,
                     ),
                     title: l10n.syncCurrentWeekAction,
@@ -911,7 +905,7 @@ class _LiveEntryTileState extends State<_LiveEntryTile>
     return _MiuixSettingsPreference(
       key: const ValueKey<String>('settings-live-entry'),
       startAction: _settingsIconBadge(
-        MiuixIcons.extended.byName('alarm')!,
+        miuixIconByName('alarm')!,
         HyperosIconColors.orange,
       ),
       title: l10n.liveSettingsTitle,
@@ -972,7 +966,7 @@ class _SettingsDeveloperListGroupState
                 if (showDiagnosticsTools)
                   _MiuixSettingsPreference(
                     startAction: _settingsIconBadge(
-                      MiuixIcons.extended.byName('background')!,
+                      miuixIconByName('background')!,
                       HyperosIconColors.orange,
                     ),
                     title: l10n.memoryStatsEntryTitle,
@@ -981,7 +975,7 @@ class _SettingsDeveloperListGroupState
                 if (showDiagnosticsTools)
                   _MiuixSettingsPreference(
                     startAction: _settingsIconBadge(
-                      MiuixIcons.extended.byName('stopwatch')!,
+                      miuixIconByName('stopwatch')!,
                       HyperosIconColors.indigo,
                     ),
                     title: l10n.liveTestingFixtureEntryTitle,
@@ -990,7 +984,7 @@ class _SettingsDeveloperListGroupState
                 if (!kReleaseMode) ...[
                   _MiuixSettingsPreference(
                     startAction: _settingsIconBadge(
-                      MiuixIcons.extended.byName('all')!,
+                      miuixIconByName('all')!,
                       HyperosIconColors.purple,
                     ),
                     title: l10n.hyperosShowcaseEntryTitle,
@@ -1004,7 +998,7 @@ class _SettingsDeveloperListGroupState
                   ),
                   _MiuixSettingsPreference(
                     startAction: _settingsIconBadge(
-                      MiuixIcons.extended.byName('listView')!,
+                      miuixIconByName('listView')!,
                       HyperosIconColors.cyan,
                     ),
                     title: l10n.miuixShowcaseEntryTitle,
@@ -1020,7 +1014,7 @@ class _SettingsDeveloperListGroupState
                     listenable: BlackBoxOverlayPreferences.instance,
                     builder: (context, _) => _MiuixSettingsSwitchPreference(
                       startAction: _settingsIconBadge(
-                        MiuixIcons.extended.byName('show')!,
+                        miuixIconByName('show')!,
                         HyperosIconColors.red,
                       ),
                       title: l10n.debugUiOverlayToggleTitle,
@@ -1069,7 +1063,7 @@ class _MiuixSettingsSwitchPreference extends StatelessWidget {
 }
 
 /// 设置首页图标 Badge：彩色圆角背景 + 白色图标（与 HyperosIconBadge 一致）。
-Widget _settingsIconBadge(MiuixVectorIcon icon, Color accent) {
+Widget _settingsIconBadge(IconData icon, Color accent) {
   return Container(
     width: HyperosTokens.iconBadgeSize,
     height: HyperosTokens.iconBadgeSize,
@@ -1079,7 +1073,7 @@ Widget _settingsIconBadge(MiuixVectorIcon icon, Color accent) {
     ),
     alignment: Alignment.center,
     child: MiuixIcon(
-      vector: icon,
+      icon: icon,
       size: HyperosTokens.iconGlyphSize,
       tint: Colors.white,
     ),

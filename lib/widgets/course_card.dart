@@ -29,15 +29,6 @@ class CourseCard extends StatelessWidget {
   final String? titleColorHex;
   final String? detailColorHex;
 
-  /// Surface material style behind the card content (solid / translucent /
-  /// gaussian).
-  final CourseCardSurfaceStyle surfaceStyle;
-
-  /// 壁纸带亮度（0–1），仅玻璃（高斯模糊）档使用：与课程 tint 各 50% 混合
-  /// 判定自动黑白（彩色墨回落、中性墨对比度门槛）。实体卡忽略；为 null
-  /// （无壁纸 / 采样未完成）时玻璃档维持旧行为保留用户墨色。
-  final double? wallpaperLuminance;
-
   /// Dim factor for conflict / holiday / suspended states (0–1); scales the
   /// surface fill and tint alphas.
   final double surfaceOpacity;
@@ -75,8 +66,6 @@ class CourseCard extends StatelessWidget {
     this.overrideColorHex,
     this.titleColorHex,
     this.detailColorHex,
-    this.surfaceStyle = CourseCardSurfaceStyle.solid,
-    this.wallpaperLuminance,
     this.surfaceOpacity = 1.0,
     this.compactOverlineText,
     this.topRightBadgeText,
@@ -97,30 +86,23 @@ class CourseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _parseColor(overrideColorHex ?? course.color);
-    // 可读性兜底：实心卡面上自定义字色与卡色同色系时（如蓝字配蓝卡）替换
-    // 为黑白最优墨；玻璃卡面上按壁纸亮度做玻璃规则（彩色墨回落自动黑白、
-    // 中性墨对比度门槛），壁纸亮度未知时保留用户选择。
-    final surfaceShowsWallpaper = courseCardSurfaceShowsWallpaper(
-      surfaceStyle,
-    );
+    // 可读性兜底：未配置字色时才按对比度自动翻黑白；设置页字色与单课自带
+    // 字色是用户的明确选择，一律原样生效（粉彩卡上的白字不再被翻成黑字）。
     final titleColor = resolveReadableCourseCardTitleColor(
       preferred: titleColorHex != null
           ? _parseColor(titleColorHex!)
           : Colors.white,
       cardColor: color,
-      surfaceShowsWallpaper: surfaceShowsWallpaper,
-      wallpaperLuminance: wallpaperLuminance,
+      userChosenInk: titleColorHex != null,
     );
-    // 详情墨：实心卡面与标题墨同极性（白标题不再配黑简介）；玻璃卡面在
-    // 壁纸亮度已知时一律跟随标题墨软化。
+    // 详情墨与标题墨同极性（白标题不再配黑简介）。
     final detailColor = resolveReadableCourseCardDetailColor(
       preferred: detailColorHex != null
           ? _parseColor(detailColorHex!)
           : Colors.white,
       resolvedTitleInk: titleColor,
       cardColor: color,
-      surfaceShowsWallpaper: surfaceShowsWallpaper,
-      wallpaperLuminance: wallpaperLuminance,
+      userChosenInk: detailColorHex != null,
     );
 
     if (isCompact) {
@@ -252,12 +234,10 @@ class CourseCard extends StatelessWidget {
     // inner Container gradient. The old Card wrapper added its own default
     // background color (surfaceContainerLow), creating a "card within a card"
     // look around the inner gradient's rounded corners. CourseSurface paints
-    // the surface in one pass and supports the solid, translucent, and
-    // gaussian styles.
+    // the solid surface in one pass.
     final card = Padding(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: CourseSurface(
-        style: surfaceStyle,
         color: color,
         borderRadius: 12,
         opacityScale: surfaceOpacity,
@@ -314,7 +294,6 @@ class CourseCard extends StatelessWidget {
             Padding(
               padding: EdgeInsets.all(compactOuterInset),
               child: CourseSurface(
-                style: surfaceStyle,
                 color: color,
                 borderRadius: 8,
                 opacityScale: surfaceOpacity,

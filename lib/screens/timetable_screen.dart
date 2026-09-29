@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter_miuix/miuix.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:university_timetable/ui/hyperos/hyperos.dart';
 import 'dart:ui' as ui;
 import 'dart:math' as math;
@@ -28,7 +27,6 @@ import '../models/class_reminder.dart';
 import '../models/course.dart';
 import '../models/exam.dart';
 import '../models/schedule_item.dart';
-import '../models/liquid_glass_tuning.dart';
 import '../models/timetable_settings.dart';
 import '../providers/timetable_provider.dart';
 import '../providers/withu_couple_session_provider.dart';
@@ -42,16 +40,13 @@ import '../utils/course_color_palette.dart';
 import '../widgets/home_page_region_blur.dart';
 import '../utils/home_page_background.dart';
 import '../utils/home_startup_visual_primer.dart';
-import '../ui/hyperos/liquid/liquid_glass_tokens.dart';
-import '../ui/hyperos/liquid/hyperos_liquid_glass_surface.dart'
-    show UndimmedBackdropCapture;
 import '../widgets/course_action_sheet.dart';
 import '../widgets/course_followup_sheets.dart';
 import '../widgets/course_note_sheet.dart';
 import '../widgets/couple_timetable_history_sheet.dart';
 import '../widgets/course_card.dart';
 import '../widgets/course_surface.dart';
-import '../widgets/course_grid_surface_host.dart';
+
 import '../widgets/home_menu_catalog.dart';
 import '../widgets/home_top_menu.dart';
 import '../widgets/preblurred_wallpaper_glass.dart';
@@ -273,21 +268,6 @@ class _TimetableScreenState extends State<TimetableScreen>
   /// 玻璃坞药丸占用高度：药丸 56 + 底部安全 6（药丸顶到屏幕底的距离）。
   static const double _glassDockPillOccupancy = 62;
 
-  /// 玻璃坞玻璃材质实验开关（用户 A/B 对比用）。
-  ///
-  /// true = 包原版默认材质：底栏本体 kBottomBarGlassDefaults、拖拽透镜
-  /// baseIndicatorSettings（轻微透镜弯曲）、pinch 0.4、expansion 水平12/
-  /// 垂直8、质量自适应；右侧浮钮与药丸显式共用这份官方底栏材质——
-  /// 包「原版」下两者不传参时内部默认各不相同，会呈现玻璃断层。
-  /// 此前自定义的「拉满折射拖拽透镜」在纯色/浅色壁纸上呈四周折射、
-  /// 中间全透明的「甜甜圈」观感，故整体回退原版供对比。
-  ///
-  /// false = 旧的 mikcb 自定义调校（sheetSettingsFor 跟随「液态玻璃调
-  /// 校」+ dragLensSettings 拉满折射 + pinch 1.0 + premium/minimal 强制
-  /// 档 + 浮钮与药丸统一材质）。用户若不满意原版观感，改回 false 即可
-  /// 一键还原；确认满意后可删除 false 分支与本开关。
-  static const bool _kStockDockGlass = true;
-
   late final PageController _weekPageController;
   late final AnimationController _dayViewExpandController;
   late final AnimationController _coupleHeartbeatController;
@@ -323,6 +303,7 @@ class _TimetableScreenState extends State<TimetableScreen>
   bool _isCommittingWeek = false;
   late int _visibleWeek;
   late final ValueNotifier<int> _visibleWeekListenable;
+
   /// 周网格的纵向滚动位移：时间轴与网格同属一份滚动内容，轴按它平移跟随。
   final ValueNotifier<double> _weekGridScrollOffset = ValueNotifier<double>(0);
   final GlobalKey _timetableSurfaceKey = GlobalKey();
@@ -774,32 +755,11 @@ class _TimetableScreenState extends State<TimetableScreen>
         // whole wallpaper for nothing.
         final backdropBlurOn =
             hasBackdrop && HyperosBlurredHeader.backdropBlurEnabled(context);
-        final cardStyle = settings.courseCardSurfaceStyle;
-        // Gaussian cards sample the cached bitmap instead of a live
-        // BackdropFilter while the day-view shell is animating.
-        final useCoursePreblur =
-            backdropBlurOn && cardStyle == CourseCardSurfaceStyle.gaussian;
-        // The day-view summary card is drawn from this same bitmap whenever
-        // the chrome band has glass ? regardless of the course-card style.
-        // Without it the card's PreblurredWallpaperAlignedFill paints nothing
-        // and the card reads as transparent (bare wash over raw wallpaper).
-        final useHomePreblur =
-            useCoursePreblur || (backdropBlurOn && continuousChromeBlur);
-        // 共享纯函数解析，与启动预热器构造同一份 PreblurredWallpaperCache
-        // 键位（分支语义与原内联闭包一致）。
-        final dockAppearance = FrostedAppearanceScope.of(context);
-        final homePreblurSigma = resolveHomePreblurSigma(
-          gaussianCardsDrive:
-              backdropBlurOn && cardStyle == CourseCardSurfaceStyle.gaussian,
-          // 预模糊位图服务的是首页玻璃带/摘要卡，跟随「首页玻璃带」开关。
-          liquidGlassChrome:
-              dockAppearance.glassMode == FrostedGlassMode.liquidGlass &&
-              dockAppearance.liquidGlassHomeChromeEnabled,
-          sheetBlurSigma: HyperosBlurredHeader.blurSigmaOf(context),
-          liquidGlassTunedBlur:
-              (dockAppearance.liquidGlassTuning ?? LiquidGlassTuning.defaults)
-                  .blur,
-        );
+        // The day-view summary card is drawn from the pre-blurred bitmap
+        // whenever the chrome band has glass.
+        final useHomePreblur = backdropBlurOn && continuousChromeBlur;
+        // 预模糊位图统一按磨砂 sigma 构造，与启动预热器同键位。
+        final homePreblurSigma = HyperosBlurredHeader.blurSigmaOf(context);
         // 与设置页课表预览完全同构的组采样结构：BackdropGroup 内先放全尺寸
         // UndimmedBackdropCapture（组内首个 filter 缓存整屏壁纸），chrome 玻璃
         // 带采样这份全尺寸背景。此前首页玻璃带只能采样自己 band bounds 的背
@@ -3283,8 +3243,6 @@ class _TimetableScreenState extends State<TimetableScreen>
                 region: HomePageBackgroundScope.timetable,
               ),
               child: RepaintBoundary(
-                child: _wrapCourseGridSurfaceHost(
-                  settings: settings,
                   child: Row(
                     children: visibleDays.asMap().entries.map((entry) {
                       final dayIndex = entry.key;
@@ -3323,7 +3281,6 @@ class _TimetableScreenState extends State<TimetableScreen>
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -4388,8 +4345,7 @@ class _TimetableScreenState extends State<TimetableScreen>
   /// until the upper layer has travelled that fraction of the page, then ramps
   /// to full over the remaining travel.
   double _deckAppearProgress(double progress) {
-    return ((progress - _cardPagerAppearStart) /
-            (1.0 - _cardPagerAppearStart))
+    return ((progress - _cardPagerAppearStart) / (1.0 - _cardPagerAppearStart))
         .clamp(0.0, 1.0)
         .toDouble();
   }
@@ -4451,8 +4407,7 @@ class _TimetableScreenState extends State<TimetableScreen>
       final incomingScale =
           _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appear;
       final incomingOpacity =
-          _cardPagerAppearOpacity +
-          (1.0 - _cardPagerAppearOpacity) * appear;
+          _cardPagerAppearOpacity + (1.0 - _cardPagerAppearOpacity) * appear;
       final outgoingOpacity =
           _cardPagerAppearOpacity +
           (1.0 - _cardPagerAppearOpacity) * (1.0 - progress);
@@ -4481,8 +4436,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     final incomingScale =
         _cardPagerMinScale + (1.0 - _cardPagerMinScale) * appear;
     final incomingOpacity =
-        _cardPagerAppearOpacity +
-        (1.0 - _cardPagerAppearOpacity) * appear;
+        _cardPagerAppearOpacity + (1.0 - _cardPagerAppearOpacity) * appear;
     final outgoingScale = 1.0 - (1.0 - _cardPagerMinScale) * progress;
     final outgoingOpacity =
         _cardPagerAppearOpacity +
@@ -4578,8 +4532,8 @@ class _TimetableScreenState extends State<TimetableScreen>
           // The spring has landed on an integral page but the pager's cards
           // were built before the selection commit. Hold the settled day until
           // the rebuild that follows clears the gesture state.
-          final activePage = controller.hasClients &&
-                  controller.position.hasContentDimensions
+          final activePage =
+              controller.hasClients && controller.position.hasContentDimensions
               ? controller.page
               : null;
           if (_dayPagerDragStartPage != null &&
@@ -5584,21 +5538,11 @@ class _TimetableScreenState extends State<TimetableScreen>
 
     final isDark = theme.brightness == Brightness.dark;
     final hasBackdrop = hasHomePageBackdropImage(settings);
-    final backdropBlurOn =
-        hasBackdrop && HyperosBlurredHeader.backdropBlurEnabled(context);
     // 顶部信息栏开着玻璃时，摘要卡与顶部铬玻璃带同材质、同墨色极性。
     final matchesChromeBand = homePageHasAnyChromeBlur(
       settings,
       hasBackdrop: hasBackdrop,
     );
-    // 课程卡切到「高斯模糊」档且有壁纸时，摘要卡也走铬玻璃亮磨砂材质：
-    // CourseSurface 的高斯路径只有 0.42 的弱中性 tint，深色壁纸会直接透出，
-    // 让「回到今天 / 关闭 / 日期」整张卡读作发黑的玻璃；铬玻璃 wash 与弹窗
-    // 同级（浅色主题约白色 0.68），保证卡片始终偏亮色。
-    final useChromeGlass =
-        matchesChromeBand ||
-        (backdropBlurOn &&
-            settings.courseCardSurfaceStyle == CourseCardSurfaceStyle.gaussian);
     // Ink: 与顶部玻璃带同材质时沿用壁纸亮度自动黑白；否则卡面就是主题底色
     // （或亮磨砂），墨色必须跟主题走 —— 按原始壁纸亮度翻白会让白墨落在
     // 亮色卡面上不可读。
@@ -5623,16 +5567,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     final countBadgeTextColor = summaryMutedInk;
     return _dayAgendaSurface(
       key: key,
-      settings:
-          useChromeGlass ||
-              settings.courseCardSurfaceStyle == CourseCardSurfaceStyle.solid
-          ? settings
-          // 无壁纸、模糊被关掉时高斯档没有可用的磨砂来源，退化为实心亮卡。
-          : settings.copyWith(
-              courseCardSurfaceStyle: CourseCardSurfaceStyle.solid,
-            ),
-      chromeGlass: useChromeGlass,
-      // Neutral wash (not a course hue); CourseSurface owns glass vs solid.
+      chromeGlass: matchesChromeBand,
       color: foruiTheme.colors.background,
       gradient: LinearGradient(
         colors: [foruiTheme.colors.background, foruiTheme.colors.background],
@@ -5642,10 +5577,10 @@ class _TimetableScreenState extends State<TimetableScreen>
       // 边界）。补一套中性细描边 + 柔和投影，几何参数与 agenda 卡片一致，
       // 让两种卡片在纯白底上读作同一个卡片系统。chromeGlass 分支自绘壁纸
       // 采样材质，忽略这两个参数，不受影响。
-      border: useChromeGlass
+      border: matchesChromeBand
           ? null
           : Border.all(color: summaryInk.withValues(alpha: 0.12)),
-      shadow: useChromeGlass
+      shadow: matchesChromeBand
           ? null
           : [
               BoxShadow(
@@ -6040,7 +5975,7 @@ class _TimetableScreenState extends State<TimetableScreen>
         return _buildDayAgendaEntry(week: week, settings: settings, item: item);
       },
     );
-    return CourseGridSurfaceHost(settings: settings, child: agendaList);
+    return agendaList;
   }
 
   Widget _buildDayViewEmptyColumn({
@@ -6054,14 +5989,14 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// Day-view card surface honouring [TimetableSettings.courseCardSurfaceStyle].
+  /// Day-view card surface.
   ///
   /// Shares [CourseSurface] with the week grid so the two views cannot drift.
   /// The tap target sits *inside* the surface behind a transparent [Material]
-  /// so ink ripples paint above the frost rather than on the far page Material
-  /// (which is what `Ink(decoration:)` used to buy us on an opaque card).
+  /// so ink ripples paint above the surface rather than on the far page
+  /// Material (which is what `Ink(decoration:)` used to buy us on an opaque
+  /// card).
   Widget _dayAgendaSurface({
-    required TimetableSettings settings,
     required Color color,
     required Widget child,
     Key? key,
@@ -6114,7 +6049,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     }
     return CourseSurface(
       key: key,
-      style: settings.courseCardSurfaceStyle,
       color: color,
       borderRadius: radius,
       opacityScale: opacityScale,
@@ -6168,7 +6102,6 @@ class _TimetableScreenState extends State<TimetableScreen>
       final palette = _resolveDayAgendaPalette(
         resolvedColor,
         foregroundHex: courseItem.course.textColor,
-        settings: settings,
       );
       final onCardColor = palette.foregroundColor;
       final statusBadges = <Widget>[
@@ -6336,7 +6269,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     final sessionPreview = sessionNote?.trimmedText;
     final ink = palette.foregroundColor;
     return _dayAgendaSurface(
-      settings: settings,
       color: palette.baseColor,
       opacityScale: opacityScale,
       // Reuse the legacy decoration's pieces so `solid` stays pixel-identical.
@@ -6465,15 +6397,9 @@ class _TimetableScreenState extends State<TimetableScreen>
     final sessionNote = item.course.sessionNoteForWeek(week);
     final sessionPreview = sessionNote?.trimmedText;
 
-    // Over glass the elapsed-progress fill has to stay see-through, or that
-    // part of the card turns into a flat opaque block and the frost disappears.
-    final progressFill =
-        settings.courseCardSurfaceStyle == CourseCardSurfaceStyle.solid
-        ? progressInfo.fillColor
-        : progressInfo.fillColor.withValues(alpha: 0.55);
+    final progressFill = progressInfo.fillColor;
 
     return _dayAgendaSurface(
-      settings: settings,
       color: progressInfo.baseColor,
       opacityScale: opacityScale,
       // Flat fill, matching the legacy decoration (this card has no gradient).
@@ -6695,12 +6621,8 @@ class _TimetableScreenState extends State<TimetableScreen>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    // 高斯模糊档下错误红只有 ~42% tint，亮色壁纸会透成浅粉底，写死的
-    // 白墨会洗没；与课程/日程卡一致改用自动黑白墨色。
-    final ink = _dayAgendaAutoInk(
-      colorScheme.error,
-      settings: provider.settings,
-    );
+    // 实心卡面上错误红用白墨，与课程/日程卡一致。
+    const ink = Colors.white;
     final course = provider.getCourseForExam(exam);
     final courseName = course?.name ?? '';
     final location = exam.location ?? course?.location ?? '';
@@ -6730,7 +6652,6 @@ class _TimetableScreenState extends State<TimetableScreen>
       ),
       closedBuilder: (context, openContainer) {
         return _dayAgendaSurface(
-          settings: provider.settings,
           color: colorScheme.error,
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -6771,11 +6692,15 @@ class _TimetableScreenState extends State<TimetableScreen>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.school_outlined, size: 14, color: ink),
+                          const Icon(
+                            Icons.school_outlined,
+                            size: 14,
+                            color: ink,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             l10n.examBadgeLabel,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                               color: ink,
@@ -6795,7 +6720,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                       ),
                       child: Text(
                         countdownText,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: ink,
@@ -6807,7 +6732,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                 const SizedBox(height: 10),
                 Text(
                   exam.name,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                     color: ink,
@@ -6868,8 +6793,7 @@ class _TimetableScreenState extends State<TimetableScreen>
     final hasNote = item.note?.trim().isNotEmpty == true;
     final isCrossDay = item.endDate.isAfter(item.startDate);
     final progressInfo = _resolveScheduleAgendaProgressInfo(item, baseColor);
-    // Same auto black/white as course agenda cards (glass over bright mist).
-    final ink = _dayAgendaAutoInk(cardColor, settings: settings);
+    const ink = Colors.white;
 
     return OpenContainer<void>(
       key: ValueKey('day-view-schedule-card-${agendaItem.id}'),
@@ -6910,7 +6834,6 @@ class _TimetableScreenState extends State<TimetableScreen>
           );
         }
         return _dayAgendaSurface(
-          settings: settings,
           color: cardColor,
           gradient: LinearGradient(colors: [cardColor, cardColor]),
           shadow: [
@@ -6943,7 +6866,11 @@ class _TimetableScreenState extends State<TimetableScreen>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.event_note_rounded, size: 13, color: ink),
+                          const Icon(
+                            Icons.event_note_rounded,
+                            size: 13,
+                            color: ink,
+                          ),
                           const SizedBox(width: 5),
                           Text(
                             '${agendaItem.startTime} - ${agendaItem.endTime}',
@@ -7020,14 +6947,9 @@ class _TimetableScreenState extends State<TimetableScreen>
     final hasLocation = item.location?.trim().isNotEmpty == true;
     final hasNote = item.note?.trim().isNotEmpty == true;
     final isCrossDay = item.endDate.isAfter(item.startDate);
-    // See _buildCurrentDayAgendaCard: the fill must stay see-through on glass.
-    final progressFill =
-        settings.courseCardSurfaceStyle == CourseCardSurfaceStyle.solid
-        ? progressInfo.fillColor
-        : progressInfo.fillColor.withValues(alpha: 0.55);
+    final progressFill = progressInfo.fillColor;
 
     return _dayAgendaSurface(
-      settings: settings,
       color: progressInfo.baseColor,
       // Flat fill, matching the legacy decoration (no gradient here).
       gradient: LinearGradient(
@@ -7337,7 +7259,6 @@ class _TimetableScreenState extends State<TimetableScreen>
   _DayAgendaPalette _resolveDayAgendaPalette(
     Color background, {
     String? foregroundHex,
-    TimetableSettings? settings,
   }) {
     // Keep pastel import colors light; only a tiny white lift for depth.
     final fillColor = background;
@@ -7345,56 +7266,19 @@ class _TimetableScreenState extends State<TimetableScreen>
     final customInk = foregroundHex == null || foregroundHex.trim().isEmpty
         ? null
         : _colorFromHex(foregroundHex, Colors.white);
-    // 自定义字色（导入/LAN 同步携带）在实心卡面上做可读性兜底：与卡色
-    // 同色系时（如蓝字配蓝卡）替换为黑白最优墨色。玻璃档按壁纸亮度走玻璃
-    // 规则（彩色墨回落自动黑白、中性墨对比度门槛），与 CourseCard 行为
-    // 一致；壁纸亮度未知时保留用户选择。
-    final showsWallpaper =
-        settings != null &&
-        courseCardSurfaceShowsWallpaper(settings.courseCardSurfaceStyle);
+    // 自定义字色（导入/LAN 同步携带）是用户明确选择：实心卡面上一律原样生效，
+    // 不再按卡底对比度自动翻黑白。
     final foregroundColor = customInk == null
-        ? _dayAgendaAutoInk(fillColor, settings: settings)
+        ? Colors.white
         : resolveReadableCourseCardTitleColor(
             preferred: customInk,
             cardColor: fillColor,
-            surfaceShowsWallpaper: showsWallpaper,
-            wallpaperLuminance: showsWallpaper
-                ? (_wallpaperBodyLuminance ?? _wallpaperTopLuminance)
-                : null,
+            userChosenInk: true,
           );
     return _DayAgendaPalette(
       baseColor: baseColor,
       fillColor: fillColor,
       foregroundColor: foregroundColor,
-    );
-  }
-
-  /// Default agenda-card ink when the course has no custom text colour.
-  ///
-  /// Opaque styles keep the legacy white-on-hue. The gaussian style shows
-  /// mostly wallpaper through a ~40% tint, so the ink flips black/white against
-  /// the blend of course hue and the wallpaper band behind the cards ? a bright
-  /// wallpaper region otherwise gives white-on-white.
-  Color _dayAgendaAutoInk(Color fill, {TimetableSettings? settings}) {
-    if (settings == null) {
-      return Colors.white;
-    }
-    final glassOverWallpaper =
-        hasHomePageBackdropImage(settings) &&
-        settings.courseCardSurfaceStyle == CourseCardSurfaceStyle.gaussian;
-    if (!glassOverWallpaper) {
-      return Colors.white;
-    }
-    final wallpaperLuminance =
-        _wallpaperBodyLuminance ?? _wallpaperTopLuminance;
-    if (wallpaperLuminance == null) {
-      return Colors.white;
-    }
-    final effectiveLuminance =
-        fill.computeLuminance() * 0.5 + wallpaperLuminance * 0.5;
-    return homePageChromeForegroundForLuminance(
-      effectiveLuminance,
-      fallback: Colors.white,
     );
   }
 
@@ -7559,12 +7443,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                     .clamp(7.0, 14.0),
                 compactVerticalPadding: sectionHeight < 64 ? 4 : 6,
                 compactOuterInset: cardInset,
-                surfaceStyle: settings.courseCardSurfaceStyle,
-                // 玻璃档自动黑白判定的壁纸带亮度；实体卡忽略。
-                wallpaperLuminance:
-                    _wallpaperBodyLuminance ?? _wallpaperTopLuminance,
-                // Dim conflict / non-current via fill alphas, keep frost
-                // working.
+                // Dim conflict / non-current via fill alphas.
                 surfaceOpacity: item.opacity,
                 titleColorHex: resolveCourseCardTitleColorHex(
                   courseTextColorHex: item.course.textColor,
@@ -7962,37 +7841,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     if (!glassDockForm) {
       return child;
     }
-    // 浮钮与药丸显式同源材质：stock 实验态传包官方底栏默认，
-    // 自定义态走 sheetSettingsFor / frosted 回退（与 bar 内部一致）。
-    LiquidGlassSettings? dockBtnSettings;
-    GlassQuality? dockBtnQuality;
-    if (_kStockDockGlass) {
-      dockBtnSettings = MikcbLiquidGlassTokens.stockBottomBarGlass;
-      dockBtnQuality = null; // 包原版自适应质量
-    } else {
-      final dockAppearance = FrostedAppearanceScope.of(context);
-      // 「液态玻璃作用范围 → 玻璃坞导航」关闭时圆钮回退磨砂药丸材质。
-      final dockUseLiquidGlass =
-          dockAppearance.glassMode == FrostedGlassMode.liquidGlass &&
-          dockAppearance.liquidGlassDockEnabled &&
-          !LiquidGlassDegradation.shouldDegrade(context);
-      final dockIsDark = Theme.of(context).brightness == Brightness.dark;
-      dockBtnSettings = dockUseLiquidGlass
-          ? MikcbLiquidGlassTokens.sheetSettingsFor(
-              dockIsDark ? Brightness.dark : Brightness.light,
-              tuning: dockAppearance.liquidGlassTuning,
-            )
-          : LiquidGlassSettings(
-              blur: dockAppearance.sheetBlurSigma,
-              glassColor: HyperosBlurredHeader.sheetTintColor(
-                context,
-                withBlur: true,
-              ),
-            );
-      dockBtnQuality = dockUseLiquidGlass
-          ? GlassQuality.premium
-          : GlassQuality.minimal;
-    }
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -8004,8 +7852,7 @@ class _TimetableScreenState extends State<TimetableScreen>
           child: SafeArea(
             minimum: const EdgeInsets.fromLTRB(16, 0, 16, 6),
             // 官方 iOS 26 形态：居中药丸 + 右侧独立圆钮，整组居中。
-            // 圆钮固定展开（加课程唯一主动入口，不再随页收起）；
-            // 材质经 dockBtnSettings 与药丸显式同源。
+            // 圆钮固定展开（加课程唯一主动入口，不再随页收起）。
             child: Builder(
               builder: (context) {
                 final lum = _dockInlinePageId != null
@@ -8029,12 +7876,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                       ),
                       if (settings.glassDockShowAddButton) ...[
                         const SizedBox(width: 8),
-                        _buildDockMergeSlot(
-                          ink: ink,
-                          l10n: l10n,
-                          settings: dockBtnSettings,
-                          quality: dockBtnQuality,
-                        ),
+                        _buildDockMergeSlot(ink: ink, l10n: l10n),
                       ],
                     ],
                   ),
@@ -8047,10 +7889,11 @@ class _TimetableScreenState extends State<TimetableScreen>
     );
   }
 
-  /// 玻璃坞底部导航：周课表 / 日课表 / 设置。
+  /// 玻璃坞底部导航：周课表 / 日课表 / 页面入口。
   ///
-  /// 使用 liquid_glass_widgets 的 [GlassTabBar.bottom]（iOS 26 官方形态：
-  /// 浮动药丸 + 拖拽指示器，自带真实折射 shader 与自适应质量）。
+  /// 静态磨砂药丸（单层 [BackdropFilter]）+ 选中项高亮底色，不再有
+  /// 滑块指示器动画与折射 shader；材质与弹窗磨砂同源，并跟随模糊总开关
+  /// 与降级（无障碍/减动效）统一回诚实底。
   Widget _buildGlassDockBar({
     required TimetableSettings settings,
     required AppLocalizations l10n,
@@ -8076,124 +7919,138 @@ class _TimetableScreenState extends State<TimetableScreen>
         : (isDark && wallpaperLuminance != null && wallpaperLuminance >= 0.45
               ? Colors.black.withValues(alpha: 0.80)
               : colorScheme.primary);
-    // 底栏材质（[_kStockDockGlass]=true 时下面全部走包原版默认，此段
-    // 仅在实验关闭时参与计算）：
-    // - 跟随「高级材质」设置（与弹窗/顶部/卡片统一）：液态玻璃用
-    //   sheetSettingsFor（跟随「液态玻璃调校」）+ premium 完整折射；
-    // - 标准/高斯：退化为高斯模糊药丸（blur/tint 与弹窗 frosted 一致）。
-    final appearance = FrostedAppearanceScope.of(context);
-    // 「液态玻璃作用范围 → 玻璃坞导航」关闭时圆钮回退磨砂药丸材质。
-    final useLiquidGlass =
-        !_kStockDockGlass &&
-        appearance.glassMode == FrostedGlassMode.liquidGlass &&
-        appearance.liquidGlassDockEnabled &&
-        !LiquidGlassDegradation.shouldDegrade(context);
+    final selectedHighlight = barUsesLightInk
+        ? Colors.white.withValues(alpha: 0.18)
+        : Colors.black.withValues(alpha: 0.06);
+
     // 动态入口列表：底栏最多 5 槽，用户在「首页与导航」自由编排。
     // （'day'/'week' 视图动作 + 目录任意条目，含设置页）。
     final dockIds = resolveGlassDockActionIds(settings);
-    return GlassTabBar.bottom(
-      tabs: [for (final id in dockIds) _dockTabForId(id, l10n)],
-      selectedIndex: _dockSelectedIndex(dockIds),
-      onTabSelected: (index) => _handleDockTap(dockIds[index], settings),
-      // 独立圆钮改由坞层「水滴合并槽」渲染（见 _wrapWithGlassDock）：
-      // 整颗按钮滑入药丸并被圆形裁切，运动与遮罩都贴合药丸端帽弧度。
-      barHeight: 56,
-      settings: _kStockDockGlass
-          ? MikcbLiquidGlassTokens.stockBottomBarGlass
-          : (useLiquidGlass
-                ? MikcbLiquidGlassTokens.sheetSettingsFor(
-                    isDark ? Brightness.dark : Brightness.light,
-                    tuning: appearance.liquidGlassTuning,
-                  )
-                : LiquidGlassSettings(
-                    blur: appearance.sheetBlurSigma,
-                    glassColor: HyperosBlurredHeader.sheetTintColor(
-                      context,
-                      withBlur: true,
+    final selectedIndex = _dockSelectedIndex(dockIds);
+    final useBlur = HyperosBlurredHeader.backdropBlurEnabled(context);
+
+    return HyperosFrostedSurface(
+      borderRadius: BorderRadius.circular(28),
+      tint: HyperosBlurredHeader.sheetTintColor(context, withBlur: useBlur),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      child: SizedBox(
+        height: 44,
+        child: Row(
+          children: [
+            for (var i = 0; i < dockIds.length; i++)
+              Expanded(
+                child: _buildGlassDockTab(
+                  id: dockIds[i],
+                  l10n: l10n,
+                  selected: i == selectedIndex,
+                  selectedColor: selectedColor,
+                  unselectedColor: unselectedColor,
+                  highlightColor: selectedHighlight,
+                  onTap: () => _handleDockTap(dockIds[i], settings),
+                ),
+              ),
+          ],
+        ),
                     ),
-                  )),
-      indicatorSettings: _kStockDockGlass
-          ? null
-          : (useLiquidGlass ? MikcbLiquidGlassTokens.dragLensSettings : null),
-      indicatorPinchStrength: useLiquidGlass ? 1.0 : 0.4,
-      quality: _kStockDockGlass
-          ? null
-          : (useLiquidGlass ? GlassQuality.premium : GlassQuality.minimal),
-      iconSize: 22,
-      labelFontSize: 10,
-      horizontalPadding: 6,
-      verticalPadding: 6,
-      selectedIconColor: selectedColor,
-      unselectedIconColor: unselectedColor,
-      selectedLabelColor: selectedColor,
-      unselectedLabelColor: unselectedColor,
     );
   }
 
-  /// 独立圆钮：与药丸同质的液态玻璃圆钮（56 正圆）。
-  ///
-  /// 材质与药丸显式同源（_wrapWithGlassDock 传入 stockBottomBarGlass），
-  /// useOwnLayer:true + isStationary:true 保证 minimal 回退时仍保留
-  /// BackdropFilter 模糊——与药丸 frosted 回退一致，消除“两种材质”断层。
-  Widget _buildDockMergeSlot({
-    required Color ink,
+  /// 单个底栏项：图标 + 文案，选中项铺一层圆角高亮底色。
+  Widget _buildGlassDockTab({
+    required String id,
     required AppLocalizations l10n,
-    required LiquidGlassSettings? settings,
-    required GlassQuality? quality,
+    required bool selected,
+    required Color selectedColor,
+    required Color unselectedColor,
+    required Color highlightColor,
+    required VoidCallback onTap,
   }) {
-    // 材质断层根因：此前此处以 useOwnLayer:false 渲染（LiquidGlass.grouped），
-    // 但坞层 Row 树外没有任何 LiquidGlassLayer/BluetoothGroup 祖先，
-    // Impeller 下 grouped 在无层时直接回退为固色无玻璃——看起来像一块
-    // 实色圆片，与药丸的真液态玻璃完全两种材质。改为 useOwnLayer:true
-    // + isStationary:true 后，按钮与药丸共享同质的 stockBottomBarGlass /
-    // sheetSettings，且在 minimal/降级路径两侧一致保留 BackdropFilter。
-    // 独立圆钮与药丸端帽同圆（56 正圆），外层 SizedBox(56) 与 Row 间距
-    // 由调用侧 SizedBox(width:8) 承担，无需 68 高的方形过渡槽及二次
-    // ClipRRect 裁切（会把玻璃边缘光切硬）。
-    return SizedBox(
-      width: 56,
-      height: 56,
-      child: GlassButton(
-        icon: _roundButtonIcon(context.read<TimetableProvider>().settings),
-        onTap: () =>
-            _handleRoundButtonTap(context.read<TimetableProvider>().settings),
-        label: l10n.glassDockExtraButtonSemanticLabel,
-        iconSize: 22,
-        iconColor: ink,
-        settings: settings,
-        quality: quality,
-        useOwnLayer: true,
-        isStationary: true,
+    final color = selected ? selectedColor : unselectedColor;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: selected ? highlightColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(glassDockActionIcon(id), size: 22, color: color),
+            const SizedBox(height: 2),
+            Text(
+              glassDockActionLabel(l10n, id),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10,
+                height: 1.1,
+                color: color,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  /// 底栏按钮 → GlassTab 视觉配置：视图动作用固定图标，页面条目取目录。
-  GlassTab _dockTabForId(String id, AppLocalizations l10n) {
-    return GlassTab(
-      icon: Icon(glassDockActionIcon(id)),
-      label: glassDockActionLabel(l10n, id),
+  /// 独立圆钮：与药丸同质的磨砂圆钮（56 正圆）。
+  Widget _buildDockMergeSlot({
+    required Color ink,
+    required AppLocalizations l10n,
+  }) {
+    final useBlur = HyperosBlurredHeader.backdropBlurEnabled(context);
+    return Semantics(
+      button: true,
+      label: l10n.glassDockExtraButtonSemanticLabel,
+      child: SizedBox(
+      width: 56,
+      height: 56,
+        child: HyperosFrostedSurface(
+          borderRadius: BorderRadius.circular(28),
+          tint: HyperosBlurredHeader.sheetTintColor(context, withBlur: useBlur),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _handleRoundButtonTap(
+              context.read<TimetableProvider>().settings,
+            ),
+            child: Center(
+              child: _roundButtonIcon(
+                context.read<TimetableProvider>().settings,
+                size: 22,
+                color: ink,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  /// 圆钮图标：用户自选的 Miuix 矢量图标优先；未选时 addCourse 显示
-  /// 加号、其余功能显示目录图标。
-  Widget _roundButtonIcon(TimetableSettings settings) {
+  /// 圆钮图标：用户自选图标优先（名字沿用旧 Miuix 小驼峰，见
+  /// [miuixIconByName]）；未选时 addCourse 显示加号、其余功能显示目录图标。
+  Widget _roundButtonIcon(
+    TimetableSettings settings, {
+    required double size,
+    required Color color,
+  }) {
     final customName = settings.glassDockButtonIconName;
     if (customName != null && customName.isNotEmpty) {
-      final vector = MiuixIcons.extended.byName(customName);
-      if (vector != null) {
-        return MiuixIcon(vector: vector);
+      final customIcon = miuixIconByName(customName);
+      if (customIcon != null) {
+        return MiuixIcon(icon: customIcon, size: size, tint: color);
       }
     }
     final id = settings.glassDockButtonEntryId;
     if (id != 'addCourse' && id.isNotEmpty) {
       final entry = homeMenuEntryById(id);
       if (entry != null) {
-        return Icon(entry.icon);
+        return Icon(entry.icon, size: size, color: color);
       }
     }
-    return const Icon(Icons.add_rounded);
+    return Icon(Icons.add_rounded, size: size, color: color);
   }
 
   /// 圆钮点击分发：addCourse/空走添加课程弹层；内嵌注册页在首页栈内
@@ -8322,14 +8179,6 @@ class _TimetableScreenState extends State<TimetableScreen>
       alpha: (baseTint.a * buttonOpacity).clamp(0.0, 1.0),
     );
     final contentOpacity = buttonOpacity.clamp(0.0, 1.0);
-    // 液态玻璃模式下用真折射圆角玻璃，而不是高斯模糊磨砂——
-    // 与底栏独立按钮同一套材质语言。
-    final dockAppearance = FrostedAppearanceScope.of(context);
-    // 「液态玻璃作用范围 → 玻璃坞导航」关闭时圆钮回退磨砂药丸材质。
-    final useLiquidGlassMaterial =
-        dockAppearance.glassMode == FrostedGlassMode.liquidGlass &&
-        dockAppearance.liquidGlassDockEnabled &&
-        !LiquidGlassDegradation.shouldDegrade(context);
 
     final glassDockForm =
         provider.settings.homeNavigationForm == HomeNavigationForm.glassDock;
@@ -8371,53 +8220,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                 ),
               ],
             ),
-            child: useLiquidGlassMaterial
-                ? GlassButton.custom(
-                    onTap: () => _jumpToCurrentWeek(provider),
-                    shape: const LiquidRoundedRectangle(borderRadius: 18),
-                    settings: MikcbLiquidGlassTokens.sheetSettingsFor(
-                      theme.brightness,
-                      tuning: dockAppearance.liquidGlassTuning,
-                    ),
-                    quality: GlassQuality.premium,
-                    // 崩溃修复：此钮挂在无任何 LiquidGlassLayer 祖先的裸 Stack 上，
-                    // premium + 默认 useOwnLayer:false 会触发 LiquidGlassBlendGroup
-                    // 的 renderLink != null 断言。显式自带层；isStationary 与
-                    // _buildDockMergeSlot / 包内 BottomBarExtraBtn 对齐，
-                    // 保证引擎降级路径仍保留 BackdropFilter 模糊。
-                    useOwnLayer: true,
-                    isStationary: true,
-                    child: Opacity(
-                      opacity: contentOpacity,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.my_location_rounded,
-                              size: 15,
-                              color: colorScheme.primary,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              l10n.backToCurrentWeekAction,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: colorScheme.onSurface,
-                                height: 1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                : ClipRRect(
+            child: ClipRRect(
                     borderRadius: borderRadius,
                     child: HyperosFrostedSurface(
                       borderRadius: borderRadius,
@@ -8440,8 +8243,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                                   Icons.my_location_rounded,
                                   size: 15,
                                   color: colorScheme.primary.withValues(
-                                    alpha:
-                                        colorScheme.primary.a * contentOpacity,
+                              alpha: colorScheme.primary.a * contentOpacity,
                                   ),
                                 ),
                                 const SizedBox(width: 4),
@@ -8451,9 +8253,7 @@ class _TimetableScreenState extends State<TimetableScreen>
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
                                     color: colorScheme.onSurface.withValues(
-                                      alpha:
-                                          colorScheme.onSurface.a *
-                                          contentOpacity,
+                                alpha: colorScheme.onSurface.a * contentOpacity,
                                     ),
                                     height: 1,
                                   ),
@@ -8557,14 +8357,6 @@ class _TimetableScreenState extends State<TimetableScreen>
     _lastObservedWeekPage = page;
     _pendingSettledWeek = _clampWeek(page + 1, maxWeek);
     _visibleWeekListenable.value = _pendingSettledWeek!;
-  }
-
-  /// One shared backdrop group for gaussian cards on this week page.
-  Widget _wrapCourseGridSurfaceHost({
-    required TimetableSettings settings,
-    required Widget child,
-  }) {
-    return CourseGridSurfaceHost(settings: settings, child: child);
   }
 
   /// 把 provider 的当前周次同步到周视图 pager。
@@ -9280,26 +9072,15 @@ class _TimetableScreenState extends State<TimetableScreen>
           )
         : Colors.black;
 
-    // 菜单形态由设置分流：「八宫格」是 v2.0.5.5 已发布版本的底部弹层，
-    // 「列表」是当前的锚定弹窗。两种形态共享同一份自定义排列
-    // （homeGridMenuActions），统一以入口 id 回传，再经目录分发到
+    // 右上角菜单固定为锚定列表弹窗，统一以入口 id 回传，再经目录分发到
     // 全应用任意二级页面/功能。
     final menuEntries = resolveHomeTopMenuEntries(settings);
-    final String? selectedId;
-    if (settings.homeMenuStyle == HomeMenuStyle.grid) {
-      selectedId = await showHomeTopGridMenuSheet(
-        context,
-        entries: menuEntries,
-        themeSeedHex: settings.themeSeedColor,
-      );
-    } else {
-      selectedId = await showHomeTopMenuSheet(
-        context,
-        entries: menuEntries,
-        anchorKey: _topMenuButtonKey,
-        foregroundColor: menuForeground,
-      );
-    }
+    final selectedId = await showHomeTopMenuSheet(
+      context,
+      entries: menuEntries,
+      anchorKey: _topMenuButtonKey,
+      foregroundColor: menuForeground,
+    );
 
     if (!mounted || selectedId == null) {
       return;

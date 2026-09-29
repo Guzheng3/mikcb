@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import 'package:fast_gbk/fast_gbk.dart';
 import 'package:table_parser/table_parser.dart';
 import 'package:uuid/uuid.dart';
 
 import '../l10n/service_message_localizer.dart';
 import '../models/course.dart';
 import '../models/timetable_settings.dart';
+import '../utils/gbk_decoder.dart';
 import 'week_expression_parser.dart';
 
 class SpreadsheetImportResult {
@@ -253,10 +253,9 @@ class SpreadsheetImportService {
       return _tableToStringRows(decoder.tables.values.first);
     } catch (error) {
       throw FormatException(
-        encodeServiceMessage(
-          'spreadsheet_xlsx_parse_failed',
-          {'error': '$error'},
-        ),
+        encodeServiceMessage('spreadsheet_xlsx_parse_failed', {
+          'error': '$error',
+        }),
       );
     }
   }
@@ -307,10 +306,10 @@ class SpreadsheetImportService {
   }) {
     if (row.length < 7) {
       throw FormatException(
-        encodeServiceMessage(
-          'spreadsheet_wakeup_insufficient_columns',
-          {'rowNumber': rowNumber, 'columnCount': row.length},
-        ),
+        encodeServiceMessage('spreadsheet_wakeup_insufficient_columns', {
+          'rowNumber': rowNumber,
+          'columnCount': row.length,
+        }),
       );
     }
     final name = row[0].trim();
@@ -448,13 +447,10 @@ class SpreadsheetImportService {
       }
       if (startWeek > settings.semesterWeekCount) {
         throw FormatException(
-          encodeServiceMessage(
-            'start_week_exceeds_semester',
-            {
+          encodeServiceMessage('start_week_exceeds_semester', {
               'startWeek': startWeek,
               'semesterWeekCount': settings.semesterWeekCount,
-            },
-          ),
+          }),
         );
       }
       if (endWeek < startWeek) {
@@ -462,14 +458,11 @@ class SpreadsheetImportService {
       }
       if (endWeek > settings.semesterWeekCount) {
         warnings.add(
-          encodeServiceMessage(
-            'spreadsheet_end_week_clamped',
-            {
+          encodeServiceMessage('spreadsheet_end_week_clamped', {
               'rowNumber': rowNumber,
               'endWeek': endWeek,
               'semesterWeekCount': settings.semesterWeekCount,
-            },
-          ),
+          }),
         );
         endWeek = settings.semesterWeekCount;
       }
@@ -481,10 +474,9 @@ class SpreadsheetImportService {
       }
       if (isOddWeek && isEvenWeek) {
         warnings.add(
-          encodeServiceMessage(
-            'spreadsheet_odd_even_both',
-            {'rowNumber': rowNumber},
-          ),
+          encodeServiceMessage('spreadsheet_odd_even_both', {
+            'rowNumber': rowNumber,
+          }),
         );
         isEvenWeek = false;
       }
@@ -579,10 +571,10 @@ class SpreadsheetImportService {
     }
     if (endSection < startSection) {
       throw FormatException(
-        encodeServiceMessage(
-          'field_cannot_be_less_than',
-          {'startField': startField, 'endField': endField},
-        ),
+        encodeServiceMessage('field_cannot_be_less_than', {
+          'startField': startField,
+          'endField': endField,
+        }),
       );
     }
   }
@@ -594,13 +586,10 @@ class SpreadsheetImportService {
   }) {
     if (section < 1 || section > settings.sectionCount) {
       throw FormatException(
-        encodeServiceMessage(
-          'section_out_of_range',
-          {
+        encodeServiceMessage('section_out_of_range', {
             'section': section,
             'maxSection': settings.sectionCount,
-          },
-        ),
+        }),
       );
     }
     final sectionInfo = settings.sections[section - 1];

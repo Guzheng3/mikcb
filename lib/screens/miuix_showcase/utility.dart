@@ -100,7 +100,7 @@ class _UtilityShowcaseState extends State<UtilityShowcase> {
                       startAction: Padding(
                         padding: const EdgeInsets.only(right: 12),
                         child: MiuixIcon(
-                          vector: MiuixIcons.extended.byName('search'),
+                          icon: miuixIconByName('search'),
                           size: 20,
                         ),
                       ),

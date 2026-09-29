@@ -1,18 +1,27 @@
+import 'dart:ui' as ui;
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
 import '../hyperos_blurred_header.dart';
-import '../hyperos_sheet.dart';
-import 'liquid_glass_degradation.dart';
 
-bool _isLiquidSheetPanel(BuildContext context) {
-  if (LiquidGlassDegradation.shouldDegrade(context)) return false;
-  final scope = FrostedAppearanceScope.maybeOf(context);
-  if (scope == null) return false;
-  final a = scope.appearance;
-  return a.glassMode == FrostedGlassMode.liquidGlass &&
-      a.liquidGlassSheetDialogEnabled;
+/// Paints a no-op grouped backdrop filter before modal dim layers.
+///
+/// The first filter in a [BackdropGroup] caches the backdrop. Placing this
+/// before the dim layer means later grouped frosted surfaces in the same group
+/// sample the undimmed page instead of the darkened modal scrim.
+class UndimmedBackdropCapture extends StatelessWidget {
+  const UndimmedBackdropCapture({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: BackdropFilter.grouped(
+        filter: ui.ImageFilter.blur(sigmaX: 0.01, sigmaY: 0.01),
+        child: const SizedBox.expand(),
+      ),
+    );
+  }
 }
 
 /// Frosted top bar: Flutter [BackdropFilter] blur + tint scrim.
@@ -91,8 +100,6 @@ class HyperosFrostedHeaderShell extends StatelessWidget {
 }
 
 /// Rounded frosted surface for cards, menu tiles, and icon wells.
-///
-/// 嵌套在液体玻璃 Sheet 内时不再叠加 BackdropFilter，避免双重模糊/发黑。
 class HyperosFrostedSurface extends StatelessWidget {
   const HyperosFrostedSurface({
     required this.child,
@@ -114,17 +121,6 @@ class HyperosFrostedSurface extends StatelessWidget {
     var content = child;
     if (padding != null) {
       content = Padding(padding: padding!, child: child);
-    }
-
-    final inLiquidPanel =
-        _isLiquidSheetPanel(context) && HyperosFrostedPanelScope.of(context);
-    if (inLiquidPanel) {
-      final resolvedTint =
-          tint ?? HyperosBlurredHeader.nestedLiquidTileTintColor(context);
-      return ClipRRect(
-        borderRadius: borderRadius,
-        child: ColoredBox(color: resolvedTint, child: content),
-      );
     }
 
     final useBlur =

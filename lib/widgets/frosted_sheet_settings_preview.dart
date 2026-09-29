@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:university_timetable/models/liquid_glass_tuning.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 
 import '../models/timetable_settings.dart';
 import '../providers/timetable_provider.dart';
 import '../ui/hyperos/hyperos.dart';
-import '../ui/hyperos/liquid/hyperos_liquid_glass_surface.dart';
 import 'timetable_week_preview.dart';
 
 /// Live + interactive frosted sheet preview for appearance settings.
@@ -19,13 +17,9 @@ class FrostedSheetSettingsPreview extends StatelessWidget {
     required this.barrierAlpha,
     required this.blurEnabled,
     required this.onOpenDemoSheet,
-    required this.glassMode,
-    this.liquidGlassTuning,
     super.key,
   });
 
-  final FrostedGlassMode glassMode;
-  final LiquidGlassTuning? liquidGlassTuning;
   final TimetableProvider provider;
   final TimetableSettings settings;
   final int week;
@@ -37,54 +31,14 @@ class FrostedSheetSettingsPreview extends StatelessWidget {
 
   static const _previewHeight = 280.0;
 
-  /// Preview-only render protection against the liquid-glass package's
-  /// extreme-parameter artifacts.
-  ///
-  /// Past the dense preset's thickness/blur (28/14) the package shaders break
-  /// down: the refraction displacement (thickness*10) exceeds the geometry
-  /// texture's 8-bit encoding range and quantises into vertical stripes, and
-  /// the edge-lighting pass paints fringe gradients on the band's visible
-  /// edges. The real home page never sees this — it renders the *saved*
-  /// tuning, which only becomes extreme if the user saves one — but this
-  /// preview mirrors the live slider draft, so pulling a knob to the max
-  /// used to paint stripes and fringes all over the preview band.
-  ///
-  /// Clamp the preview display only: slider ranges, the saved tuning and the
-  /// real home page are untouched. Values at or below the dense preset pass
-  /// through unchanged, so the preview stays 1:1 for every stock preset.
-  static LiquidGlassTuning? previewSafeTuning(LiquidGlassTuning? tuning) {
-    if (tuning == null) {
-      return null;
-    }
-    return tuning.copyWith(
-      thickness: tuning.thickness.clamp(
-        LiquidGlassTuning.minThickness,
-        LiquidGlassTuning.presetDense.thickness,
-      ),
-      blur: tuning.blur.clamp(
-        LiquidGlassTuning.minBlur,
-        LiquidGlassTuning.presetDense.blur,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // 作用范围开关直读草稿设置，保证预览/演示与真实表面判定一致。
     final appearance = FrostedAppearance(
       sheetBlurSigma: blurSigma,
       sheetTintAlpha: tintAlpha,
       sheetBarrierAlpha: barrierAlpha,
       blurEnabled: blurEnabled,
-      glassMode: glassMode,
-      liquidGlassTuning: previewSafeTuning(liquidGlassTuning),
-      liquidGlassPopupEnabled: settings.liquidGlassPopupEnabled,
-      liquidGlassSelectSheetEnabled: settings.liquidGlassSelectSheetEnabled,
-      liquidGlassSheetDialogEnabled: settings.liquidGlassSheetDialogEnabled,
-      liquidGlassHomeChromeEnabled: settings.liquidGlassHomeChromeEnabled,
-      liquidGlassDockEnabled: settings.liquidGlassDockEnabled,
-      liquidGlassPickerButtonsEnabled: settings.liquidGlassPickerButtonsEnabled,
     );
 
     return FrostedAppearanceScope(
@@ -96,15 +50,15 @@ class FrostedSheetSettingsPreview extends StatelessWidget {
             shape: HyperosTheme.cardShape(),
             child: SizedBox(
               height: _previewHeight,
-              // The live liquid-glass menu is not rendered inline here. A grouped
-              // backdrop inside the scrollable settings ListView captures the whole
+              // The live menu is not rendered inline here. A grouped backdrop
+              // inside the scrollable settings ListView captures the whole
               // scrolling viewport (BackdropFilter.grouped's capture is the cull
               // rect — the viewport — and cannot be narrowed by widget-level
               // RepaintBoundary/ClipRect), so it flickers and misaligns on scroll.
               // The home top menu avoids this by being a modal over a static page.
-              // So this box previews only the timetable backdrop; the live glass
-              // menu is previewed by the "open demo" button below — a modal that
-              // uses the same code path as the home top menu.
+              // So this box previews only the timetable backdrop; the live menu
+              // is previewed by the "open demo" button below — a modal that uses
+              // the same code path as the home top menu.
               child: TimetableWeekPreview(
                 provider: provider,
                 settings: settings,
@@ -134,17 +88,10 @@ class FrostedSheetSettingsDemoSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appearance = FrostedAppearanceScope.of(context);
-    // 演示的是真实弹窗材质：跟随「液态玻璃作用范围 → 弹窗与对话框」。
-    final useLiquidGlass =
-        appearance.glassMode == FrostedGlassMode.liquidGlass &&
-        appearance.liquidGlassSheetDialogEnabled &&
-        !LiquidGlassDegradation.shouldDegrade(context);
-
-    return _buildSheet(context, useLiquidGlass: useLiquidGlass);
+    return _buildSheet(context);
   }
 
-  Widget _buildSheet(BuildContext context, {required bool useLiquidGlass}) {
+  Widget _buildSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final colors = context.theme.colors;
@@ -181,13 +128,7 @@ class FrostedSheetSettingsDemoSheet extends StatelessWidget {
             style: HyperosTypography.sectionDescription(context),
           ),
           const SizedBox(height: 14),
-          // Liquid-glass mode uses one shared layer for all four tiles:
-          // identical siblings share one backdrop capture, so refraction at tile
-          // edges samples a continuous backdrop instead of four independent
-          // own-layer captures (which caused seam lines).
-          Builder(
-            builder: (context) {
-              final tiles = Row(
+          Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   tile(Icons.bar_chart_rounded, l10n.homeMenuStatisticsTitle),
@@ -201,22 +142,6 @@ class FrostedSheetSettingsDemoSheet extends StatelessWidget {
                     l10n.homeMenuAddCourseTitle,
                   ),
                 ],
-              );
-
-              if (!useLiquidGlass) {
-                return tiles;
-              }
-
-              // Only liquid-glass mode needs a shared refraction layer. The
-              // other modes use the same translucent nested surface rule as
-              // settings cards; keeping them out of this layer prevents a
-              // Gaussian/classic preview from rendering as liquid glass.
-              return HyperosLiquidGlassLayer(
-                // Sample the modal group's undimmed backdrop (matches home menu).
-                useBackdropGroup: true,
-                child: tiles,
-              );
-            },
           ),
           const SizedBox(height: 12),
           HyperosButton(
@@ -294,27 +219,7 @@ class _DemoMenuTile extends StatelessWidget {
       ),
     );
 
-    final appearance = FrostedAppearanceScope.of(context);
-    final useLiquidGlass =
-        appearance.glassMode == FrostedGlassMode.liquidGlass &&
-        appearance.liquidGlassSheetDialogEnabled &&
-        !LiquidGlassDegradation.shouldDegrade(context);
-    if (useLiquidGlass) {
-      return HyperosLiquidGlassSurface(
-        role: HyperosLiquidGlassRole.nestedTile,
-        borderRadius: HyperosTheme.cardBorderRadius.topLeft.x,
-        // Tiles live in a shared HyperosLiquidGlassLayer (see the demo sheet);
-        // sharedLayer registers this shape in the ancestor layer. A per-tile
-        // instant FakeGlass underlay would paint its own backdrop filter per
-        // tile, re-introducing seams, so it stays off here.
-        layerMode: HyperosLiquidGlassLayerMode.sharedLayer,
-        child: content,
-      );
-    }
-
-    // Classic frosted / Gaussian / translucent modes keep nested cards as a
-    // translucent tint over the already-frosted modal. They must not create a
-    // liquid surface just because the demo card is shared with the liquid path.
+    // Nested cards stay a translucent tint over the already-frosted modal.
     return HyperosFrostedSurface(
       borderRadius: HyperosTheme.cardBorderRadius,
       blurEnabled: false,

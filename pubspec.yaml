@@ -39,14 +39,12 @@ dependencies:
   table_parser: ^1.0.1
   qr_flutter: ^4.1.0
   fl_chart: ^1.2.0
-  fast_gbk: ^1.0.0
   flutter_svg: ^2.3.0
   image: ^4.8.0
   flutter_miuix:
     git:
       url: https://github.com/Mutx163/flutter_miuix.git
       ref: 241bbea65291e2a2f7b36d77946f7f1d16654b0a
-  liquid_glass_widgets: ^0.30.2
   flutter_blackbox: ^0.7.0
   image_picker: ^1.2.3
 

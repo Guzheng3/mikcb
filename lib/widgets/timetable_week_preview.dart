@@ -8,13 +8,11 @@ import '../models/course.dart';
 import '../models/timetable_settings.dart';
 import '../providers/timetable_provider.dart';
 import '../ui/hyperos/hyperos.dart';
-import '../ui/hyperos/liquid/hyperos_liquid_glass_surface.dart';
 import 'home_page_region_blur.dart';
 import '../utils/hex_color.dart';
 import '../utils/course_color_palette.dart';
 import '../utils/home_page_background.dart';
 import 'course_card.dart';
-import 'course_grid_surface_host.dart';
 
 /// Renders the home week timetable surface for settings previews.
 class TimetableWeekPreview extends StatefulWidget {
@@ -181,10 +179,7 @@ class _TimetableWeekPreviewBody extends StatelessWidget {
   /// derives its geometry from the real status-bar inset and the home-page
   /// header constants, neither of which holds inside a preview box. So the band
   /// is positioned here and painted with the same material the home page uses
-  /// ([HomePageChromeGlassFill]): a real liquid-glass surface that captures the
-  /// wallpaper behind it and responds to every glass tuning knob (light
-  /// intensity, thickness, visibility, …), with the specular fringe the old
-  /// pre-blurred stand-in could not render.
+  /// ([HomePageChromeGlassFill]).
   List<Widget>? _buildChromeGlassBand({required double appHeaderHeight}) {
     final hasHeaderBand =
         settings.homePageHeaderBlurEnabled && appHeaderHeight > 0;
@@ -209,24 +204,16 @@ class _TimetableWeekPreviewBody extends StatelessWidget {
       return null;
     }
 
-    // Narrow isolated strips (weekday-only 40dp) would otherwise let
-    // the thickness-wide edge zone flood the whole bar and smear the
-    // bottom highlight into a thick white line under the weekday text —
-    // regressed twice already. Keep the bottom at the band boundary (like
-    // the home page's thin intentional sheen) and cap glass thickness
-    // proportionally so the edge highlight stays a thin sheen while the
-    // interior remains real liquid refraction — not flat gaussian blur.
-    // Combined bands (~84dp) keep full thickness like the home sheet.
-    final double? bandMaxThickness = height <= 52
-        ? (height * 0.28).clamp(8.0, 14.0)
-        : null;
+    // Keep the bottom edge at the band boundary (matching the home page's
+    // thin sheen) and let the narrow strip hide its top/left/right seams
+    // off-screen, so the visible band stays a single crisp frosted bar.
     return [
       Positioned(
         top: top,
         left: 0,
         right: 0,
         height: height,
-        child: IgnorePointer(
+        child: const IgnorePointer(
           child: ClipRect(
             child: Stack(
               fit: StackFit.expand,
@@ -236,9 +223,7 @@ class _TimetableWeekPreviewBody extends StatelessWidget {
                   left: -homePageChromeGlassEdgeOverdraw,
                   right: -homePageChromeGlassEdgeOverdraw,
                   bottom: 0,
-                  child: HomePageChromeGlassFill(
-                    maxThickness: bandMaxThickness,
-                  ),
+                  child: HomePageChromeGlassFill(),
                 ),
               ],
             ),
@@ -462,15 +447,8 @@ class _TimetableWeekPreviewBody extends StatelessWidget {
                           SizedBox(height: chromeGridClearance),
                         SizedBox(
                           height: bodyHeight,
-                          // Same surface hosting as the home grid: one shared
-                          // backdrop capture for the whole preview instead of one
-                          // per card. Matters doubly here because the settings
-                          // header's CFH pass rasterises this subtree offscreen.
-                          child: CourseGridSurfaceHost(
-                            settings: settings,
                             child: IgnorePointer(child: grid),
                           ),
-                        ),
                       ],
                     ),
                     if (showsFloatingButton &&
@@ -936,10 +914,6 @@ class _TimetableWeekPreviewBody extends StatelessWidget {
               ),
               compactVerticalPadding: sectionHeight < 64 ? 4 : 6,
               compactOuterInset: cardInset,
-              surfaceStyle: settings.courseCardSurfaceStyle,
-              // 玻璃档自动黑白判定的壁纸带亮度；实体卡忽略。
-              wallpaperLuminance:
-                  wallpaperBodyLuminance ?? wallpaperTopLuminance,
               surfaceOpacity: item.opacity,
               titleColorHex: resolveCourseCardTitleColorHex(
                 courseTextColorHex: item.course.textColor,
@@ -961,10 +935,6 @@ class _TimetableWeekPreviewBody extends StatelessWidget {
       }
     }
 
-    // No per-column glass host here: this method builds one weekday column, so
-    // hosting at this level meant seven separate layers — and therefore seven
-    // backdrop captures — for one preview. The whole grid is hosted once by
-    // CourseGridSurfaceHost instead, matching the home page.
     return Container(
       height: visibleSectionCount * sectionHeight,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),

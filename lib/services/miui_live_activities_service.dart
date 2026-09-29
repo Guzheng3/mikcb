@@ -7,8 +7,8 @@ import '../models/course.dart';
 import '../models/timetable_settings.dart';
 import '../logging/app_debug_log.dart';
 import '../logging/app_log_messages.dart';
+import 'app_diagnostic_service.dart';
 import 'app_log_service.dart';
-import 'umeng_analytics_service.dart';
 
 class MiuiLiveActivitiesService {
   static const MethodChannel _channel = MethodChannel(
@@ -34,7 +34,7 @@ class MiuiLiveActivitiesService {
         error: e,
         stackTrace: stackTrace,
       );
-      await UmengAnalyticsService.reportDiagnostic(
+      await AppDiagnosticService.reportDiagnostic(
         'live_update_flutter_initialize_failed',
         AppLogMessages.miuiLiveInitializeFailed,
         error: e,
@@ -242,7 +242,7 @@ class MiuiLiveActivitiesService {
   }
 
   Future<void> setLiveDiagnosticsEnabled(bool value) async {
-    await UmengAnalyticsService.setLiveDiagnosticsEnabled(value);
+    await AppDiagnosticService.setLiveDiagnosticsEnabled(value);
   }
 
   /// 同步「常驻通知」开关到原生侧。
@@ -273,7 +273,7 @@ class MiuiLiveActivitiesService {
     Map<String, Object?> extras = const {},
     DiagnosticLogLevel level = DiagnosticLogLevels.info,
   }) async {
-    await UmengAnalyticsService.recordDiagnosticEvent(
+    await AppDiagnosticService.recordDiagnosticEvent(
       category,
       message,
       extras: extras,
@@ -282,11 +282,11 @@ class MiuiLiveActivitiesService {
   }
 
   Future<String?> exportLiveDiagnosticsFile() async {
-    return UmengAnalyticsService.exportLiveDiagnosticsFile();
+    return AppDiagnosticService.exportLiveDiagnosticsFile();
   }
 
   Future<String?> readLiveDiagnosticsText() async {
-    return UmengAnalyticsService.readLiveDiagnosticsText();
+    return AppDiagnosticService.readLiveDiagnosticsText();
   }
 
   Stream<String> watchLiveDiagnosticsText({
@@ -331,7 +331,7 @@ class MiuiLiveActivitiesService {
   }
 
   Future<bool> clearLiveDiagnostics() async {
-    return UmengAnalyticsService.clearLiveDiagnostics();
+    return AppDiagnosticService.clearLiveDiagnostics();
   }
 
   Future<bool> isIgnoringBatteryOptimizations() async {
@@ -440,7 +440,7 @@ class MiuiLiveActivitiesService {
       );
       await _channel.invokeMethod('startLiveUpdate', data);
     } catch (e, stackTrace) {
-      await UmengAnalyticsService.reportDiagnostic(
+      await AppDiagnosticService.reportDiagnostic(
         'live_update_start_failed',
         AppLogMessages.liveUpdateStartFailed,
         error: e,
@@ -454,7 +454,7 @@ class MiuiLiveActivitiesService {
     try {
       await _channel.invokeMethod('stopLiveUpdate');
     } catch (e, stackTrace) {
-      await UmengAnalyticsService.reportDiagnostic(
+      await AppDiagnosticService.reportDiagnostic(
         'live_update_stop_failed',
         AppLogMessages.liveUpdateStopFailed,
         error: e,
@@ -470,7 +470,7 @@ class MiuiLiveActivitiesService {
       final result = await _channel.invokeMethod('getLiveUpdateDebugStatus');
       return Map<String, dynamic>.from(result as Map);
     } catch (e, stackTrace) {
-      await UmengAnalyticsService.reportDiagnostic(
+      await AppDiagnosticService.reportDiagnostic(
         'live_update_debug_status_failed',
         AppLogMessages.liveUpdateDebugStatusFailed,
         error: e,
@@ -627,7 +627,7 @@ class MiuiLiveActivitiesService {
         'settings': settings.toJson(),
       });
       await _channel.invokeMethod('syncScheduleSnapshot', snapshotJson);
-      await UmengAnalyticsService.reportDiagnostic(
+      await AppDiagnosticService.reportDiagnostic(
         'live_update_settings_synced',
         AppLogMessages.liveUpdateSettingsSynced(
           beforeClass: settings.liveEnableBeforeClass,
@@ -641,7 +641,7 @@ class MiuiLiveActivitiesService {
       );
       return true;
     } catch (e, stackTrace) {
-      await UmengAnalyticsService.reportDiagnostic(
+      await AppDiagnosticService.reportDiagnostic(
         'live_update_snapshot_sync_failed',
         AppLogMessages.liveUpdateSnapshotSyncFailed,
         error: e,
@@ -658,7 +658,7 @@ class MiuiLiveActivitiesService {
       await _channel.invokeMethod('clearScheduleSnapshot');
       return true;
     } catch (e, stackTrace) {
-      await UmengAnalyticsService.reportDiagnostic(
+      await AppDiagnosticService.reportDiagnostic(
         'live_update_snapshot_clear_failed',
         AppLogMessages.liveUpdateSnapshotClearFailed,
         error: e,
@@ -675,7 +675,7 @@ class MiuiLiveActivitiesService {
       await _channel.invokeMethod('suspendScheduleTriggers', untilMillis);
       return true;
     } catch (e, stackTrace) {
-      await UmengAnalyticsService.reportDiagnostic(
+      await AppDiagnosticService.reportDiagnostic(
         'live_update_suspend_triggers_failed',
         AppLogMessages.liveUpdateSuspendTriggersFailed,
         error: e,

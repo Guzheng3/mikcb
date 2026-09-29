@@ -650,7 +650,6 @@ void main() {
       await provider.updateSettings(
         provider.settings.copyWith(
           homePageWallpaperPath: '/private/wallpaper.jpg',
-          savedThemes: const [],
         ),
       );
 

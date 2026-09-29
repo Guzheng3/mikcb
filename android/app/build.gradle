@@ -50,8 +50,6 @@ android {
         // 加此偏移确保 versionCode 始终高于旧版分 ABI 构建的值。
         versionCode = (flutter.versionCode as int) + 100000
         versionName = overrideVersionName ?: flutter.versionName
-        buildConfigField "String", "UMENG_APP_KEY", "\"69c1fd8f9a7f3764889fba4f\""
-        buildConfigField "String", "UMENG_CHANNEL", "\"official\""
         missingDimensionStrategy 'env', 'prod'
         // 仅保留 arm64: ML Kit AAR 自带三份 ABI 的 so(共 ~13MB),其中 x86_64/armeabi-v7a
         // 约 9MB 是纯冗余——minSdk 26 的真机全为 arm64。注意 defaultConfig 对 debug 同样
@@ -81,27 +79,22 @@ android {
             dimension "env"
             applicationIdSuffix ".debug"
             versionNameSuffix "-debug"
-            buildConfigField "String", "UMENG_CHANNEL", "\"official-debug\""
             manifestPlaceholders = [
-                    appLabel   : "轻屿课表调试版",
-                    umengScheme: "um.69c1fd8f9a7f3764889fba4f"
+                    appLabel: "轻屿课表调试版"
             ]
         }
         perf {
             dimension "env"
             applicationIdSuffix ".profile"
             versionNameSuffix "-profile"
-            buildConfigField "String", "UMENG_CHANNEL", "\"official-profile\""
             manifestPlaceholders = [
-                    appLabel   : "轻屿课表性能版",
-                    umengScheme: "um.69c1fd8f9a7f3764889fba4f"
+                    appLabel: "轻屿课表性能版"
             ]
         }
         prod {
             dimension "env"
             manifestPlaceholders = [
-                    appLabel   : "轻屿课表",
-                    umengScheme: "um.69c1fd8f9a7f3764889fba4f"
+                    appLabel: "轻屿课表"
             ]
         }
     }
@@ -159,10 +152,6 @@ gradle.taskGraph.whenReady { graph ->
 
 dependencies {
     implementation 'androidx.core:core-splashscreen:1.0.1'
-    implementation 'com.umeng.umsdk:common:9.6.3'
-    implementation 'com.umeng.umsdk:asms:1.8.0'
-    implementation 'com.umeng.umsdk:apm:1.5.2'
-    implementation 'com.umeng.umsdk:uyumao:1.1.2'
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'androidx.work:work-runtime-ktx:2.10.1'
     testImplementation 'junit:junit:4.13.2'

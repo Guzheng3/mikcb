@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/utils/course_color_palette.dart';
 
 void main() {
   group('courseCardContrastRatio', () {
     test('identical colors have ratio 1', () {
       expect(
-        courseCardContrastRatio(const Color(0xFF808080), const Color(0xFF808080)),
+        courseCardContrastRatio(
+          const Color(0xFF808080),
+          const Color(0xFF808080),
+        ),
         closeTo(1.0, 0.001),
       );
     });
 
     test('black on white is the maximum 21:1', () {
       expect(
-        courseCardContrastRatio(const Color(0xFF000000), const Color(0xFFFFFFFF)),
+        courseCardContrastRatio(
+          const Color(0xFF000000),
+          const Color(0xFFFFFFFF),
+        ),
         closeTo(21.0, 0.01),
       );
     });
@@ -33,37 +38,29 @@ void main() {
     // Regression: the previous implementation forced pure white whenever the
     // card hue luminance was below 0.62, which threw away the deliberate deep
     // ink of nearly every preset pastel pairing.
-    test('preset deep ink survives on its own pastel card, all styles', () {
+    test('preset deep ink survives on its own pastel card', () {
       for (final pair in kPresetCourseColorPairs) {
         final card = parseHex(pair.cardHex);
         final ink = parseHex(pair.textHex);
-        for (final style in CourseCardSurfaceStyle.values) {
           final resolved = resolveReadableCourseCardTitleColor(
             preferred: ink,
             cardColor: card,
-            surfaceShowsWallpaper: courseCardSurfaceShowsWallpaper(style),
           );
           expect(
             resolved,
             ink,
-            reason:
-                'preset ${pair.textHex} on ${pair.cardHex} ($style) must not '
-                'be overridden',
+          reason: 'preset ${pair.textHex} on ${pair.cardHex} must not be '
+              'overridden',
           );
         }
-      }
     });
 
-    test('solid style keeps a mid-tone ink that clears the contrast bar', () {
+    test('keeps a mid-tone ink that clears the contrast bar', () {
       // Dark navy on a pale card: clearly readable, must be preserved.
       const card = Color(0xFFE3F2FD);
       const ink = Color(0xFF0D47A1);
       expect(
-        resolveReadableCourseCardTitleColor(
-          preferred: ink,
-          cardColor: card,
-          surfaceShowsWallpaper: false,
-        ),
+        resolveReadableCourseCardTitleColor(preferred: ink, cardColor: card),
         ink,
       );
     });
@@ -76,7 +73,6 @@ void main() {
       final resolved = resolveReadableCourseCardTitleColor(
         preferred: ink,
         cardColor: card,
-        surfaceShowsWallpaper: false,
       );
       expect(resolved, isNot(ink));
       expect(
@@ -95,11 +91,7 @@ void main() {
       expect(ratio, lessThan(courseCardMinContrastRatio));
       expect(ratio, greaterThan(courseCardCriticalContrastRatio));
       expect(
-        resolveReadableCourseCardTitleColor(
-          preferred: ink,
-          cardColor: card,
-          surfaceShowsWallpaper: false,
-        ),
+        resolveReadableCourseCardTitleColor(preferred: ink, cardColor: card),
         ink,
       );
     });
@@ -110,21 +102,16 @@ void main() {
       final resolved = resolveReadableCourseCardTitleColor(
         preferred: ink,
         cardColor: card,
-        surfaceShowsWallpaper: false,
       );
       expect(resolved, isNot(const Color(0xFFFFFFFF)));
       expect(resolved.computeLuminance(), lessThan(0.2));
     });
 
-    test('solid style is covered too (it used to be exempt)', () {
+    test('a near-card-tone ink is covered too', () {
       const card = Color(0xFFFAFAFA);
       const ink = Color(0xFFF7F7F7);
       expect(
-        resolveReadableCourseCardTitleColor(
-          preferred: ink,
-          cardColor: card,
-          surfaceShowsWallpaper: false,
-        ),
+        resolveReadableCourseCardTitleColor(preferred: ink, cardColor: card),
         isNot(ink),
       );
     });
@@ -133,10 +120,7 @@ void main() {
   group('courseCardUnreadablePresetCardHexes', () {
     test('a readable ink reports no failures', () {
       expect(
-        courseCardUnreadablePresetCardHexes(
-          ink: const Color(0xFF000000),
-          surfaceStyle: CourseCardSurfaceStyle.solid,
-        ),
+        courseCardUnreadablePresetCardHexes(ink: const Color(0xFF000000)),
         isEmpty,
       );
     });
@@ -145,7 +129,6 @@ void main() {
       final failing = courseCardUnreadablePresetCardHexes(
         // Same family/lightness as the pastel cards themselves.
         ink: const Color(0xFFA5D6A7),
-        surfaceStyle: CourseCardSurfaceStyle.solid,
       );
       expect(failing, isNotEmpty);
     });
@@ -158,13 +141,11 @@ void main() {
       final title = resolveReadableCourseCardTitleColor(
         preferred: ink,
         cardColor: card,
-        surfaceShowsWallpaper: true,
       );
       final detail = resolveReadableCourseCardDetailColor(
         preferred: ink,
         resolvedTitleInk: title,
         cardColor: card,
-        surfaceShowsWallpaper: true,
       );
       expect(detail.r, closeTo(ink.r, 0.001));
       expect(detail.g, closeTo(ink.g, 0.001));
@@ -181,14 +162,12 @@ void main() {
       final title = resolveReadableCourseCardTitleColor(
         preferred: const Color(0xFFFFFFFF),
         cardColor: card,
-        surfaceShowsWallpaper: false,
       );
       expect(title, const Color(0xFFFFFFFF)); // advisory 区间内保留用户白墨
       final detail = resolveReadableCourseCardDetailColor(
         preferred: const Color(0xFF000000),
         resolvedTitleInk: title,
         cardColor: card,
-        surfaceShowsWallpaper: false,
       );
       expect(detail.r, closeTo(1.0, 0.001));
       expect(detail.g, closeTo(1.0, 0.001));
@@ -201,14 +180,12 @@ void main() {
       final title = resolveReadableCourseCardTitleColor(
         preferred: const Color(0xFF000000),
         cardColor: card,
-        surfaceShowsWallpaper: false,
       );
       expect(title, const Color(0xFF000000)); // 9.7:1 保留
       final detail = resolveReadableCourseCardDetailColor(
         preferred: const Color(0xFFFFFFFF),
         resolvedTitleInk: title,
         cardColor: card,
-        surfaceShowsWallpaper: false,
       );
       expect(detail.r, closeTo(0.0, 0.001));
       expect(detail.a, closeTo(0.7, 0.01));
@@ -219,28 +196,14 @@ void main() {
       final title = resolveReadableCourseCardTitleColor(
         preferred: const Color(0xFFFFFFFF),
         cardColor: card,
-        surfaceShowsWallpaper: false,
       );
       expect(title.computeLuminance(), lessThan(0.5));
       final detail = resolveReadableCourseCardDetailColor(
         preferred: const Color(0xFF000000),
         resolvedTitleInk: title,
         cardColor: card,
-        surfaceShowsWallpaper: false,
       );
       // 黑墨本就达标（12:1）且与标题同极性 → 保留纯黑，不并入标题墨。
-      expect(detail.r, closeTo(0.0, 0.001));
-      expect(detail.a, closeTo(0.7, 0.01));
-    });
-
-    test('wallpaper surfaces keep the divergent user choice', () {
-      const card = Color(0xFFFF9800);
-      final detail = resolveReadableCourseCardDetailColor(
-        preferred: const Color(0xFF000000),
-        resolvedTitleInk: const Color(0xFFFFFFFF),
-        cardColor: card,
-        surfaceShowsWallpaper: true,
-      );
       expect(detail.r, closeTo(0.0, 0.001));
       expect(detail.a, closeTo(0.7, 0.01));
     });
@@ -249,7 +212,12 @@ void main() {
   group('courseCardInkIsNeutral', () {
     test('white / black / greys and near-black deep inks are neutral', () {
       for (final hex in [
-        '#FFFFFF', '#000000', '#1F1F1F', '#1A1A1A', '#808080', '#0D0D14',
+        '#FFFFFF',
+        '#000000',
+        '#1F1F1F',
+        '#1A1A1A',
+        '#808080',
+        '#0D0D14',
       ]) {
         expect(courseCardInkIsNeutral(parseHex(hex)), isTrue, reason: hex);
       }
@@ -257,97 +225,57 @@ void main() {
 
     test('hue-bearing inks are not neutral', () {
       for (final hex in [
-        '#FF9800', '#B34700', '#0D47A1', '#F48FB1', '#90CAF9',
+        '#FF9800',
+        '#B34700',
+        '#0D47A1',
+        '#F48FB1',
+        '#90CAF9',
       ]) {
         expect(courseCardInkIsNeutral(parseHex(hex)), isFalse, reason: hex);
       }
     });
   });
 
-  group('glass ink rule (gaussian over wallpaper)', () {
-    const card = Color(0xFFFF9800); // 课程橙，tint 亮度约 0.437
+  group('userChosenInk on the solid surface', () {
+    // 回归：设置页字色/单课自带字色是显式选择，实心卡上一律照用；同一套设置
+    // 下浅底卡变黑字、深底卡保留白字的「有的黑有的白」由此消除。
+    const paleCard = Color(0xFFFFCC80);
 
-    test('hue ink drops to auto black on a bright wallpaper', () {
-      // effective = 0.437*0.5 + 0.8*0.5 ≈ 0.62 → chrome 墨取近黑
-      final ink = resolveReadableCourseCardGlassInk(
-        preferred: parseHex('#B34700'),
-        cardColor: card,
-        wallpaperLuminance: 0.8,
-      );
-      expect(ink, const Color(0xFF1A1A1A));
-    });
-
-    test('hue ink drops to auto white on a dark wallpaper', () {
-      // effective ≈ 0.27 < 0.45 → 白墨
-      final ink = resolveReadableCourseCardGlassInk(
-        preferred: parseHex('#0D47A1'),
-        cardColor: card,
-        wallpaperLuminance: 0.1,
-      );
-      expect(ink, const Color(0xFFFFFFFF));
-    });
-
-    test('readable neutral ink keeps the user choice on bright wallpaper', () {
-      final ink = resolveReadableCourseCardGlassInk(
-        preferred: parseHex('#1F1F1F'),
-        cardColor: card,
-        wallpaperLuminance: 0.8,
-      );
-      expect(ink, parseHex('#1F1F1F'));
-    });
-
-    test('neutral ink that would wash out flips (white on bright glass)', () {
-      final ink = resolveReadableCourseCardGlassInk(
+    test('white ink survives on a pale card when it is user-chosen', () {
+      expect(
+        resolveReadableCourseCardTitleColor(
         preferred: const Color(0xFFFFFFFF),
-        cardColor: card,
-        wallpaperLuminance: 0.8,
+          cardColor: paleCard,
+          userChosenInk: true,
+        ),
+        const Color(0xFFFFFFFF),
       );
-      expect(ink, const Color(0xFF1A1A1A));
     });
 
-    test('resolver routes glass with luminance through the glass rule', () {
+    test('the same white ink still auto-flips when it is not user-chosen', () {
+      expect(
+        resolveReadableCourseCardTitleColor(
+        preferred: const Color(0xFFFFFFFF),
+          cardColor: paleCard,
+        ),
+        const Color(0xFF1A1A1A),
+      );
+    });
+
+    test('detail keeps the user ink and only matches the title polarity', () {
       final title = resolveReadableCourseCardTitleColor(
         preferred: const Color(0xFFFFFFFF),
-        cardColor: card,
-        surfaceShowsWallpaper: true,
-        wallpaperLuminance: 0.8,
+        cardColor: paleCard,
+        userChosenInk: true,
       );
-      expect(title, const Color(0xFF1A1A1A));
-    });
-
-    test('glass without luminance keeps legacy behavior (user choice)', () {
-      final title = resolveReadableCourseCardTitleColor(
-        preferred: parseHex('#B34700'),
-        cardColor: card,
-        surfaceShowsWallpaper: true,
-      );
-      expect(title, parseHex('#B34700'));
       final detail = resolveReadableCourseCardDetailColor(
         preferred: const Color(0xFF000000),
         resolvedTitleInk: title,
-        cardColor: card,
-        surfaceShowsWallpaper: true,
+        cardColor: paleCard,
+        userChosenInk: true,
       );
-      expect(detail.r, closeTo(0.0, 0.001));
-      expect(detail.a, closeTo(0.7, 0.01));
-    });
-
-    test('detail ink follows the resolved title ink on glass', () {
-      final title = resolveReadableCourseCardTitleColor(
-        preferred: const Color(0xFFFFFFFF),
-        cardColor: card,
-        surfaceShowsWallpaper: true,
-        wallpaperLuminance: 0.8,
-      );
-      expect(title, const Color(0xFF1A1A1A));
-      final detail = resolveReadableCourseCardDetailColor(
-        preferred: parseHex('#B34700'),
-        resolvedTitleInk: title,
-        cardColor: card,
-        surfaceShowsWallpaper: true,
-        wallpaperLuminance: 0.8,
-      );
-      expect(detail.r, closeTo(title.r, 0.001));
+      // 黑详情不再被对比度守卫改写，但极性仍跟随白标题。
+      expect(detail.r, closeTo(1.0, 0.001));
       expect(detail.a, closeTo(0.7, 0.01));
     });
   });

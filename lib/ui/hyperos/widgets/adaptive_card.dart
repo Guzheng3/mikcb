@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_miuix/miuix.dart'
     show MiuixCardDefaults, MiuixSquircleBorder;
 
-import '../frosted/liquid_glass_degradation.dart';
 import '../hyperos_blurred_header.dart';
 import '../hyperos_sheet.dart';
 import '../hyperos_theme.dart';
@@ -47,10 +46,9 @@ class HyperosSurfaceRadiusScope extends InheritedWidget {
 /// short content still cannot overflow into a capsule beyond that limit.
 ///
 /// On a plain settings page the card is the opaque white surface. Inside a
-/// frosted / liquid-glass panel ([HyperosFrostedPanelScope]) it degrades to a
-/// translucent nested-glass wash so the panel's blur and refraction stay
-/// visible through the group — same rule as the other in-glass surfaces
-/// (select popups, menu tiles).
+/// frosted panel ([HyperosFrostedPanelScope]) it degrades to a translucent
+/// nested-glass wash so the panel's blur stays visible through the group —
+/// same rule as the other in-glass surfaces (select popups, menu tiles).
 class HyperosAdaptiveCard extends StatelessWidget {
   const HyperosAdaptiveCard({
     super.key,
@@ -86,17 +84,11 @@ class HyperosAdaptiveCard extends StatelessWidget {
 
   /// Card fill for the surface this card sits on.
   ///
-  /// Opaque white on settings pages; translucent glass wash on a frosted /
-  /// liquid-glass panel (see [HyperosBlurredHeader.nestedSurfaceTintColor] and
-  /// [HyperosBlurredHeader.nestedLiquidTileTintColor]).
+  /// Opaque white on settings pages; translucent glass wash on a frosted
+  /// panel (see [HyperosBlurredHeader.nestedSurfaceTintColor]).
   Color _resolvedCardColor(BuildContext context) {
     if (!HyperosFrostedPanelScope.of(context)) {
       return HyperosColors.card(context);
-    }
-    final appearance = FrostedAppearanceScope.of(context);
-    if (appearance.glassMode == FrostedGlassMode.liquidGlass &&
-        !LiquidGlassDegradation.shouldDegrade(context)) {
-      return HyperosBlurredHeader.nestedLiquidTileTintColor(context);
     }
     return HyperosBlurredHeader.nestedSurfaceTintColor(
       context,

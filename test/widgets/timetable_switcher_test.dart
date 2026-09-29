@@ -116,7 +116,7 @@ void _seedInitializedPrefs() {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const homeWidgetChannel = MethodChannel('vip.qinghan.withu/home_widget');
-  const analyticsChannel = MethodChannel('vip.qinghan.withu/umeng_analytics');
+  const analyticsChannel = MethodChannel('vip.qinghan.withu/app_diagnostics');
   const liveChannel = MethodChannel('vip.qinghan.withu/miui_live');
 
   setUp(() {
@@ -298,24 +298,15 @@ void main() {
     );
     await _pumpTimetableFrame(tester);
 
-    // ⋮ 菜单由设置分流：默认 list=锚定小弹窗，grid=八宫格底部弹层。
-    // 本用例校验溢出菜单不含课表管理（课表管理在标题切换器里），
-    // 为可断言固定八宫格，显式切到 grid 并注入 v2.0.5.5 默认全排列。
-    await runRealAsync(tester, () async {
-      await provider.updateTimetableSettings(
-        provider.settings.copyWith(
-          homeMenuStyle: HomeMenuStyle.grid,
-          homeGridMenuActions: List<String>.of(HomeGridMenu.defaultActions),
-        ),
-      );
-    });
-
+    // ⋮ 菜单固定为锚定列表弹窗。校验溢出菜单不含课表管理
+    // （课表管理入口在标题切换器里，见下方用例）。
     await tester.tap(find.byIcon(Icons.more_vert_rounded));
     await _pumpTimetableFrame(tester);
 
     // 弹层确已打开（避免下面的 findsNothing 空转通过）。
-    expect(find.byType(HyperosSheetFrame), findsOneWidget);
-    // 课表管理入口不在 ⋮ 弹层中，而在标题切换器里（见下方用例）。
+    expect(find.byType(HyperosSelectPopupGlass), findsOneWidget);
+    expect(find.byType(HyperosSheetFrame), findsNothing);
+    // 课表管理入口不在 ⋮ 弹层中。
     expect(find.text('课表管理'), findsNothing);
     expect(find.text('课程总览'), findsOneWidget);
   });

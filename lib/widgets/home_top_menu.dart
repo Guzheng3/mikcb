@@ -1,16 +1,12 @@
 import 'dart:io';
 
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
-import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/providers/withu_couple_session_provider.dart';
 import 'package:university_timetable/ui/hyperos/hyperos.dart';
-import 'package:university_timetable/utils/hex_color.dart';
 
-/// 八宫格候选入口的分类（编辑器分组展示用；也是列表弹窗的分组依据）。
+/// 首页菜单条目的分类（列表弹窗的分组依据）。
 enum HomeMenuEntryCategory { features, data, preferences, about }
 
 String homeMenuEntryCategoryLabel(
@@ -29,14 +25,13 @@ const double _homeTopMenuWidth = 131.4;
 /// 131.4 physical px on the common 3x phone; the avatar row stays at 56dp.
 const double _homeTopMenuRowHeight = 43.8;
 
-/// 一个可放入首页右上角八宫格的入口：应用内任意二级页面或功能。
+/// 一个可放入首页右上角菜单的入口：应用内任意二级页面或功能。
 ///
-/// [id] 是持久化主键（设置里的 homeGridMenuActions 存的就是它），
-/// 内置九项沿用旧列表菜单的动作名以兼容旧数据；[open] 负责从
-/// 当前 context 导航，由目录统一提供实现。
-/// [visible] 是构建模式等环境可见性门控：返回 false 的条目不进八宫格、
-/// 不进编辑器候选，已持久化的 id 也会在解析时被丢弃——调试/性能版
-/// 工具绝不能经目录泄漏给正式版用户。
+/// [id] 是稳定主键（内置项沿用旧 HomeTopMenuAction.name 以兼容旧数据），
+/// 其余来自目录 kHomeMenuCatalog；[open] 负责从当前 context 导航，由
+/// 目录统一提供实现。
+/// [visible] 是构建模式等环境可见性门控：返回 false 的条目不进菜单、
+/// 不进底栏圆钮候选——调试/性能版工具绝不能经目录泄漏给正式版用户。
 class HomeMenuEntry {
   const HomeMenuEntry({
     required this.id,
@@ -71,10 +66,9 @@ Future<void> pushHomeMenuPage(BuildContext context, Widget page) {
 /// Rows are plain text, except the logged-in withU couple action, which shows
 /// the web-style paired avatars in the leading row.
 ///
-/// [entries] 与八宫格共享同一份自定义排列（`resolveHomeGridMenuEntries`
-/// 的结果）；相邻条目分类变化时插入 8dp 分组间隔，自定义排列后分组
-/// 仍然自然。返回被点条目的 [HomeMenuEntry.id]，由调用方经目录分发
-/// 导航（与八宫格形态同一条回传路径）。
+/// [entries] 是菜单条目（`resolveHomeMenuEntries` 的结果）；相邻条目
+/// 分类变化时插入 8dp 分组间隔。返回被点条目的 [HomeMenuEntry.id]，
+/// 由调用方经目录分发导航。
 ///
 /// [anchorKey] must be the key of the top-right "more" button; the popup is
 /// positioned just below it via [hyperosPopupPositionBelow].
@@ -250,249 +244,6 @@ class _WithuCoupleAvatarFallback extends StatelessWidget {
     return const ColoredBox(
       color: Color(0xFFF3C1D3),
       child: Icon(Icons.person_outline_rounded, size: 18, color: Colors.white),
-    );
-  }
-}
-
-double _maxMenuTitleHeight({
-  required List<String> titles,
-  required TextStyle style,
-  required double maxWidth,
-  required TextDirection textDirection,
-}) {
-  var maxHeight = 0.0;
-  for (final title in titles) {
-    final painter = TextPainter(
-      text: TextSpan(text: title, style: style),
-      maxLines: 2,
-      textAlign: TextAlign.center,
-      textDirection: textDirection,
-      ellipsis: '…',
-    )..layout(maxWidth: maxWidth);
-    maxHeight = math.max(maxHeight, painter.height);
-  }
-  return maxHeight;
-}
-
-/// 八宫格瓷贴的主题强调色：跟随用户主题 seed（`themeSeedColor`），
-/// 让图标与井底色随预设主题/自定义主题色一起换色。磨砂瓷贴上不可读的
-/// seed（深色模式的近黑灰、浅色模式的亮黄）回落为玻璃墨色（自动黑白），
-/// 与课表玻璃卡「彩色墨回落自动黑白」口径一致。
-Color resolveHomeGridMenuAccent(BuildContext context, String? themeSeedHex) {
-  final accent = parseHexColorOrFallback(
-    themeSeedHex,
-    fallback: Theme.of(context).colorScheme.primary,
-  );
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  final luminance = accent.computeLuminance();
-  final readable = isDark ? luminance >= 0.08 : luminance <= 0.60;
-  return readable ? accent : context.theme.colors.foreground;
-}
-
-/// 首页右上角「更多」菜单的八宫格形态——v2.0.5.5 已发布版本的底部弹层：
-/// 4 列图标瓷贴、磨砂卡面、更新入口带角标。[entries] 是用户自定义后的
-/// 排列（最多 [HomeGridMenu.maxSlots] 个），不足一行的尾行按同样宽度排布。
-/// [themeSeedHex] 是当前主题 seed（`TimetableSettings.themeSeedColor`），
-/// 决定瓷贴图标颜色。
-///
-/// 返回被点条目的 [HomeMenuEntry.id]，由调用方经目录分发导航；
-/// 点遮罩关闭返回 null。
-Future<String?> showHomeTopGridMenuSheet(
-  BuildContext context, {
-  required List<HomeMenuEntry> entries,
-  String? themeSeedHex,
-}) {
-  return showHomeHyperosSheet<String>(
-    context: context,
-    builder: (sheetContext) =>
-        _HomeTopGridMenuSheet(entries: entries, themeSeedHex: themeSeedHex),
-  );
-}
-
-class _HomeTopGridMenuSheet extends StatelessWidget {
-  const _HomeTopGridMenuSheet({
-    required this.entries,
-    required this.themeSeedHex,
-  });
-
-  final List<HomeMenuEntry> entries;
-  final String? themeSeedHex;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = context.theme.colors;
-    final typo = context.theme.typography;
-    const tileSpacing = 10.0;
-    const tileHorizontalPadding = 14.0;
-    // Phone visual cap: tiles stay at most this wide so icon wells don't stretch.
-    const maxTileWidth = 112.0;
-    const minTileWidth = 64.0;
-    const columnsPerRow = 4;
-
-    final menuTitles = [for (final entry in entries) entry.title(l10n)];
-    final titleStyle = typo.body.xs2.copyWith(
-      fontWeight: FontWeight.w400,
-      height: 1.15,
-      color: colors.foreground,
-    );
-
-    return HyperosSheetFrame(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Width is already after floating outer inset + frame padding.
-          const gapCount = columnsPerRow - 1;
-          final availableWidth = constraints.maxWidth;
-          final hasBoundedWidth = availableWidth.isFinite && availableWidth > 0;
-          final rawItemWidth = hasBoundedWidth
-              ? (availableWidth - tileSpacing * gapCount) / columnsPerRow
-              : maxTileWidth;
-          // Keep phone sizing: never grow past [maxTileWidth]. Extra sheet
-          // width on tablets is distributed as equal gaps between tiles.
-          final itemWidth = rawItemWidth.clamp(minTileWidth, maxTileWidth);
-          final shouldSpreadAcrossWidth =
-              hasBoundedWidth && rawItemWidth > maxTileWidth;
-          // Explicit gap so the row's intrinsic width equals the sheet width
-          // (spaceBetween alone fails when the Row shrink-wraps).
-          final itemGap = shouldSpreadAcrossWidth
-              ? (availableWidth - itemWidth * columnsPerRow) / gapCount
-              : tileSpacing;
-          final titleAreaHeight = menuTitles.isEmpty
-              ? 0.0
-              : _maxMenuTitleHeight(
-                  titles: menuTitles,
-                  style: titleStyle,
-                  maxWidth: itemWidth - tileHorizontalPadding,
-                  textDirection: Directionality.of(context),
-                );
-
-          Widget tile(HomeMenuEntry entry) {
-            return SizedBox(
-              width: itemWidth,
-              child: _HomeMenuActionTile(
-                icon: entry.icon,
-                title: entry.title(l10n),
-                titleStyle: titleStyle,
-                titleAreaHeight: titleAreaHeight,
-                accentColor: resolveHomeGridMenuAccent(context, themeSeedHex),
-                onTap: () => Navigator.of(context).pop(entry.id),
-              ),
-            );
-          }
-
-          Widget menuRow(List<Widget> tiles) {
-            // Phone: fixed 10px gaps (existing look).
-            // Tablet: same tile width, larger equal gaps so the row fills width.
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (var index = 0; index < tiles.length; index++) ...[
-                  if (index > 0) SizedBox(width: itemGap),
-                  tiles[index],
-                ],
-              ],
-            );
-          }
-
-          // 用户自定义排列按每行 [columnsPerRow] 个切行；行宽与默认满 8 个
-          // 时完全一致，尾行不足时靠左排布，不拉伸瓷贴。
-          final rows = <List<Widget>>[];
-          for (var start = 0; start < entries.length; start += columnsPerRow) {
-            rows.add([
-              for (final entry in entries.sublist(
-                start,
-                math.min(start + columnsPerRow, entries.length),
-              ))
-                tile(entry),
-            ]);
-          }
-
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (var index = 0; index < rows.length; index++) ...[
-                  if (index > 0) const SizedBox(height: tileSpacing),
-                  menuRow(rows[index]),
-                ],
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _HomeMenuActionTile extends StatelessWidget {
-  const _HomeMenuActionTile({
-    required this.icon,
-    required this.title,
-    required this.titleStyle,
-    required this.titleAreaHeight,
-    required this.onTap,
-    this.accentColor,
-  });
-
-  final IconData icon;
-  final String title;
-  final TextStyle titleStyle;
-  final double titleAreaHeight;
-  final VoidCallback onTap;
-  final Color? accentColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final highlightColor = accentColor ?? colorScheme.primary;
-    const iconWellRadius = BorderRadius.all(Radius.circular(14));
-
-    return HyperosFrostedSurface(
-      borderRadius: HyperosTheme.cardBorderRadius,
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          borderRadius: HyperosTheme.cardBorderRadius,
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 13),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                HyperosFrostedSurface(
-                  borderRadius: iconWellRadius,
-                  blurEnabled: false,
-                  tint: HyperosBlurredHeader.accentSurfaceTintColor(
-                    highlightColor,
-                  ),
-                  child: SizedBox(
-                    width: 46,
-                    height: 46,
-                    child: Center(
-                      child: Icon(icon, color: highlightColor, size: 24),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 7),
-                SizedBox(
-                  height: titleAreaHeight,
-                  width: double.infinity,
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: Text(
-                      title,
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      style: titleStyle,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

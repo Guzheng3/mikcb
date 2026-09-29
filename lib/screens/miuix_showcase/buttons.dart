@@ -9,7 +9,7 @@ import 'common.dart';
 /// [MiuixButton] 内部已用 `DefaultTextStyle.merge(theme.textStyles.button)`
 /// 注入 17sp button 样式，所以 child 直接用 [Text] 即可，颜色由
 /// [MiuixContentColor] 控制；所有图标统一使用 [MiuixIcon] +
-/// [MiuixIcons.extended] 矢量图标；同组演示均用 [GroupCard] 收拢为圆角卡片。
+/// [miuixIconByName] 名称映射；同组演示均用 [GroupCard] 收拢为圆角卡片。
 class ButtonsShowcase extends StatelessWidget {
   const ButtonsShowcase({super.key});
 
@@ -116,17 +116,17 @@ class ButtonsShowcase extends StatelessWidget {
               MiuixIconButton(
                 onPressed: () {},
                 child: MiuixIcon(
-                  vector: MiuixIcons.extended.byName('favoritesFill'),
+                  icon: miuixIconByName('favoritesFill'),
                 ),
               ),
               MiuixIconButton(
                 onPressed: () {},
-                child: MiuixIcon(vector: MiuixIcons.extended.byName('share')),
+                child: MiuixIcon(icon: miuixIconByName('share')),
               ),
               MiuixIconButton(
                 onPressed: () {},
                 child: MiuixIcon(
-                  vector: MiuixIcons.extended.byName('settings'),
+                  icon: miuixIconByName('settings'),
                 ),
               ),
               // 主色背景：custom backgroundColor + onPrimary tint
@@ -134,7 +134,7 @@ class ButtonsShowcase extends StatelessWidget {
                 onPressed: () {},
                 backgroundColor: colors.primary,
                 child: MiuixIcon(
-                  vector: MiuixIcons.extended.byName('add'),
+                  icon: miuixIconByName('add'),
                   tint: colors.onPrimary,
                 ),
               ),
@@ -142,12 +142,12 @@ class ButtonsShowcase extends StatelessWidget {
               MiuixIconButton(
                 onPressed: () {},
                 holdDownState: true,
-                child: MiuixIcon(vector: MiuixIcons.extended.byName('more')),
+                child: MiuixIcon(icon: miuixIconByName('more')),
               ),
               // Disabled
               MiuixIconButton(
                 onPressed: null,
-                child: MiuixIcon(vector: MiuixIcons.extended.byName('delete')),
+                child: MiuixIcon(icon: miuixIconByName('delete')),
               ),
             ],
           ),
@@ -169,7 +169,7 @@ class ButtonsShowcase extends StatelessWidget {
             MiuixFloatingActionButton(
               onPressed: () {},
               child: MiuixIcon(
-                vector: MiuixIcons.extended.byName('add'),
+                icon: miuixIconByName('add'),
                 tint: colors.onPrimary,
               ),
             ),
@@ -178,7 +178,7 @@ class ButtonsShowcase extends StatelessWidget {
               onPressed: () {},
               containerColor: colors.secondary,
               child: MiuixIcon(
-                vector: MiuixIcons.extended.byName('edit'),
+                icon: miuixIconByName('edit'),
                 tint: colors.onSecondary,
               ),
             ),
@@ -187,7 +187,7 @@ class ButtonsShowcase extends StatelessWidget {
               onPressed: () {},
               containerColor: colors.error,
               child: MiuixIcon(
-                vector: MiuixIcons.extended.byName('delete'),
+                icon: miuixIconByName('delete'),
                 tint: colors.onError,
               ),
             ),

@@ -2,7 +2,7 @@ part of '../timetable_settings_screen.dart';
 
 /// 玻璃坞底栏按钮自定义编辑器。
 ///
-/// 候选 = 视图切换（日课表/周课表，由首页宿主处理）∪ 八宫格目录全部
+/// 候选 = 视图切换（日课表/周课表，由首页宿主处理）∪ 首页菜单目录全部
 /// 可见条目；最多 [HomeDockMenu.maxSlots] 个，支持拖动排序与移除。
 /// 改动即时回调 onChanged，由「首页与导航」页统一走草稿 + 自动保存。
 class _GlassDockEditorScreen extends StatefulWidget {
@@ -264,7 +264,7 @@ class _GlassDockEditorScreenState extends State<_GlassDockEditorScreen> {
   }
 }
 
-/// 「已启用」单行：拖动手柄 + 图标徽章 + 标题 + 移除按钮（对齐八宫格）。
+/// 「已启用」单行：拖动手柄 + 图标徽章 + 标题 + 移除按钮（对齐菜单条目）。
 class _DockSlotRow extends StatelessWidget {
   const _DockSlotRow({
     super.key,

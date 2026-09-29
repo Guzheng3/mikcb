@@ -181,18 +181,6 @@ class _CourseCardSettingsScreenState extends State<_CourseCardSettingsScreen> {
           HyperosSectionLabel(text: l10n.courseCardSectionLayout),
           HyperosListGroup(
             children: [
-              HyperosSelectTile<CourseCardSurfaceStyle>(
-                // 表面样式副题原为复述标题的零信息文案，随文案治理删除。
-                label: l10n.courseCardSurfaceStyleLabel,
-                items: {
-                  for (final style in CourseCardSurfaceStyle.values)
-                    courseCardSurfaceStyleLabel(l10n, style): style,
-                },
-                value: _draft.courseCardSurfaceStyle,
-                onChanged: (value) {
-                  _updateDraft(_draft.copyWith(courseCardSurfaceStyle: value));
-                },
-              ),
               HyperosSelectTile<CourseCardVerticalAlign>(
                 label: l10n.layoutVerticalAlignLabel,
                 items: {
@@ -278,6 +266,32 @@ class _CourseCardSettingsScreenState extends State<_CourseCardSettingsScreen> {
                     },
                   ),
                 ),
+              // 课卡字体颜色：与上方底色并列的快捷入口，写的是跨深浅色统一值（两套
+              // 标题字色一起改；「详情字色独立」关闭时详情字色跟随）。想只调
+              // 深色或浅色一套、或单独给详情字色，用下方「文字颜色」区块。
+              TimetableTextColorRow(
+                label: l10n.courseCardFontColorTitle,
+                currentColor: Theme.of(context).brightness == Brightness.dark
+                    ? _draft.courseCardTitleColorDark
+                    : _draft.courseCardTitleColorLight,
+                defaultValue: TimetableSettings.defaultCourseCardTitleColor,
+                bgColorForContrast: _draft.timetableUseUnifiedCardColor
+                    ? _draft.timetableUnifiedCardColor
+                    : TimetableSettings.defaultThemeSeedColor,
+                onColorSelected: (color) => _updateDraft(
+                  _draft.linkCourseCardColors
+                      ? _draft.copyWith(
+                          courseCardTitleColorLight: color,
+                          courseCardTitleColorDark: color,
+                          courseCardDetailColorLight: color,
+                          courseCardDetailColorDark: color,
+                        )
+                      : _draft.copyWith(
+                          courseCardTitleColorLight: color,
+                          courseCardTitleColorDark: color,
+                        ),
+                ),
+              ),
               // 一键重刷全部课程随机配色（同名同色）；上方实时预览立即反映。
               HyperosNavTile(
                 title: l10n.courseRecolorTileTitle,

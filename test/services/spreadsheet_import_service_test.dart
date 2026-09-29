@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:fast_gbk/fast_gbk.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:university_timetable/models/course.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
@@ -300,11 +299,14 @@ Course A,Teacher,1,1-2,Room,1-16
   });
 
   test('parses GBK-encoded CSV exported from Chinese Windows Excel', () {
-    const csv = '''
-课程名,星期,开始节,结束节,上课周
-高等数学,1,1,2,1-16
-''';
-    final gbkBytes = gbk.encode(csv);
+    // Real GBK (code page 936) bytes of:
+    //   \n课程名,星期,开始节,结束节,上课周\n高等数学,1,1,2,1-16\n
+    const gbkBytes = <int>[
+      10, 191, 206, 179, 204, 195, 251, 44, 208, 199, 198, 218, 44, 191, 170,
+      202, 188, 189, 218, 44, 189, 225, 202, 248, 189, 218, 44, 201, 207, 191,
+      206, 214, 220, 10, 184, 223, 181, 200, 202, 253, 209, 167, 44, 49, 44,
+      49, 44, 50, 44, 49, 45, 49, 54, 10,
+    ];
 
     final result = service.parseBytes(
       gbkBytes,

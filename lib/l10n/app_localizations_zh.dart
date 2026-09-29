@@ -88,9 +88,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fontModeMonospace => '等宽体';
 
   @override
-  String get languageSectionTitle => '应用语言';
-
-  @override
   String get languageSectionSubtitle => '可跟随系统，或手动切换到已适配语言';
 
   @override
@@ -518,34 +515,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unifiedCourseCardColorSubtitle => '关闭后继续使用每门课程自己的颜色';
 
   @override
+  String get courseCardFontColorTitle => '课程字体颜色';
+
+  @override
   String get importRandomCourseColorTitle => '随机课程颜色';
 
   @override
   String get importRandomCourseColorSubtitle => '按课程名与教师自动分配预设色';
 
   @override
-  String get importRandomColorGroupTitle => '随机配色组';
-
-  @override
-  String get colorGroupAll => '全部颜色';
-
-  @override
-  String get colorGroupPastel => '马卡龙系';
-
-  @override
-  String get colorGroupVibrant => '活泼系';
-
-  @override
-  String get colorGroupDeep => '深色系';
-
-  @override
-  String get colorGroupDopamine => '多巴胺系';
-
-  @override
-  String get colorGroupSunset => '落日系';
-
-  @override
-  String get colorGroupOcean => '海洋系';
+  String get courseColorPaletteAllLabel => '全部颜色';
 
   @override
   String get courseRecolorTileTitle => '课表重新配色';
@@ -997,35 +976,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importFailedInvalidFile => '导入失败，请确认文件有效';
 
   @override
-  String get welcomeTitle => '欢迎使用';
-
-  @override
-  String get welcomeAppName => '轻屿课表';
-
-  @override
-  String get welcomeSubtitle => '你可以先开始使用，也可以直接导入课程或从备份恢复';
-
-  @override
   String get thirdPartyDisclaimer =>
       '特此声明：本应用由第三方开发者独立开发，仅用于学习研究用途，不属于小米官方软件，与小米科技有限责任公司无任何隶属、合作或授权关系。如涉及内容侵权，请权利方联系作者，我们将第一时间下架并删除相关内容。';
-
-  @override
-  String get startUsingTitle => '开始使用';
-
-  @override
-  String get startUsingSubtitle => '直接进入软件，并继续完成首次使用说明';
-
-  @override
-  String get importTimetableTitle => '导入课表';
-
-  @override
-  String get importTimetableSubtitle => '从 .ics 文件或 AI 解析结果导入课程';
-
-  @override
-  String get restoreBackupTitle => '从备份恢复';
-
-  @override
-  String get restoreBackupSubtitle => '从 .mikcb 备份文件恢复旧数据';
 
   @override
   String get viewGuideTitle => '查看功能说明';
@@ -1429,10 +1381,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aboutOpenSourceLicensesExtraSectionTitle => '许可说明';
-
-  @override
-  String get aboutOpenSourceLicensesExtraUmeng =>
-      '友盟统计等分析服务仅在你同意隐私政策后启用，适用友盟自身的用户协议与隐私政策。';
 
   @override
   String get aboutOpenSourceLicensesExtraNote => '';
@@ -2165,42 +2113,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diagnosticsStackTrace => '堆栈';
 
   @override
-  String get firstUseGuideTitle => '首次使用引导';
-
-  @override
   String get guideAndPermissionsTitle => '使用引导与权限';
 
   @override
   String get refreshStatusTooltip => '刷新状态';
-
-  @override
-  String get guideHeroTitle => '先把这页做完，再开始用';
-
-  @override
-  String get guideHeroSubtitle => '首屏先授权，下面还会明确说明系统版本支持、简称设置和导入方式，记得继续下滑';
-
-  @override
-  String get guideChipPermissions => '权限准备';
-
-  @override
-  String get guideChipShortName => '简称设置';
-
-  @override
-  String get guideChipImport => '导入课表';
-
-  @override
-  String guideChipReadyCount(int count) {
-    return '$count/3 已完成';
-  }
-
-  @override
-  String get guideBottomReachedHint => '你已经滑到最后了，确认无误后就可以开始使用';
-
-  @override
-  String get guideScrollHint => '向下滑动继续，下面还有 HyperOS 版本说明、权限清单、简称设置和导入方式';
-
-  @override
-  String get guideRequestNotificationFirst => '先申请通知权限';
 
   @override
   String get quickSetupTitle => '首屏快速设置';
@@ -2209,52 +2125,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickSetupSubtitle => '先把最关键的 5 个入口放在前面，不用翻到下面再找';
 
   @override
-  String get quickActionNotificationsTitle => '通知设置';
-
-  @override
-  String get quickActionNotificationsSubtitle => '先确保能发通知';
-
-  @override
-  String get quickActionIslandTitle => '超级岛权限';
-
-  @override
-  String get quickActionIslandSubtitle => '检查 promoted 通知';
-
-  @override
   String get quickActionAutoStartTitle => '自启动';
 
   @override
-  String get quickActionAutoStartSubtitle => '避免后台被杀';
-
-  @override
-  String get quickActionBatteryTitle => '电池无限制';
-
-  @override
-  String get quickActionBatterySubtitle => '避免提醒中断';
-
-  @override
-  String get quickActionKeepAliveTitle => '后台保活辅助';
-
-  @override
-  String get quickActionKeepAliveSubtitle => '提升后台稳定性';
-
-  @override
-  String get guidePrivacyConsentLabel => '我已阅读并同意友盟相关隐私说明';
-
-  @override
-  String get guideRequireConsentHint => '请先滑到底部阅读说明，并勾选同意后开始使用';
-
-  @override
-  String get guideContinueHint => '继续下滑查看完整引导内容';
-
-  @override
-  String get exitAppAction => '退出应用';
-
-  @override
   String get continueReadingAction => '继续查看';
-
-  @override
-  String get agreeAndStartAction => '同意并开始使用';
 
   @override
   String get startUsingAction => '开始使用';
@@ -2496,12 +2370,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeTitleStyleLabel => '标题样式';
 
   @override
-  String get themeSeedSectionTitle => '应用主题色';
-
-  @override
-  String get themeSeedSectionSubtitle => '影响顶部栏、强调色和全局主色调';
-
-  @override
   String get frostedSheetSectionTitle => '磨砂玻璃';
 
   @override
@@ -2687,12 +2555,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get guideHyperOsChip => 'HyperOS 3.0.300+';
-
-  @override
-  String get guideStatusTitle => '当前状态';
-
-  @override
   String get guideStatusNotificationPermission => '通知权限';
 
   @override
@@ -2721,172 +2583,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get guideStatusBatteryRestricted => '仍受限制';
-
-  @override
-  String get guideStatusKeepAlive => '后台保活辅助';
-
-  @override
-  String get guideStatusAndroidVersion => 'Android 版本';
-
-  @override
-  String get guideStatusVersionUnknown => '未识别';
-
-  @override
-  String get guideStatusIslandSystemSupport => '超级岛系统支持';
-
-  @override
-  String get guideStatusIslandSystemRequirement => '需 HyperOS 3.0.300 及以上';
-
-  @override
-  String get guideStatusIslandHint =>
-      '如果你主要想用超级岛，先确认系统版本至少是 HyperOS 3.0.300，再继续把下面权限清单按顺序点完';
-
-  @override
-  String get guidePermissionChecklistTitle => '权限清单';
-
-  @override
-  String get guidePermissionChecklistSubtitle => '按这个顺序检查，最省事，也最不容易漏';
-
-  @override
-  String get guideChecklistRequestNotificationTitle => '申请通知权限';
-
-  @override
-  String get guideChecklistRequestNotificationSubtitle => '这是所有提醒的前提';
-
-  @override
-  String get guideChecklistOpenNotificationTitle => '打开通知设置';
-
-  @override
-  String get guideChecklistOpenNotificationSubtitle => '检查通知总开关、锁屏展示和实时通知权限';
-
-  @override
-  String get guideChecklistOpenIslandTitle => '打开焦点通知设置';
-
-  @override
-  String get guideChecklistOpenIslandSubtitle =>
-      'HyperOS 3.0.300 及以上再检查 promoted / 超级岛通知';
-
-  @override
-  String get guideChecklistOpenAutoStartTitle => '打开自启动设置';
-
-  @override
-  String get guideChecklistOpenAutoStartSubtitle => '允许应用开机自启和后台常驻';
-
-  @override
-  String get guideChecklistOpenBatteryTitle => '打开电池策略设置';
-
-  @override
-  String get guideChecklistOpenBatterySubtitle => '建议改成无限制，避免上课提醒被中断';
-
-  @override
-  String get guideChecklistOpenKeepAliveTitle => '打开后台保活辅助';
-
-  @override
-  String get guideChecklistOpenKeepAliveSubtitle => '进一步提升超级岛和提醒在后台场景下的稳定性';
-
-  @override
-  String get guideShortNameAdviceTitle => '课程简称建议';
-
-  @override
-  String get guideShortNameAdviceSubtitle =>
-      '超级岛支持显示课程简称，简称不是自动生成的，需要你在课程编辑里自己填写，建议控制在 3 个字以内，显示会更稳定';
-
-  @override
-  String get guideShortNameRecommended => '推荐示例';
-
-  @override
-  String get guideShortNameNotRecommended => '不推荐';
-
-  @override
-  String get guideShortNameRecommendedExample => '高数 / 概率 / 数控';
-
-  @override
-  String get guideShortNameNotRecommendedExample => '高等数学A(1) / 数控技术及应用';
-
-  @override
-  String get guideSetCourseShortNameAction => '去设置课程简称';
-
-  @override
-  String get guideImportMethodsTitle => '课表导入方式';
-
-  @override
-  String get guideImportMethodsSubtitle =>
-      '当前版本已经支持部分学校的教务系统网页登录导入；如果你的学校还没适配，也还有其他迁移方式';
-
-  @override
-  String get guideImportMethodStep1 =>
-      '优先进入“导入课程 > 教务系统导入”，选择学校和适配器后，直接在应用内打开教务网页完成导入。';
-
-  @override
-  String get guideImportMethodStep2 =>
-      '如果你的学校暂时没有适配，可以先在 WakeUp 等课表应用里导入教务系统课程，再导出日历格式，最后回到本应用导入。';
-
-  @override
-  String get guideImportMethodStep3 =>
-      '如果别人已经在用本应用，也可以让对方导出完整备份文件，你直接导入就能恢复课程和设置。';
-
-  @override
-  String get guideImportMethodExtra =>
-      '如果你会抓包、网页调试或 JavaScript，也欢迎参与学校教务适配补充，让更多学校能直接导入。';
-
-  @override
-  String get guideFinalTipsTitle => '最后再看这 3 条';
-
-  @override
-  String get guideFinalTip1 =>
-      '1. HyperOS 3.0.300 及以上才支持超级岛；如果系统版本不够，应用仍可正常发普通提醒。';
-
-  @override
-  String get guideFinalTip2 => '2. 先在设置页调整“上课前弹出”和“课中与临近下课提醒”的阈值。';
-
-  @override
-  String get guideFinalTip3 => '3. 完成系统权限设置后，再用测试通知验证；如果岛区还是偶尔消失，优先检查自启动和省电策略。';
-
-  @override
-  String get guidePrivacyHelperRequireConsent =>
-      '你勾选同意后，代表你已阅读并同意上述友盟相关说明、隐私内容与免责提示';
-
-  @override
-  String get guidePrivacyHelperViewOnly =>
-      '这里保留与首次启动一致的隐私、第三方 SDK 与免责说明，方便你随时查看；当前页面不需要再次勾选同意';
-
-  @override
-  String get guidePrivacySectionTitle => '隐私、第三方 SDK 与免责说明';
-
-  @override
-  String get guidePrivacyParagraph1 =>
-      '本应用主体功能按本地运行方式设计，课表、时间模板、课程记录和大部分设置默认保存在你的设备本地。';
-
-  @override
-  String get guidePrivacyParagraph2 =>
-      '只有在你主动使用检查更新、下载更新、导入导出等联网功能，或你勾选同意后初始化友盟相关 SDK 时，应用才会与外部服务发生数据交互。';
-
-  @override
-  String get guidePrivacyParagraph3 =>
-      '本应用接入友盟移动统计 SDK、友盟应用性能监控 SDK 以及高级运营分析依赖库。它们的服务用途包括移动统计分析、应用性能监控以及高级运营分析相关能力；只有在你勾选同意后，这些 SDK 才会正式初始化。';
-
-  @override
-  String get guidePrivacyParagraph4 =>
-      '按友盟官方说明，这些 SDK 可能处理的信息包括：设备信息（如 IMEI、MAC、Android ID、OAID、IDFA、OpenUDID、GUID、SIM 卡 IMSI 等）、网络状态、设备标识，以及高级运营分析依赖库涉及的应用列表和地理位置相关信息。';
-
-  @override
-  String get guideRiskTitle => '免责与风险提示';
-
-  @override
-  String get guideRiskParagraph1 =>
-      '1. 超级岛、焦点通知、后台提醒和保活效果依赖系统版本、机型、厂商策略、权限、自启动、电池策略等外部条件，无法保证所有设备表现完全一致。';
-
-  @override
-  String get guideRiskParagraph2 =>
-      '2. 检查更新、镜像下载、系统下载器、导入导出与分享等能力依赖网络环境、第三方服务和系统文件能力；若出现失败、限速或文件异常，请以 Release 页面、你自己保存的备份文件和系统提示为准。';
-
-  @override
-  String get guideRiskParagraph3 =>
-      '3. 在迁移、导入或覆盖数据前，请先自行确认备份文件完整可用，并妥善保管含有课表信息的文件；因用户自行删除、覆盖、分享或保管不当造成的数据问题，需要由用户自行承担相应风险。';
-
-  @override
-  String get guideUmengPrivacyLink =>
-      '友盟隐私政策：https://www.umeng.com/page/policy';
 
   @override
   String get liveDiagnosticsUnavailable => '当前还没有可查看的应用日志';
@@ -2939,15 +2635,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get liveTestingSessionCanceled => '已取消自检测试';
-
-  @override
-  String get liveTestingUmengHint => '下面两个按钮仅测试版显示，用于验证友盟 U-APM 崩溃和卡顿上报';
-
-  @override
-  String get liveTestingCrashAction => '崩溃测试';
-
-  @override
-  String get liveTestingAnrAction => '异常卡顿测试';
 
   @override
   String get liveTestingIslandStatusTitle => '上岛状态诊断';
@@ -3058,13 +2745,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get liveTestingCurrentNativeFieldsSubtitle => '显示当前原生诊断字段';
-
-  @override
-  String get liveTestingCrashSoon => '即将触发友盟 U-APM 测试崩溃，请重新打开应用查看后台是否收到上报';
-
-  @override
-  String get liveTestingAnrSoon =>
-      '即将触发约 30 秒主线程卡死，请脱离 flutter run 测试，并在卡死后重新打开应用查看友盟后台';
 
   @override
   String get liveTestingNoCourseAvailable => '当前没有可测试的课程';
@@ -3263,10 +2943,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeWidgetBindingSaveFailed => '保存卡片绑定失败，请稍后重试';
 
   @override
-  String get homeWidgetCoupleModeOffMessage => '当前未开启情侣模式，可点击下方开启';
+  String get homeWidgetCoupleModeOffMessage => '当前未开启情侣模式，打开下方开关即可';
 
   @override
-  String get homeWidgetCoupleModeOffEnable => '开启情侣模式';
+  String get coupleModeTitle => '情侣模式';
 
   @override
   String get homeWidgetBindingMissingToast => '这张卡片绑定的课表已失效，已按普通方式打开';
@@ -5538,54 +5218,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get thisWeekLabel => '本周';
 
   @override
-  String get guidePrivacyPageTitle => '隐私协议';
-
-  @override
-  String get guidePermissionsPageTitle => '系统权限';
-
-  @override
-  String get guideTipsPageTitle => '使用技巧';
-
-  @override
-  String get guidePersonalizePageTitle => '个性化定制';
-
-  @override
-  String get guidePersonalizeSubtitle => '以下选择立即生效，之后可随时在「设置 → 外观」中调整';
-
-  @override
-  String get guidePersonalizeMenuStyleTitle => '菜单样式';
-
-  @override
-  String get guidePersonalizeNavFormTitle => '导航形态';
-
-  @override
-  String get guidePersonalizeVisualEffectTitle => '视觉效果';
-
-  @override
-  String get guidePersonalizeVisualEffectSolid => '实体卡片';
-
-  @override
-  String get guideVisualEffectGaussianDesc => '背景实时高斯模糊，通透有层次';
-
-  @override
-  String get guideVisualEffectLiquidDesc => '液态玻璃折射，更具质感（功耗略高）';
-
-  @override
-  String get guideVisualEffectSolidDesc => '不启用模糊效果，性能最好';
-
-  @override
-  String get guidePersonalizeThemeModeTitle => '深浅色模式';
-
-  @override
-  String get guidePersonalizeSeedColorTitle => '主题色';
-
-  @override
-  String get guidePrevButton => '上一步';
-
-  @override
-  String get guideNextButton => '下一步';
-
-  @override
   String get guidePermissionsHeader => '系统权限设置';
 
   @override
@@ -5594,18 +5226,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get guidePermissionsFooterHint =>
       '点击后跳转到系统设置，返回应用后可识别的状态会自动刷新；自启动受系统限制，请以系统页面开关为准';
-
-  @override
-  String get guideTipsHeader => '使用技巧';
-
-  @override
-  String get guideTipsSubtitle => '这些随时可以在「设置」里找到';
-
-  @override
-  String get guidePrivacyReadBeforeUse => '使用前请阅读并同意以下内容';
-
-  @override
-  String get guidePrivacyViewOnly => '隐私、第三方 SDK 与免责说明';
 
   @override
   String holidayDataYearLabel(Object year) {
@@ -5690,144 +5310,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get textColorCurrentColor => '当前颜色';
 
   @override
-  String get themeExport => '导出主题';
-
-  @override
-  String get themeImport => '导入主题';
-
-  @override
-  String get themeExportSuccess => '主题已复制到剪贴板';
-
-  @override
-  String get themeImportSuccess => '主题已导入';
-
-  @override
-  String get themeImportFailed => '剪贴板内容格式错误';
-
-  @override
-  String get themeManageTitle => '主题管理';
-
-  @override
-  String get themeManageSubtitle => '导出、导入和切换主题';
-
-  @override
-  String get themePreset => '预设主题';
-
-  @override
-  String get themeSaved => '我的主题';
-
-  @override
-  String get themeSaveCurrent => '保存当前主题';
-
-  @override
-  String get themeApply => '应用';
-
-  @override
-  String get themeDelete => '删除';
-
-  @override
-  String themeDeleteConfirmMessage(String name) {
-    return '确定要删除主题“$name”吗？';
-  }
-
-  @override
   String get textColorLowContrastWarning => '颜色对比度较低，可能影响可读性';
 
   @override
-  String get themeCurrentTheme => '当前主题';
-
-  @override
-  String themeBasedOnModified(String baseName) {
-    return '基于$baseName（已修改）';
-  }
-
-  @override
-  String get themeResetToPreset => '重置';
-
-  @override
-  String get themeUnsavedChangesTitle => '未保存的修改';
-
-  @override
-  String get themeUnsavedChangesMessage => '当前主题有未保存的修改，是否保存？';
-
-  @override
-  String get themeDiscardAndApply => '放弃并应用';
-
-  @override
-  String get themeNameHint => '输入主题名称';
-
-  @override
-  String get themePresetBlue => '默认蓝';
-
-  @override
-  String get themePresetPurple => '暗夜紫';
-
-  @override
-  String get themePresetGreen => '森林绿';
-
-  @override
-  String get themePresetOrange => '暖阳橙';
-
-  @override
-  String get themePresetEyeCare => '护眼模式';
-
-  @override
-  String get themePresetHighContrast => '高对比度';
-
-  @override
-  String get themePresetDarkMinimal => '深色极简';
-
-  @override
-  String get foruiThemeNeutral => '中性灰';
-
-  @override
-  String get foruiThemeZinc => '锌灰';
-
-  @override
-  String get foruiThemeSlate => '石板灰';
-
-  @override
-  String get foruiThemeBlue => '蓝';
-
-  @override
-  String get foruiThemeGreen => '绿';
-
-  @override
-  String get foruiThemeOrange => '橙';
-
-  @override
-  String get foruiThemeRed => '红';
-
-  @override
-  String get foruiThemeRose => '玫红';
-
-  @override
-  String get foruiThemeViolet => '紫';
-
-  @override
-  String get foruiThemeYellow => '黄';
-
-  @override
   String get themeUndo => '撤销';
-
-  @override
-  String themeChanged(String themeName) {
-    return '已切换到 $themeName';
-  }
-
-  @override
-  String get themeRename => '重命名';
-
-  @override
-  String get themeDuplicate => '复制';
-
-  @override
-  String themeDuplicateCopyName(String name) {
-    return '$name 副本';
-  }
-
-  @override
-  String get themeMoreActions => '更多操作';
 
   @override
   String get courseNatureRequired => '必修';
@@ -7712,9 +7198,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logAppLoggerInitialized => '应用日志服务已初始化';
 
   @override
-  String get logPrivacyConsentUpdated => '隐私协议同意状态已更新';
-
-  @override
   String get logAppLogRecordingEnabled => '应用日志记录已开启';
 
   @override
@@ -8086,9 +7569,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get logCatAppLoggerInitialized => '应用日志：初始化';
-
-  @override
-  String get logCatPrivacyConsentUpdated => '应用日志：隐私协议';
 
   @override
   String get logCatAppLogRecordingEnabled => '应用日志：记录开关';
@@ -8714,87 +8194,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scheduleDateRuleNote => '地点匹配优先于日期规则。';
 
   @override
-  String get frostedGlassModeLabel => '玻璃模式';
-
-  @override
-  String get liquidGlassScopeSectionTitle => '液态玻璃作用范围';
-
-  @override
-  String get liquidGlassScopePopupTitle => '下拉选择弹窗';
-
-  @override
-  String get liquidGlassScopePopupSubtitle => '玻璃模式等设置行弹出的小气泡菜单';
-
-  @override
-  String get liquidGlassScopeSelectSheetTitle => '全屏选择面板';
-
-  @override
-  String get liquidGlassScopeSelectSheetSubtitle => '预设主题、字体等长列表选择弹窗，默认保持磨砂';
-
-  @override
-  String get liquidGlassScopeSheetDialogTitle => '弹窗与对话框';
-
-  @override
-  String get liquidGlassScopeSheetDialogSubtitle => '底部弹窗、确认对话框与操作菜单';
-
-  @override
-  String get liquidGlassScopeHomeChromeTitle => '首页玻璃带';
-
-  @override
-  String get liquidGlassScopeHomeChromeSubtitle => '标题栏与星期栏的玻璃背景带';
-
-  @override
-  String get liquidGlassScopeDockTitle => '玻璃坞导航';
-
-  @override
-  String get liquidGlassScopeDockSubtitle => '底部悬浮药丸与加课圆钮';
-
-  @override
-  String get liquidGlassScopePickerButtonsTitle => '壁纸选点按钮';
-
-  @override
-  String get liquidGlassScopePickerButtonsSubtitle => '壁纸位置选择页悬浮在壁纸上的玻璃按钮';
-
-  @override
-  String get frostedGlassModeFrosted => '经典磨砂';
-
-  @override
-  String get frostedGlassModeLiquid => '液态玻璃';
-
-  @override
-  String get frostedGlassModeGaussian => '高斯模糊';
-
-  @override
-  String get frostedGlassModeTranslucent => '半透明';
-
-  @override
-  String get frostedLiquidGlassHint => '液态玻璃需要高性能设备支持';
-
-  @override
-  String get advancedMaterialTitle => '高级材质';
-
-  @override
-  String get advancedMaterialEntrySubtitle => '液态玻璃参数微调';
-
-  @override
-  String get liquidGlassPresetLabel => '液态玻璃预设';
-
-  @override
-  String get liquidGlassPresetClear => '清澈';
-
-  @override
-  String get liquidGlassPresetLight => '轻雾';
-
-  @override
-  String get liquidGlassPresetStandard => '标准';
-
-  @override
-  String get liquidGlassPresetDense => '浓密';
-
-  @override
-  String get liquidGlassPresetCustom => '自定义';
-
-  @override
   String get courseCardSettingsTitle => '课程卡片';
 
   @override
@@ -8804,15 +8203,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get courseCardSectionLayout => '布局';
 
   @override
-  String get courseCardSurfaceStyleLabel => '卡片外观';
-
-  @override
-  String get courseCardSurfaceStyleSolid => '实体卡片';
-
-  @override
-  String get courseCardSurfaceStyleGaussian => '高斯模糊';
-
-  @override
   String get courseCardSectionColor => '颜色';
 
   @override
@@ -8820,42 +8210,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get collapsibleLargeTitle => '折叠大标题';
-
-  @override
-  String get liquidGlassCustomExpandedTitle => '自定义参数';
-
-  @override
-  String get liquidGlassThicknessLabel => '厚度';
-
-  @override
-  String get liquidGlassBlurLabel => '模糊强度';
-
-  @override
-  String get liquidGlassTintLabel => '染色强度';
-
-  @override
-  String get liquidGlassLightIntensityLabel => '灯光强度';
-
-  @override
-  String get liquidGlassAmbientStrengthLabel => '环境光强度';
-
-  @override
-  String get liquidGlassRefractiveIndexLabel => '折射率';
-
-  @override
-  String get liquidGlassSaturationLabel => '饱和度';
-
-  @override
-  String get liquidGlassChromaticAberrationLabel => '色差';
-
-  @override
-  String get liquidGlassLightAngleLabel => '光照角度';
-
-  @override
-  String get liquidGlassVisibilityLabel => '可见性';
-
-  @override
-  String get liquidGlassResetAction => '恢复默认';
 
   @override
   String get diagnosticsEntryTitle => '诊断';
@@ -9252,9 +8606,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeNavigationTitle => '首页与导航';
 
   @override
-  String get homeMenuCustomizeSectionTitle => '右上角菜单';
-
-  @override
   String get homeNavigationSubtitle => '底栏形态、菜单与首页标题';
 
   @override
@@ -9339,24 +8690,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get glassDockExtraButtonSemanticLabel => '添加课程';
 
   @override
-  String get homeMenuStyleLabel => '右上角菜单样式';
-
-  @override
-  String get homeMenuStyleList => '列表菜单';
-
-  @override
-  String get homeMenuStyleGrid => '八宫格菜单';
-
-  @override
-  String get homeMenuStyleListSubtitle => '锚定列表，可自定义';
-
-  @override
-  String get homeMenuStyleGridSubtitle => '图标瓷贴，可自定义';
-
-  @override
-  String get homeMenuCustomizeTitle => '自定义菜单按钮';
-
-  @override
   String homeGridCustomizeDetails(int count, int max) {
     return '已启用 $count/$max 个';
   }
@@ -9370,13 +8703,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeGridEditorEnabledTitle => '已启用';
 
   @override
-  String get homeGridEditorAvailableTitle => '可添加';
-
-  @override
   String get homeGridEditorRemoveTooltip => '移除';
-
-  @override
-  String get homeGridEditorAddTooltip => '添加';
 
   @override
   String get homeGridEditorResetAction => '恢复默认排列';
@@ -9386,9 +8713,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeGridEditorMaxReached => '已达上限';
-
-  @override
-  String get homeGridEditorPinnedTooltip => '此入口用于重新打开本页，不能移除';
 
   @override
   String get homeMenuCategoryFeatures => '功能入口';
@@ -9730,9 +9054,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get fontModeMonospace => '等寬體';
-
-  @override
-  String get languageSectionTitle => '應用語言';
 
   @override
   String get languageSectionSubtitle => '可跟隨系統，或手動切換到已適配語言';
@@ -10147,34 +9468,16 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get unifiedCourseCardColorSubtitle => '關閉後繼續使用每門課程自己的顏色';
 
   @override
+  String get courseCardFontColorTitle => '課程字體顏色';
+
+  @override
   String get importRandomCourseColorTitle => '隨機課程顏色';
 
   @override
   String get importRandomCourseColorSubtitle => '依課程名與教師自動分配預設色';
 
   @override
-  String get importRandomColorGroupTitle => '隨機配色組';
-
-  @override
-  String get colorGroupAll => '全部顏色';
-
-  @override
-  String get colorGroupPastel => '馬卡龍系';
-
-  @override
-  String get colorGroupVibrant => '活潑系';
-
-  @override
-  String get colorGroupDeep => '深色系';
-
-  @override
-  String get colorGroupDopamine => '多巴胺系';
-
-  @override
-  String get colorGroupSunset => '落日系';
-
-  @override
-  String get colorGroupOcean => '海洋系';
+  String get courseColorPaletteAllLabel => '全部顏色';
 
   @override
   String get courseRecolorTileTitle => '課表重新配色';
@@ -10626,35 +9929,8 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get importFailedInvalidFile => '匯入失敗，請確認檔案有效';
 
   @override
-  String get welcomeTitle => '歡迎使用';
-
-  @override
-  String get welcomeAppName => '輕嶼課表';
-
-  @override
-  String get welcomeSubtitle => '你可以先開始使用，也可以直接匯入課程或從備份還原';
-
-  @override
   String get thirdPartyDisclaimer =>
       '特此聲明：本應用由第三方開發者獨立開發，僅用於學習研究用途，不屬於小米官方軟件，與小米科技有限責任公司無任何隸屬、合作或授權關係。如涉及內容侵權，請權利方聯繫作者，我們將第一時間下架並刪除相關內容。';
-
-  @override
-  String get startUsingTitle => '開始使用';
-
-  @override
-  String get startUsingSubtitle => '直接進入軟件，並繼續完成首次使用說明';
-
-  @override
-  String get importTimetableTitle => '匯入課表';
-
-  @override
-  String get importTimetableSubtitle => '從 .ics 檔案或 AI 解析結果匯入課程';
-
-  @override
-  String get restoreBackupTitle => '從備份還原';
-
-  @override
-  String get restoreBackupSubtitle => '從 .mikcb 備份檔案還原舊資料';
 
   @override
   String get viewGuideTitle => '查看功能說明';
@@ -11058,10 +10334,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get aboutOpenSourceLicensesExtraSectionTitle => '許可說明';
-
-  @override
-  String get aboutOpenSourceLicensesExtraUmeng =>
-      '友盟統計等分析服務僅在你同意隱私政策後啟用，適用友盟自身的用戶協議與隱私政策。';
 
   @override
   String get aboutOpenSourceLicensesExtraNote => '';
@@ -11795,42 +11067,10 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get diagnosticsStackTrace => '堆棧';
 
   @override
-  String get firstUseGuideTitle => '首次使用引導';
-
-  @override
   String get guideAndPermissionsTitle => '使用引導與權限';
 
   @override
   String get refreshStatusTooltip => '刷新狀態';
-
-  @override
-  String get guideHeroTitle => '先把這頁做完，再開始用';
-
-  @override
-  String get guideHeroSubtitle => '首屏先授權，下面還會明確說明系統版本支持、簡稱設定和匯入方式，記得繼續下滑';
-
-  @override
-  String get guideChipPermissions => '權限準備';
-
-  @override
-  String get guideChipShortName => '簡稱設定';
-
-  @override
-  String get guideChipImport => '匯入課表';
-
-  @override
-  String guideChipReadyCount(int count) {
-    return '$count/3 已完成';
-  }
-
-  @override
-  String get guideBottomReachedHint => '你已經滑到最後了，確認無誤後就可以開始使用';
-
-  @override
-  String get guideScrollHint => '向下滑動繼續，下面還有 HyperOS 版本說明、權限清單、簡稱設定和匯入方式';
-
-  @override
-  String get guideRequestNotificationFirst => '先申請通知權限';
 
   @override
   String get quickSetupTitle => '首屏快速設定';
@@ -11839,52 +11079,10 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get quickSetupSubtitle => '先把最關鍵的 5 個入口放在前面，不用翻到下面再找';
 
   @override
-  String get quickActionNotificationsTitle => '通知設定';
-
-  @override
-  String get quickActionNotificationsSubtitle => '先確保能發通知';
-
-  @override
-  String get quickActionIslandTitle => '超級島權限';
-
-  @override
-  String get quickActionIslandSubtitle => '檢查 promoted 通知';
-
-  @override
   String get quickActionAutoStartTitle => '自啟動';
 
   @override
-  String get quickActionAutoStartSubtitle => '避免後台被殺';
-
-  @override
-  String get quickActionBatteryTitle => '電池無限製';
-
-  @override
-  String get quickActionBatterySubtitle => '避免提醒中斷';
-
-  @override
-  String get quickActionKeepAliveTitle => '後台保活輔助';
-
-  @override
-  String get quickActionKeepAliveSubtitle => '提升後台穩定性';
-
-  @override
-  String get guidePrivacyConsentLabel => '我已閱讀並同意友盟相關隱私說明';
-
-  @override
-  String get guideRequireConsentHint => '請先滑到底部閱讀說明，並勾選同意後開始使用';
-
-  @override
-  String get guideContinueHint => '繼續下滑查看完整引導內容';
-
-  @override
-  String get exitAppAction => '退出應用';
-
-  @override
   String get continueReadingAction => '繼續查看';
-
-  @override
-  String get agreeAndStartAction => '同意並開始使用';
 
   @override
   String get startUsingAction => '開始使用';
@@ -12126,12 +11324,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get homeTitleStyleLabel => '標題樣式';
 
   @override
-  String get themeSeedSectionTitle => '應用主題色';
-
-  @override
-  String get themeSeedSectionSubtitle => '蠅響頂部欄、強調色和全局主色調';
-
-  @override
   String get frostedSheetSectionTitle => '磨砂玻璃';
 
   @override
@@ -12316,12 +11508,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   }
 
   @override
-  String get guideHyperOsChip => 'HyperOS 3.0.300+';
-
-  @override
-  String get guideStatusTitle => '目前狀態';
-
-  @override
   String get guideStatusNotificationPermission => '通知權限';
 
   @override
@@ -12350,172 +11536,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get guideStatusBatteryRestricted => '仍受限制';
-
-  @override
-  String get guideStatusKeepAlive => '後台保活輔助';
-
-  @override
-  String get guideStatusAndroidVersion => 'Android 版本';
-
-  @override
-  String get guideStatusVersionUnknown => '未識別';
-
-  @override
-  String get guideStatusIslandSystemSupport => '超級島系統支持';
-
-  @override
-  String get guideStatusIslandSystemRequirement => '需 HyperOS 3.0.300 及以上';
-
-  @override
-  String get guideStatusIslandHint =>
-      '如果你主要想用超級島，先確認系統版本至少是 HyperOS 3.0.300，再繼續把下面權限清單按順序點完';
-
-  @override
-  String get guidePermissionChecklistTitle => '權限清單';
-
-  @override
-  String get guidePermissionChecklistSubtitle => '按這個順序檢查，最省事，也最不容易漏';
-
-  @override
-  String get guideChecklistRequestNotificationTitle => '申請通知權限';
-
-  @override
-  String get guideChecklistRequestNotificationSubtitle => '這是所有提醒的前提';
-
-  @override
-  String get guideChecklistOpenNotificationTitle => '打開通知設定';
-
-  @override
-  String get guideChecklistOpenNotificationSubtitle => '檢查通知總開關、锁屏展示和實時通知權限';
-
-  @override
-  String get guideChecklistOpenIslandTitle => '打開焦點通知設定';
-
-  @override
-  String get guideChecklistOpenIslandSubtitle =>
-      'HyperOS 3.0.300 及以上再檢查 promoted / 超級島通知';
-
-  @override
-  String get guideChecklistOpenAutoStartTitle => '打開自啟動設定';
-
-  @override
-  String get guideChecklistOpenAutoStartSubtitle => '允許應用開機自啟和後台常驻';
-
-  @override
-  String get guideChecklistOpenBatteryTitle => '打開電池策略設定';
-
-  @override
-  String get guideChecklistOpenBatterySubtitle => '建議改成無限制，避免上課提醒被中斷';
-
-  @override
-  String get guideChecklistOpenKeepAliveTitle => '打開後台保活輔助';
-
-  @override
-  String get guideChecklistOpenKeepAliveSubtitle => '進一步提升超級島和提醒在後台場景下的穩定性';
-
-  @override
-  String get guideShortNameAdviceTitle => '課程簡稱建議';
-
-  @override
-  String get guideShortNameAdviceSubtitle =>
-      '超級島支持顯示課程簡稱，簡稱不是自動生成的，需要你在課程編輯裡自己填寫，建議控制在 3 個字以內，顯示會更穩定';
-
-  @override
-  String get guideShortNameRecommended => '推薦示例';
-
-  @override
-  String get guideShortNameNotRecommended => '不推薦';
-
-  @override
-  String get guideShortNameRecommendedExample => '高數 / 概率 / 數控';
-
-  @override
-  String get guideShortNameNotRecommendedExample => '高等數學A(1) / 數控技術及應用';
-
-  @override
-  String get guideSetCourseShortNameAction => '去設定課程簡稱';
-
-  @override
-  String get guideImportMethodsTitle => '課表導入方式';
-
-  @override
-  String get guideImportMethodsSubtitle =>
-      '目前版本已經支持部分學校的教務系統網頁登入導入；如果你的學校還没適配，也還有其他遷移方式';
-
-  @override
-  String get guideImportMethodStep1 =>
-      '優先進入“導入課程 > 教務系統導入”，選擇學校和適配器後，直接在應用內打開教務網頁完成導入。';
-
-  @override
-  String get guideImportMethodStep2 =>
-      '如果你的學校暫時没有適配，可以先在 WakeUp 等課表應用裡導入教務系統課程，再導出日歷格式，最後回到本應用導入。';
-
-  @override
-  String get guideImportMethodStep3 =>
-      '如果別人已經在用本應用，也可以讓對方導出完整備份文件，你直接導入就能恢複課程和設定。';
-
-  @override
-  String get guideImportMethodExtra =>
-      '如果你會抓包、網頁偵錯或 JavaScript，也歡迎參與學校教務適配補充，讓更多學校能直接導入。';
-
-  @override
-  String get guideFinalTipsTitle => '最後再看這 3 條';
-
-  @override
-  String get guideFinalTip1 =>
-      '1. HyperOS 3.0.300 及以上才支持超級島；如果系統版本不夠，應用仍可正常發普通提醒。';
-
-  @override
-  String get guideFinalTip2 => '2. 先在設定頁調整「上課前彈出」和「課中與臨近下課提醒」的閾值。';
-
-  @override
-  String get guideFinalTip3 => '3. 完成系統權限設定後，再用測試通知驗證；如果島區還是偶尔消失，優先檢查自啟動和省電策略。';
-
-  @override
-  String get guidePrivacyHelperRequireConsent =>
-      '你勾選同意後，代表你已阅讀並同意上述友盟相關說明、隱私內容與免責提示';
-
-  @override
-  String get guidePrivacyHelperViewOnly =>
-      '這裡保留與首次啟動一致的隱私、第三方 SDK 與免責說明，方便你隨時查看；目前頁面不需要再次勾選同意';
-
-  @override
-  String get guidePrivacySectionTitle => '隱私、第三方 SDK 與免責說明';
-
-  @override
-  String get guidePrivacyParagraph1 =>
-      '本應用主體功能按本地運行方式設計，課表、時間模板、課程記錄和大部分設定預設保存在你的裝置本地。';
-
-  @override
-  String get guidePrivacyParagraph2 =>
-      '只有在你主動使用檢查更新、下載更新、導入導出等聯網功能，或你勾選同意後初始化友盟相關 SDK 時，應用才會與外部服務發生資料交互。';
-
-  @override
-  String get guidePrivacyParagraph3 =>
-      '本應用接入友盟移動統計 SDK、友盟應用性能監控 SDK 以及高級運櫻分析依赖庫。它們的服務用途包括移動統計分析、應用性能監控以及高級運櫻分析相關能力；只有在你勾選同意後，這些 SDK 才會正式初始化。';
-
-  @override
-  String get guidePrivacyParagraph4 =>
-      '按友盟官方說明，這些 SDK 可能處理的資訊包括：裝置資訊（如 IMEI、MAC、Android ID、OAID、IDFA、OpenUDID、GUID、SIM 卡 IMSI 等）、網路狀態、裝置標識，以及高級運櫻分析依赖庫涉及的應用列表和地理位置相關資訊。';
-
-  @override
-  String get guideRiskTitle => '免責與風险提示';
-
-  @override
-  String get guideRiskParagraph1 =>
-      '1. 超級島、焦點通知、後台提醒和保活效果依赖系統版本、機型、廠商策略、權限、自啟動、電池策略等外部條件，無法保證所有裝置表現完全一致。';
-
-  @override
-  String get guideRiskParagraph2 =>
-      '2. 檢查更新、鏡像下載、系統下載器、導入導出與分享等能力依赖網路環境、第三方服務和系統文件能力；若出現失敗、限速或文件異常，請以 Release 頁面、你自己保存的備份文件和系統提示為準。';
-
-  @override
-  String get guideRiskParagraph3 =>
-      '3. 在遷移、導入或覆蓋資料前，請先自行確認備份文件完整可用，並妥善保管含有課表資訊的文件；因用戶自行刪除、覆蓋、分享或保管不當造成的資料問題，需要由用戶自行承擔相應風险。';
-
-  @override
-  String get guideUmengPrivacyLink =>
-      '友盟隱私政策：https://www.umeng.com/page/policy';
 
   @override
   String get liveDiagnosticsUnavailable => '目前還没有可查看的超級島診斷日誌';
@@ -12568,15 +11588,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get liveTestingSessionCanceled => '已取消自檢測試';
-
-  @override
-  String get liveTestingUmengHint => '下面兩個按鈕僅測試版顯示，用于驗證友盟 U-APM 崩溃和卡頓上報';
-
-  @override
-  String get liveTestingCrashAction => '崩溃測試';
-
-  @override
-  String get liveTestingAnrAction => '異常卡頓測試';
 
   @override
   String get liveTestingIslandStatusTitle => '上島狀態診斷';
@@ -12687,13 +11698,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get liveTestingCurrentNativeFieldsSubtitle => '顯示目前原生診斷字段';
-
-  @override
-  String get liveTestingCrashSoon => '即將觸發友盟 U-APM 測試崩溃，請重新打開應用查看後台是否收到上報';
-
-  @override
-  String get liveTestingAnrSoon =>
-      '即將觸發約 30 秒主線程卡死，請脫離 flutter run 測試，並在卡死後重新打開應用查看友盟後台';
 
   @override
   String get liveTestingNoCourseAvailable => '目前没有可測試的課程';
@@ -12892,10 +11896,10 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get homeWidgetBindingSaveFailed => '儲存卡片綁定失敗，請稍後重試';
 
   @override
-  String get homeWidgetCoupleModeOffMessage => '目前未開啟情侶模式，可點擊下方開啟';
+  String get homeWidgetCoupleModeOffMessage => '目前未開啟情侶模式，打開下方開關即可';
 
   @override
-  String get homeWidgetCoupleModeOffEnable => '開啟情侶模式';
+  String get coupleModeTitle => '情侶模式';
 
   @override
   String get homeWidgetBindingMissingToast => '這張卡片綁定的課表已失效，已按普通方式打開';
@@ -15166,54 +14170,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get thisWeekLabel => '本週';
 
   @override
-  String get guidePrivacyPageTitle => '私隱條款';
-
-  @override
-  String get guidePermissionsPageTitle => '系統權限';
-
-  @override
-  String get guideTipsPageTitle => '使用技巧';
-
-  @override
-  String get guidePersonalizePageTitle => '個人化設定';
-
-  @override
-  String get guidePersonalizeSubtitle => '以下選擇立即生效，之後可隨時在「設定 → 外觀」中調整';
-
-  @override
-  String get guidePersonalizeMenuStyleTitle => '選單樣式';
-
-  @override
-  String get guidePersonalizeNavFormTitle => '導覽形態';
-
-  @override
-  String get guidePersonalizeVisualEffectTitle => '視覺效果';
-
-  @override
-  String get guidePersonalizeVisualEffectSolid => '實體卡片';
-
-  @override
-  String get guideVisualEffectGaussianDesc => '背景即時高斯模糊，通透有層次';
-
-  @override
-  String get guideVisualEffectLiquidDesc => '液態玻璃折射，更具質感（功耗略高）';
-
-  @override
-  String get guideVisualEffectSolidDesc => '不啟用模糊效果，效能最佳';
-
-  @override
-  String get guidePersonalizeThemeModeTitle => '深淺色模式';
-
-  @override
-  String get guidePersonalizeSeedColorTitle => '主題色';
-
-  @override
-  String get guidePrevButton => '上一步';
-
-  @override
-  String get guideNextButton => '下一步';
-
-  @override
   String get guidePermissionsHeader => '系統權限設置';
 
   @override
@@ -15222,18 +14178,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   @override
   String get guidePermissionsFooterHint =>
       '點擊後跳轉到系統設置，返回應用後可識別的狀態會自動刷新；自啟動受系統限制，請以系統頁面開關為準';
-
-  @override
-  String get guideTipsHeader => '使用技巧';
-
-  @override
-  String get guideTipsSubtitle => '這些隨時可以在「設置」裡找到';
-
-  @override
-  String get guidePrivacyReadBeforeUse => '使用前請閱讀並同意以下內容';
-
-  @override
-  String get guidePrivacyViewOnly => '私隱、第三方 SDK 與免責聲明';
 
   @override
   String holidayDataYearLabel(Object year) {
@@ -15318,144 +14262,10 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get textColorCurrentColor => '目前顏色';
 
   @override
-  String get themeExport => '匯出主題';
-
-  @override
-  String get themeImport => '匯入主題';
-
-  @override
-  String get themeExportSuccess => '主題已複製到剪貼簿';
-
-  @override
-  String get themeImportSuccess => '主題已匯入';
-
-  @override
-  String get themeImportFailed => '剪貼簿內容格式錯誤';
-
-  @override
-  String get themeManageTitle => '主題管理';
-
-  @override
-  String get themeManageSubtitle => '匯出、匯入和切換主題';
-
-  @override
-  String get themePreset => '預設主題';
-
-  @override
-  String get themeSaved => '我的主題';
-
-  @override
-  String get themeSaveCurrent => '儲存當前主題';
-
-  @override
-  String get themeApply => '套用';
-
-  @override
-  String get themeDelete => '刪除';
-
-  @override
-  String themeDeleteConfirmMessage(String name) {
-    return '確定要刪除主題「$name」嗎？';
-  }
-
-  @override
   String get textColorLowContrastWarning => '顏色對比度較低，可能會蠅響可讀性';
 
   @override
-  String get themeCurrentTheme => '當前主題';
-
-  @override
-  String themeBasedOnModified(String baseName) {
-    return '基於$baseName（已修改）';
-  }
-
-  @override
-  String get themeResetToPreset => '重設';
-
-  @override
-  String get themeUnsavedChangesTitle => '未儲存的修改';
-
-  @override
-  String get themeUnsavedChangesMessage => '當前主題有未儲存的修改，是否儲存？';
-
-  @override
-  String get themeDiscardAndApply => '放棄並套用';
-
-  @override
-  String get themeNameHint => '輸入主題名稱';
-
-  @override
-  String get themePresetBlue => '預設藍';
-
-  @override
-  String get themePresetPurple => '暗夜紫';
-
-  @override
-  String get themePresetGreen => '森林綠';
-
-  @override
-  String get themePresetOrange => '暖陽橙';
-
-  @override
-  String get themePresetEyeCare => '護眼模式';
-
-  @override
-  String get themePresetHighContrast => '高對比度';
-
-  @override
-  String get themePresetDarkMinimal => '深色極簡';
-
-  @override
-  String get foruiThemeNeutral => '中性灰';
-
-  @override
-  String get foruiThemeZinc => '鋅灰';
-
-  @override
-  String get foruiThemeSlate => '石板灰';
-
-  @override
-  String get foruiThemeBlue => '藍';
-
-  @override
-  String get foruiThemeGreen => '綠';
-
-  @override
-  String get foruiThemeOrange => '橙';
-
-  @override
-  String get foruiThemeRed => '紅';
-
-  @override
-  String get foruiThemeRose => '玫紅';
-
-  @override
-  String get foruiThemeViolet => '紫';
-
-  @override
-  String get foruiThemeYellow => '黃';
-
-  @override
   String get themeUndo => '撤銷';
-
-  @override
-  String themeChanged(String themeName) {
-    return '已切換到 $themeName';
-  }
-
-  @override
-  String get themeRename => '重新命名';
-
-  @override
-  String get themeDuplicate => '複製';
-
-  @override
-  String themeDuplicateCopyName(String name) {
-    return '$name 副本';
-  }
-
-  @override
-  String get themeMoreActions => '更多操作';
 
   @override
   String get courseNatureRequired => '必修';
@@ -17379,9 +16189,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get logAppLoggerInitialized => '應用日志服務已初始化';
 
   @override
-  String get logPrivacyConsentUpdated => '隱私協議同意壯態已更新';
-
-  @override
   String get logAppLogRecordingEnabled => '應用日志記錄已開啟';
 
   @override
@@ -17753,9 +16560,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get logCatAppLoggerInitialized => '應用日志：初始化';
-
-  @override
-  String get logCatPrivacyConsentUpdated => '應用日志：隱私協議';
 
   @override
   String get logCatAppLogRecordingEnabled => '應用日志：記錄開關';
@@ -18381,87 +17185,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get scheduleDateRuleNote => '地點匹配優先於日期規則。';
 
   @override
-  String get frostedGlassModeLabel => '玻璃模式';
-
-  @override
-  String get liquidGlassScopeSectionTitle => '液態玻璃作用範圍';
-
-  @override
-  String get liquidGlassScopePopupTitle => '下拉選擇彈窗';
-
-  @override
-  String get liquidGlassScopePopupSubtitle => '玻璃模式等設定列彈出的小氣泡選單';
-
-  @override
-  String get liquidGlassScopeSelectSheetTitle => '全螢幕選擇面板';
-
-  @override
-  String get liquidGlassScopeSelectSheetSubtitle => '預設主題、字體等長列表選擇彈窗，預設保持磨砂';
-
-  @override
-  String get liquidGlassScopeSheetDialogTitle => '彈窗與對話框';
-
-  @override
-  String get liquidGlassScopeSheetDialogSubtitle => '底部彈窗、確認對話框與動作選單';
-
-  @override
-  String get liquidGlassScopeHomeChromeTitle => '首頁玻璃帶';
-
-  @override
-  String get liquidGlassScopeHomeChromeSubtitle => '標題列與星期列的玻璃背景帶';
-
-  @override
-  String get liquidGlassScopeDockTitle => '玻璃塢導航';
-
-  @override
-  String get liquidGlassScopeDockSubtitle => '底部懸浮藥丸與加課圓鈕';
-
-  @override
-  String get liquidGlassScopePickerButtonsTitle => '壁紙選點按鈕';
-
-  @override
-  String get liquidGlassScopePickerButtonsSubtitle => '壁紙位置選擇頁懸浮在壁紙上的玻璃按鈕';
-
-  @override
-  String get frostedGlassModeFrosted => '經典磨砂';
-
-  @override
-  String get frostedGlassModeLiquid => '液態玻璃';
-
-  @override
-  String get frostedGlassModeGaussian => '高斯模糊';
-
-  @override
-  String get frostedGlassModeTranslucent => '半透明';
-
-  @override
-  String get frostedLiquidGlassHint => '液態玻璃需要高效能裝置';
-
-  @override
-  String get advancedMaterialTitle => '進階材質';
-
-  @override
-  String get advancedMaterialEntrySubtitle => '液態玻璃參數微調';
-
-  @override
-  String get liquidGlassPresetLabel => '液態玻璃預設';
-
-  @override
-  String get liquidGlassPresetClear => '清澈';
-
-  @override
-  String get liquidGlassPresetLight => '輕霧';
-
-  @override
-  String get liquidGlassPresetStandard => '標準';
-
-  @override
-  String get liquidGlassPresetDense => '濃密';
-
-  @override
-  String get liquidGlassPresetCustom => '自訂';
-
-  @override
   String get courseCardSettingsTitle => '課程卡片';
 
   @override
@@ -18471,15 +17194,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get courseCardSectionLayout => '版面配置';
 
   @override
-  String get courseCardSurfaceStyleLabel => '卡片外觀';
-
-  @override
-  String get courseCardSurfaceStyleSolid => '實體卡片';
-
-  @override
-  String get courseCardSurfaceStyleGaussian => '高斯模糊';
-
-  @override
   String get courseCardSectionColor => '顏色';
 
   @override
@@ -18487,42 +17201,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get collapsibleLargeTitle => '摺疊大標題';
-
-  @override
-  String get liquidGlassCustomExpandedTitle => '自訂參數';
-
-  @override
-  String get liquidGlassThicknessLabel => '厚度';
-
-  @override
-  String get liquidGlassBlurLabel => '模糊強度';
-
-  @override
-  String get liquidGlassTintLabel => '染色強度';
-
-  @override
-  String get liquidGlassLightIntensityLabel => '燈光強度';
-
-  @override
-  String get liquidGlassAmbientStrengthLabel => '環境光強度';
-
-  @override
-  String get liquidGlassRefractiveIndexLabel => '折射率';
-
-  @override
-  String get liquidGlassSaturationLabel => '飽和度';
-
-  @override
-  String get liquidGlassChromaticAberrationLabel => '色差';
-
-  @override
-  String get liquidGlassLightAngleLabel => '光照角度';
-
-  @override
-  String get liquidGlassVisibilityLabel => '可見性';
-
-  @override
-  String get liquidGlassResetAction => '還原預設';
 
   @override
   String get diagnosticsEntryTitle => '診斷';
@@ -18919,9 +17597,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get homeNavigationTitle => '首頁與導覽';
 
   @override
-  String get homeMenuCustomizeSectionTitle => '右上角選單';
-
-  @override
   String get homeNavigationSubtitle => '底欄形態、選單與首頁標題';
 
   @override
@@ -19006,24 +17681,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get glassDockExtraButtonSemanticLabel => '新增課程';
 
   @override
-  String get homeMenuStyleLabel => '右上角選單樣式';
-
-  @override
-  String get homeMenuStyleList => '列表選單';
-
-  @override
-  String get homeMenuStyleGrid => '八宮格選單';
-
-  @override
-  String get homeMenuStyleListSubtitle => '錨定清單，可自訂';
-
-  @override
-  String get homeMenuStyleGridSubtitle => '圖示瓷貼，可自訂';
-
-  @override
-  String get homeMenuCustomizeTitle => '自訂選單按鈕';
-
-  @override
   String homeGridCustomizeDetails(int count, int max) {
     return '已啟用 $count/$max 個';
   }
@@ -19037,13 +17694,7 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get homeGridEditorEnabledTitle => '已啟用';
 
   @override
-  String get homeGridEditorAvailableTitle => '可新增';
-
-  @override
   String get homeGridEditorRemoveTooltip => '移除';
-
-  @override
-  String get homeGridEditorAddTooltip => '新增';
 
   @override
   String get homeGridEditorResetAction => '恢復預設排列';
@@ -19053,9 +17704,6 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get homeGridEditorMaxReached => '已達上限';
-
-  @override
-  String get homeGridEditorPinnedTooltip => '此入口用於重新開啟本頁，無法移除';
 
   @override
   String get homeMenuCategoryFeatures => '功能入口';
@@ -19397,9 +18045,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get fontModeMonospace => '等寬體';
-
-  @override
-  String get languageSectionTitle => '應用語言';
 
   @override
   String get languageSectionSubtitle => '可跟隨系統，或手動切換到已適配語言';
@@ -19814,34 +18459,16 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get unifiedCourseCardColorSubtitle => '關閉後繼續使用每門課程自己的顏色';
 
   @override
+  String get courseCardFontColorTitle => '課程字體顏色';
+
+  @override
   String get importRandomCourseColorTitle => '隨機課程顏色';
 
   @override
   String get importRandomCourseColorSubtitle => '依課程名與教師自動分配預設色';
 
   @override
-  String get importRandomColorGroupTitle => '隨機配色組';
-
-  @override
-  String get colorGroupAll => '全部顏色';
-
-  @override
-  String get colorGroupPastel => '馬卡龍系';
-
-  @override
-  String get colorGroupVibrant => '活潑系';
-
-  @override
-  String get colorGroupDeep => '深色系';
-
-  @override
-  String get colorGroupDopamine => '多巴胺系';
-
-  @override
-  String get colorGroupSunset => '落日系';
-
-  @override
-  String get colorGroupOcean => '海洋系';
+  String get courseColorPaletteAllLabel => '全部顏色';
 
   @override
   String get courseRecolorTileTitle => '課表重新配色';
@@ -20293,35 +18920,8 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get importFailedInvalidFile => '匯入失敗，請確認檔案有效';
 
   @override
-  String get welcomeTitle => '歡迎使用';
-
-  @override
-  String get welcomeAppName => '輕嶼課表';
-
-  @override
-  String get welcomeSubtitle => '你可以先開始使用，也可以直接匯入課程或從備份還原';
-
-  @override
   String get thirdPartyDisclaimer =>
       '特此聲明：本應用由第三方開發者獨立開發，僅用於學習研究用途，不屬於小米官方軟件，與小米科技有限責任公司無任何隸屬、合作或授權關係。如涉及內容侵權，請權利方聯繫作者，我們將第一時間下架並刪除相關內容。';
-
-  @override
-  String get startUsingTitle => '開始使用';
-
-  @override
-  String get startUsingSubtitle => '直接進入軟件，並繼續完成首次使用說明';
-
-  @override
-  String get importTimetableTitle => '匯入課表';
-
-  @override
-  String get importTimetableSubtitle => '從 .ics 檔案或 AI 解析結果匯入課程';
-
-  @override
-  String get restoreBackupTitle => '從備份還原';
-
-  @override
-  String get restoreBackupSubtitle => '從 .mikcb 備份檔案還原舊資料';
 
   @override
   String get viewGuideTitle => '查看功能說明';
@@ -20725,10 +19325,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get aboutOpenSourceLicensesExtraSectionTitle => '許可說明';
-
-  @override
-  String get aboutOpenSourceLicensesExtraUmeng =>
-      '友盟統計等分析服務僅在你同意隱私政策後啟用，適用友盟自身的使用者協議與隱私政策。';
 
   @override
   String get aboutOpenSourceLicensesExtraNote => '';
@@ -21462,42 +20058,10 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get diagnosticsStackTrace => '堆棧';
 
   @override
-  String get firstUseGuideTitle => '首次使用引導';
-
-  @override
   String get guideAndPermissionsTitle => '使用引導與權限';
 
   @override
   String get refreshStatusTooltip => '刷新狀態';
-
-  @override
-  String get guideHeroTitle => '先把這頁做完，再開始用';
-
-  @override
-  String get guideHeroSubtitle => '首屏先授權，下面還會明確說明系統版本支持、簡稱設定和匯入方式，記得繼續下滑';
-
-  @override
-  String get guideChipPermissions => '權限準備';
-
-  @override
-  String get guideChipShortName => '簡稱設定';
-
-  @override
-  String get guideChipImport => '匯入課表';
-
-  @override
-  String guideChipReadyCount(int count) {
-    return '$count/3 已完成';
-  }
-
-  @override
-  String get guideBottomReachedHint => '你已經滑到最後了，確認無誤後就可以開始使用';
-
-  @override
-  String get guideScrollHint => '向下滑動繼續，下面還有 HyperOS 版本說明、權限清單、簡稱設定和匯入方式';
-
-  @override
-  String get guideRequestNotificationFirst => '先申請通知權限';
 
   @override
   String get quickSetupTitle => '首屏快速設定';
@@ -21506,52 +20070,10 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get quickSetupSubtitle => '先把最關鍵的 5 個入口放在前面，不用翻到下面再找';
 
   @override
-  String get quickActionNotificationsTitle => '通知設定';
-
-  @override
-  String get quickActionNotificationsSubtitle => '先確保能發通知';
-
-  @override
-  String get quickActionIslandTitle => '超級島權限';
-
-  @override
-  String get quickActionIslandSubtitle => '檢查 promoted 通知';
-
-  @override
   String get quickActionAutoStartTitle => '自啟動';
 
   @override
-  String get quickActionAutoStartSubtitle => '避免後台被殺';
-
-  @override
-  String get quickActionBatteryTitle => '電池無限製';
-
-  @override
-  String get quickActionBatterySubtitle => '避免提醒中斷';
-
-  @override
-  String get quickActionKeepAliveTitle => '後台保活輔助';
-
-  @override
-  String get quickActionKeepAliveSubtitle => '提升後台穩定性';
-
-  @override
-  String get guidePrivacyConsentLabel => '我已閱讀並同意友盟相關隱私說明';
-
-  @override
-  String get guideRequireConsentHint => '請先滑到底部閱讀說明，並勾選同意後開始使用';
-
-  @override
-  String get guideContinueHint => '繼續下滑查看完整引導內容';
-
-  @override
-  String get exitAppAction => '退出應用';
-
-  @override
   String get continueReadingAction => '繼續查看';
-
-  @override
-  String get agreeAndStartAction => '同意並開始使用';
 
   @override
   String get startUsingAction => '開始使用';
@@ -21793,12 +20315,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get homeTitleStyleLabel => '標題樣式';
 
   @override
-  String get themeSeedSectionTitle => '應用主題色';
-
-  @override
-  String get themeSeedSectionSubtitle => '影響頂部欄、強調色和全局主色調';
-
-  @override
   String get frostedSheetSectionTitle => '磨砂玻璃';
 
   @override
@@ -21983,12 +20499,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String get guideHyperOsChip => 'HyperOS 3.0.300+';
-
-  @override
-  String get guideStatusTitle => '目前狀態';
-
-  @override
   String get guideStatusNotificationPermission => '通知權限';
 
   @override
@@ -22017,172 +20527,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get guideStatusBatteryRestricted => '仍受限制';
-
-  @override
-  String get guideStatusKeepAlive => '後台保活輔助';
-
-  @override
-  String get guideStatusAndroidVersion => 'Android 版本';
-
-  @override
-  String get guideStatusVersionUnknown => '未識别';
-
-  @override
-  String get guideStatusIslandSystemSupport => '超級島系統支持';
-
-  @override
-  String get guideStatusIslandSystemRequirement => '需 HyperOS 3.0.300 及以上';
-
-  @override
-  String get guideStatusIslandHint =>
-      '如果你主要想用超級島，先確認系統版本至少是 HyperOS 3.0.300，再继续把下面權限清單按顺序點完';
-
-  @override
-  String get guidePermissionChecklistTitle => '權限清單';
-
-  @override
-  String get guidePermissionChecklistSubtitle => '按這個顺序檢查，最省事，也最不容易漏';
-
-  @override
-  String get guideChecklistRequestNotificationTitle => '申请通知權限';
-
-  @override
-  String get guideChecklistRequestNotificationSubtitle => '這是所有提醒的前提';
-
-  @override
-  String get guideChecklistOpenNotificationTitle => '打開通知設定';
-
-  @override
-  String get guideChecklistOpenNotificationSubtitle => '檢查通知总開關、锁屏展示和实時通知權限';
-
-  @override
-  String get guideChecklistOpenIslandTitle => '打開焦點通知設定';
-
-  @override
-  String get guideChecklistOpenIslandSubtitle =>
-      'HyperOS 3.0.300 及以上再檢查 promoted / 超級島通知';
-
-  @override
-  String get guideChecklistOpenAutoStartTitle => '打開自啟動設定';
-
-  @override
-  String get guideChecklistOpenAutoStartSubtitle => '允许應用開机自啟和後台常驻';
-
-  @override
-  String get guideChecklistOpenBatteryTitle => '打開電池策略設定';
-
-  @override
-  String get guideChecklistOpenBatterySubtitle => '建議改成無限制，避免上課提醒被中斷';
-
-  @override
-  String get guideChecklistOpenKeepAliveTitle => '打開後台保活輔助';
-
-  @override
-  String get guideChecklistOpenKeepAliveSubtitle => '進一步提升超級島和提醒在後台場景下的穩定性';
-
-  @override
-  String get guideShortNameAdviceTitle => '課程簡稱建議';
-
-  @override
-  String get guideShortNameAdviceSubtitle =>
-      '超級島支持顯示課程簡稱，簡稱不是自動生成的，需要你在課程编辑裡自己填寫，建議控制在 3 個字以內，顯示会更穩定';
-
-  @override
-  String get guideShortNameRecommended => '推荐示例';
-
-  @override
-  String get guideShortNameNotRecommended => '不推荐';
-
-  @override
-  String get guideShortNameRecommendedExample => '高數 / 概率 / 數控';
-
-  @override
-  String get guideShortNameNotRecommendedExample => '高等數学A(1) / 數控技術及應用';
-
-  @override
-  String get guideSetCourseShortNameAction => '去設定課程簡稱';
-
-  @override
-  String get guideImportMethodsTitle => '課表導入方式';
-
-  @override
-  String get guideImportMethodsSubtitle =>
-      '目前版本已经支持部分学校的教務系統網頁登入導入；如果你的学校還没適配，也還有其他遷移方式';
-
-  @override
-  String get guideImportMethodStep1 =>
-      '優先進入“導入課程 > 教務系統導入”，选擇学校和適配器後，直接在應用內打開教務網頁完成導入。';
-
-  @override
-  String get guideImportMethodStep2 =>
-      '如果你的学校暫時没有適配，可以先在 WakeUp 等課表應用裡導入教務系統課程，再導出日歷格式，最後回到本應用導入。';
-
-  @override
-  String get guideImportMethodStep3 =>
-      '如果别人已经在用本應用，也可以让对方導出完整備份文件，你直接導入就能恢複課程和設定。';
-
-  @override
-  String get guideImportMethodExtra =>
-      '如果你会抓包、網頁偵錯或 JavaScript，也欢迎參與学校教務適配补充，让更多学校能直接導入。';
-
-  @override
-  String get guideFinalTipsTitle => '最後再看這 3 条';
-
-  @override
-  String get guideFinalTip1 =>
-      '1. HyperOS 3.0.300 及以上才支持超級島；如果系統版本不够，應用仍可正常發普通提醒。';
-
-  @override
-  String get guideFinalTip2 => '2. 先在設定頁調整「上課前弹出」和「課中與臨近下課提醒」的閾值。';
-
-  @override
-  String get guideFinalTip3 => '3. 完成系統權限設定後，再用測試通知驗證；如果島区還是偶尔消失，優先檢查自啟動和省電策略。';
-
-  @override
-  String get guidePrivacyHelperRequireConsent =>
-      '你勾选同意後，代表你已阅讀並同意上述友盟相關說明、隱私內容與免责提示';
-
-  @override
-  String get guidePrivacyHelperViewOnly =>
-      '這裡保留與首次啟動一致的隱私、第三方 SDK 與免责說明，方便你隨時查看；目前頁面不需要再次勾选同意';
-
-  @override
-  String get guidePrivacySectionTitle => '隱私、第三方 SDK 與免责說明';
-
-  @override
-  String get guidePrivacyParagraph1 =>
-      '本應用主體功能按本地运行方式設計，課表、時間模板、課程記錄和大部分設定預設保存在你的裝置本地。';
-
-  @override
-  String get guidePrivacyParagraph2 =>
-      '只有在你主動使用檢查更新、下載更新、導入導出等联網功能，或你勾选同意後初始化友盟相關 SDK 時，應用才会與外部服務發生資料交互。';
-
-  @override
-  String get guidePrivacyParagraph3 =>
-      '本應用接入友盟移動統計 SDK、友盟應用性能监控 SDK 以及高級运营分析依赖庫。它們的服務用途包括移動統計分析、應用性能监控以及高級运营分析相關能力；只有在你勾选同意後，這些 SDK 才会正式初始化。';
-
-  @override
-  String get guidePrivacyParagraph4 =>
-      '按友盟官方說明，這些 SDK 可能處理的資訊包括：裝置資訊（如 IMEI、MAC、Android ID、OAID、IDFA、OpenUDID、GUID、SIM 卡 IMSI 等）、網路狀態、裝置標識，以及高級运营分析依赖庫涉及的應用列表和地理位置相關資訊。';
-
-  @override
-  String get guideRiskTitle => '免责與风险提示';
-
-  @override
-  String get guideRiskParagraph1 =>
-      '1. 超級島、焦點通知、後台提醒和保活效果依赖系統版本、机型、厂商策略、權限、自啟動、電池策略等外部条件，無法保证所有裝置表现完全一致。';
-
-  @override
-  String get guideRiskParagraph2 =>
-      '2. 檢查更新、鏡像下載、系統下載器、導入導出與分享等能力依赖網路环境、第三方服務和系統文件能力；若出现失败、限速或文件異常，请以 Release 頁面、你自己保存的備份文件和系統提示為准。';
-
-  @override
-  String get guideRiskParagraph3 =>
-      '3. 在遷移、導入或覆盖資料前，请先自行確認備份文件完整可用，並妥善保管含有課表資訊的文件；因用户自行刪除、覆盖、分享或保管不當造成的資料問題，需要由用户自行承担相應风险。';
-
-  @override
-  String get guideUmengPrivacyLink =>
-      '友盟隱私政策：https://www.umeng.com/page/policy';
 
   @override
   String get liveDiagnosticsUnavailable => '目前還没有可查看的超級島診斷日誌';
@@ -22235,15 +20579,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get liveTestingSessionCanceled => '已取消自檢測試';
-
-  @override
-  String get liveTestingUmengHint => '下面兩個按鈕僅測試版顯示，用于驗證友盟 U-APM 崩溃和卡顿上報';
-
-  @override
-  String get liveTestingCrashAction => '崩溃測試';
-
-  @override
-  String get liveTestingAnrAction => '異常卡顿測試';
 
   @override
   String get liveTestingIslandStatusTitle => '上島狀態診斷';
@@ -22354,13 +20689,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get liveTestingCurrentNativeFieldsSubtitle => '顯示目前原生診斷字段';
-
-  @override
-  String get liveTestingCrashSoon => '即将触發友盟 U-APM 測試崩溃，请重新打開應用查看後台是否收到上報';
-
-  @override
-  String get liveTestingAnrSoon =>
-      '即将触發约 30 秒主線程卡死，请脱离 flutter run 測試，並在卡死後重新打開應用查看友盟後台';
 
   @override
   String get liveTestingNoCourseAvailable => '目前没有可測試的課程';
@@ -22559,10 +20887,10 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get homeWidgetBindingSaveFailed => '儲存卡片綁定失敗，請稍後重試';
 
   @override
-  String get homeWidgetCoupleModeOffMessage => '目前未開啟情侶模式，可點擊下方開啟';
+  String get homeWidgetCoupleModeOffMessage => '目前未開啟情侶模式，打開下方開關即可';
 
   @override
-  String get homeWidgetCoupleModeOffEnable => '開啟情侶模式';
+  String get coupleModeTitle => '情侶模式';
 
   @override
   String get homeWidgetBindingMissingToast => '這張卡片綁定的課表已失效，已按普通方式開啟';
@@ -24833,54 +23161,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get thisWeekLabel => '本週';
 
   @override
-  String get guidePrivacyPageTitle => '隱私權條款';
-
-  @override
-  String get guidePermissionsPageTitle => '系統權限';
-
-  @override
-  String get guideTipsPageTitle => '使用技巧';
-
-  @override
-  String get guidePersonalizePageTitle => '個人化設定';
-
-  @override
-  String get guidePersonalizeSubtitle => '以下選擇立即生效，之後可隨時在「設定 → 外觀」中調整';
-
-  @override
-  String get guidePersonalizeMenuStyleTitle => '選單樣式';
-
-  @override
-  String get guidePersonalizeNavFormTitle => '導覽形態';
-
-  @override
-  String get guidePersonalizeVisualEffectTitle => '視覺效果';
-
-  @override
-  String get guidePersonalizeVisualEffectSolid => '實體卡片';
-
-  @override
-  String get guideVisualEffectGaussianDesc => '背景即時高斯模糊，通透有層次';
-
-  @override
-  String get guideVisualEffectLiquidDesc => '液態玻璃折射，更具質感（功耗略高）';
-
-  @override
-  String get guideVisualEffectSolidDesc => '不啟用模糊效果，效能最佳';
-
-  @override
-  String get guidePersonalizeThemeModeTitle => '深淺色模式';
-
-  @override
-  String get guidePersonalizeSeedColorTitle => '主題色';
-
-  @override
-  String get guidePrevButton => '上一步';
-
-  @override
-  String get guideNextButton => '下一步';
-
-  @override
   String get guidePermissionsHeader => '系統權限設定';
 
   @override
@@ -24889,18 +23169,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String get guidePermissionsFooterHint =>
       '點擊後跳轉到系統設定，返回應用後可識別的狀態會自動刷新；自啟動受系統限制，請以系統頁面開關為準';
-
-  @override
-  String get guideTipsHeader => '使用技巧';
-
-  @override
-  String get guideTipsSubtitle => '這些隨時可以在「設定」裡找到';
-
-  @override
-  String get guidePrivacyReadBeforeUse => '使用前請閱讀並同意以下內容';
-
-  @override
-  String get guidePrivacyViewOnly => '隱私權、第三方 SDK 與免責聲明';
 
   @override
   String holidayDataYearLabel(Object year) {
@@ -24985,144 +23253,10 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get textColorCurrentColor => '目前顏色';
 
   @override
-  String get themeExport => '匯出主題';
-
-  @override
-  String get themeImport => '匯入主題';
-
-  @override
-  String get themeExportSuccess => '主題已複製到剪貼簿';
-
-  @override
-  String get themeImportSuccess => '主題已匯入';
-
-  @override
-  String get themeImportFailed => '剪貼簿內容格式錯誤';
-
-  @override
-  String get themeManageTitle => '主題管理';
-
-  @override
-  String get themeManageSubtitle => '匯出、匯入和切換主題';
-
-  @override
-  String get themePreset => '預設主題';
-
-  @override
-  String get themeSaved => '我的主題';
-
-  @override
-  String get themeSaveCurrent => '儲存當前主題';
-
-  @override
-  String get themeApply => '套用';
-
-  @override
-  String get themeDelete => '刪除';
-
-  @override
-  String themeDeleteConfirmMessage(String name) {
-    return '確定要刪除主題「$name」嗎？';
-  }
-
-  @override
   String get textColorLowContrastWarning => '顏色對比度較低，可能會影響可讀性';
 
   @override
-  String get themeCurrentTheme => '當前主題';
-
-  @override
-  String themeBasedOnModified(String baseName) {
-    return '基於$baseName（已修改）';
-  }
-
-  @override
-  String get themeResetToPreset => '重設';
-
-  @override
-  String get themeUnsavedChangesTitle => '未儲存的修改';
-
-  @override
-  String get themeUnsavedChangesMessage => '當前主題有未儲存的修改，是否儲存？';
-
-  @override
-  String get themeDiscardAndApply => '放棄並套用';
-
-  @override
-  String get themeNameHint => '輸入主題名稱';
-
-  @override
-  String get themePresetBlue => '預設藍';
-
-  @override
-  String get themePresetPurple => '暗夜紫';
-
-  @override
-  String get themePresetGreen => '森林綠';
-
-  @override
-  String get themePresetOrange => '暖陽橙';
-
-  @override
-  String get themePresetEyeCare => '護眼模式';
-
-  @override
-  String get themePresetHighContrast => '高對比度';
-
-  @override
-  String get themePresetDarkMinimal => '深色極簡';
-
-  @override
-  String get foruiThemeNeutral => '中性灰';
-
-  @override
-  String get foruiThemeZinc => '鋅灰';
-
-  @override
-  String get foruiThemeSlate => '石板灰';
-
-  @override
-  String get foruiThemeBlue => '藍';
-
-  @override
-  String get foruiThemeGreen => '綠';
-
-  @override
-  String get foruiThemeOrange => '橙';
-
-  @override
-  String get foruiThemeRed => '紅';
-
-  @override
-  String get foruiThemeRose => '玫紅';
-
-  @override
-  String get foruiThemeViolet => '紫';
-
-  @override
-  String get foruiThemeYellow => '黃';
-
-  @override
   String get themeUndo => '撤銷';
-
-  @override
-  String themeChanged(String themeName) {
-    return '已切換到 $themeName';
-  }
-
-  @override
-  String get themeRename => '重新命名';
-
-  @override
-  String get themeDuplicate => '複製';
-
-  @override
-  String themeDuplicateCopyName(String name) {
-    return '$name 副本';
-  }
-
-  @override
-  String get themeMoreActions => '更多操作';
 
   @override
   String get courseNatureRequired => '必修';
@@ -27046,9 +25180,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get logAppLoggerInitialized => '应用日志服务已初始化';
 
   @override
-  String get logPrivacyConsentUpdated => '隐私协议同意状态已更新';
-
-  @override
   String get logAppLogRecordingEnabled => '应用日志记录已开启';
 
   @override
@@ -27420,9 +25551,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get logCatAppLoggerInitialized => '应用日志：初始化';
-
-  @override
-  String get logCatPrivacyConsentUpdated => '应用日志：隐私协议';
 
   @override
   String get logCatAppLogRecordingEnabled => '应用日志：记录开关';
@@ -28048,87 +26176,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get scheduleDateRuleNote => '地點匹配優先於日期規則。';
 
   @override
-  String get frostedGlassModeLabel => '玻璃模式';
-
-  @override
-  String get liquidGlassScopeSectionTitle => '液態玻璃作用範圍';
-
-  @override
-  String get liquidGlassScopePopupTitle => '下拉選擇彈窗';
-
-  @override
-  String get liquidGlassScopePopupSubtitle => '玻璃模式等設定列彈出的小氣泡選單';
-
-  @override
-  String get liquidGlassScopeSelectSheetTitle => '全螢幕選擇面板';
-
-  @override
-  String get liquidGlassScopeSelectSheetSubtitle => '預設主題、字體等長列表選擇彈窗，預設保持磨砂';
-
-  @override
-  String get liquidGlassScopeSheetDialogTitle => '彈窗與對話框';
-
-  @override
-  String get liquidGlassScopeSheetDialogSubtitle => '底部彈窗、確認對話框與動作選單';
-
-  @override
-  String get liquidGlassScopeHomeChromeTitle => '首頁玻璃帶';
-
-  @override
-  String get liquidGlassScopeHomeChromeSubtitle => '標題列與星期列的玻璃背景帶';
-
-  @override
-  String get liquidGlassScopeDockTitle => '玻璃塢導航';
-
-  @override
-  String get liquidGlassScopeDockSubtitle => '底部懸浮藥丸與加課圓鈕';
-
-  @override
-  String get liquidGlassScopePickerButtonsTitle => '壁紙選點按鈕';
-
-  @override
-  String get liquidGlassScopePickerButtonsSubtitle => '壁紙位置選擇頁懸浮在壁紙上的玻璃按鈕';
-
-  @override
-  String get frostedGlassModeFrosted => '經典磨砂';
-
-  @override
-  String get frostedGlassModeLiquid => '液態玻璃';
-
-  @override
-  String get frostedGlassModeGaussian => '高斯模糊';
-
-  @override
-  String get frostedGlassModeTranslucent => '半透明';
-
-  @override
-  String get frostedLiquidGlassHint => '液態玻璃需要高效能裝置支援';
-
-  @override
-  String get advancedMaterialTitle => '進階材質';
-
-  @override
-  String get advancedMaterialEntrySubtitle => '液態玻璃參數微調';
-
-  @override
-  String get liquidGlassPresetLabel => '液態玻璃預設';
-
-  @override
-  String get liquidGlassPresetClear => '清澈';
-
-  @override
-  String get liquidGlassPresetLight => '輕霧';
-
-  @override
-  String get liquidGlassPresetStandard => '標準';
-
-  @override
-  String get liquidGlassPresetDense => '濃密';
-
-  @override
-  String get liquidGlassPresetCustom => '自訂';
-
-  @override
   String get courseCardSettingsTitle => '課程卡片';
 
   @override
@@ -28138,15 +26185,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get courseCardSectionLayout => '版面配置';
 
   @override
-  String get courseCardSurfaceStyleLabel => '卡片外觀';
-
-  @override
-  String get courseCardSurfaceStyleSolid => '實體卡片';
-
-  @override
-  String get courseCardSurfaceStyleGaussian => '高斯模糊';
-
-  @override
   String get courseCardSectionColor => '顏色';
 
   @override
@@ -28154,42 +26192,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get collapsibleLargeTitle => '折疊大標題';
-
-  @override
-  String get liquidGlassCustomExpandedTitle => '自訂參數';
-
-  @override
-  String get liquidGlassThicknessLabel => '厚度';
-
-  @override
-  String get liquidGlassBlurLabel => '模糊強度';
-
-  @override
-  String get liquidGlassTintLabel => '染色強度';
-
-  @override
-  String get liquidGlassLightIntensityLabel => '燈光強度';
-
-  @override
-  String get liquidGlassAmbientStrengthLabel => '環境光強度';
-
-  @override
-  String get liquidGlassRefractiveIndexLabel => '折射率';
-
-  @override
-  String get liquidGlassSaturationLabel => '飽和度';
-
-  @override
-  String get liquidGlassChromaticAberrationLabel => '色差';
-
-  @override
-  String get liquidGlassLightAngleLabel => '光照角度';
-
-  @override
-  String get liquidGlassVisibilityLabel => '可見性';
-
-  @override
-  String get liquidGlassResetAction => '還原預設';
 
   @override
   String get diagnosticsEntryTitle => '診斷';
@@ -28586,9 +26588,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get homeNavigationTitle => '首頁與導覽';
 
   @override
-  String get homeMenuCustomizeSectionTitle => '右上角選單';
-
-  @override
   String get homeNavigationSubtitle => '底欄形態、選單與首頁標題';
 
   @override
@@ -28673,24 +26672,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get glassDockExtraButtonSemanticLabel => '新增課程';
 
   @override
-  String get homeMenuStyleLabel => '右上角選單樣式';
-
-  @override
-  String get homeMenuStyleList => '列表選單';
-
-  @override
-  String get homeMenuStyleGrid => '八宮格選單';
-
-  @override
-  String get homeMenuStyleListSubtitle => '錨定清單，可自訂';
-
-  @override
-  String get homeMenuStyleGridSubtitle => '圖示瓷貼，可自訂';
-
-  @override
-  String get homeMenuCustomizeTitle => '自訂選單按鈕';
-
-  @override
   String homeGridCustomizeDetails(int count, int max) {
     return '已啟用 $count/$max 個';
   }
@@ -28704,13 +26685,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get homeGridEditorEnabledTitle => '已啟用';
 
   @override
-  String get homeGridEditorAvailableTitle => '可新增';
-
-  @override
   String get homeGridEditorRemoveTooltip => '移除';
-
-  @override
-  String get homeGridEditorAddTooltip => '新增';
 
   @override
   String get homeGridEditorResetAction => '恢復預設排列';
@@ -28720,9 +26695,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get homeGridEditorMaxReached => '已達上限';
-
-  @override
-  String get homeGridEditorPinnedTooltip => '此入口用於重新開啟本頁，無法移除';
 
   @override
   String get homeMenuCategoryFeatures => '功能入口';

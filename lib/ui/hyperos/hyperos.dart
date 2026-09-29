@@ -36,4 +36,5 @@ export 'hyperos_tokens.dart';
 export 'hyperos_tooltip.dart';
 export 'hyperos_home_pull.dart';
 export 'hyperos_widgets.dart';
+export 'miuix_icon_compat.dart';
 export 'frosted/liquid_glass_degradation.dart';

@@ -5,18 +5,18 @@ import 'package:university_timetable/utils/hex_color.dart';
 void main() {
   group('Color parsing', () {
     test('should parse hex colors correctly', () {
-      // 测试 ForuiTheme 的 seedHex 值
+      // 常见课程/主题用色的十六进制解析
       final testCases = [
-        ('#171717', const Color(0xFF171717)), // neutral
-        ('#18181B', const Color(0xFF18181B)), // zinc
-        ('#0F172B', const Color(0xFF0F172B)), // slate
-        ('#1447E6', const Color(0xFF1447E6)), // blue
-        ('#5EA500', const Color(0xFF5EA500)), // green
-        ('#F54A00', const Color(0xFFF54A00)), // orange
-        ('#E7000B', const Color(0xFFE7000B)), // red
-        ('#EC003F', const Color(0xFFEC003F)), // rose
-        ('#7F22FE', const Color(0xFF7F22FE)), // violet
-        ('#FCC800', const Color(0xFFFCC800)), // yellow
+        ('#171717', const Color(0xFF171717)),
+        ('#18181B', const Color(0xFF18181B)),
+        ('#0F172B', const Color(0xFF0F172B)),
+        ('#1447E6', const Color(0xFF1447E6)),
+        ('#5EA500', const Color(0xFF5EA500)),
+        ('#F54A00', const Color(0xFFF54A00)),
+        ('#E7000B', const Color(0xFFE7000B)),
+        ('#EC003F', const Color(0xFFEC003F)),
+        ('#7F22FE', const Color(0xFF7F22FE)),
+        ('#FCC800', const Color(0xFFFCC800)),
       ];
 
       for (final (hex, expected) in testCases) {

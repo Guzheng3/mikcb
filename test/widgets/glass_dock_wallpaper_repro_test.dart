@@ -11,7 +11,6 @@ import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/providers/timetable_provider.dart';
 import 'package:university_timetable/screens/timetable_screen.dart';
 import 'package:university_timetable/ui/hyperos/hyperos.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 /// 复现环境：真实壁纸文件存在（hasBackdrop=true），与真机一致。
 ///
@@ -58,15 +57,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
   }
 
-  /// 读取底栏指示器当前 tabIndex（TabIndicator 由包内部提供）。
-  int? currentIndicatorIndex() {
-    final finder = find.byWidgetPredicate(
-      (w) => w.runtimeType.toString() == 'TabIndicator',
-    );
-    if (finder.evaluate().isEmpty) {
-      return null;
-    }
-    return (finder.evaluate().first.widget as dynamic).tabIndex as int?;
+  /// 底栏项是否处于选中态（选中项文案为 w600 且铺高亮底色）。
+  bool dockTabSelected(WidgetTester tester, String label) {
+    final text = tester.widget<Text>(find.text(label).last);
+    return text.style?.fontWeight == FontWeight.w600;
   }
 
   Future<void> runScenarios(
@@ -100,8 +94,8 @@ void main() {
 
     await pumpApp(tester, provider);
     expect(tester.takeException(), isNull, reason: '周视图初始渲染不应有异常');
-    expect(find.byType(GlassTabBar), findsOneWidget);
-    expect(currentIndicatorIndex(), 1, reason: '初始指示器应在周课表 Tab（排序：日课表/周课表）');
+    expect(find.text('日课表'), findsOneWidget);
+    expect(dockTabSelected(tester, '周课表'), isTrue, reason: '初始指示器应在周课表 Tab（排序：日课表/周课表）');
 
     // Tab 排序：日课表(左) / 周课表(右)；「设置」Tab 已移除，底栏不再出现。
     expect(find.text('课表设置'), findsNothing, reason: '玻璃坞底栏只有 日/周 两个 Tab');
@@ -128,7 +122,7 @@ void main() {
       reason: '玻璃坞切日视图应闪现直切（首帧无缩放中的 Align 槽）',
     );
     await tester.pump(const Duration(milliseconds: 600));
-    expect(currentIndicatorIndex(), 0, reason: '日视图下指示器应在日课表 Tab');
+    expect(dockTabSelected(tester, '日课表'), isTrue, reason: '日视图下指示器应在日课表 Tab');
 
     // 日视图自带顶部信息栏：显示星期几（不是空白栏）
     expect(find.text('周一'), findsWidgets, reason: '日视图顶部信息栏应显示星期');
@@ -139,7 +133,7 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     await tester.pump();
     expect(tester.takeException(), isNull, reason: '切回周视图不应有异常');
-    expect(currentIndicatorIndex(), 1, reason: '周视图下指示器应回到周课表 Tab');
+    expect(dockTabSelected(tester, '周课表'), isTrue, reason: '周视图下指示器应回到周课表 Tab');
 
     // 日期栏路径（点顶部日期单元格）：保持锚点展开动画（面板从小放大），
     // 不做横向滑动转场（面板无右滑位移，且存在缩放中的 Align 槽）。

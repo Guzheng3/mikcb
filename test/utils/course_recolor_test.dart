@@ -56,13 +56,12 @@ void main() {
       final recolored = applySeedCourseRecolor(
         courses,
         seed: 42,
-        colorGroupId: kCourseColorGroupAllId,
         assignMatchingTextColor: false,
       );
 
       expect(recolored[0].color, recolored[1].color);
       expect(recolored[0].color, isNot(recolored[2].color));
-      expect(kPresetCourseColorHexes, contains(recolored[0].color));
+      expect(kRandomCourseColorHexes, contains(recolored[0].color));
       // 只动颜色，其余字段原样保留。
       expect(recolored[1].teacher, '李四');
       expect(recolored[2].id, '3');
@@ -79,34 +78,28 @@ void main() {
       final first = applySeedCourseRecolor(
         courses,
         seed: 7,
-        colorGroupId: kCourseColorGroupAllId,
         assignMatchingTextColor: true,
       );
       final second = applySeedCourseRecolor(
         courses,
         seed: 7,
-        colorGroupId: kCourseColorGroupAllId,
         assignMatchingTextColor: true,
       );
 
       expect(first.map((c) => c.color).toList(), second.map((c) => c.color));
-      expect(
-        first[0].textColor,
-        matchingCourseTextColorHex(first[0].color),
-      );
+      expect(first[0].textColor, matchingCourseTextColorHex(first[0].color));
     });
 
     test('文字色开关关闭时清掉逐课文字色（回落全局）', () {
       final recolored = applySeedCourseRecolor(
         [_course(id: '1', name: 'A', textColor: '#FFFFFF')],
         seed: 3,
-        colorGroupId: kCourseColorGroupAllId,
         assignMatchingTextColor: false,
       );
       expect(recolored.single.textColor, isNull);
     });
 
-    test('颜色组生效：深色系只取深阶色板', () {
+    test('取色全部来自唯一 30 色随机色板', () {
       final recolored = applySeedCourseRecolor(
         [
           _course(id: '1', name: 'A'),
@@ -114,11 +107,10 @@ void main() {
           _course(id: '3', name: 'C'),
         ],
         seed: 11,
-        colorGroupId: 'deep',
         assignMatchingTextColor: false,
       );
       for (final course in recolored) {
-        expect(kDeepCourseColorGroupHexes, contains(course.color));
+        expect(kRandomCourseColorHexes, contains(course.color));
       }
     });
   });
@@ -144,7 +136,6 @@ void main() {
       final recolored = applySeedCourseRecolor(
         courses,
         seed: 99,
-        colorGroupId: kCourseColorGroupAllId,
         assignMatchingTextColor: true,
       );
       expect(recolored[0].color, isNot('#E91E63'));
@@ -177,7 +168,6 @@ void main() {
     test('种子记录往返保留字段', () {
       final scheme = CourseRecolorScheme.seed(
         seed: 12345,
-        colorGroupId: 'pastel',
         assignMatchingTextColor: true,
         createdAt: DateTime(2026, 8, 30, 9, 30),
       );
@@ -187,9 +177,10 @@ void main() {
       expect(restored, isNotNull);
       expect(restored!.isSnapshot, isFalse);
       expect(restored.seed, 12345);
-      expect(restored.colorGroupId, 'pastel');
       expect(restored.assignMatchingTextColor, isTrue);
       expect(restored.createdAt, scheme.createdAt);
+      // 配色组概念已移除，写侧不再落 colorGroupId。
+      expect(scheme.toJson().containsKey('colorGroupId'), isFalse);
     });
 
     test('快照记录往返保留逐组颜色（含 null 文字色）', () {
@@ -236,16 +227,8 @@ void main() {
     });
 
     test('种子记录类型垃圾丢弃该条；字段缺失仍兜底默认值', () {
-      // 回归锚点：seed 分支的 colorGroupId/开关曾是裸 cast，类型垃圾抛
-      // TypeError 被 _loadSchemes 整体 catch，一条坏种子记录清空全部历史。
-      expect(
-        CourseRecolorScheme.fromJson({
-          'createdAt': '2026-08-30T09:00:00',
-          'seed': 7,
-          'colorGroupId': 123,
-        }),
-        isNull,
-      );
+      // 回归锚点：seed 分支的开关曾是裸 cast，类型垃圾抛 TypeError 被
+      // _loadSchemes 整体 catch，一条坏种子记录清空全部历史。
       expect(
         CourseRecolorScheme.fromJson({
           'createdAt': '2026-08-30T09:00:00',
@@ -259,8 +242,17 @@ void main() {
         'seed': 7,
       });
       expect(scheme!.seed, 7);
-      expect(scheme.colorGroupId, kCourseColorGroupAllId);
       expect(scheme.assignMatchingTextColor, false);
+    });
+
+    test('旧记录里的 colorGroupId 被忽略，不再影响解析', () {
+      final scheme = CourseRecolorScheme.fromJson({
+        'createdAt': '2026-08-30T09:00:00',
+        'seed': 7,
+        'colorGroupId': 123,
+      });
+      expect(scheme, isNotNull);
+      expect(scheme!.seed, 7);
     });
   });
 }

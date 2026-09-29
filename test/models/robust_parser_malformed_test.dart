@@ -158,7 +158,7 @@ void main() {
     });
   });
 
-  group('D7 SectionTime/SavedTheme/TimetableSettings robust parsing', () {
+  group('D7 SectionTime/TimetableSettings robust parsing', () {
     test('SectionTime rejects missing fields', () {
       expect(
         () => SectionTime.fromJson({'startTime': '08:00'}),
@@ -169,62 +169,22 @@ void main() {
         throwsA(isA<FormatException>()),
       );
     });
-    test('SavedTheme rejects missing id/name/createdAt', () {
-      expect(
-        () => SavedTheme.fromJson({
-          'name': 'n',
-          'themeData': {},
-          'createdAt': '2026-01-01T00:00:00.000',
-        }),
-        throwsA(isA<FormatException>()),
-      );
-      expect(
-        () => SavedTheme.fromJson({
-          'id': 'a',
-          'themeData': {},
-          'createdAt': '2026-01-01T00:00:00.000',
-        }),
-        throwsA(isA<FormatException>()),
-      );
-      expect(
-        () => SavedTheme.fromJson({
-          'id': 'a',
-          'name': 'n',
-          'themeData': {},
-          'createdAt': 'bad',
-        }),
-        throwsA(isA<FormatException>()),
-      );
+    test('TimetableSettings skips malformed sections, preserves semester', () {
+      final s = TimetableSettings.fromJson({
+        'sections': [
+          {'startTime': '08:00', 'endTime': '08:45'},
+          {'startTime': '', 'endTime': ''}, // bad
+          123,
+        ],
+        'semesterWeekCount': 24,
+        // 旧版遗留字段（themeSeedColor/savedThemes）已随主题库删除，
+        // fromJson 读取时直接丢弃，实现旧数据归一化。
+        'themeSeedColor': '#FF0000',
+        'savedThemes': 'not-a-list',
+      });
+      expect(s.sections.length, 1);
+      expect(s.semesterWeekCount, 24);
     });
-    test(
-      'TimetableSettings skips malformed sections/themes, preserves semester/theme',
-      () {
-        final s = TimetableSettings.fromJson({
-          'sections': [
-            {'startTime': '08:00', 'endTime': '08:45'},
-            {'startTime': '', 'endTime': ''}, // bad
-            123,
-          ],
-          'semesterWeekCount': 24,
-          'themeSeedColor': '#FF0000',
-          'savedThemes': [
-            {
-              'id': 't1',
-              'name': 'good',
-              'themeData': {'v': 2, 'seed': '#00FF00'},
-              'createdAt': '2026-01-01T00:00:00.000',
-            },
-            {'id': '', 'name': 'bad', 'themeData': {}, 'createdAt': 'bad'},
-            'not-a-map',
-          ],
-        });
-        expect(s.sections.length, 1);
-        expect(s.semesterWeekCount, 24);
-        expect(s.themeSeedColor, '#FF0000');
-        expect(s.savedThemes.length, 1);
-        expect(s.savedThemes.first.id, 't1');
-      },
-    );
     test('wrong optional list containers default safely', () {
       final settings = TimetableSettings.fromJson({'sections': 'not-a-list'});
       expect(settings.sections, isNotEmpty);

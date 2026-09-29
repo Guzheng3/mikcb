@@ -23,8 +23,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.os.Handler
-import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
@@ -42,7 +40,7 @@ class MainActivity : FlutterActivity() {
     companion object {
         private const val METHOD_CHANNEL = "vip.qinghan.withu/miui_live"
         private const val SYSTEM_UI_CHANNEL = "vip.qinghan.withu/system_ui"
-        private const val UMENG_CHANNEL = "vip.qinghan.withu/umeng_analytics"
+        private const val APP_DIAGNOSTICS_CHANNEL = "vip.qinghan.withu/app_diagnostics"
         private const val HOME_WIDGET_CHANNEL = "vip.qinghan.withu/home_widget"
         private const val EXAM_REMINDER_CHANNEL = "vip.qinghan.withu/exam_reminder"
         private const val WEEKLY_REPORT_CHANNEL = "vip.qinghan.withu/weekly_report"
@@ -572,37 +570,16 @@ class MainActivity : FlutterActivity() {
                 }
             }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, UMENG_CHANNEL)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, APP_DIAGNOSTICS_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
-                    "initializeIfNeeded" -> {
-                        val initialized = UmengApplication.initializeAnalyticsIfNeeded(applicationContext)
-                        result.success(initialized)
-                    }
-                    "triggerTestCrash" -> {
-                        UmengApplication.initializeAnalyticsIfNeeded(applicationContext)
-                        Handler(Looper.getMainLooper()).post {
-                            throw RuntimeException("Manual Umeng U-APM test crash")
-                        }
-                        result.success(true)
-                    }
-                    "triggerTestAnr" -> {
-                        UmengApplication.initializeAnalyticsIfNeeded(applicationContext)
-                        Handler(Looper.getMainLooper()).post {
-                            try {
-                                Thread.sleep(30000L)
-                            } catch (_: InterruptedException) {
-                            }
-                        }
-                        result.success(true)
-                    }
                     "reportCustomLog" -> {
                         val data = call.arguments as? Map<*, *>
                         if (data == null) {
                             result.error("INVALID_ARGUMENTS", "Missing log payload", null)
                             return@setMethodCallHandler
                         }
-                        UmengDiagnosticReporter.report(
+                        AppDiagnosticReporter.report(
                             context = applicationContext,
                             category = data["category"] as? String ?: "flutter_diagnostic",
                             message = data["message"] as? String ?: "",
@@ -624,7 +601,7 @@ class MainActivity : FlutterActivity() {
                         }
                         @Suppress("UNCHECKED_CAST")
                         val extras = (data["extras"] as? Map<String, Any?>) ?: emptyMap()
-                        UmengDiagnosticReporter.record(
+                        AppDiagnosticReporter.record(
                             context = applicationContext,
                             category = data["category"] as? String ?: "flutter_diagnostic_event",
                             message = data["message"] as? String ?: "",
@@ -635,7 +612,7 @@ class MainActivity : FlutterActivity() {
                     }
                     "setLiveDiagnosticsEnabled" -> {
                         val enabled = call.arguments as? Boolean ?: false
-                        UmengDiagnosticReporter.setLiveDiagnosticsEnabled(
+                        AppDiagnosticReporter.setLiveDiagnosticsEnabled(
                             applicationContext,
                             enabled
                         )
@@ -643,17 +620,17 @@ class MainActivity : FlutterActivity() {
                     }
                     "exportLiveDiagnosticsFile" -> {
                         result.success(
-                            UmengDiagnosticReporter.exportLiveDiagnosticsFile(applicationContext)
+                            AppDiagnosticReporter.exportLiveDiagnosticsFile(applicationContext)
                         )
                     }
                     "readLiveDiagnosticsText" -> {
                         result.success(
-                            UmengDiagnosticReporter.readLiveDiagnosticsText(applicationContext)
+                            AppDiagnosticReporter.readLiveDiagnosticsText(applicationContext)
                         )
                     }
                     "clearLiveDiagnostics" -> {
                         result.success(
-                            UmengDiagnosticReporter.clearLiveDiagnostics(applicationContext)
+                            AppDiagnosticReporter.clearLiveDiagnostics(applicationContext)
                         )
                     }
                     else -> result.notImplemented()
@@ -1754,7 +1731,7 @@ class MainActivity : FlutterActivity() {
 
     private fun startLiveUpdateService(data: Map<String, Any>) {
         try {
-            UmengDiagnosticReporter.record(
+            AppDiagnosticReporter.record(
                 context = applicationContext,
                 category = "live_update_start_requested",
                 message = DiagnosticLogMessages.LIVE_UPDATE_START_REQUESTED,
@@ -1771,7 +1748,7 @@ class MainActivity : FlutterActivity() {
                 startService(intent)
             }
         } catch (e: Exception) {
-            UmengDiagnosticReporter.report(
+            AppDiagnosticReporter.report(
                 context = applicationContext,
                 category = "live_update_start_failed",
                 message = DiagnosticLogMessages.LIVE_UPDATE_START_FAILED_CHANNEL,
@@ -1783,7 +1760,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun stopLiveUpdateService() {
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = applicationContext,
             category = "live_update_stop_requested",
             message = DiagnosticLogMessages.LIVE_UPDATE_STOP_REQUESTED,

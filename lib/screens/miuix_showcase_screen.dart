@@ -558,7 +558,7 @@ class _HomePageState extends State<_HomePage>
                       selected: i == _selectedRailIndex,
                       onPressed: () => setState(() => _selectedRailIndex = i),
                       icon: MiuixIcon(
-                        vector: MiuixIcons.extended.byName(
+                        icon: miuixIconByName(
                           _allEntries[i].icon,
                         ),
                         size: 22,
@@ -1085,7 +1085,7 @@ class _SearchResultItem extends StatelessWidget {
       startAction: Padding(
         padding: const EdgeInsets.only(right: 12),
         child: MiuixIcon(
-          vector: MiuixIcons.extended.byName(entry.icon),
+          icon: miuixIconByName(entry.icon),
           size: 24,
         ),
       ),
@@ -1135,7 +1135,7 @@ class _EntryTile extends StatelessWidget {
       startAction: Padding(
         padding: const EdgeInsets.only(right: 12),
         child: MiuixIcon(
-          vector: MiuixIcons.extended.byName(entry.icon),
+          icon: miuixIconByName(entry.icon),
           size: 24,
         ),
       ),

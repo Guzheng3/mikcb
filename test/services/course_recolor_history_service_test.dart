@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:university_timetable/models/course.dart';
 import 'package:university_timetable/services/course_recolor_history_service.dart';
-import 'package:university_timetable/utils/course_color_palette.dart';
 import 'package:university_timetable/utils/course_recolor.dart';
 
 Course _course({
@@ -47,7 +46,6 @@ void main() {
     ], now: DateTime(2026, 8, 30, 9));
     final seed = CourseRecolorScheme.seed(
       seed: 4242,
-      colorGroupId: 'pastel',
       assignMatchingTextColor: true,
       createdAt: DateTime(2026, 8, 30, 9, 5),
     );
@@ -70,14 +68,12 @@ void main() {
     final loadedSeed = state.schemes[1];
     expect(loadedSeed.isSnapshot, isFalse);
     expect(loadedSeed.seed, 4242);
-    expect(loadedSeed.colorGroupId, 'pastel');
     expect(loadedSeed.assignMatchingTextColor, isTrue);
   });
 
   test('作用域按课表 profile 隔离', () async {
     final seed = CourseRecolorScheme.seed(
       seed: 1,
-      colorGroupId: kCourseColorGroupAllId,
       assignMatchingTextColor: false,
       createdAt: DateTime(2026, 8, 30),
     );
@@ -99,7 +95,6 @@ void main() {
       for (var i = 1; i < CourseRecolorHistoryService.maxSchemes + 5; i++)
         CourseRecolorScheme.seed(
           seed: i,
-          colorGroupId: kCourseColorGroupAllId,
           assignMatchingTextColor: false,
           createdAt: DateTime(2026, 8, 30).add(Duration(minutes: i)),
         ),
@@ -130,7 +125,6 @@ void main() {
       for (var i = 1; i < CourseRecolorHistoryService.maxSchemes + 5; i++)
         CourseRecolorScheme.seed(
           seed: i,
-          colorGroupId: kCourseColorGroupAllId,
           assignMatchingTextColor: false,
           createdAt: DateTime(2026, 8, 30).add(Duration(minutes: i)),
         ),
@@ -157,7 +151,6 @@ void main() {
   test('坏记录被跳过，好记录保留；指向缺省落到最后一套', () async {
     final good = CourseRecolorScheme.seed(
       seed: 7,
-      colorGroupId: kCourseColorGroupAllId,
       assignMatchingTextColor: false,
       createdAt: DateTime(2026, 8, 30),
     );
@@ -183,7 +176,6 @@ void main() {
     ], now: DateTime(2026, 8, 30, 9));
     final seed = CourseRecolorScheme.seed(
       seed: 9,
-      colorGroupId: kCourseColorGroupAllId,
       assignMatchingTextColor: false,
       createdAt: DateTime(2026, 8, 30, 9, 5),
     );
@@ -215,11 +207,10 @@ void main() {
   });
 
   test('种子记录类型垃圾只丢该条，不再连带清空整份历史', () async {
-    // 回归锚点：seed 分支的 colorGroupId/开关是裸 cast，类型垃圾抛
-    // TypeError 被 _loadSchemes 整体 catch，一条坏种子记录清空全部历史。
+    // 回归锚点：seed 分支的开关是裸 cast，类型垃圾抛 TypeError 被
+    // _loadSchemes 整体 catch，一条坏种子记录清空全部历史。
     final good = CourseRecolorScheme.seed(
       seed: 7,
-      colorGroupId: kCourseColorGroupAllId,
       assignMatchingTextColor: false,
       createdAt: DateTime(2026, 8, 30),
     );
@@ -228,7 +219,7 @@ void main() {
         {
           'createdAt': DateTime(2026, 8, 30).toIso8601String(),
           'seed': 3,
-          'colorGroupId': 123,
+          'assignMatchingTextColor': 'yes',
         },
         good.toJson(),
       ]),

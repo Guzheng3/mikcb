@@ -11,7 +11,6 @@ import 'package:university_timetable/screens/timetable_screen.dart';
 import 'package:university_timetable/screens/timetable_settings_screen.dart';
 import 'package:university_timetable/widgets/home_menu_route_catalog.dart';
 import 'package:university_timetable/ui/hyperos/frosted/frosted_appearance.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 /// 玻璃坞内嵌页触觉与再点口径回归。
 ///
@@ -53,15 +52,10 @@ void main() {
         .length;
   }
 
-  /// 读取底栏指示器当前 tabIndex（TabIndicator 由包内部提供）。
-  int? currentIndicatorIndex() {
-    final finder = find.byWidgetPredicate(
-      (w) => w.runtimeType.toString() == 'TabIndicator',
-    );
-    if (finder.evaluate().isEmpty) {
-      return null;
-    }
-    return (finder.evaluate().first.widget as dynamic).tabIndex as int?;
+  /// 底栏项是否处于选中态（选中项文案为 w600 且铺高亮底色）。
+  bool dockTabSelected(WidgetTester tester, String label) {
+    final text = tester.widget<Text>(find.text(label).last);
+    return text.style?.fontWeight == FontWeight.w600;
   }
 
   Future<TimetableProvider> pumpDockApp(
@@ -104,13 +98,11 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(tester.takeException(), isNull);
-    expect(find.byType(GlassTabBar), findsOneWidget);
+    expect(find.text('日课表'), findsOneWidget);
     return provider;
   }
 
-  Finder dockTab(String label) => find
-      .descendant(of: find.byType(GlassTabBar), matching: find.text(label))
-      .first;
+  Finder dockTab(String label) => find.text(label).last;
 
   testWidgets('底栏页面 Tab：真实切换各震一次，再点当前页无动作零震动', (tester) async {
     final hapticLog = installHapticLog();
@@ -134,7 +126,7 @@ void main() {
       find.byKey(const ValueKey('timetable-day-view-panel')),
       findsOneWidget,
     );
-    expect(currentIndicatorIndex(), 0);
+    expect(dockTabSelected(tester, '日课表'), isTrue);
     expect(selectionClicks(hapticLog) - before, 1, reason: '周→日应震一次');
 
     // 日→打开统计页：真实切换（修复点：此前全程静音）。
@@ -143,7 +135,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
     expect(tester.takeException(), isNull, reason: '打开内嵌页不应有异常');
-    expect(currentIndicatorIndex(), 1, reason: '统计页打开后高亮应跟随内嵌 id');
+    expect(dockTabSelected(tester, '课程统计'), isTrue, reason: '统计页打开后高亮应跟随内嵌 id');
     expect(selectionClicks(hapticLog) - before, 1, reason: '打开内嵌页应震一次');
 
     // 再点当前内嵌页 Tab：无动作、零震动（修复点：原 toggle 会把页面
@@ -152,7 +144,7 @@ void main() {
     await tester.tap(dockTab('课程统计'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
-    expect(currentIndicatorIndex(), 1, reason: '再点当前页应保持打开');
+    expect(dockTabSelected(tester, '课程统计'), isTrue, reason: '再点当前页应保持打开');
     expect(find.byType(CourseStatisticsScreen), findsOneWidget);
     expect(selectionClicks(hapticLog) - before, 0, reason: '再点当前页应静音');
 
@@ -162,7 +154,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
     expect(tester.takeException(), isNull, reason: '换到设置页不应有异常');
-    expect(currentIndicatorIndex(), 2);
+    expect(dockTabSelected(tester, '课表设置'), isTrue);
     expect(find.byType(TimetableSettingsScreen), findsOneWidget);
     expect(selectionClicks(hapticLog) - before, 1, reason: '内嵌页之间换页应震一次');
 
@@ -173,7 +165,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 2));
     expect(tester.takeException(), isNull, reason: '收页回周课表不应有异常');
-    expect(currentIndicatorIndex(), 3);
+    expect(dockTabSelected(tester, '周课表'), isTrue);
     expect(find.byType(TimetableSettingsScreen), findsNothing);
     expect(
       find.byKey(const ValueKey('timetable-day-view-panel')),

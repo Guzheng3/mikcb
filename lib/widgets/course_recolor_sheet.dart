@@ -8,34 +8,14 @@ import '../providers/timetable_provider.dart';
 import '../services/course_recolor_history_service.dart';
 import '../services/import_random_color_preferences.dart';
 import '../utils/app_toast.dart';
-import '../utils/course_color_palette.dart';
 import '../utils/course_recolor.dart';
 import '../utils/hex_color.dart';
-
-/// 颜色组的显示名（预设组沿用配色风格标签，「全部颜色」为全量色板）。
-String colorGroupDisplayName(String groupId, AppLocalizations l10n) {
-  switch (groupId) {
-    case 'pastel':
-      return l10n.colorGroupPastel;
-    case 'vibrant':
-      return l10n.colorGroupVibrant;
-    case 'deep':
-      return l10n.colorGroupDeep;
-    case 'dopamine':
-      return l10n.colorGroupDopamine;
-    case 'sunset':
-      return l10n.colorGroupSunset;
-    case 'ocean':
-      return l10n.colorGroupOcean;
-  }
-  return l10n.colorGroupAll;
-}
 
 /// 「课表重新配色」：导入后随时给全部课程刷一套随机颜色，无需重新导入。
 ///
 /// 「换一批」生成新随机批次；「上一套 / 下一套」在配色历史（含首次换色
-/// 前的导入原色快照）里往返；颜色组与导入随机配色共用同一偏好。历史按
-/// 课表 profile 隔离，切换课表互不影响。
+/// 前的导入原色快照）里往返。色板只有唯一一套 30 色随机预设，文字色开关
+/// 与导入随机配色共用同一偏好。历史按课表 profile 隔离，切换课表互不影响。
 Future<void> showCourseRecolorSheet(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
   if (context.read<TimetableProvider>().courses.isEmpty) {
@@ -58,7 +38,6 @@ class CourseRecolorSheet extends StatefulWidget {
 
 class _CourseRecolorSheetState extends State<CourseRecolorSheet> {
   CourseRecolorHistoryState _history = const CourseRecolorHistoryState.empty();
-  String _groupId = ImportRandomColorPreferences.defaultGroupId;
   bool _loaded = false;
   bool _busy = false;
 
@@ -76,13 +55,11 @@ class _CourseRecolorSheetState extends State<CourseRecolorSheet> {
     final state = await CourseRecolorHistoryService.load(
       _historyScope(provider),
     );
-    final groupId = await ImportRandomColorPreferences.getGroupId();
     if (!mounted) {
       return;
     }
     setState(() {
       _history = state;
-      _groupId = groupId;
       _loaded = true;
     });
   }
@@ -110,7 +87,6 @@ class _CourseRecolorSheetState extends State<CourseRecolorSheet> {
       }
       final scheme = CourseRecolorScheme.seed(
         seed: DateTime.now().microsecondsSinceEpoch & 0x7fffffff,
-        colorGroupId: _groupId,
         assignMatchingTextColor: assignMatchingTextColor,
         createdAt: DateTime.now(),
       );
@@ -182,65 +158,6 @@ class _CourseRecolorSheetState extends State<CourseRecolorSheet> {
     }
   }
 
-  Future<void> _pickGroup() async {
-    final l10n = AppLocalizations.of(context)!;
-    final selected = await showHyperosSheet<String>(
-      context: context,
-      enableDrag: false,
-      builder: (sheetContext) => HyperosSheet(
-        title: l10n.importRandomColorGroupTitle,
-        child: HyperosChoiceGroup(
-          children: [
-            _buildGroupOption(
-              sheetContext,
-              l10n,
-              groupId: kCourseColorGroupAllId,
-              label: l10n.colorGroupAll,
-              previewHexes: kCourseColorQuickPickHexes,
-            ),
-            for (var index = 0; index < kCourseColorGroups.length; index++)
-              _buildGroupOption(
-                sheetContext,
-                l10n,
-                groupId: kCourseColorGroups[index].id,
-                label: colorGroupDisplayName(kCourseColorGroups[index].id, l10n),
-                previewHexes: kCourseColorGroups[index].hexes,
-                showDivider: true,
-              ),
-          ],
-        ),
-      ),
-    );
-    if (selected == null || selected == _groupId) {
-      return;
-    }
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _groupId = selected;
-    });
-    await ImportRandomColorPreferences.setGroupId(selected);
-  }
-
-  Widget _buildGroupOption(
-    BuildContext sheetContext,
-    AppLocalizations l10n, {
-    required String groupId,
-    required String label,
-    required List<String> previewHexes,
-    bool showDivider = false,
-  }) {
-    return HyperosChoiceTile(
-      title: label,
-      selected: _groupId == groupId,
-      variant: HyperosChoiceVariant.dialog,
-      showDivider: showDivider,
-      onTap: () => Navigator.pop(sheetContext, groupId),
-      subtitle: _ColorDotsPreview(hexes: previewHexes),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -261,14 +178,6 @@ class _CourseRecolorSheetState extends State<CourseRecolorSheet> {
               physics: ClampingScrollPhysics(),
               child: _CourseColorPreview(),
             ),
-          ),
-          const SizedBox(height: 16),
-          HyperosPickerField(
-            label: l10n.importRandomColorGroupTitle,
-            value: colorGroupDisplayName(_groupId, l10n),
-            icon: Icons.palette_outlined,
-            enabled: _loaded,
-            onTap: _pickGroup,
           ),
           const SizedBox(height: 16),
           Row(
@@ -397,43 +306,6 @@ class _GroupColorPill extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// 选组行的色点预览：色板过长时按步长抽样，最多 10 个点。
-class _ColorDotsPreview extends StatelessWidget {
-  const _ColorDotsPreview({required this.hexes});
-
-  final List<String> hexes;
-
-  @override
-  Widget build(BuildContext context) {
-    final stride = hexes.length > 10 ? (hexes.length / 10).ceil() : 1;
-    final samples = <String>[
-      for (var index = 0; index < hexes.length; index += stride)
-        hexes[index],
-    ];
-    return Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: Row(
-        children: [
-          for (final hex in samples.take(10)) ...[
-            Container(
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(
-                color: parseHexColorOrFallback(
-                  hex,
-                  fallback: const Color(0xFF2196F3),
-                ),
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 4),
-          ],
-        ],
       ),
     );
   }

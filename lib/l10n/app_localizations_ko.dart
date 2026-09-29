@@ -88,9 +88,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fontModeMonospace => '고정폭';
 
   @override
-  String get languageSectionTitle => '앱 언어';
-
-  @override
   String get languageSectionSubtitle => '시스템 연동 또는 수동으로 지원 언어를 전환할 수 있습니다';
 
   @override
@@ -529,34 +526,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get unifiedCourseCardColorSubtitle => '끄면 각 수업의 개별 색상을 계속 사용합니다';
 
   @override
+  String get courseCardFontColorTitle => '수업 카드 글자 색상';
+
+  @override
   String get importRandomCourseColorTitle => '수업 색상 무작위';
 
   @override
   String get importRandomCourseColorSubtitle => '수업명과 교수로 프리셋 색을 자동 배정';
 
   @override
-  String get importRandomColorGroupTitle => '랜덤 색상 그룹';
-
-  @override
-  String get colorGroupAll => '모든 색상';
-
-  @override
-  String get colorGroupPastel => '파스텔';
-
-  @override
-  String get colorGroupVibrant => '비비드';
-
-  @override
-  String get colorGroupDeep => '다크';
-
-  @override
-  String get colorGroupDopamine => '도파민';
-
-  @override
-  String get colorGroupSunset => '선셋';
-
-  @override
-  String get colorGroupOcean => '오션';
+  String get courseColorPaletteAllLabel => '모든 색상';
 
   @override
   String get courseRecolorTileTitle => '시간표 색상 다시 칠하기';
@@ -1023,35 +1002,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get importFailedInvalidFile => '가져오기 실패, 파일이 유효한지 확인하세요';
 
   @override
-  String get welcomeTitle => '환영합니다';
-
-  @override
-  String get welcomeAppName => '경屿 시간표';
-
-  @override
-  String get welcomeSubtitle => '바로 시작하거나 수업을 가져오거나 백업에서 복원할 수 있습니다';
-
-  @override
   String get thirdPartyDisclaimer =>
       '声明：본 앱은 제3자 개발자가 독립적으로 개발하였으며, 학습 및 연구 목적으로만 사용됩니다. Xiaomi(小米) 공식 소프트웨어가 아니며 Xiaomi Technology Co., Ltd.(小米科技有限責任公司)와 어떠한 종속, 협력 또는 승인 관계도 없습니다. 콘텐츠 침해가 있는 경우 권리자께서 작성자에게 연락해 주시면 즉시 관련 콘텐츠를下架 및 삭제하겠습니다.';
-
-  @override
-  String get startUsingTitle => '시작하기';
-
-  @override
-  String get startUsingSubtitle => '앱에 진입하여 첫 사용 가이드를 계속 진행';
-
-  @override
-  String get importTimetableTitle => '시간표 가져오기';
-
-  @override
-  String get importTimetableSubtitle => '.ics 파일 또는 AI 분석 결과에서 수업 가져오기';
-
-  @override
-  String get restoreBackupTitle => '백업에서 복원';
-
-  @override
-  String get restoreBackupSubtitle => '.mikcb 백업 파일에서 이전 데이터 복원';
 
   @override
   String get viewGuideTitle => '기능 설명 보기';
@@ -1461,10 +1413,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aboutOpenSourceLicensesExtraSectionTitle => '라이선스 안내';
-
-  @override
-  String get aboutOpenSourceLicensesExtraUmeng =>
-      '우멍(Umeng) 등 분석 서비스는 개인정보 처리방침에 동의한 후에만 사용되며, 해당 서비스의 약관과 개인정보 정책이 적용됩니다.';
 
   @override
   String get aboutOpenSourceLicensesExtraNote => '';
@@ -2217,44 +2165,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get diagnosticsStackTrace => '스택 트레이스';
 
   @override
-  String get firstUseGuideTitle => '첫 사용 가이드';
-
-  @override
   String get guideAndPermissionsTitle => '사용 가이드 및 권한';
 
   @override
   String get refreshStatusTooltip => '상태 새로고침';
-
-  @override
-  String get guideHeroTitle => '먼저 이 페이지를 완료하세요';
-
-  @override
-  String get guideHeroSubtitle =>
-      '먼저 첫 화면에서 인증하세요. 아래에 시스템 버전 지원, 약칭 설정, 가져오기 방법이 설명되어 있습니다. 스크롤을 계속하세요';
-
-  @override
-  String get guideChipPermissions => '권한 준비';
-
-  @override
-  String get guideChipShortName => '약칭 설정';
-
-  @override
-  String get guideChipImport => '수업 가져오기';
-
-  @override
-  String guideChipReadyCount(int count) {
-    return '$count/3 완료';
-  }
-
-  @override
-  String get guideBottomReachedHint => '마지막까지 스크롤했습니다. 확인 후 바로 시작할 수 있습니다';
-
-  @override
-  String get guideScrollHint =>
-      '아래로 스크롤하여 계속하세요. HyperOS 버전 설명, 권한 목록, 약칭 설정, 가져오기 방법이 있습니다';
-
-  @override
-  String get guideRequestNotificationFirst => '먼저 알림 권한 요청';
 
   @override
   String get quickSetupTitle => '첫 화면 빠른 설정';
@@ -2263,52 +2177,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get quickSetupSubtitle => '가장 중요한 5개 항목을 먼저 배치합니다. 아래까지 스크롤할 필요 없이';
 
   @override
-  String get quickActionNotificationsTitle => '알림 설정';
-
-  @override
-  String get quickActionNotificationsSubtitle => '먼저 알림 전송 가능 확인';
-
-  @override
-  String get quickActionIslandTitle => '슈퍼아일랜드 권한';
-
-  @override
-  String get quickActionIslandSubtitle => 'promoted 알림 확인';
-
-  @override
   String get quickActionAutoStartTitle => '자동 시작';
 
   @override
-  String get quickActionAutoStartSubtitle => '백그라운드 종료 방지';
-
-  @override
-  String get quickActionBatteryTitle => '배터리 제한 없음';
-
-  @override
-  String get quickActionBatterySubtitle => '알림 중단 방지';
-
-  @override
-  String get quickActionKeepAliveTitle => '백그라운드 상주 보조';
-
-  @override
-  String get quickActionKeepAliveSubtitle => '백그라운드 안정성 향상';
-
-  @override
-  String get guidePrivacyConsentLabel => 'Umeng 관련 개인정보 처리방침을 읽고 동의합니다';
-
-  @override
-  String get guideRequireConsentHint => '먼저 아래로 스크롤하여 설명을 읽고, 동의에 체크한 후 시작하세요';
-
-  @override
-  String get guideContinueHint => '아래로 스크롤하여 전체 가이드 내용을 확인하세요';
-
-  @override
-  String get exitAppAction => '앱 종료';
-
-  @override
   String get continueReadingAction => '계속 보기';
-
-  @override
-  String get agreeAndStartAction => '동의하고 시작';
 
   @override
   String get startUsingAction => '시작하기';
@@ -2554,12 +2426,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeTitleStyleLabel => '제목 스타일';
 
   @override
-  String get themeSeedSectionTitle => '앱 테마 색상';
-
-  @override
-  String get themeSeedSectionSubtitle => '상단 바, 강조색 및 전반적인 주色调에 영향을 줍니다';
-
-  @override
   String get frostedSheetSectionTitle => '프로스트 글래스';
 
   @override
@@ -2752,12 +2618,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get guideHyperOsChip => 'HyperOS 3.0.300+';
-
-  @override
-  String get guideStatusTitle => '현재 상태';
-
-  @override
   String get guideStatusNotificationPermission => '알림 권한';
 
   @override
@@ -2786,178 +2646,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get guideStatusBatteryRestricted => '아직 제한됨';
-
-  @override
-  String get guideStatusKeepAlive => '백그라운드 상주 보조';
-
-  @override
-  String get guideStatusAndroidVersion => 'Android 버전';
-
-  @override
-  String get guideStatusVersionUnknown => '미인식';
-
-  @override
-  String get guideStatusIslandSystemSupport => '슈퍼아일랜드 시스템 지원';
-
-  @override
-  String get guideStatusIslandSystemRequirement => 'HyperOS 3.0.300 이상 필요';
-
-  @override
-  String get guideStatusIslandHint =>
-      '슈퍼아일랜드를 주로 사용하려면, 먼저 시스템 버전이 HyperOS 3.0.300 이상인지 확인한 뒤 아래 권한 목록을 순서대로 완료하세요';
-
-  @override
-  String get guidePermissionChecklistTitle => '권한 목록';
-
-  @override
-  String get guidePermissionChecklistSubtitle =>
-      '이 순서로 확인하는 것이 가장 효율적이고 누락이 적습니다';
-
-  @override
-  String get guideChecklistRequestNotificationTitle => '알림 권한 요청';
-
-  @override
-  String get guideChecklistRequestNotificationSubtitle => '모든 알림의 전제 조건';
-
-  @override
-  String get guideChecklistOpenNotificationTitle => '알림 설정 열기';
-
-  @override
-  String get guideChecklistOpenNotificationSubtitle =>
-      '알림 마스터 스위치, 잠금 화면 표시, 실시간 알림 권한 확인';
-
-  @override
-  String get guideChecklistOpenIslandTitle => '포커스 알림 설정 열기';
-
-  @override
-  String get guideChecklistOpenIslandSubtitle =>
-      'HyperOS 3.0.300 이상에서 promoted/슈퍼아일랜드 알림 확인';
-
-  @override
-  String get guideChecklistOpenAutoStartTitle => '자동 시작 설정 열기';
-
-  @override
-  String get guideChecklistOpenAutoStartSubtitle => '앱의 자동 시작과 백그라운드 상주를 허용';
-
-  @override
-  String get guideChecklistOpenBatteryTitle => '배터리 전략 설정 열기';
-
-  @override
-  String get guideChecklistOpenBatterySubtitle =>
-      '제한 없음으로 변경 권장. 수업 알림 중단을 방지합니다';
-
-  @override
-  String get guideChecklistOpenKeepAliveTitle => '백그라운드 상주 보조 열기';
-
-  @override
-  String get guideChecklistOpenKeepAliveSubtitle =>
-      '슈퍼아일랜드와 알림의 백그라운드 안정성을 더욱 향상';
-
-  @override
-  String get guideShortNameAdviceTitle => '수업 약칭 권장사항';
-
-  @override
-  String get guideShortNameAdviceSubtitle =>
-      '슈퍼아일랜드는 수업 약칭 표시를 지원합니다. 약칭은 자동 생성되지 않으며 수업 편집에서 수동 입력이 필요합니다. 3자 이내를 권장합니다';
-
-  @override
-  String get guideShortNameRecommended => '권장 예시';
-
-  @override
-  String get guideShortNameNotRecommended => '비권장';
-
-  @override
-  String get guideShortNameRecommendedExample => '미적 / 확률 / 수치';
-
-  @override
-  String get guideShortNameNotRecommendedExample => '고등수학A(1) / 수치제어기술및응용';
-
-  @override
-  String get guideSetCourseShortNameAction => '수업 약칭 설정하기';
-
-  @override
-  String get guideImportMethodsTitle => '시간표 가져오기 방법';
-
-  @override
-  String get guideImportMethodsSubtitle =>
-      '현재 버전은 일부 학교의 교무 시스템 웹 로그인 가져오기를 지원합니다. 미대응 학교라도 다른 마이그레이션 방법이 있습니다';
-
-  @override
-  String get guideImportMethodStep1 =>
-      '먼저 \'수업 가져오기 > 교무 시스템 가져오기\'에서 학교와 어댑터를 선택하고, 앱 내에서 교무 웹페이지를 열어 가져오기를 완료하세요.';
-
-  @override
-  String get guideImportMethodStep2 =>
-      '사용하는 학교가 아직 미대응인 경우, WakeUp 등 시간표 앱에서 수업을 가져온 뒤 캘린더 형식으로 내보내고 본 앱에서 가져오세요.';
-
-  @override
-  String get guideImportMethodStep3 =>
-      '다른 사용자가 이미 본 앱을 사용 중인 경우, 전체 백업 파일을 내보내어 직접 가져오면 수업과 설정을 복원할 수 있습니다.';
-
-  @override
-  String get guideImportMethodExtra =>
-      '패킷 캡처, 웹 디버깅, JavaScript를 할 수 있다면, 학교 교무 적응 보충에 참여하여 더 많은 학교가 바로 가져올 수 있도록 해주세요.';
-
-  @override
-  String get guideFinalTipsTitle => '마지막으로 이 3가지를 확인하세요';
-
-  @override
-  String get guideFinalTip1 =>
-      '1. HyperOS 3.0.300 이상에서 슈퍼아일랜드를 지원합니다. 시스템 버전이 부족해도 앱은 일반 알림을 정상적으로 보낼 수 있습니다.';
-
-  @override
-  String get guideFinalTip2 =>
-      '2. 먼저 설정 페이지에서 \'수업 전 팝업\'과 \'수업 중과 종료 임박 알림\'의 임계값을 조정하세요.';
-
-  @override
-  String get guideFinalTip3 =>
-      '3. 시스템 권한 설정 완료 후 테스트 알림으로 검증하세요. 아일랜드 표시가 가끔 사라지면 자동 시작과 절전 전략을 우선 확인하세요.';
-
-  @override
-  String get guidePrivacyHelperRequireConsent =>
-      '동의에 체크하면 위의 Umeng 관련 설명, 개인정보 내용과 면책 사항을 읽고 동의한 것으로 간주됩니다';
-
-  @override
-  String get guidePrivacyHelperViewOnly =>
-      '여기서는 첫 실행 시와 동일한 개인정보, 서드파티 SDK, 면책 사항을 유지합니다. 언제든 확인 가능합니다. 현재 페이지에서 다시 동의할 필요가 없습니다';
-
-  @override
-  String get guidePrivacySectionTitle => '개인정보, 서드파티 SDK 및 면책 사항';
-
-  @override
-  String get guidePrivacyParagraph1 =>
-      '본 앱의 주요 기능은 로컬 실행 방식으로 설계되었습니다. 시간표, 템플릿, 수업 기록과 대부분의 설정은 기본적으로 기기 로컬에 저장됩니다.';
-
-  @override
-  String get guidePrivacyParagraph2 =>
-      '사용자가 능동적으로 업데이트 확인, 다운로드, 가져오기/내보내기 등의 네트워크 기능을 사용하거나, 동의 후 Umeng SDK를 초기화한 경우에만 외부 서비스와 데이터 통신이 발생합니다.';
-
-  @override
-  String get guidePrivacyParagraph3 =>
-      '본 앱은 Umeng Mobile Statistics SDK, Umeng APM SDK 및 고급 운영 분석 의존 라이브러리를 도입했습니다. 서비스 용도는 모바일 통계 분석, 앱 성능 모니터링 및 고급 운영 분석 관련 기능입니다. 동의 후에만 이 SDK들이 정식으로 초기화됩니다.';
-
-  @override
-  String get guidePrivacyParagraph4 =>
-      'Umeng 공식 설명에 따르면, 이 SDK들이 처리할 수 있는 정보에는: 기기 정보(IMEI, MAC, Android ID, OAID, IDFA, OpenUDID, GUID, SIM IMSI 등), 네트워크 상태, 기기 식별자, 고급 운영 분석 의존 라이브러리의 앱 목록과 위치 정보가 포함됩니다.';
-
-  @override
-  String get guideRiskTitle => '면책 및 리스크 안내';
-
-  @override
-  String get guideRiskParagraph1 =>
-      '1. 슈퍼아일랜드, 포커스 알림, 백그라운드 알림과 상주 효과는 시스템 버전, 기종, 제조사 전략, 권한, 자동 시작, 배터리 전략 등 외부 조건에 의존합니다. 모든 기기에서 완전히 동일한 동작을 보장할 수 없습니다.';
-
-  @override
-  String get guideRiskParagraph2 =>
-      '2. 업데이트 확인, 미러 다운로드, 시스템 다운로더, 가져오기/내보내기와 공유는 네트워크 환경, 서드파티 서비스와 시스템 파일 기능에 의존합니다. 실패, 속도 제한 또는 파일 오류 시 Release 페이지, 백업 파일, 시스템 표시를 기준으로 하세요.';
-
-  @override
-  String get guideRiskParagraph3 =>
-      '3. 마이그레이션, 가져오기 또는 데이터 덮어쓰기 전에 백업 파일이 완전히 사용 가능한지 직접 확인하고, 시간표 정보가 포함된 파일을 적절히 보관하세요. 사용자의 직접 삭제, 덮어쓰기, 공유 또는 보관 부주의로 인한 데이터 문제는 사용자가 직접 리스크를 부담해야 합니다.';
-
-  @override
-  String get guideUmengPrivacyLink =>
-      'Umeng 개인정보 처리방침: https://www.umeng.com/page/policy';
 
   @override
   String get liveDiagnosticsUnavailable => '현재 볼 수 있는 슈퍼아일랜드 진단 로그가 없습니다';
@@ -3013,16 +2701,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get liveTestingSessionCanceled => '셀프 체크를 취소했습니다';
-
-  @override
-  String get liveTestingUmengHint =>
-      '아래 두 버튼은 테스트판에만 표시됩니다. Umeng U-APM 충돌과 프리즈上报 검증용입니다';
-
-  @override
-  String get liveTestingCrashAction => '충돌 테스트';
-
-  @override
-  String get liveTestingAnrAction => '비정상 프리즈 테스트';
 
   @override
   String get liveTestingIslandStatusTitle => '아일랜드 상태 진단';
@@ -3136,14 +2814,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get liveTestingCurrentNativeFieldsSubtitle => '현재 네이티브 진단 필드를 표시합니다';
-
-  @override
-  String get liveTestingCrashSoon =>
-      'Umeng U-APM 테스트 충돌을 트리거합니다. 앱을 다시 열어 백그라운드에서 上报를 수신했는지 확인하세요.';
-
-  @override
-  String get liveTestingAnrSoon =>
-      '약 30초간 메인 스레드 프리즈를 트리거합니다. flutter run에서 벗어나 테스트하고, 프리즈 후 앱을 다시 열어 Umeng 백그라운드를 확인하세요.';
 
   @override
   String get liveTestingNoCourseAvailable => '현재 테스트 가능한 수업이 없습니다';
@@ -3351,11 +3021,10 @@ class AppLocalizationsKo extends AppLocalizations {
       '위젯 바인딩 저장에 실패했어요. 잠시 후 다시 시도해 주세요.';
 
   @override
-  String get homeWidgetCoupleModeOffMessage =>
-      '커플 모드가 꺼져 있어요. 아래 버튼을 눌러 켤 수 있어요';
+  String get homeWidgetCoupleModeOffMessage => '커플 모드가 꺼져 있어요. 아래 스위치로 켤 수 있어요';
 
   @override
-  String get homeWidgetCoupleModeOffEnable => '커플 모드 켜기';
+  String get coupleModeTitle => '커플 모드';
 
   @override
   String get homeWidgetBindingMissingToast =>
@@ -5668,55 +5337,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get thisWeekLabel => '이번주';
 
   @override
-  String get guidePrivacyPageTitle => '개인정보 처리방침';
-
-  @override
-  String get guidePermissionsPageTitle => '시스템 권한';
-
-  @override
-  String get guideTipsPageTitle => '사용 팁';
-
-  @override
-  String get guidePersonalizePageTitle => '개인화 설정';
-
-  @override
-  String get guidePersonalizeSubtitle =>
-      '선택한 항목은 즉시 적용되며, 언제든지 \'설정 → 화면\'에서 변경할 수 있습니다';
-
-  @override
-  String get guidePersonalizeMenuStyleTitle => '메뉴 스타일';
-
-  @override
-  String get guidePersonalizeNavFormTitle => '탐색 형태';
-
-  @override
-  String get guidePersonalizeVisualEffectTitle => '시각 효과';
-
-  @override
-  String get guidePersonalizeVisualEffectSolid => '솔리드 카드';
-
-  @override
-  String get guideVisualEffectGaussianDesc => '배경에 실시간 가우시안 블러로 깊이감 있는 투명 효과';
-
-  @override
-  String get guideVisualEffectLiquidDesc => '리퀴드 글래스 굴절로 질감을 더함 (배터리 소모 약간 증가)';
-
-  @override
-  String get guideVisualEffectSolidDesc => '블러 없음 — 최고의 성능';
-
-  @override
-  String get guidePersonalizeThemeModeTitle => '테마 모드';
-
-  @override
-  String get guidePersonalizeSeedColorTitle => '테마 색상';
-
-  @override
-  String get guidePrevButton => '이전';
-
-  @override
-  String get guideNextButton => '다음';
-
-  @override
   String get guidePermissionsHeader => '시스템 권한 설정';
 
   @override
@@ -5725,18 +5345,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get guidePermissionsFooterHint =>
       '탭하면 시스템 설정으로 이동합니다. 앱으로 돌아오면 인식 가능한 상태가 자동으로 갱신됩니다. 자동 시작은 시스템 제한이 있으므로 시스템 페이지 스위치를 기준으로 하세요';
-
-  @override
-  String get guideTipsHeader => '사용 팁';
-
-  @override
-  String get guideTipsSubtitle => '이것들은 언제든 \'설정\'에서 찾을 수 있습니다';
-
-  @override
-  String get guidePrivacyReadBeforeUse => '사용 전 아래 내용을 읽고 동의하세요';
-
-  @override
-  String get guidePrivacyViewOnly => '개인정보, 서드파티 SDK 및 면책 사항';
 
   @override
   String holidayDataYearLabel(Object year) {
@@ -5821,145 +5429,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get textColorCurrentColor => '현재 색상';
 
   @override
-  String get themeExport => '테마 내보내기';
-
-  @override
-  String get themeImport => '테마 가져오기';
-
-  @override
-  String get themeExportSuccess => '테마가 클립보드에 복사되었습니다';
-
-  @override
-  String get themeImportSuccess => '테마를 가져왔습니다';
-
-  @override
-  String get themeImportFailed => '클립보드 내용 형식 오류';
-
-  @override
-  String get themeManageTitle => '테마 관리';
-
-  @override
-  String get themeManageSubtitle => '테마 내보내기, 가져오기, 전환';
-
-  @override
-  String get themePreset => '프리셋 테마';
-
-  @override
-  String get themeSaved => '내 테마';
-
-  @override
-  String get themeSaveCurrent => '현재 테마 저장';
-
-  @override
-  String get themeApply => '적용';
-
-  @override
-  String get themeDelete => '삭제';
-
-  @override
-  String themeDeleteConfirmMessage(String name) {
-    return '테마 \"$name\"을(를) 삭제하시겠습니까?';
-  }
-
-  @override
   String get textColorLowContrastWarning => '색상 대비가 낮아 가독성에 영향을 줄 수 있습니다';
 
   @override
-  String get themeCurrentTheme => '현재 테마';
-
-  @override
-  String themeBasedOnModified(String baseName) {
-    return '$baseName (수정됨)';
-  }
-
-  @override
-  String get themeResetToPreset => '초기화';
-
-  @override
-  String get themeUnsavedChangesTitle => '저장되지 않은 변경사항';
-
-  @override
-  String get themeUnsavedChangesMessage =>
-      '현재 테마에 저장되지 않은 변경사항이 있습니다. 저장하시겠습니까?';
-
-  @override
-  String get themeDiscardAndApply => '버리고 적용';
-
-  @override
-  String get themeNameHint => '테마 이름 입력';
-
-  @override
-  String get themePresetBlue => '기본 블루';
-
-  @override
-  String get themePresetPurple => '나이트 퍼플';
-
-  @override
-  String get themePresetGreen => '포레스트 그린';
-
-  @override
-  String get themePresetOrange => '웜 오렌지';
-
-  @override
-  String get themePresetEyeCare => '눈 보호';
-
-  @override
-  String get themePresetHighContrast => '고대비';
-
-  @override
-  String get themePresetDarkMinimal => '다크 미니멀';
-
-  @override
-  String get foruiThemeNeutral => '뉴트럴';
-
-  @override
-  String get foruiThemeZinc => '징크';
-
-  @override
-  String get foruiThemeSlate => '슬레이트';
-
-  @override
-  String get foruiThemeBlue => '블루';
-
-  @override
-  String get foruiThemeGreen => '그린';
-
-  @override
-  String get foruiThemeOrange => '오렌지';
-
-  @override
-  String get foruiThemeRed => '레드';
-
-  @override
-  String get foruiThemeRose => '로즈';
-
-  @override
-  String get foruiThemeViolet => '바이올렛';
-
-  @override
-  String get foruiThemeYellow => '옐로';
-
-  @override
   String get themeUndo => '실행 취소';
-
-  @override
-  String themeChanged(String themeName) {
-    return '$themeName로 전환되었습니다';
-  }
-
-  @override
-  String get themeRename => '이름 변경';
-
-  @override
-  String get themeDuplicate => '복사';
-
-  @override
-  String themeDuplicateCopyName(String name) {
-    return '$name 복사본';
-  }
-
-  @override
-  String get themeMoreActions => '더 보기';
 
   @override
   String get courseNatureRequired => '필수';
@@ -7918,9 +7391,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get logAppLoggerInitialized => 'App log service initialized';
 
   @override
-  String get logPrivacyConsentUpdated => 'Privacy consent status updated';
-
-  @override
   String get logAppLogRecordingEnabled => 'App log recording enabled';
 
   @override
@@ -8338,9 +7808,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get logCatAppLoggerInitialized => 'app log: ger initialized';
-
-  @override
-  String get logCatPrivacyConsentUpdated => 'privacy consent updated';
 
   @override
   String get logCatAppLogRecordingEnabled => 'app log: recording enabled';
@@ -9012,89 +8479,6 @@ class AppLocalizationsKo extends AppLocalizations {
       'Location match takes priority over date rules.';
 
   @override
-  String get frostedGlassModeLabel => '유리 모드';
-
-  @override
-  String get liquidGlassScopeSectionTitle => '액체 유리 적용 범위';
-
-  @override
-  String get liquidGlassScopePopupTitle => '드롭다운 팝업';
-
-  @override
-  String get liquidGlassScopePopupSubtitle => '유리 모드 등 설정 행에서 열리는 작은 앵커 메뉴';
-
-  @override
-  String get liquidGlassScopeSelectSheetTitle => '전체 화면 선택 패널';
-
-  @override
-  String get liquidGlassScopeSelectSheetSubtitle =>
-      '프리셋 테마, 글꼴 등 긴 목록 선택 대화상자. 기본은 블러 유지';
-
-  @override
-  String get liquidGlassScopeSheetDialogTitle => '시트 및 대화상자';
-
-  @override
-  String get liquidGlassScopeSheetDialogSubtitle => '바텀 시트, 확인 대화상자, 작업 메뉴';
-
-  @override
-  String get liquidGlassScopeHomeChromeTitle => '홈 유리 밴드';
-
-  @override
-  String get liquidGlassScopeHomeChromeSubtitle => '제목 표시줄과 요일 표시줄의 유리 배경';
-
-  @override
-  String get liquidGlassScopeDockTitle => '글래스 독 내비게이션';
-
-  @override
-  String get liquidGlassScopeDockSubtitle => '하단 플로팅 필과 수업 추가 버튼';
-
-  @override
-  String get liquidGlassScopePickerButtonsTitle => '배경화면 선택 버튼';
-
-  @override
-  String get liquidGlassScopePickerButtonsSubtitle =>
-      '배경화면 위치 선택 페이지에서 배경 위에 떠 있는 유리 버튼';
-
-  @override
-  String get frostedGlassModeFrosted => '클래식 프로스트';
-
-  @override
-  String get frostedGlassModeLiquid => '리퀴드 글래스';
-
-  @override
-  String get frostedGlassModeGaussian => '가우시안 블러';
-
-  @override
-  String get frostedGlassModeTranslucent => '반투명';
-
-  @override
-  String get frostedLiquidGlassHint => '리퀴드 글래스는 고성능 기기가 필요합니다';
-
-  @override
-  String get advancedMaterialTitle => '고급 재질';
-
-  @override
-  String get advancedMaterialEntrySubtitle => '리퀴드 글래스 매개변수 미세 조정';
-
-  @override
-  String get liquidGlassPresetLabel => '리퀴드 글래스 프리셋';
-
-  @override
-  String get liquidGlassPresetClear => '클리어';
-
-  @override
-  String get liquidGlassPresetLight => '라이트 미스트';
-
-  @override
-  String get liquidGlassPresetStandard => '표준';
-
-  @override
-  String get liquidGlassPresetDense => '덴스';
-
-  @override
-  String get liquidGlassPresetCustom => '사용자 정의';
-
-  @override
   String get courseCardSettingsTitle => '강의 카드';
 
   @override
@@ -9104,15 +8488,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get courseCardSectionLayout => '레이아웃';
 
   @override
-  String get courseCardSurfaceStyleLabel => '카드 외관';
-
-  @override
-  String get courseCardSurfaceStyleSolid => '솔리드';
-
-  @override
-  String get courseCardSurfaceStyleGaussian => '가우시안 블러';
-
-  @override
   String get courseCardSectionColor => '색상';
 
   @override
@@ -9120,42 +8495,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get collapsibleLargeTitle => '접을 수 있는 큰 제목';
-
-  @override
-  String get liquidGlassCustomExpandedTitle => '사용자 정의 매개변수';
-
-  @override
-  String get liquidGlassThicknessLabel => '두께';
-
-  @override
-  String get liquidGlassBlurLabel => '블러 강도';
-
-  @override
-  String get liquidGlassTintLabel => '색조 강도';
-
-  @override
-  String get liquidGlassLightIntensityLabel => '조명 강도';
-
-  @override
-  String get liquidGlassAmbientStrengthLabel => '환경광 강도';
-
-  @override
-  String get liquidGlassRefractiveIndexLabel => '굴절률';
-
-  @override
-  String get liquidGlassSaturationLabel => '채도';
-
-  @override
-  String get liquidGlassChromaticAberrationLabel => '색수차';
-
-  @override
-  String get liquidGlassLightAngleLabel => '조명 각도';
-
-  @override
-  String get liquidGlassVisibilityLabel => '가시성';
-
-  @override
-  String get liquidGlassResetAction => '기본값으로 초기화';
 
   @override
   String get diagnosticsEntryTitle => '진단';
@@ -9557,9 +8896,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeNavigationTitle => '홈 및 탐색';
 
   @override
-  String get homeMenuCustomizeSectionTitle => '우측 상단 메뉴';
-
-  @override
   String get homeNavigationSubtitle => '하단 바 형태·메뉴·홈 제목';
 
   @override
@@ -9646,24 +8982,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get glassDockExtraButtonSemanticLabel => '수업 추가';
 
   @override
-  String get homeMenuStyleLabel => '오른쪽 위 메뉴 스타일';
-
-  @override
-  String get homeMenuStyleList => '리스트 메뉴';
-
-  @override
-  String get homeMenuStyleGrid => '여덟 칸 격자 메뉴';
-
-  @override
-  String get homeMenuStyleListSubtitle => '앵커 텍스트 목록, 맞춤 설정';
-
-  @override
-  String get homeMenuStyleGridSubtitle => '아이콘 타일, 맞춤 설정';
-
-  @override
-  String get homeMenuCustomizeTitle => '메뉴 버튼 사용자 지정';
-
-  @override
   String homeGridCustomizeDetails(int count, int max) {
     return '$count/$max개 사용 중';
   }
@@ -9677,13 +8995,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeGridEditorEnabledTitle => '사용 중';
 
   @override
-  String get homeGridEditorAvailableTitle => '추가 가능';
-
-  @override
   String get homeGridEditorRemoveTooltip => '제거';
-
-  @override
-  String get homeGridEditorAddTooltip => '추가';
 
   @override
   String get homeGridEditorResetAction => '기본 배열로 되돌리기';
@@ -9693,10 +9005,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeGridEditorMaxReached => '한도 초과';
-
-  @override
-  String get homeGridEditorPinnedTooltip =>
-      '이 항목은 이 페이지를 다시 여는 경로이므로 제거할 수 없습니다';
 
   @override
   String get homeMenuCategoryFeatures => '기능';

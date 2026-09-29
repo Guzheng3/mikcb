@@ -11,8 +11,8 @@ import org.json.JSONObject
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
-object UmengDiagnosticReporter {
-    private const val TAG = "UmengDiagnostic"
+object AppDiagnosticReporter {
+    private const val TAG = "AppDiagnostic"
     private const val LEVEL_ERROR = "error"
     private const val LEVEL_WARN = "warn"
     private const val LEVEL_INFO = "info"
@@ -348,7 +348,7 @@ object UmengDiagnosticReporter {
             "model" to Build.MODEL,
             "sdkInt" to Build.VERSION.SDK_INT,
             "versionName" to resolveVersionName(context),
-            "channel" to BuildConfig.UMENG_CHANNEL,
+            "channel" to BuildConfig.FLAVOR,
             "hasNotificationPermission" to hasNotificationPermission(context),
             "hasPromotedPermissionDeclared" to isPromotedPermissionDeclared(context),
             "canPostPromotedNotifications" to canPostPromotedNotifications(context),

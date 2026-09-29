@@ -9,7 +9,7 @@ import 'common.dart';
 /// 同组演示均用 [GroupCard] 收拢为圆角卡片（TextField / VerticalSlider 因
 /// 布局需要用 [ShowcaseBlock]）；列表项统一用 [MiuixBasicComponent] 承载
 /// 标签 + 控件，与 miuix 设置页布局保持一致；所有图标使用 [MiuixIcon] +
-/// [MiuixIcons.extended] 矢量图标。
+/// [miuixIconByName] 名称映射。
 class InputsShowcase extends StatefulWidget {
   const InputsShowcase({super.key});
 
@@ -92,7 +92,7 @@ class _InputsShowcaseState extends State<InputsShowcase> {
                 leadingIcon: Padding(
                   padding: const EdgeInsets.only(left: 16, right: 8),
                   child: MiuixIcon(
-                    vector: MiuixIcons.extended.byName('lock'),
+                    icon: miuixIconByName('lock'),
                     size: 22,
                   ),
                 ),
@@ -103,14 +103,14 @@ class _InputsShowcaseState extends State<InputsShowcase> {
                 leadingIcon: Padding(
                   padding: const EdgeInsets.only(left: 16, right: 8),
                   child: MiuixIcon(
-                    vector: MiuixIcons.extended.byName('search'),
+                    icon: miuixIconByName('search'),
                     size: 22,
                   ),
                 ),
                 trailingIcon: Padding(
                   padding: const EdgeInsets.only(right: 16, left: 8),
                   child: MiuixIcon(
-                    vector: MiuixIcons.extended.byName('clear'),
+                    icon: miuixIconByName('clear'),
                     size: 22,
                   ),
                 ),

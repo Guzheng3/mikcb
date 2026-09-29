@@ -75,7 +75,7 @@ void main() {
       await storage.init();
 
       // 写入一些数据
-      await storage.setAcceptedPrivacyPolicy(true);
+      await storage.setHasSeenUserGuide(true);
 
       // 再次调用 init() 应该立即返回
       final stopwatch = Stopwatch()..start();
@@ -86,7 +86,7 @@ void main() {
       expect(stopwatch.elapsedMilliseconds, lessThan(10));
 
       // 数据应该仍然存在
-      final result = await storage.hasAcceptedPrivacyPolicy();
+      final result = await storage.hasSeenUserGuide();
       expect(result, isTrue);
     });
   });

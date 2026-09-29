@@ -169,14 +169,6 @@ class _OpenSourceLicensesScreenState extends State<OpenSourceLicensesScreen> {
                       height: 1.45,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    l10n.aboutOpenSourceLicensesExtraUmeng,
-                    style: HyperosTypography.listDetail(context).copyWith(
-                      color: HyperosColors.primaryText(context),
-                      height: 1.45,
-                    ),
-                  ),
                 ],
               ),
             ),

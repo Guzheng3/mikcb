@@ -2,7 +2,6 @@ import 'dart:math';
 
 import '../domain/course_domain.dart';
 import '../models/course.dart';
-import 'course_color_palette.dart';
 import 'import_random_course_colors.dart';
 
 /// 重刷配色的分组键：按共享课程名（与课程组编辑页同口径）。
@@ -19,13 +18,11 @@ String buildCourseRecolorGroupKey(Course course) =>
 List<Course> applySeedCourseRecolor(
   List<Course> courses, {
   required int seed,
-  required String colorGroupId,
   required bool assignMatchingTextColor,
 }) {
   return applyRandomImportCourseColors(
     courses,
     random: Random(seed),
-    palette: courseColorGroupPalette(colorGroupId),
     assignMatchingTextColor: assignMatchingTextColor,
     groupKeyBuilder: buildCourseRecolorGroupKey,
   );
@@ -70,14 +67,13 @@ class CourseRecolorSnapshotEntry {
 /// 一套已应用的配色方案，供「上一套 / 下一套」往返切换。
 ///
 /// 两类记录：
-/// - 种子批次（[seed] 非空）：记录随机种子与当时的颜色组/文字色开关，
-///   同一课程列表下重放即逐色还原；
+/// - 种子批次（[seed] 非空）：记录随机种子与当时的文字色开关，同一课程
+///   列表下重放即逐色还原；
 /// - 快照记录（[snapshotEntries] 非空）：逐组保存刷色前的颜色与文字色，
 ///   用于回到导入/刷色前的原样（含手工挑过的颜色）。
 class CourseRecolorScheme {
   const CourseRecolorScheme.seed({
     required this.seed,
-    required this.colorGroupId,
     required this.assignMatchingTextColor,
     required this.createdAt,
   }) : snapshotEntries = null;
@@ -87,12 +83,10 @@ class CourseRecolorScheme {
     required Map<String, CourseRecolorSnapshotEntry> entries,
     required this.createdAt,
   }) : seed = null,
-       colorGroupId = kCourseColorGroupAllId,
        assignMatchingTextColor = false,
        snapshotEntries = Map.unmodifiable(entries);
 
   final int? seed;
-  final String colorGroupId;
   final bool assignMatchingTextColor;
   final Map<String, CourseRecolorSnapshotEntry>? snapshotEntries;
   final DateTime createdAt;
@@ -109,7 +103,6 @@ class CourseRecolorScheme {
         }
       else ...{
         'seed': seed,
-        'colorGroupId': colorGroupId,
         'assignMatchingTextColor': assignMatchingTextColor,
       },
     };
@@ -143,17 +136,16 @@ class CourseRecolorScheme {
     if (seed is! int) {
       return null;
     }
-    // colorGroupId/assignMatchingTextColor 与 snapshot 条目同口径：类型
-    // 垃圾返回 null 丢弃该条（曾用裸 cast，TypeError 会穿透到 _loadSchemes
-    // 的整体 catch，一条坏种子记录就静默清空全部历史）；字段缺失仍兜底默认值。
-    final colorGroupId = json['colorGroupId'];
+    // assignMatchingTextColor 与 snapshot 条目同口径：类型垃圾返回 null
+    // 丢弃该条（曾用裸 cast，TypeError 会穿透到 _loadSchemes 的整体 catch，
+    // 一条坏种子记录就静默清空全部历史）；字段缺失仍兜底默认值。
+    // 旧记录里的 colorGroupId 读时直接忽略（配色组概念已移除）。
     final assignMatchingTextColor = json['assignMatchingTextColor'];
-    if (colorGroupId is! String? || assignMatchingTextColor is! bool?) {
+    if (assignMatchingTextColor is! bool?) {
       return null;
     }
     return CourseRecolorScheme.seed(
       seed: seed,
-      colorGroupId: colorGroupId ?? kCourseColorGroupAllId,
       assignMatchingTextColor: assignMatchingTextColor ?? false,
       createdAt: createdAt,
     );
@@ -204,7 +196,6 @@ List<Course> applyCourseRecolorScheme(
   return applySeedCourseRecolor(
     courses,
     seed: scheme.seed!,
-    colorGroupId: scheme.colorGroupId,
     assignMatchingTextColor: scheme.assignMatchingTextColor,
   );
 }

@@ -32,7 +32,7 @@ class _GlobalTimetableSettingsScreen extends StatelessWidget {
               children: [
                 _MiuixSettingsPreference(
                   startAction: _settingsIconBadge(
-                    MiuixIcons.extended.byName('tune')!,
+                    miuixIconByName('tune')!,
                     HyperosIconColors.purple,
                   ),
                   title: l10n.generalSettingsTitle,
@@ -43,7 +43,7 @@ class _GlobalTimetableSettingsScreen extends StatelessWidget {
                 ),
                 _MiuixSettingsPreference(
                   startAction: _settingsIconBadge(
-                    MiuixIcons.extended.byName('theme')!,
+                    miuixIconByName('theme')!,
                     HyperosIconColors.orange,
                   ),
                   title: l10n.appearanceTitle,
@@ -56,7 +56,7 @@ class _GlobalTimetableSettingsScreen extends StatelessWidget {
                 ),
                 _MiuixSettingsPreference(
                   startAction: _settingsIconBadge(
-                    MiuixIcons.extended.byName('months')!,
+                    miuixIconByName('months')!,
                     HyperosIconColors.blue,
                   ),
                   title: l10n.timetablePageSettingsTitle,
@@ -69,7 +69,7 @@ class _GlobalTimetableSettingsScreen extends StatelessWidget {
                 ),
                 _MiuixSettingsPreference(
                   startAction: _settingsIconBadge(
-                    MiuixIcons.extended.byName('gridView')!,
+                    miuixIconByName('gridView')!,
                     HyperosIconColors.teal,
                   ),
                   title: l10n.courseCardSettingsTitle,

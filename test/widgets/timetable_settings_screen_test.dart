@@ -48,7 +48,7 @@ void _seedInitializedPrefs() {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const homeWidgetChannel = MethodChannel('vip.qinghan.withu/home_widget');
-  const analyticsChannel = MethodChannel('vip.qinghan.withu/umeng_analytics');
+  const analyticsChannel = MethodChannel('vip.qinghan.withu/app_diagnostics');
   const liveChannel = MethodChannel('vip.qinghan.withu/miui_live');
 
   setUp(() {
@@ -217,9 +217,9 @@ void main() {
   // 2026-08-30 OPPO 反馈回归锚点：用户自添加假期覆盖当天后，自检永远查不出
   // 真正原因——状态卡兜底报「原生实时服务未运行」、测试 toast 只解释「上课前
   // 提醒」。假日门在选课最上游（预设课也一并被拦），必须在两处显式点名假期。
-  testWidgets('island status card blames holiday when holiday blocks the island', (
-    tester,
-  ) async {
+  testWidgets(
+    'island status card blames holiday when holiday blocks the island',
+    (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -245,11 +245,12 @@ void main() {
       scrollable: _scrollableUnder(diagnosticsList),
     );
     expect(find.textContaining('超级岛在假期期间不显示'), findsOneWidget);
-  });
+    },
+  );
 
-  testWidgets('live testing trigger reports holiday gate before hidden-preset hint', (
-    tester,
-  ) async {
+  testWidgets(
+    'live testing trigger reports holiday gate before hidden-preset hint',
+    (tester) async {
     final provider = await createInitializedTestProvider(tester);
     await runRealAsync(tester, () {
       return provider.updateTimetableSettings(
@@ -290,11 +291,14 @@ void main() {
     );
     // 核心回归锚点：假期时提示必须指向假期（旧代码此时报「已注入但此刻不会
     // 弹出」或「无课」）；两种旧文案都不等于假期文案，任一回归都会在此失败。
-  });
+    },
+  );
 
   // 选课测试：强制起岛、与时间无关。payload 必须跳过课表校验且锁定单一
   // 恒定阶段（调度暂停期间原生阶段切换分支会收岛，见 LiveCourseTestStage 注释）。
-  testWidgets('course island test force-starts single-stage payload', (tester) async {
+  testWidgets('course island test force-starts single-stage payload', (
+    tester,
+  ) async {
     final provider = await createInitializedTestProvider(tester);
     final course = Course(
       id: 'c-island-test',
@@ -356,10 +360,7 @@ void main() {
     // 课前变体：合成开课锚在约 3 分钟后的未来。
     expect(startAt, greaterThan(DateTime.now().millisecondsSinceEpoch - 5000));
     expect(endAt, greaterThan(startAt));
-    expect(
-      (payloads.single['currentCourse'] as Map)['name'] as String,
-      '高等数学',
-    );
+    expect((payloads.single['currentCourse'] as Map)['name'] as String, '高等数学');
 
     // 课中变体：开课锚定在过去，课中开关强制放开。
     liveTestingTriggerInFlight = false;
@@ -383,7 +384,9 @@ void main() {
     );
   });
 
-  testWidgets('live testing screen exposes the course test entry', (tester) async {
+  testWidgets('live testing screen exposes the course test entry', (
+    tester,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(800, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -447,10 +450,7 @@ void main() {
       200,
       scrollable: _scrollableUnder(widgetList),
     );
-    expect(
-      find.text('桌面上还没有今日课程卡片，先添加一张再回来绑定'),
-      findsOneWidget,
-    );
+    expect(find.text('桌面上还没有今日课程卡片，先添加一张再回来绑定'), findsOneWidget);
 
     // 系统在用户往桌面加卡片时不会通知 App 界面：回到前台靠 resumed
     // 兜底重查，列表从空态变为可绑定卡片。
@@ -469,9 +469,6 @@ void main() {
       scrollable: _scrollableUnder(widgetList),
     );
     expect(find.text('跟随当前课表'), findsOneWidget);
-    expect(
-      find.text('桌面上还没有今日课程卡片，先添加一张再回来绑定'),
-      findsNothing,
-    );
+    expect(find.text('桌面上还没有今日课程卡片，先添加一张再回来绑定'), findsNothing);
   });
 }

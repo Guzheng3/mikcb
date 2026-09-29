@@ -22,8 +22,6 @@ class AppLogService {
 
   static final AppLogService instance = AppLogService._internal();
 
-  static const String _acceptedPrivacyPolicyKey =
-      'flutter.accepted_privacy_policy';
   static const String _timetableSettingsKey = 'flutter.timetable_settings';
   static const String _profilesKey = 'flutter.timetable_profiles';
   static const String _activeProfileIdKey = 'flutter.active_timetable_profile_id';
@@ -32,7 +30,6 @@ class AppLogService {
   static const String _logTitleKey = AppLogMessages.logExportTitle;
 
   bool _initialized = false;
-  bool _privacyAccepted = false;
   bool _loggingEnabled = false;
   // 连续写失败计数：日志写失败本身被本类的 catch 吞掉（日志不能破坏
   // 业务流），若磁盘满等故障持续，所有下游静默失败将同时失去观测手段。
@@ -56,11 +53,10 @@ class AppLogService {
     // 注释的兜底原则一致：日志系统故障不能破坏业务流，最坏情况只是失去观测。
     try {
       final prefs = await SharedPreferences.getInstance();
-      _privacyAccepted = prefs.getBool(_acceptedPrivacyPolicyKey) ?? false;
       _loggingEnabled = _readLoggingEnabledFromPrefs(prefs);
     } catch (_) {
-      // 保持默认值（privacy=false、logging=false），后续 log() 会被
-      // _shouldRecord 直接过滤，不会产生新的写入路径。
+      // 保持默认值（logging=false），后续 log() 会被 _shouldRecord 直接
+      // 过滤，不会产生新的写入路径。
     }
     try {
       _packageInfo = await PackageInfo.fromPlatform();
@@ -77,19 +73,7 @@ class AppLogService {
           'version': _packageInfo?.version ?? '',
           'buildNumber': _packageInfo?.buildNumber ?? '',
           'loggingEnabled': _loggingEnabled,
-          'privacyAccepted': _privacyAccepted,
         },
-      );
-    }
-  }
-
-  Future<void> updatePrivacyAccepted(bool value) async {
-    _privacyAccepted = value;
-    if (value && _loggingEnabled) {
-      await info(
-        'privacy_consent_updated',
-        AppLogMessages.privacyConsentUpdated,
-        extras: {'accepted': value},
       );
     }
   }
@@ -388,7 +372,6 @@ class AppLogService {
   @visibleForTesting
   void resetForTesting() {
     _initialized = false;
-    _privacyAccepted = false;
     _loggingEnabled = false;
     _packageInfo = null;
     _writeQueue = Future<void>.value();
@@ -402,7 +385,7 @@ class AppLogService {
     if (force && !_loggingEnabled) {
       return false;
     }
-    return _privacyAccepted && _loggingEnabled;
+    return _loggingEnabled;
   }
 
   bool _readLoggingEnabledFromPrefs(SharedPreferences prefs) {

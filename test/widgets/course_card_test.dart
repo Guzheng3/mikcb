@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:university_timetable/models/course.dart';
-import 'package:university_timetable/models/timetable_settings.dart';
 import 'package:university_timetable/widgets/course_card.dart';
 
 import '../helpers_test_app.dart';
@@ -74,14 +73,14 @@ void main() {
     expect(detailInk.a, closeTo(0.7, 0.01));
   });
 
-  testWidgets('gaussian card over bright wallpaper auto-flips to dark ink', (
-    tester,
-  ) async {
-    // 回归：玻璃档此前原样保留用户/导入墨色，亮壁纸上白字洗没、橙字突兀。
-    // 玻璃规则：彩色墨回落自动黑白，中性墨对比度不足同样回落，详情跟随标题。
+  testWidgets('solid card keeps an explicitly configured white ink on a pale '
+      'card', (tester) async {
+    // 回归：设置页「课程字体颜色」统一设成白色时，浅色/粉彩卡底对比度不足
+    // 会被自动翻成近黑字，同一套设置下有的卡白字有的卡黑字。用户显式选定的
+    // 字色在实心卡上一律原样生效。
     final course = Course(
-      id: 'course-3',
-      name: '操作系统',
+      id: 'course-4',
+      name: '大学物理',
       teacher: '',
       location: '',
       dayOfWeek: 1,
@@ -89,8 +88,8 @@ void main() {
       endSection: 2,
       startTime: '08:00',
       endTime: '09:40',
-      color: '#FF9800',
-      description: '进程与线程',
+      color: '#FFCC80',
+      description: '力学',
     );
 
     await tester.pumpWidget(
@@ -100,24 +99,20 @@ void main() {
           showTeacher: false,
           showLocation: false,
           showDescription: true,
-          surfaceStyle: CourseCardSurfaceStyle.gaussian,
-          wallpaperLuminance: 0.8,
           titleColorHex: '#FFFFFF',
-          detailColorHex: '#B34700',
+          detailColorHex: '#FFFFFF',
         ),
       ),
     );
 
-    // effective ≈ 0.62：白字对比度 1.6 < 3 → 自动黑。
-    final title = tester.widget<Text>(find.text('操作系统'));
-    expect(title.style?.color, const Color(0xFF1A1A1A));
+    final title = tester.widget<Text>(find.text('大学物理'));
+    expect(title.style?.color, const Color(0xFFFFFFFF));
 
-    // 橙色详情（彩色墨）在玻璃档一律跟随标题墨。
-    final description = tester.widget<Text>(find.text('进程与线程'));
+    final description = tester.widget<Text>(find.text('力学'));
     final detailInk = description.style!.color!;
-    expect(detailInk.r, closeTo(0x1A / 255, 0.002));
-    expect(detailInk.g, closeTo(0x1A / 255, 0.002));
-    expect(detailInk.b, closeTo(0x1A / 255, 0.002));
+    expect(detailInk.r, closeTo(1.0, 0.001));
+    expect(detailInk.g, closeTo(1.0, 0.001));
+    expect(detailInk.b, closeTo(1.0, 0.001));
     expect(detailInk.a, closeTo(0.7, 0.01));
   });
 }

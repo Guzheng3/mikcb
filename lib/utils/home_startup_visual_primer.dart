@@ -5,7 +5,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 
 import '../models/timetable_settings.dart';
-import '../ui/hyperos/frosted/frosted_appearance.dart';
 import '../widgets/preblurred_wallpaper_glass.dart';
 import 'home_page_background.dart';
 import 'home_page_backdrop_image_store.dart';
@@ -61,17 +60,9 @@ abstract final class HomeStartupVisualPrimer {
       }
       final devicePixelRatio = _devicePixelRatio();
       final appearance = settings.frostedAppearance;
-      final sigma = resolveHomePreblurSigma(
-        gaussianCardsDrive:
-            settings.courseCardSurfaceStyle == CourseCardSurfaceStyle.gaussian,
-        // 与首页玻璃带消费点同判：家族开关关闭时按磨砂 sigma 预热，
-        // 否则预热位图和首帧实际材质不一致。
-        liquidGlassChrome:
-            appearance.glassMode == FrostedGlassMode.liquidGlass &&
-            appearance.liquidGlassHomeChromeEnabled,
-        sheetBlurSigma: appearance.sheetBlurSigma,
-        liquidGlassTunedBlur: appearance.liquidGlassTuning?.blur,
-      );
+      // 与首页消费点同判：预模糊位图统一按磨砂 sigma 预热，否则预热位图
+      // 和首帧实际材质不一致。
+      final sigma = appearance.sheetBlurSigma;
 
       // 亮度带单独 await：避免用列表下标对齐可选的预模糊任务。
       final bandsFuture = sampleHomePageWallpaperLuminanceBands(path);

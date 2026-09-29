@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_miuix/miuix.dart';
 
+export 'package:university_timetable/ui/hyperos/miuix_icon_compat.dart';
+
 /// 内容区最大宽度：宽屏（横屏/桌面）下把演示内容限宽居中，避免组件被拉得过长。
 /// 窄屏（手机）实际宽度小于此值，不受影响。
 const double _kMaxContentWidth = 720;

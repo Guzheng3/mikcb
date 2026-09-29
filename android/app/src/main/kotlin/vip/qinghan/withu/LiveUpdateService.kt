@@ -129,8 +129,8 @@ class LiveUpdateService : Service() {
                 this["lastStopReason"] = lastStopReason
             }
             val recentDiagnostics = linkedMapOf<String, Any?>(
-                "enabled" to UmengDiagnosticReporter.isLiveDiagnosticsEnabled(context),
-                "tail" to UmengDiagnosticReporter.readLiveDiagnosticsTail(context),
+                "enabled" to AppDiagnosticReporter.isLiveDiagnosticsEnabled(context),
+                "tail" to AppDiagnosticReporter.readLiveDiagnosticsTail(context),
             )
 
             return linkedMapOf(
@@ -408,7 +408,7 @@ class LiveUpdateService : Service() {
                 if (hasStartedForeground && resolveStage(now) != null) {
                     return START_STICKY
                 }
-                UmengDiagnosticReporter.record(
+                AppDiagnosticReporter.record(
                     context = applicationContext,
                     category = "live_update_service_missing_payload",
                     message = DiagnosticLogMessages.LIVE_UPDATE_SERVICE_MISSING_PAYLOAD,
@@ -524,7 +524,7 @@ class LiveUpdateService : Service() {
             lastCriticalTimeText = ""
             markServiceRunning()
 
-            UmengDiagnosticReporter.record(
+            AppDiagnosticReporter.record(
                 context = applicationContext,
                 category = "live_update_service_started",
                 message = DiagnosticLogMessages.LIVE_UPDATE_SERVICE_STARTED,
@@ -556,7 +556,7 @@ class LiveUpdateService : Service() {
             START_STICKY
         } catch (e: Exception) {
             markServiceStopped(getString(R.string.stop_service_start_failed))
-            UmengDiagnosticReporter.report(
+            AppDiagnosticReporter.report(
                 context = applicationContext,
                 category = "live_update_service_start_failed",
                 message = DiagnosticLogMessages.LIVE_UPDATE_SERVICE_START_FAILED,
@@ -607,7 +607,7 @@ class LiveUpdateService : Service() {
             .edit()
             .putLong("last_task_removed_at", System.currentTimeMillis())
             .apply()
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = applicationContext,
             category = "live_update_task_removed",
             message = DiagnosticLogMessages.LIVE_UPDATE_TASK_REMOVED,
@@ -625,7 +625,7 @@ class LiveUpdateService : Service() {
         )
         if (resumed) {
             // 有活跃课程会话被重新拉起来了：保留当前那一帧，什么也不切换。
-            UmengDiagnosticReporter.record(
+            AppDiagnosticReporter.record(
                 context = applicationContext,
                 category = "live_update_task_removed_resumed",
                 message = DiagnosticLogMessages.LIVE_UPDATE_TASK_REMOVED_RESUMED,
@@ -1063,7 +1063,7 @@ class LiveUpdateService : Service() {
         }
         // 与手动打开一致：一次手动取消即代表本节课不再自动执行
         BeforeClassQuickActionRestore.markTriggerHandled(applicationContext, startAtMillis)
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = applicationContext,
             category = "live_update_before_class_quick_action",
             message = DiagnosticLogMessages.LIVE_UPDATE_BEFORE_CLASS_QUICK_ACTION,
@@ -1126,7 +1126,7 @@ class LiveUpdateService : Service() {
             applicationContext,
             startAtMillis,
         )
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = applicationContext,
             category = "live_update_before_class_quick_action",
             message = DiagnosticLogMessages.LIVE_UPDATE_BEFORE_CLASS_QUICK_ACTION,
@@ -1185,7 +1185,7 @@ class LiveUpdateService : Service() {
 
     private fun dismissStatusBarStage() {
         markServiceStopped(getString(R.string.stop_status_bar_dismissed))
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = applicationContext,
             category = "live_update_status_bar_dismissed",
             message = DiagnosticLogMessages.LIVE_UPDATE_STATUS_BAR_DISMISSED,
@@ -2680,7 +2680,7 @@ class LiveUpdateService : Service() {
 
         if (Build.VERSION.SDK_INT >= 36) {
             if (shouldPromote && (hasPromotableCharacteristics != true || !canPostPromoted)) {
-                UmengDiagnosticReporter.record(
+                AppDiagnosticReporter.record(
                     context = applicationContext,
                     category = "live_update_not_promoted",
                     message = DiagnosticLogMessages.LIVE_UPDATE_NOT_PROMOTED,
@@ -2694,7 +2694,7 @@ class LiveUpdateService : Service() {
                         "miuiIslandExpandedIconMode" to miuiIslandExpandedIconMode,
                     )
                 )
-                UmengDiagnosticReporter.report(
+                AppDiagnosticReporter.report(
                     context = applicationContext,
                     category = "live_update_promoted_not_shown",
                     message = DiagnosticLogMessages.LIVE_UPDATE_PROMOTED_NOT_SHOWN,
@@ -2725,7 +2725,7 @@ class LiveUpdateService : Service() {
     private fun stopAndRemoveNotification() {
         restoreBeforeClassQuickActionIfClassEnded()
         markServiceStopped(getString(R.string.stop_reminder_ended))
-        UmengDiagnosticReporter.record(
+        AppDiagnosticReporter.record(
             context = applicationContext,
             category = "live_update_service_stopped",
             message = DiagnosticLogMessages.LIVE_UPDATE_SERVICE_STOPPED,

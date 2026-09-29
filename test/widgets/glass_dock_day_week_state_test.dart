@@ -12,7 +12,6 @@ import 'package:university_timetable/providers/timetable_provider.dart';
 import 'package:university_timetable/screens/timetable_screen.dart';
 import 'package:university_timetable/services/storage_service.dart';
 import 'package:university_timetable/ui/hyperos/frosted/frosted_appearance.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../helpers_test_app.dart';
 
@@ -124,7 +123,7 @@ void main() {
     final week5Header = find.byKey(ValueKey('weekday-header-5-$today'));
     expect(week5Header, findsOneWidget);
 
-    tester.widget<GlassTabBar>(find.byType(GlassTabBar)).onTabSelected(0);
+    await tester.tap(find.text('日课表').last);
     await tester.pump();
     expect(
       find.byKey(const ValueKey('timetable-day-view-panel')),
@@ -192,7 +191,7 @@ void main() {
       findsOneWidget,
     );
 
-    tester.widget<GlassTabBar>(find.byType(GlassTabBar)).onTabSelected(1);
+    await tester.tap(find.text('周课表').last);
     await tester.pump();
     await tester.pump(const Duration(seconds: 2));
 

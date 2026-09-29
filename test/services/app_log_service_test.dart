@@ -32,11 +32,8 @@ void main() {
           .setMockMethodCallHandler(pathProviderChannel, null);
     });
 
-    SharedPreferences.setMockInitialValues({
-      'flutter.accepted_privacy_policy': true,
-    });
+    SharedPreferences.setMockInitialValues({});
     await AppLogService.instance.initialize();
-    await AppLogService.instance.updatePrivacyAccepted(true);
     await AppLogService.instance.updateLoggingEnabled(true);
     await AppLogService.instance.info('watch_test', 'entry-1');
 

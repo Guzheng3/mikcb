@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../models/timetable_settings.dart';
-import 'home_page_background.dart';
-
 /// Shared preset colors for course cards (manual add, import random, LAN edit).
 ///
 /// 色板组成：以 Tailwind CSS v3 标准色阶（300–700，共 17 个彩色族 + slate/stone
@@ -75,184 +72,31 @@ const List<String> kCourseColorQuickPickHexes = [
 ];
 
 // ---------------------------------------------------------------------------
-// 随机配色颜色组
+// 随机配色预设色板
 // ---------------------------------------------------------------------------
 
-/// 「全部颜色」颜色组的保留 id，对应 [kPresetCourseColorHexes]。
-const String kCourseColorGroupAllId = 'all';
-
-/// 活泼系色组 id，同时作为导入随机配色的默认色组。
-const String kVibrantCourseColorGroupId = 'vibrant';
-
-/// 一组可用于导入随机配色的预设颜色组。
+/// 随机配色（导入随机配色 / 一键重刷）的专用色板。
 ///
-/// 组名沿用配色站通行的风格标签（Color Hunt 的 Pastel / Dark 等主题词）与
-/// 设计圈对同类色系的通行叫法（马卡龙色系 / 活泼系 / 深色系）；显示名在
-/// l10n（colorGroup* 键）里定义，这里只存 id 与色值。色值全部取自
-/// [kPresetCourseColorHexes]（Tailwind v3 MIT + Material Apache 2.0），
-/// 无新增版权面。
-class CourseColorGroup {
-  const CourseColorGroup({required this.id, required this.hexes});
-
-  /// 持久化到 SharedPreferences 的稳定标识。
-  final String id;
-
-  /// 该组随机取色的色值（均为 [kPresetCourseColorHexes] 的子集）。
-  final List<String> hexes;
-}
-
-/// 马卡龙系：各族 300 浅阶，淡雅柔和（浅卡靠墨色守卫自动回落深字）。
-const List<String> kPastelCourseColorGroupHexes = [
-  '#FCA5A5',
-  '#FDBA74',
-  '#FCD34D',
-  '#FDE047',
-  '#BEF264',
-  '#86EFAC',
-  '#6EE7B7',
-  '#5EEAD4',
-  '#67E8F9',
-  '#7DD3FC',
-  '#93C5FD',
-  '#A5B4FC',
-  '#C4B5FD',
-  '#D8B4FE',
-  '#F0ABFC',
-  '#F9A8D4',
-  '#FDA4AF',
+/// 与手动调色盘的全量色板 [kPresetCourseColorHexes] 分开维护：这里是 30 个
+/// 中高饱和、色相分散的色值，白字对比 2.14–4.47。全部低于 WCAG AA 正文线
+/// （4.5），配白字属于观感优先的选择——实心卡上显式配置的字色原样生效，见
+/// [resolveReadableCourseCardTitleColor] 的 `userChosenInk`。
+///
+/// 色相覆盖红 → 橙 → 绿 → 翠绿 → 青绿 → 青 → 天蓝 → 蓝 → 靛蓝 → 紫罗兰 →
+/// 紫 → 品红 → 粉 → 玫红，并按阶位分成三段明度（500 中阶 / 600 深阶 /
+/// 400 浅阶），不含灰族与土棕族。三段明度是 `orderPaletteByMaxSeparation`
+/// 拉开取色间隔的前提：同色相的三个阶位之间也有可观的感知距离。
+const List<String> kRandomCourseColorHexes = [
+  // 500 中阶
+  '#EF4444', '#F97316', '#22C55E', '#10B981', '#14B8A6', '#06B6D4',
+  '#0EA5E9', '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF',
+  '#EC4899', '#F43F5E',
+  // 600 深阶
+  '#059669', '#0D9488', '#0891B2', '#0284C7',
+  // 400 浅阶
+  '#38BDF8', '#818CF8', '#F87171', '#FB923C', '#A78BFA', '#FF9800',
+  '#EA580C', '#FF5722', '#FB7185', '#F472B6', '#E91E63', '#C084FC',
 ];
-
-/// 活泼系：各族 500 中阶，明快饱和，随机导入的默认观感区间。
-const List<String> kVibrantCourseColorGroupHexes = [
-  '#EF4444',
-  '#F97316',
-  '#F59E0B',
-  '#EAB308',
-  '#84CC16',
-  '#22C55E',
-  '#10B981',
-  '#14B8A6',
-  '#06B6D4',
-  '#0EA5E9',
-  '#3B82F6',
-  '#6366F1',
-  '#8B5CF6',
-  '#A855F7',
-  '#D946EF',
-  '#EC4899',
-  '#F43F5E',
-];
-
-/// 深色系：各族 700 深阶，沉稳内敛（白字对比充裕）。
-const List<String> kDeepCourseColorGroupHexes = [
-  '#B91C1C',
-  '#C2410C',
-  '#B45309',
-  '#A16207',
-  '#4D7C0F',
-  '#15803D',
-  '#047857',
-  '#0F766E',
-  '#0E7490',
-  '#0369A1',
-  '#1D4ED8',
-  '#4338CA',
-  '#6D28D9',
-  '#7E22CE',
-  '#A21CAF',
-  '#BE185D',
-  '#BE123C',
-  '#334155',
-  '#44403C',
-];
-
-/// 多巴胺系：整条彩虹的糖果 400 亮阶铺底 + 紫/品红/粉/玫四枚 500 深糖锚点，
-/// 高饱和撞色、零灰调零土调（亮阶白墨居多少黑墨点睛，深糖锚点白墨充裕）。
-const List<String> kDopamineCourseColorGroupHexes = [
-  '#F87171',
-  '#FB923C',
-  '#FBBF24',
-  '#FACC15',
-  '#A3E635',
-  '#4ADE80',
-  '#34D399',
-  '#2DD4BF',
-  '#22D3EE',
-  '#38BDF8',
-  '#60A5FA',
-  '#818CF8',
-  '#A78BFA',
-  '#A855F7',
-  '#D946EF',
-  '#EC4899',
-  '#F43F5E',
-];
-
-/// 落日系：全暖域同温层配色，金黄→琥珀→橘→珊瑚红→玫粉→暮紫收尾；
-/// 只取暖族中高饱和阶位（不碰 600+ 土棕琥珀），任意两卡相邻不打架。
-const List<String> kSunsetCourseColorGroupHexes = [
-  '#FACC15',
-  '#FBBF24',
-  '#F59E0B',
-  '#FF9800',
-  '#FB923C',
-  '#F97316',
-  '#EA580C',
-  '#FF5722',
-  '#F87171',
-  '#EF4444',
-  '#FB7185',
-  '#F43F5E',
-  '#F472B6',
-  '#EC4899',
-  '#E91E63',
-  '#C084FC',
-  '#A855F7',
-];
-
-/// 海洋系：全冷域同温层配色，翠绿浅滩→青绿→天蓝→靛蓝深海由浅入深；
-/// 600 深阶保白墨充裕，整周课表冷色统一有秩序感。
-const List<String> kOceanCourseColorGroupHexes = [
-  '#34D399',
-  '#10B981',
-  '#059669',
-  '#2DD4BF',
-  '#14B8A6',
-  '#0D9488',
-  '#22D3EE',
-  '#06B6D4',
-  '#0891B2',
-  '#38BDF8',
-  '#0EA5E9',
-  '#0284C7',
-  '#60A5FA',
-  '#3B82F6',
-  '#2563EB',
-  '#818CF8',
-  '#6366F1',
-];
-
-/// 预设颜色组（「全部颜色」不入列，由 [kCourseColorGroupAllId] 单独表示）。
-const List<CourseColorGroup> kCourseColorGroups = [
-  CourseColorGroup(id: 'pastel', hexes: kPastelCourseColorGroupHexes),
-  CourseColorGroup(id: 'vibrant', hexes: kVibrantCourseColorGroupHexes),
-  CourseColorGroup(id: 'deep', hexes: kDeepCourseColorGroupHexes),
-  CourseColorGroup(id: 'dopamine', hexes: kDopamineCourseColorGroupHexes),
-  CourseColorGroup(id: 'sunset', hexes: kSunsetCourseColorGroupHexes),
-  CourseColorGroup(id: 'ocean', hexes: kOceanCourseColorGroupHexes),
-];
-
-/// 解析随机取色色板：'all' 与未知 id（历史残留值）都兜底回全量色板。
-List<String> courseColorGroupPalette(String groupId) {
-  if (groupId != kCourseColorGroupAllId) {
-    for (final group in kCourseColorGroups) {
-      if (group.id == groupId) {
-        return group.hexes;
-      }
-    }
-  }
-  return kPresetCourseColorHexes;
-}
 
 String? _normalizeColorHex(String? hex) {
   if (hex == null) {
@@ -356,17 +200,6 @@ double courseCardContrastRatio(Color a, Color b) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-/// Whether wallpaper shows through the given surface style, so the solid card
-/// color is no longer the reliable background for contrast checks.
-bool courseCardSurfaceShowsWallpaper(CourseCardSurfaceStyle style) {
-  switch (style) {
-    case CourseCardSurfaceStyle.solid:
-      return false;
-    case CourseCardSurfaceStyle.gaussian:
-      return true;
-  }
-}
-
 /// Whether [ink] is a neutral ink (white / black / grey family) rather than a
 /// hue-bearing colour.
 ///
@@ -378,30 +211,6 @@ bool courseCardInkIsNeutral(Color ink) {
     return true;
   }
   return HSLColor.fromColor(ink).saturation <= 0.15;
-}
-
-/// 玻璃（高斯模糊）卡面的墨色规则。
-///
-/// 玻璃卡的实际背景 = 壁纸磨砂 + 约 42% 课程色调染色，壁纸亮度不可控——
-/// - 彩色墨（含导入深墨、用户自选彩色）：为实体卡纯色底设计，玻璃上没有
-///   那个底，直接回落自动黑白；
-/// - 中性墨（黑白灰）：保留用户选择，但对混合背景对比度 < 3:1（与首页
-///   chrome 壁纸策略 [homePageInkHasSufficientContrast] 一致）时同样回落。
-///
-/// 自动黑白按课程 tint 与壁纸带亮度各 50% 混合判定，与日视图议程卡
-/// （`_dayAgendaAutoInk`）同一公式。
-Color resolveReadableCourseCardGlassInk({
-  required Color preferred,
-  required Color cardColor,
-  required double wallpaperLuminance,
-}) {
-  final effectiveLuminance =
-      cardColor.computeLuminance() * 0.5 + wallpaperLuminance * 0.5;
-  if (courseCardInkIsNeutral(preferred) &&
-      homePageInkHasSufficientContrast(preferred, effectiveLuminance)) {
-    return preferred;
-  }
-  return homePageChromeForegroundForLuminance(effectiveLuminance);
 }
 
 Color _parsePairColor(String hex) {
@@ -427,27 +236,16 @@ Color bestContrastCourseCardInk(Color background) =>
 
 /// Resolves a legible title ink.
 ///
-/// 实心卡面：保留用户墨色，仅在对比度低于隐身线（2.0）时替换为黑白最优墨。
-/// 玻璃卡面（[surfaceShowsWallpaper]）：背景是壁纸 + tint，按玻璃规则处理
-/// （[resolveReadableCourseCardGlassInk]）；[wallpaperLuminance] 未知时背景
-/// 不可判定，维持旧行为保留用户墨色。
+/// 实心卡面：保留用户墨色，仅在对比度低于隐身线（2.0）时替换为黑白最优墨；
+/// 但 [userChosenInk] 为真（设置页字色或单课自带字色）时一律原样保留——
+/// 粉彩卡上的白字是用户的明确选择，不再被自动翻成黑字。
 Color resolveReadableCourseCardTitleColor({
   required Color preferred,
   required Color cardColor,
-  required bool surfaceShowsWallpaper,
-  double? wallpaperLuminance,
+  bool userChosenInk = false,
 }) {
-  if (surfaceShowsWallpaper) {
-    if (wallpaperLuminance == null) {
-      return preferred;
-    }
-    return resolveReadableCourseCardGlassInk(
-      preferred: preferred,
-      cardColor: cardColor,
-      wallpaperLuminance: wallpaperLuminance,
-    );
-  }
-  if (courseCardContrastRatio(preferred, cardColor) >=
+  if (userChosenInk ||
+      courseCardContrastRatio(preferred, cardColor) >=
       courseCardCriticalContrastRatio) {
     return preferred;
   }
@@ -461,28 +259,19 @@ Color resolveReadableCourseCardTitleColor({
 /// 对比度 9+），却与被保留的白标题（对比度仅 2.2 左右、处于 advisory 区间）
 /// 极性相反，画出「白标题 + 黑简介」的半洗白混色卡。
 ///
-/// 玻璃卡面：壁纸亮度已知时详情一律跟随标题墨软化——背景是壁纸 + tint，
-/// 无法为详情单独配色，彩色详情/反向极性都不会再出现；壁纸亮度未知时
-/// 维持旧行为保留用户墨色。
+/// [userChosenInk] 与标题同义：显式配置的详情墨在实心卡上不做对比度替换，
+/// 但仍约束到与 [resolvedTitleInk] 同极性，避免白标题配黑简介的混色卡。
 Color resolveReadableCourseCardDetailColor({
   required Color preferred,
   required Color resolvedTitleInk,
   required Color cardColor,
-  required bool surfaceShowsWallpaper,
-  double? wallpaperLuminance,
+  bool userChosenInk = false,
 }) {
   final guarded = resolveReadableCourseCardTitleColor(
     preferred: preferred,
     cardColor: cardColor,
-    surfaceShowsWallpaper: surfaceShowsWallpaper,
-    wallpaperLuminance: wallpaperLuminance,
+    userChosenInk: userChosenInk,
   );
-  if (surfaceShowsWallpaper) {
-    if (wallpaperLuminance == null) {
-      return guarded.withValues(alpha: 0.7);
-    }
-    return resolvedTitleInk.withValues(alpha: 0.7);
-  }
   const lightInkLuminance = 0.5;
   final titleIsLight = resolvedTitleInk.computeLuminance() >= lightInkLuminance;
   final detailIsLight = guarded.computeLuminance() >= lightInkLuminance;
@@ -490,15 +279,9 @@ Color resolveReadableCourseCardDetailColor({
   return ink.withValues(alpha: 0.7);
 }
 
-/// Preset card hexes on which [ink] is unreadable (below the AA-large bar) for
-/// the given [surfaceStyle]; used to warn the user about a risky ink choice.
-List<String> courseCardUnreadablePresetCardHexes({
-  required Color ink,
-  required CourseCardSurfaceStyle surfaceStyle,
-}) {
-  if (courseCardSurfaceShowsWallpaper(surfaceStyle)) {
-    return const [];
-  }
+/// Preset card hexes on which [ink] is unreadable (below the AA-large bar);
+/// used to warn the user about a risky ink choice.
+List<String> courseCardUnreadablePresetCardHexes({required Color ink}) {
   final failures = <String>[];
   for (final pair in kPresetCourseColorPairs) {
     final card = _parsePairColor(pair.cardHex);

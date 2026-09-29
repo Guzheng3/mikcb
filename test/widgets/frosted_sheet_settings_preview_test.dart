@@ -3,10 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:university_timetable/models/liquid_glass_tuning.dart';
 import 'package:university_timetable/models/timetable_settings.dart';
-import 'package:university_timetable/ui/hyperos/frosted/frosted_appearance.dart';
-import 'package:university_timetable/ui/hyperos/liquid/hyperos_liquid_glass_surface.dart';
+import 'package:university_timetable/ui/hyperos/hyperos_blurred_header.dart';
 import 'package:university_timetable/widgets/frosted_sheet_settings_preview.dart';
 import 'package:university_timetable/widgets/home_page_region_blur.dart';
 
@@ -25,117 +23,45 @@ const _tinyPng = <int>[
   0x42, 0x60, 0x82,
 ];
 
-const _liquidAppearance = FrostedAppearance(
+const _savedAppearance = FrostedAppearance(
   sheetBlurSigma: 15,
   sheetTintAlpha: 0.7,
   sheetBarrierAlpha: 0.2,
-  glassMode: FrostedGlassMode.liquidGlass,
 );
 
 void main() {
-  group('FrostedSheetSettingsPreview.previewSafeTuning', () {
-    test(
-      'clamps thickness/blur at the dense preset (artifact-free ceiling)',
-      () {
-        final safe = FrostedSheetSettingsPreview.previewSafeTuning(
-          const LiquidGlassTuning(thickness: 40, blur: 24),
-        )!;
-        expect(safe.thickness, LiquidGlassTuning.presetDense.thickness);
-        expect(safe.blur, LiquidGlassTuning.presetDense.blur);
-      },
-    );
-
-    test('passes values at or below the ceiling through unchanged', () {
-      const tuning = LiquidGlassTuning(thickness: 16, blur: 5);
-      final safe = FrostedSheetSettingsPreview.previewSafeTuning(tuning)!;
-      // dense 预设现为 thickness 36 / blur 6：低于上限的原样通过。
-      expect(safe.thickness, 16);
-      expect(safe.blur, 5);
-    });
-
-    test('keeps the dense preset itself intact', () {
-      final safe = FrostedSheetSettingsPreview.previewSafeTuning(
-        LiquidGlassTuning.presetDense,
-      )!;
-      expect(safe, LiquidGlassTuning.presetDense);
-    });
-
-    test('clamps from a mid-range tuning only up to the ceiling', () {
-      final safe = FrostedSheetSettingsPreview.previewSafeTuning(
-        const LiquidGlassTuning(thickness: 32, blur: 18),
-      )!;
-      // 高于 dense 上限的维度被钳回上限，未超的保持原值。
-      expect(safe.thickness, 32);
-      expect(safe.blur, LiquidGlassTuning.presetDense.blur);
-    });
-
-    test('does not touch the other knobs', () {
-      final safe = FrostedSheetSettingsPreview.previewSafeTuning(
-        const LiquidGlassTuning(
-          thickness: 40,
-          blur: 24,
-          tintAlpha: 0.5,
-          lightIntensity: 1.8,
-          ambientStrength: 0.6,
-          saturation: 2,
-          refractiveIndex: 1.4,
-        ),
-      )!;
-      expect(safe.tintAlpha, 0.5);
-      expect(safe.lightIntensity, 1.8);
-      expect(safe.ambientStrength, 0.6);
-      expect(safe.saturation, 2.0);
-      expect(safe.refractiveIndex, 1.4);
-    });
-
-    test('null tuning stays null', () {
-      expect(FrostedSheetSettingsPreview.previewSafeTuning(null), isNull);
-    });
-  });
-
-  group('demo sheet follows the selected glass mode', () {
-    for (final mode in FrostedGlassMode.values) {
-      testWidgets('$mode does not render liquid tiles unless selected', (
-        tester,
-      ) async {
-        final appearance = FrostedAppearance(
+  group('demo sheet rendering', () {
+    testWidgets('renders the demo tiles without throwing', (tester) async {
+      const appearance = FrostedAppearance(
           sheetBlurSigma: 15,
           sheetTintAlpha: 0.7,
           sheetBarrierAlpha: 0.2,
-          glassMode: mode,
         );
 
         await tester.pumpWidget(
-          TestApp(
+        const TestApp(
             home: FrostedAppearanceScope(
               appearance: appearance,
-              child: const FrostedSheetSettingsDemoSheet(),
+            child: FrostedSheetSettingsDemoSheet(),
             ),
           ),
         );
         await tester.pump();
 
-        final liquid = mode == FrostedGlassMode.liquidGlass;
-        expect(
-          find.byType(HyperosLiquidGlassLayer),
-          liquid ? findsOneWidget : findsNothing,
-        );
-        expect(
-          find.byType(HyperosLiquidGlassSurface),
-          liquid ? findsNWidgets(5) : findsNothing,
-        );
+      expect(tester.takeException(), isNull);
+      expect(find.text('课程统计'), findsOneWidget);
+      expect(find.text('课表设置'), findsOneWidget);
+      expect(find.text('导入课程'), findsOneWidget);
       });
-    }
 
     testWidgets(
-      'demo route keeps the draft mode across the navigator boundary',
+      'demo route keeps the draft appearance across the navigator boundary',
       (tester) async {
-        const savedAppearance = _liquidAppearance;
+        const savedAppearance = _savedAppearance;
         const draftAppearance = FrostedAppearance(
           sheetBlurSigma: 15,
           sheetTintAlpha: 0.7,
           sheetBarrierAlpha: 0.2,
-          glassMode: FrostedGlassMode.gaussian,
         );
 
         await tester.pumpWidget(
@@ -162,10 +88,7 @@ void main() {
         await tester.tap(find.text('Open demo'));
         await tester.pumpAndSettle();
 
-        // Without the appearance snapshot, the dialog route would resolve the
-        // ancestor's saved liquid mode and build a liquid outer panel + tiles.
-        expect(find.byType(HyperosLiquidGlassLayer), findsNothing);
-        expect(find.byType(HyperosLiquidGlassSurface), findsNothing);
+        expect(tester.takeException(), isNull);
         expect(find.text('课程统计'), findsOneWidget);
         expect(find.text('课表设置'), findsOneWidget);
         expect(find.text('导入课程'), findsOneWidget);
@@ -174,44 +97,9 @@ void main() {
   });
 
   group('grouped backdrop sampling for the chrome band', () {
-    testWidgets('own-layer glass requests the grouped backdrop', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        TestApp(
-          home: FrostedAppearanceScope(
-            appearance: _liquidAppearance,
-            child: BackdropGroup(
-              child: const Stack(
-                children: [
-                  Positioned.fill(child: UndimmedBackdropCapture()),
-                  HyperosLiquidGlassSurface(
-                    role: HyperosLiquidGlassRole.header,
-                    useAncestorBackdropGroup: true,
-                    child: SizedBox(width: 100, height: 50),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pump();
-
-      // The surface must request ancestor-group sampling — on real shader
-      // engines this builds LiquidGlassLayer(useBackdropGroup: true) so the
-      // band samples the group's full-size capture instead of its own
-      // narrow bounds (the Skia/fake fallback keeps the group key on its
-      // own). On this test engine the flag is what we can assert.
-      final surface = tester.widget<HyperosLiquidGlassSurface>(
-        find.byType(HyperosLiquidGlassSurface),
-      );
-      expect(surface.useAncestorBackdropGroup, isTrue);
-    });
-
     testWidgets(
       'preview band renders inside a BackdropGroup over the wallpaper '
-      'capture and requests ancestor-group sampling',
+      'capture',
       (tester) async {
         final dir = Directory.systemTemp.createTempSync('mikcb_preview_');
         final wallpaper = File('${dir.path}/wallpaper.png')
@@ -253,8 +141,6 @@ void main() {
               tintAlpha: 0.5,
               barrierAlpha: 0.2,
               blurEnabled: true,
-              glassMode: FrostedGlassMode.liquidGlass,
-              liquidGlassTuning: LiquidGlassTuning.presetDense,
               onOpenDemoSheet: () {},
             ),
           ),
@@ -267,16 +153,7 @@ void main() {
 
         expect(find.byType(BackdropGroup), findsOneWidget);
         expect(find.byType(UndimmedBackdropCapture), findsOneWidget);
-        final fill = tester.widget<HomePageChromeGlassFill>(
-          find.byType(HomePageChromeGlassFill),
-        );
-        // useAncestorBackdropGroup 自玻璃引擎切换(cc98db3a)起就是死参数：
-        // HyperosLiquidGlassSurface 只存储从不读取，真实采样行为完全由
-        // liquid_glass_widgets 内部决定。预览侧不再声称依赖它，而是用
-        // 「玻璃形状四边全部越出可见裁剪区」的几何契约自证安全——任何
-        // 版本的包内部边缘处理都够不到可见区（四边越界断言见
-        // timetable_week_preview_test.dart 的 chrome glass band 组）。
-        expect(fill.useAncestorBackdropGroup, isFalse);
+        expect(find.byType(HomePageChromeGlassFill), findsOneWidget);
       },
     );
   });

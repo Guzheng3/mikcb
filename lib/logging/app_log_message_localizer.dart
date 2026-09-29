@@ -24,7 +24,6 @@ abstract final class AppLogMessageLocalizer {
     }
     return switch (message) {
       'log_app_logger_initialized' => l10n.logAppLoggerInitialized,
-      'log_privacy_consent_updated' => l10n.logPrivacyConsentUpdated,
       'log_app_log_recording_enabled' => l10n.logAppLogRecordingEnabled,
       'log_app_log_recording_remains_enabled' =>
         l10n.logAppLogRecordingRemainsEnabled,
@@ -202,7 +201,6 @@ abstract final class AppLogMessageLocalizer {
     if (mapped == null) return category;
     return switch (mapped) {
       'log_cat_app_logger_initialized' => l10n.logCatAppLoggerInitialized,
-      'log_cat_privacy_consent_updated' => l10n.logCatPrivacyConsentUpdated,
       'log_cat_app_log_recording_enabled' => l10n.logCatAppLogRecordingEnabled,
       'log_cat_startup_flow_started' => l10n.logCatStartupFlowStarted,
       'log_cat_startup_flow_completed' => l10n.logCatStartupFlowCompleted,

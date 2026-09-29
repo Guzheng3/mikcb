@@ -92,7 +92,7 @@ class _ProbeOnDiskProvider extends TimetableProvider {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const homeWidgetChannel = MethodChannel('vip.qinghan.withu/home_widget');
-  const analyticsChannel = MethodChannel('vip.qinghan.withu/umeng_analytics');
+  const analyticsChannel = MethodChannel('vip.qinghan.withu/app_diagnostics');
   const liveChannel = MethodChannel('vip.qinghan.withu/miui_live');
 
   setUp(() {
@@ -164,7 +164,8 @@ void main() {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 50)),
       );
-      applied = provider.courses
+      applied =
+          provider.courses
           .map((c) => c.color)
           .toList()
           .toString()
@@ -188,7 +189,8 @@ void main() {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 50)),
       );
-      restored = provider.courses.map((c) => c.color).toList().toString() ==
+      restored =
+          provider.courses.map((c) => c.color).toList().toString() ==
           originalColors.toString();
     }
     expect(restored, true, reason: '上一套必须恢复导入原色');
@@ -203,7 +205,8 @@ void main() {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 50)),
       );
-      forwarded = provider.courses.map((c) => c.color).toList().toString() ==
+      forwarded =
+          provider.courses.map((c) => c.color).toList().toString() ==
           batchColors.toString();
     }
     expect(forwarded, true, reason: '下一套必须回到刚才那批随机配色');
@@ -246,10 +249,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 
-    Future<bool> tapUntil(
-      String label,
-      bool Function() condition,
-    ) async {
+    Future<bool> tapUntil(String label, bool Function() condition) async {
       await tester.tap(find.text(label));
       // 轮询要同时驱动两个事件循环：pump 排空 FakeAsync 微任务（mutation
       // gate 空闲快路径会同步改内存、条件可能当场为真），runAsync 放行真实
@@ -306,9 +306,7 @@ void main() {
     expect(find.text('第 1/3 套'), findsOneWidget);
   });
 
-  testWidgets('目录条目 courseRecolor 的 open 直接拉起弹层（八宫格/圆钮/坞共用分发）', (
-    tester,
-  ) async {
+  testWidgets('目录条目 courseRecolor 的 open 直接拉起弹层（列表菜单/圆钮/坞共用分发）', (tester) async {
     final provider = await createInitializedTestProvider(tester);
     await tester.runAsync(() async {
       await provider.addCourse(

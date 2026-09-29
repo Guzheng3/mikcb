@@ -3,8 +3,7 @@ part of '../timetable_settings_screen.dart';
 class _AppearanceSettingsScreen extends StatefulWidget {
   const _AppearanceSettingsScreen({this.scope = SettingsScope.profile});
 
-  /// [SettingsScope.global] 时编辑全局显示设置（所有课表共享）；此时
-  /// 主题库（课表自身的主题收藏）入口隐藏。
+  /// [SettingsScope.global] 时编辑全局显示设置（所有课表共享）。
   final SettingsScope scope;
 
   @override
@@ -14,12 +13,13 @@ class _AppearanceSettingsScreen extends StatefulWidget {
 
 class _AppearanceSettingsScreenState extends State<_AppearanceSettingsScreen> {
   /// Visual groups on this page (not one card per control).
-  /// 0 preview · 1 app display · 2 theme manage + seed · 3 frosted · 4 reset.
+  /// 0 preview · 1 app display · 2 frosted · 3 reset.
   ///
   /// 页面背景、壁纸与背景区域已移到「课表页面」，统一课卡颜色已移到
   /// 「课程卡片」：它们染的不是应用，而是课表页和课卡。导航形态 /
-  /// 玻璃坞 / 首页标题等结构性设置已迁到「首页与导航」。
-  static const _appearanceSectionCount = 5;
+  /// 玻璃坞 / 首页标题等结构性设置已迁到「首页与导航」。主题色选择器与
+  /// 主题库已删除，应用主题色固定为 [TimetableSettings.defaultThemeSeedColor]。
+  static const _appearanceSectionCount = 4;
 
   late final TimetableProvider _timetableProvider;
   late TimetableSettings _draft;
@@ -68,7 +68,9 @@ class _AppearanceSettingsScreenState extends State<_AppearanceSettingsScreen> {
   Widget _buildAppearanceSection(BuildContext context, int index) {
     final l10n = AppLocalizations.of(context)!;
     final provider = context.watch<TimetableProvider>();
-    final themePreviewColor = _colorFromHex(_draft.themeSeedColor);
+    final themePreviewColor = _colorFromHex(
+      TimetableSettings.defaultThemeSeedColor,
+    );
     final isDarkPreview = Theme.of(context).brightness == Brightness.dark;
 
     final Widget section = switch (index) {
@@ -194,63 +196,13 @@ class _AppearanceSettingsScreenState extends State<_AppearanceSettingsScreen> {
           ],
         ),
       ),
-      // 主题管理并入主题色卡，避免单行孤岛。（首页标题分区已迁到
-      // 「首页与导航」，含预览与样式选择。）
-      2 => HyperosSettingsBlock(
-        title: l10n.themeSeedSectionTitle,
-        child: HyperosListGroup(
-          children: [
-            // 主题库挂在课表自身的设置上（savedThemes 不参与全局合并），
-            // 全局模式不展示管理入口，只留全局的主题预设/种子色。
-            if (!_isGlobal)
-              HyperosListTile(
-                title: l10n.themeManageTitle,
-                details: l10n.themeManageSubtitle,
-                onTap: () {
-                  HyperosNavigation.push(
-                    context,
-                    settings: const RouteSettings(name: '/settings/theme'),
-                    builder: (_) => const _ThemeManageScreen(),
-                  );
-                },
-              ),
-            HyperosSelectTile<ForuiTheme>(
-              label: l10n.themePreset,
-              subtitle: l10n.themeSeedSectionSubtitle,
-              items: {
-                for (final v in ForuiTheme.values) foruiThemeLabel(l10n, v): v,
-              },
-              value: _draft.foruiTheme,
-              onChanged: (value) {
-                _updateDraft(
-                  _draft.copyWith(
-                    foruiTheme: value,
-                    themeSeedColor: value.seedHex,
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-      3 => Column(
+      2 => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           HyperosSettingsBlock(
             title: l10n.frostedSheetSectionTitle,
             child: HyperosListGroup(
               children: [
-                HyperosSelectTile<FrostedGlassMode>(
-                  label: l10n.frostedGlassModeLabel,
-                  items: {
-                    for (final mode in FrostedGlassMode.values)
-                      frostedGlassModeLabel(l10n, mode): mode,
-                  },
-                  value: _draft.frostedGlassMode,
-                  onChanged: (value) {
-                    _updateDraft(_draft.copyWith(frostedGlassMode: value));
-                  },
-                ),
                 HyperosSwitchTile(
                   title: l10n.frostedBlurEnabledTitle,
                   value: _draft.frostedBlurEnabled,
@@ -268,32 +220,10 @@ class _AppearanceSettingsScreenState extends State<_AppearanceSettingsScreen> {
                     tintAlpha: _draft.frostedSheetTintAlpha,
                     barrierAlpha: _draft.frostedSheetBarrierAlpha,
                     blurEnabled: _draft.frostedBlurEnabled,
-                    glassMode: _draft.frostedGlassMode,
-                    liquidGlassTuning: _draft.liquidGlassTuning,
                     onOpenDemoSheet: () =>
                         showFrostedSheetSettingsDemo(context),
                   ),
                 ),
-                if (!_isGlobal &&
-                    _draft.frostedGlassMode == FrostedGlassMode.liquidGlass)
-                  HyperosListTile(
-                    title: l10n.advancedMaterialTitle,
-                    details: l10n.advancedMaterialEntrySubtitle,
-                    onTap: () async {
-                      await HyperosNavigation.push(
-                        context,
-                        settings: const RouteSettings(
-                          name: '/settings/advanced-material',
-                        ),
-                        builder: (_) => const AdvancedMaterialSettingsScreen(),
-                      );
-                      if (!mounted) return;
-                      setState(() {
-                        _draft = _timetableProvider.settings;
-                      });
-                    },
-                  ),
-                if (_draft.frostedGlassMode == FrostedGlassMode.gaussian) ...[
                   HyperosSliderTile(
                     title: l10n.frostedSheetBlurLabel,
                     value: _draft.frostedSheetBlurSigma,
@@ -322,85 +252,11 @@ class _AppearanceSettingsScreenState extends State<_AppearanceSettingsScreen> {
                     },
                   ),
                 ],
-              ],
-            ),
-          ),
-          // 液态玻璃作用范围：全局模式为液态玻璃时，允许逐表面家族关闭
-          // 折射材质（关闭的家族回退高斯磨砂；模糊总开关关时回落实底）。
-          // 默认：下拉选择弹窗开、全屏选择面板关、其余家族开。
-          if (_draft.frostedGlassMode == FrostedGlassMode.liquidGlass) ...[
-            const HyperosSectionGap(),
-            HyperosSettingsBlock(
-              title: l10n.liquidGlassScopeSectionTitle,
-              child: HyperosListGroup(
-                children: [
-                  HyperosSwitchTile(
-                    title: l10n.liquidGlassScopePopupTitle,
-                    subtitle: l10n.liquidGlassScopePopupSubtitle,
-                    value: _draft.liquidGlassPopupEnabled,
-                    onChanged: (value) {
-                      _updateDraft(
-                        _draft.copyWith(liquidGlassPopupEnabled: value),
-                      );
-                    },
-                  ),
-                  HyperosSwitchTile(
-                    title: l10n.liquidGlassScopeSelectSheetTitle,
-                    subtitle: l10n.liquidGlassScopeSelectSheetSubtitle,
-                    value: _draft.liquidGlassSelectSheetEnabled,
-                    onChanged: (value) {
-                      _updateDraft(
-                        _draft.copyWith(liquidGlassSelectSheetEnabled: value),
-                      );
-                    },
-                  ),
-                  HyperosSwitchTile(
-                    title: l10n.liquidGlassScopeSheetDialogTitle,
-                    subtitle: l10n.liquidGlassScopeSheetDialogSubtitle,
-                    value: _draft.liquidGlassSheetDialogEnabled,
-                    onChanged: (value) {
-                      _updateDraft(
-                        _draft.copyWith(liquidGlassSheetDialogEnabled: value),
-                      );
-                    },
-                  ),
-                  HyperosSwitchTile(
-                    title: l10n.liquidGlassScopeHomeChromeTitle,
-                    subtitle: l10n.liquidGlassScopeHomeChromeSubtitle,
-                    value: _draft.liquidGlassHomeChromeEnabled,
-                    onChanged: (value) {
-                      _updateDraft(
-                        _draft.copyWith(liquidGlassHomeChromeEnabled: value),
-                      );
-                    },
-                  ),
-                  HyperosSwitchTile(
-                    title: l10n.liquidGlassScopeDockTitle,
-                    subtitle: l10n.liquidGlassScopeDockSubtitle,
-                    value: _draft.liquidGlassDockEnabled,
-                    onChanged: (value) {
-                      _updateDraft(
-                        _draft.copyWith(liquidGlassDockEnabled: value),
-                      );
-                    },
-                  ),
-                  HyperosSwitchTile(
-                    title: l10n.liquidGlassScopePickerButtonsTitle,
-                    subtitle: l10n.liquidGlassScopePickerButtonsSubtitle,
-                    value: _draft.liquidGlassPickerButtonsEnabled,
-                    onChanged: (value) {
-                      _updateDraft(
-                        _draft.copyWith(liquidGlassPickerButtonsEnabled: value),
-                      );
-                    },
-                  ),
-                ],
               ),
             ),
           ],
-        ],
       ),
-      4 => _SettingsResetTile(
+      3 => _SettingsResetTile(
         scope: SettingsResetScope.appearance,
         onReset: _updateDraft,
         resetSource: _draft,
@@ -476,357 +332,6 @@ Map<String, String> buildLocaleMenuMap(BuildContext context) {
     map[nativeNameFor(locale)] = tag;
   }
   return map;
-}
-
-class _ThemeManageScreen extends StatefulWidget {
-  const _ThemeManageScreen();
-
-  @override
-  State<_ThemeManageScreen> createState() => _ThemeManageScreenState();
-}
-
-class _ThemeManageScreenState extends State<_ThemeManageScreen> {
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return HyperosSubpage(
-      onBack: () => Navigator.pop(context),
-      title: Text(l10n.themeManageTitle),
-      child: HyperosListView(
-        itemCount: _themeSectionCount,
-        itemBuilder: _buildThemeSection,
-      ),
-    );
-  }
-
-  static const _themeSectionCount = 4;
-
-  Widget _buildThemeSection(BuildContext context, int index) {
-    final l10n = AppLocalizations.of(context)!;
-    return switch (index) {
-      0 => Consumer<TimetableProvider>(
-        builder: (context, provider, child) {
-          final settings = provider.settings;
-          final checkpointName = settings.themeCheckpointName;
-          final hasModifications = settings.hasThemeModifications;
-
-          if (checkpointName == null) return const SizedBox.shrink();
-
-          return HyperosControlCard(
-            title: l10n.themeCurrentTheme,
-            subtitle: hasModifications
-                ? l10n.themeBasedOnModified(checkpointName)
-                : checkpointName,
-            child: hasModifications
-                ? HyperosControlCardInset(
-                    child: Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: [
-                        HyperosButton(
-                          label: l10n.themeResetToPreset,
-                          variant: HyperosButtonVariant.secondary,
-                          onPressed: () {
-                            if (settings.themeCheckpointConfig != null) {
-                              _applyThemeWithUndo(
-                                context,
-                                settings.themeCheckpointConfig!,
-                                themeName: checkpointName,
-                              );
-                            }
-                          },
-                        ),
-                        HyperosButton(
-                          label: l10n.themeSaveCurrent,
-                          variant: HyperosButtonVariant.secondary,
-                          onPressed: () => _showSaveThemeDialog(context),
-                        ),
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          );
-        },
-      ),
-      1 => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const HyperosSectionGap(),
-          HyperosSectionLabel(text: l10n.themeManageSubtitle),
-          HyperosChoiceGroup(
-            children: [
-              HyperosActionTile(
-                title: l10n.themeExport,
-                onTap: () => _exportTheme(context),
-                showDivider: true,
-              ),
-              HyperosActionTile(
-                title: l10n.themeImport,
-                onTap: () => _importTheme(context),
-                showDivider: true,
-              ),
-              HyperosActionTile(
-                title: l10n.themeSaveCurrent,
-                onTap: () => _showSaveThemeDialog(context),
-              ),
-            ],
-          ),
-        ],
-      ),
-      2 => Consumer<TimetableProvider>(
-        builder: (context, provider, child) {
-          final current = provider.settings.foruiTheme;
-          const themes = ForuiTheme.values;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const HyperosSectionGap(),
-              HyperosSectionLabel(text: l10n.themePreset),
-              HyperosChoiceGroup(
-                children: [
-                  for (var i = 0; i < themes.length; i++)
-                    HyperosChoiceTile(
-                      prefix: HyperosColorDot(
-                        color: _colorFromHex(themes[i].seedHex),
-                      ),
-                      title: foruiThemeLabel(l10n, themes[i]),
-                      selected: current == themes[i],
-                      showDivider: i < themes.length - 1,
-                      onTap: () => _applyForuiTheme(context, themes[i]),
-                    ),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-      3 => Consumer<TimetableProvider>(
-        builder: (context, provider, child) {
-          final savedThemes = provider.settings.savedThemes;
-          if (savedThemes.isEmpty) return const SizedBox.shrink();
-          final settings = provider.settings;
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const HyperosSectionGap(),
-              HyperosSectionLabel(text: l10n.themeSaved),
-              HyperosChoiceGroup(
-                children: [
-                  for (var i = 0; i < savedThemes.length; i++)
-                    HyperosChoiceTile(
-                      prefix: HyperosColorDot(
-                        color: _colorFromHex(savedThemeSeedHex(savedThemes[i])),
-                      ),
-                      title: savedThemes[i].name,
-                      subtitle: ThemePreviewDots(
-                        colors: savedThemes[i].config.previewColors,
-                      ),
-                      selected: isSavedThemeSelected(settings, savedThemes[i]),
-                      trailing: IconButton(
-                        visualDensity: VisualDensity.compact,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: 36,
-                          minHeight: 36,
-                        ),
-                        icon: Icon(
-                          Icons.more_horiz_rounded,
-                          color: HyperosColors.secondaryText(context),
-                        ),
-                        tooltip: l10n.themeMoreActions,
-                        onPressed: () =>
-                            _showSavedThemeActions(context, savedThemes[i]),
-                      ),
-                      showDivider: i < savedThemes.length - 1,
-                      dividerIndent: 44,
-                      onTap: () =>
-                          _showSavedThemePreview(context, savedThemes[i]),
-                    ),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-      _ => const SizedBox.shrink(),
-    };
-  }
-
-  // --- theme actions below ---
-
-  Future<void> _showSavedThemePreview(BuildContext context, SavedTheme theme) {
-    return showSavedThemePreviewSheet(
-      context,
-      name: theme.name,
-      config: theme.config,
-      onApply: () => _applySavedTheme(context, theme),
-    );
-  }
-
-  Future<void> _showSavedThemeActions(BuildContext context, SavedTheme theme) {
-    return showSavedThemeActionSheet(
-      context,
-      theme: theme,
-      onRename: () => _showRenameDialog(context, theme),
-      onDuplicate: () => _duplicateTheme(context, theme),
-      onDelete: () => _deleteSavedTheme(context, theme),
-    );
-  }
-
-  Future<bool> _applySavedTheme(BuildContext context, SavedTheme theme) async {
-    final canApply = await confirmApplyThemeWithUnsavedCheck(
-      context,
-      onSaveRequested: () => _showSaveThemeDialog(context),
-    );
-    if (!canApply || !context.mounted) {
-      return false;
-    }
-    _applyThemeWithUndo(context, theme.config, themeName: theme.name);
-    return true;
-  }
-
-  Future<void> _deleteSavedTheme(BuildContext context, SavedTheme theme) async {
-    final confirmed = await showThemeDeleteConfirmDialog(
-      context,
-      name: theme.name,
-    );
-    if (!confirmed || !context.mounted) {
-      return;
-    }
-    context.read<TimetableProvider>().deleteTheme(theme.id);
-  }
-
-  void _applyThemeWithUndo(
-    BuildContext context,
-    ThemeConfig config, {
-    String? themeName,
-  }) {
-    final provider = Provider.of<TimetableProvider>(context, listen: false);
-    final l10n = AppLocalizations.of(context)!;
-
-    final newSettings = config.applyToSettings(provider.settings);
-    provider.applyThemeWithUndo(
-      newSettings.copyWith(
-        themeCheckpointName: themeName,
-        themeCheckpointConfig: config,
-      ),
-      themeName: themeName,
-    );
-
-    showThemeFeedbackToast(
-      context,
-      message: l10n.themeChanged(themeName ?? l10n.themeManageTitle),
-      onUndo: provider.undoThemeChange,
-    );
-  }
-
-  void _applyForuiTheme(BuildContext context, ForuiTheme theme) {
-    final provider = Provider.of<TimetableProvider>(context, listen: false);
-    final l10n = AppLocalizations.of(context)!;
-    final name = foruiThemeLabel(l10n, theme);
-    provider.applyThemeWithUndo(
-      provider.settings.copyWith(
-        foruiTheme: theme,
-        themeSeedColor: theme.seedHex,
-        clearThemeCheckpoint: true,
-      ),
-      themeName: name,
-    );
-    showThemeFeedbackToast(
-      context,
-      message: l10n.themeChanged(name),
-      onUndo: provider.undoThemeChange,
-    );
-  }
-
-  void _showSaveThemeDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    showThemeNameDialog(
-      context,
-      title: l10n.themeSaveCurrent,
-      initialName: '',
-      onSubmit: (name) {
-        final provider = Provider.of<TimetableProvider>(context, listen: false);
-        final themeConfig = ThemeConfig.fromSettings(provider.settings);
-        provider.saveTheme(name, themeConfig.toJson());
-      },
-    );
-  }
-
-  void _showRenameDialog(BuildContext context, SavedTheme theme) {
-    final l10n = AppLocalizations.of(context)!;
-    showThemeNameDialog(
-      context,
-      title: l10n.themeRename,
-      initialName: theme.name,
-      onSubmit: (newName) {
-        context.read<TimetableProvider>().renameTheme(theme.id, newName);
-      },
-    );
-  }
-
-  void _duplicateTheme(BuildContext context, SavedTheme theme) {
-    final l10n = AppLocalizations.of(context)!;
-    final provider = Provider.of<TimetableProvider>(context, listen: false);
-    provider.saveTheme(
-      l10n.themeDuplicateCopyName(theme.name),
-      theme.themeData,
-    );
-  }
-
-  void _exportTheme(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final provider = Provider.of<TimetableProvider>(context, listen: false);
-    final themeConfig = ThemeConfig.fromSettings(provider.settings);
-    Clipboard.setData(ClipboardData(text: jsonEncode(themeConfig.toJson())));
-    showThemeFeedbackToast(
-      context,
-      message: l10n.themeExportSuccess,
-      kind: AppToastKind.success,
-    );
-  }
-
-  void _importTheme(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    final data = await Clipboard.getData('text/plain');
-    if (!context.mounted) return;
-    if (data?.text == null) {
-      showThemeFeedbackToast(
-        context,
-        message: l10n.themeImportFailed,
-        kind: AppToastKind.error,
-      );
-      return;
-    }
-    try {
-      final json = jsonDecode(data!.text!) as Map<String, dynamic>;
-      final config = ThemeConfig.fromJson(json);
-
-      if (config.version == 2 &&
-          (config.seedColor == null ||
-              config.courseCardTitleColorLight == null)) {
-        throw const FormatException('missing required fields');
-      }
-
-      _applyThemeWithUndo(context, config, themeName: l10n.themeImport);
-    } catch (_) {
-      if (context.mounted) {
-        showThemeFeedbackToast(
-          context,
-          message: l10n.themeImportFailed,
-          kind: AppToastKind.error,
-        );
-      }
-    }
-  }
 }
 
 class _HomeTitleStylePreview extends StatelessWidget {

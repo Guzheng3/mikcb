@@ -25,7 +25,6 @@ class StorageService {
   static const String _scheduleDateRuleLastAppliedSignatureKey =
       'schedule_date_rule_last_applied_signature';
   static const String _hasSeenUserGuideKey = 'has_seen_user_guide';
-  static const String _acceptedPrivacyPolicyKey = 'accepted_privacy_policy';
   static const String _hasCompletedOnboardingKey = 'has_completed_onboarding';
   static const String _hasHandledPackageMigrationKey =
       'has_handled_package_migration';
@@ -376,19 +375,6 @@ class StorageService {
     }
   }
 
-  Future<bool> hasAcceptedPrivacyPolicy() async {
-    if (_prefs == null) await init();
-    return _prefs?.getBool(_acceptedPrivacyPolicyKey) ?? false;
-  }
-
-  Future<void> setAcceptedPrivacyPolicy(bool value) async {
-    if (_prefs == null) await init();
-    await _prefs?.setBool(_acceptedPrivacyPolicyKey, value);
-    if (_prefs?.getBool(_acceptedPrivacyPolicyKey) != value) {
-      await _prefs?.setBool(_acceptedPrivacyPolicyKey, value);
-    }
-  }
-
   Future<bool> hasCompletedOnboarding() async {
     if (_prefs == null) await init();
     return _prefs?.getBool(_hasCompletedOnboardingKey) ?? false;
@@ -532,10 +518,10 @@ class StorageService {
   bool _isSettingsEffectivelyDefault(TimetableSettings settings) {
     final defaults = TimetableSettings.defaults();
     // 双侧都过一次 fromJson→toJson 归一化再比较：fromJson 对缺失/空字段
-    // 有回填（如 homeGridMenuActions 空列表 → 默认菜单），单侧直接比较会
-    // 把「默认值写盘 → 解析回填」误判为用户自定义，导致单空 profile 永远
-    // 判为非空、老包迁移引导（PackageMigrationGuide）永不弹出——该缺陷
-    // 自菜单回填逻辑存在起就有效（2114 同样如此），非 2116 回归。
+    // 有回填，单侧直接比较会把「默认值写盘 → 解析回填」误判为用户自定义，
+    // 导致单空 profile 永远判为非空、老包迁移引导（PackageMigrationGuide）
+    // 永不弹出——该缺陷自菜单回填逻辑存在起就有效（2114 同样如此），
+    // 非 2116 回归。
     // activeTimeSchemeId 由 _ensureTimeSchemesInitialized 无条件自动回填，
     // 同样不代表用户自定义，必须排除。注意不能用 copyWith 归一化：
     // copyWith 是 `x ?? this.x` 语义，显式 null 与不传等价、清不掉字段

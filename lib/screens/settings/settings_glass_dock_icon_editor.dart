@@ -1,7 +1,7 @@
 part of '../timetable_settings_screen.dart';
 
-/// 圆钮图标挑选页：遍历 Miuix 扩展图标全集（MiuixIcons.extended.names），
-/// 支持按名称过滤。布局自上而下：
+/// 圆钮图标挑选页：遍历可选图标名全集（[kMiuixIconNames]，名字沿用旧 Miuix
+/// 小驼峰以便旧持久化数据继续有效），支持按名称过滤。布局自上而下：
 /// 1. 搜索框卡片（置顶，与下方网格同一缩进体系，左右边缘对齐）；
 /// 2. 图标网格：首格固定为「默认（加号）」（清空自定义、恢复默认加号），
 ///    其后为过滤结果。
@@ -11,14 +11,9 @@ part of '../timetable_settings_screen.dart';
 /// 可用宽度推导，一行内各格 Expanded 均分宽度——行的左右总宽与上方搜索
 /// 卡片完全一致，不再出现居中 Wrap 收窄一档的观感。
 ///
-/// 性能：旧实现有两个掉帧根源——
-/// 1. HyperosListView(children:) 是 SingleChildScrollView+Column，156 个
-///    图标格一次性全部构建且常驻；
-/// 2. MiuixIcon 的 painter 每次绘制都对整段 SVG 路径串重新
-///    miuixParsePath，并对每个图标 saveLayer 上色。
-/// 这里改为：行级惰性构建；每个图标路径只解析一次（翻转矩阵一并烘焙），
-/// 由 [_CachedMiuixVectorPainter] 用缓存 Path 直接按目标尺寸绘制（扩展
-/// 图标均为单路径 alpha=1，直填颜色与 SrcIn tint 视觉等价，无需 saveLayer）。
+/// 性能：旧实现用 HyperosListView(children:)（SingleChildScrollView+Column）
+/// 一次性构建 156 个图标格并常驻，且矢量路径每帧重新解析。现在图标是
+/// Material 字形（[IconData]），行级惰性构建后构建/绘制成本都可忽略。
 class _GlassDockIconPickerScreen extends StatefulWidget {
   const _GlassDockIconPickerScreen({
     required this.initialName,
@@ -56,10 +51,6 @@ class _GlassDockIconPickerScreenState
   /// 过滤结果缓存：只在搜索词变化时重算，build 内不做字符串处理。
   List<String> _filteredNames = const [];
 
-  /// 路径解析缓存：name -> 已解析并烘焙翻转的 Path（视口坐标系）。
-  /// Path 构建后只读共享，绘制不会修改它；页面生命周期内至多 156 条。
-  final Map<String, ({Path path, double viewport})> _parsedIcons = {};
-
   @override
   void initState() {
     super.initState();
@@ -75,7 +66,7 @@ class _GlassDockIconPickerScreenState
 
   void _recomputeFiltered() {
     final query = _filter.trim().toLowerCase();
-    final names = MiuixIcons.extended.names;
+    final names = kMiuixIconNames;
     _filteredNames = query.isEmpty
         ? names
         : names
@@ -95,30 +86,6 @@ class _GlassDockIconPickerScreenState
       _selected = name;
     });
     widget.onChanged(name);
-  }
-
-  /// 解析单个图标的 Regular 字重路径——每个图标整个页面生命周期只此一次。
-  /// spec.build() 内部即 miuixParsePath（MiuixIcon 默认每次绘制都会重跑）；
-  /// groupTransform（绕视口中心翻 Y）在此烘焙进 Path，绘制期不再做矩阵
-  /// 变换。找不到时返回 null（格子回退问号图标）。
-  ({Path path, double viewport})? _parsedIcon(String name) {
-    final cached = _parsedIcons[name];
-    if (cached != null) {
-      return cached;
-    }
-    final vector = MiuixIcons.extended.byName(name);
-    if (vector == null || vector.paths.isEmpty) {
-      return null;
-    }
-    final spec = vector.paths.first;
-    var parsed = spec.build();
-    final transform = spec.groupTransform;
-    if (transform != null) {
-      parsed = parsed.transform(transform.storage);
-    }
-    final entry = (path: parsed, viewport: vector.viewport.width);
-    _parsedIcons[name] = entry;
-    return entry;
   }
 
   int _columnCountFor(double contentWidth) {
@@ -153,11 +120,7 @@ class _GlassDockIconPickerScreenState
               if (index == 0) {
                 return _buildSearchCard(l10n);
               }
-              return _buildGridRow(
-                l10n,
-                rowIndex: index - 1,
-                columns: columns,
-              );
+              return _buildGridRow(l10n, rowIndex: index - 1, columns: columns);
             },
           );
         },
@@ -226,7 +189,7 @@ class _GlassDockIconPickerScreenState
     return _IconCell(
       label: isDefault ? l10n.glassDockButtonIconDefault : name!,
       selected: selected,
-      parsed: isDefault ? null : _parsedIcon(name!),
+      icon: isDefault ? null : miuixIconByName(name!),
       onTap: () {
         _select(name);
         Navigator.pop(context);
@@ -235,21 +198,21 @@ class _GlassDockIconPickerScreenState
   }
 }
 
-/// 图标格：矢量图标 + 名称小字；选中态描边主色。宽度由所在行 Expanded 决定
-/// （不再写死 76），高度随行高居中。
+/// 图标格：Material 图标 + 名称小字；选中态描边主色。宽度由所在行 Expanded
+/// 决定（不再写死 76），高度随行高居中。
 class _IconCell extends StatelessWidget {
   const _IconCell({
     required this.label,
     required this.selected,
     required this.onTap,
-    this.parsed,
+    this.icon,
   });
 
   final String label;
   final bool selected;
 
-  /// 预解析的扩展图标路径；null 时回退 Material 加号图标（默认格用）。
-  final ({Path path, double viewport})? parsed;
+  /// 该格对应的图标；null 时回退加号图标（默认格用）。
+  final IconData? icon;
   final VoidCallback onTap;
 
   @override
@@ -278,15 +241,11 @@ class _IconCell extends StatelessWidget {
             SizedBox(
               width: _GlassDockIconPickerScreenState._iconSize,
               height: _GlassDockIconPickerScreenState._iconSize,
-              child: parsed != null
-                  ? CustomPaint(
-                      painter: _CachedMiuixVectorPainter(
-                        path: parsed!.path,
-                        viewport: parsed!.viewport,
-                        color: iconColor,
+              child: MiuixIcon(
+                icon: icon ?? Icons.add_rounded,
+                size: 22,
+                tint: iconColor,
                       ),
-                    )
-                  : Icon(Icons.add_rounded, size: 22, color: iconColor),
             ),
             const SizedBox(height: 5),
             Text(
@@ -306,46 +265,5 @@ class _IconCell extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// 用预解析好的 [Path] 直接按目标尺寸绘制扩展图标。
-///
-/// 与 MiuixIcon（FittedBox + CustomPaint + saveLayer tint + 每帧
-/// miuixParsePath）不同：路径已解析并烘焙翻转，paint 只做一次等比缩放和
-/// 一次填色——扩展图标为单路径 alpha=1，直填颜色与 SrcIn tint 视觉等价，
-/// 因此无需 saveLayer。shouldRepaint 仅在颜色变化时触发，滚动不重绘路径。
-class _CachedMiuixVectorPainter extends CustomPainter {
-  const _CachedMiuixVectorPainter({
-    required this.path,
-    required this.viewport,
-    required this.color,
-  });
-
-  final Path path;
-
-  /// 路径所在的视口边长（扩展图标视口为正方形）。
-  final double viewport;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (viewport <= 0 || size.isEmpty) {
-      return;
-    }
-    canvas.save();
-    canvas.scale(size.width / viewport);
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = color
-        ..isAntiAlias = true,
-    );
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(_CachedMiuixVectorPainter oldDelegate) {
-    return oldDelegate.color != color || !identical(oldDelegate.path, path);
   }
 }

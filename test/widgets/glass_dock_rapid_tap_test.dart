@@ -45,17 +45,13 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 
-    int? indicatorIndex() {
-      final finder = find.byWidgetPredicate(
-        (w) => w.runtimeType.toString() == 'TabIndicator',
-      );
-      if (finder.evaluate().isEmpty) {
-        return null;
-      }
-      return (finder.evaluate().first.widget as dynamic).tabIndex as int?;
+    /// 底栏项是否处于选中态（选中项文案为 w600 且铺高亮底色）。
+    bool dockTabSelected(String label) {
+      final text = tester.widget<Text>(find.text(label).last);
+      return text.style?.fontWeight == FontWeight.w600;
     }
 
-    expect(indicatorIndex(), 1, reason: '初始应在周课表 Tab');
+    expect(dockTabSelected('周课表'), isTrue, reason: '初始应在周课表 Tab');
 
     // 底栏 label 用 .last（树序最后是底栏，避开页面内同名文本）
     final dayTab = find.text('日课表').last;
@@ -75,7 +71,7 @@ void main() {
     await tester.pump();
 
     expect(tester.takeException(), isNull, reason: '快速连点不应有异常');
-    expect(indicatorIndex(), 0, reason: '连点后应最终停在日课表 Tab（不丢最后一下）');
+    expect(dockTabSelected('日课表'), isTrue, reason: '连点后应最终停在日课表 Tab（不丢最后一下）');
     expect(
       find.byKey(const ValueKey('timetable-day-view-panel')),
       findsOneWidget,

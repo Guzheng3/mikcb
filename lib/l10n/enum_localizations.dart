@@ -1,7 +1,5 @@
 import '../models/course.dart';
 import '../models/exam.dart';
-import 'package:university_timetable/models/liquid_glass_tuning.dart';
-import 'package:university_timetable/ui/hyperos/frosted/frosted_appearance.dart';
 import '../models/timetable_settings.dart';
 import 'app_localizations.dart';
 
@@ -234,44 +232,3 @@ String appUpdateMirrorPresetDescription(
   AppUpdateMirrorPreset.ghproxyNet => ghproxyNetMirrorUrlPrefix,
   AppUpdateMirrorPreset.custom => l10n.appUpdateMirrorPresetCustomDescription,
 };
-
-String frostedGlassModeLabel(AppLocalizations l10n, FrostedGlassMode mode) =>
-    switch (mode) {
-      FrostedGlassMode.frosted => l10n.frostedGlassModeFrosted,
-      FrostedGlassMode.liquidGlass => l10n.frostedGlassModeLiquid,
-      FrostedGlassMode.gaussian => l10n.frostedGlassModeGaussian,
-      FrostedGlassMode.translucent => l10n.frostedGlassModeTranslucent,
-    };
-
-String liquidGlassPresetLabel(
-  AppLocalizations l10n,
-  LiquidGlassPreset preset,
-) => switch (preset) {
-  LiquidGlassPreset.clear => l10n.liquidGlassPresetClear,
-  LiquidGlassPreset.light => l10n.liquidGlassPresetLight,
-  LiquidGlassPreset.standard => l10n.liquidGlassPresetStandard,
-  LiquidGlassPreset.dense => l10n.liquidGlassPresetDense,
-  LiquidGlassPreset.custom => l10n.liquidGlassPresetCustom,
-};
-
-String courseCardSurfaceStyleLabel(
-  AppLocalizations l10n,
-  CourseCardSurfaceStyle style,
-) => switch (style) {
-  CourseCardSurfaceStyle.solid => l10n.courseCardSurfaceStyleSolid,
-  CourseCardSurfaceStyle.gaussian => l10n.courseCardSurfaceStyleGaussian,
-};
-
-String foruiThemeLabel(AppLocalizations l10n, ForuiTheme theme) =>
-    switch (theme) {
-      ForuiTheme.neutral => l10n.foruiThemeNeutral,
-      ForuiTheme.zinc => l10n.foruiThemeZinc,
-      ForuiTheme.slate => l10n.foruiThemeSlate,
-      ForuiTheme.blue => l10n.foruiThemeBlue,
-      ForuiTheme.green => l10n.foruiThemeGreen,
-      ForuiTheme.orange => l10n.foruiThemeOrange,
-      ForuiTheme.red => l10n.foruiThemeRed,
-      ForuiTheme.rose => l10n.foruiThemeRose,
-      ForuiTheme.violet => l10n.foruiThemeViolet,
-      ForuiTheme.yellow => l10n.foruiThemeYellow,
-    };

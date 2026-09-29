@@ -9,9 +9,6 @@
 |------|------|-------------|
 | Flutter / Dart SDK | 应用框架 | BSD-3-Clause（Flutter 工具链） |
 | AndroidX / Kotlin 标准库 | 系统 API 封装 | 各 Apache-2.0 等（随 AGP 引入） |
-| 友盟 Common / ASMS / APM / UYumao | 统计与崩溃诊断（用户同意后） | 友盟商业 SDK，[官网协议](https://www.umeng.com/policy) |
-
-> 友盟 SDK 为预编译二进制，**不包含在本仓库源码中**；分发 APK 时一并打包。若你 fork 本仓库自行构建，需自行评估 SDK 使用条款。
 
 ## Flutter / Dart 依赖
 
@@ -40,7 +37,6 @@
 | GitHub Releases / raw | 应用更新、release notes、`latest.json` |
 | 用户配置的 WEBDAV | 可选云同步 |
 | 学校教务系统 | 用户主动导入 |
-| 友盟后端 | 统计 / APM（可选，需同意） |
 
 ## 商标
 

@@ -65,7 +65,7 @@ if ($activePkg -eq $prodPackage) {
     Write-Host "已附着：$activePkg (PID $appPid)" -ForegroundColor Green
 }
 Write-Host "级别：*:$MinLevel  |  按 Ctrl+C 停止" -ForegroundColor DarkGray
-Write-Host "常见 tag：MainActivity、flutter、LiveUpdate、KeepAliveAccessibility、UmengDiagnostic" -ForegroundColor DarkGray
+Write-Host "常见 tag：MainActivity、flutter、LiveUpdate、KeepAliveAccessibility、AppDiagnostic" -ForegroundColor DarkGray
 Write-Host ""
 
 & $adb logcat --pid=$appPid -v color *:$MinLevel

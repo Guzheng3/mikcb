@@ -89,9 +89,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fontModeMonospace => 'Monospace';
 
   @override
-  String get languageSectionTitle => 'App Language';
-
-  @override
   String get languageSectionSubtitle =>
       'Follow system or switch manually to supported locales';
 
@@ -554,6 +551,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'If disabled, each course keeps its own color';
 
   @override
+  String get courseCardFontColorTitle => 'Course text color';
+
+  @override
   String get importRandomCourseColorTitle => 'Random course colors';
 
   @override
@@ -561,28 +561,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Assign preset colors by course name and teacher';
 
   @override
-  String get importRandomColorGroupTitle => 'Random color group';
-
-  @override
-  String get colorGroupAll => 'All colors';
-
-  @override
-  String get colorGroupPastel => 'Pastel';
-
-  @override
-  String get colorGroupVibrant => 'Vivid';
-
-  @override
-  String get colorGroupDeep => 'Dark';
-
-  @override
-  String get colorGroupDopamine => 'Dopamine';
-
-  @override
-  String get colorGroupSunset => 'Sunset';
-
-  @override
-  String get colorGroupOcean => 'Ocean';
+  String get courseColorPaletteAllLabel => 'All colors';
 
   @override
   String get courseRecolorTileTitle => 'Recolor Timetable';
@@ -1059,39 +1038,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Import failed. Please check whether the file is valid.';
 
   @override
-  String get welcomeTitle => 'Welcome';
-
-  @override
-  String get welcomeAppName => 'Qingyu Timetable';
-
-  @override
-  String get welcomeSubtitle =>
-      'You can start using the app right away, or import courses / restore a backup first';
-
-  @override
   String get thirdPartyDisclaimer =>
       'Disclaimer: This app is independently developed by a third-party developer for learning and research purposes only. It is not official Xiaomi software and has no affiliation, partnership, or authorization relationship with Xiaomi Technology Co., Ltd. If you believe any content infringes your rights, please contact the author. We will promptly remove the relevant content upon notification.';
-
-  @override
-  String get startUsingTitle => 'Start Using';
-
-  @override
-  String get startUsingSubtitle =>
-      'Enter the app directly and continue the first-use guide';
-
-  @override
-  String get importTimetableTitle => 'Import Timetable';
-
-  @override
-  String get importTimetableSubtitle =>
-      'Import courses from an .ics file or AI parsing result';
-
-  @override
-  String get restoreBackupTitle => 'Restore from Backup';
-
-  @override
-  String get restoreBackupSubtitle =>
-      'Restore old data from a .mikcb backup file';
 
   @override
   String get viewGuideTitle => 'View Guide';
@@ -1511,10 +1459,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutOpenSourceLicensesExtraSectionTitle => 'About these licenses';
-
-  @override
-  String get aboutOpenSourceLicensesExtraUmeng =>
-      'Analytics services such as Umeng are enabled only after you accept the privacy policy, and are governed by their own terms and privacy policy.';
 
   @override
   String get aboutOpenSourceLicensesExtraNote => '';
@@ -2294,47 +2238,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diagnosticsStackTrace => 'Stack Trace';
 
   @override
-  String get firstUseGuideTitle => 'First Use Guide';
-
-  @override
   String get guideAndPermissionsTitle => 'Guide & Permissions';
 
   @override
   String get refreshStatusTooltip => 'Refresh Status';
-
-  @override
-  String get guideHeroTitle =>
-      'Finish this page first, then start using the app';
-
-  @override
-  String get guideHeroSubtitle =>
-      'Authorize the essentials on the first screen. Below you’ll also see HyperOS support, short-name setup, and import guidance, so keep scrolling';
-
-  @override
-  String get guideChipPermissions => 'Permissions';
-
-  @override
-  String get guideChipShortName => 'Short Names';
-
-  @override
-  String get guideChipImport => 'Import Timetable';
-
-  @override
-  String guideChipReadyCount(int count) {
-    return '$count/3 Ready';
-  }
-
-  @override
-  String get guideBottomReachedHint =>
-      'You’ve reached the end. If everything looks right, you can start using the app now';
-
-  @override
-  String get guideScrollHint =>
-      'Scroll down to continue. HyperOS support, the permission checklist, short-name setup, and import methods are all below';
-
-  @override
-  String get guideRequestNotificationFirst =>
-      'Request Notification Permission First';
 
   @override
   String get quickSetupTitle => 'Quick Setup';
@@ -2344,55 +2251,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Put the 5 most important entries first so you don’t need to search for them later';
 
   @override
-  String get quickActionNotificationsTitle => 'Notification Settings';
-
-  @override
-  String get quickActionNotificationsSubtitle =>
-      'Make sure notifications can be sent';
-
-  @override
-  String get quickActionIslandTitle => 'Island Permission';
-
-  @override
-  String get quickActionIslandSubtitle => 'Check promoted notifications';
-
-  @override
   String get quickActionAutoStartTitle => 'Auto Start';
 
   @override
-  String get quickActionAutoStartSubtitle => 'Avoid background kills';
-
-  @override
-  String get quickActionBatteryTitle => 'Unlimited Battery';
-
-  @override
-  String get quickActionBatterySubtitle => 'Avoid reminder interruption';
-
-  @override
-  String get quickActionKeepAliveTitle => 'Keep-Alive Helper';
-
-  @override
-  String get quickActionKeepAliveSubtitle => 'Improve background stability';
-
-  @override
-  String get guidePrivacyConsentLabel =>
-      'I have read and agree to the Umeng privacy notice';
-
-  @override
-  String get guideRequireConsentHint =>
-      'Please scroll to the end, review the notes, and check consent before starting';
-
-  @override
-  String get guideContinueHint => 'Keep scrolling to finish the guide';
-
-  @override
-  String get exitAppAction => 'Exit App';
-
-  @override
   String get continueReadingAction => 'Continue Reading';
-
-  @override
-  String get agreeAndStartAction => 'Agree and Start';
 
   @override
   String get startUsingAction => 'Start Using';
@@ -2647,13 +2509,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTitleStyleLabel => 'Title style';
 
   @override
-  String get themeSeedSectionTitle => 'App theme color';
-
-  @override
-  String get themeSeedSectionSubtitle =>
-      'Affects the top bar, accent color, and global primary tone';
-
-  @override
   String get frostedSheetSectionTitle => 'Frosted Glass';
 
   @override
@@ -2851,12 +2706,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get guideHyperOsChip => 'HyperOS 3.0.300+';
-
-  @override
-  String get guideStatusTitle => 'Current status';
-
-  @override
   String get guideStatusNotificationPermission => 'Notification permission';
 
   @override
@@ -2886,186 +2735,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get guideStatusBatteryRestricted => 'Restricted';
-
-  @override
-  String get guideStatusKeepAlive => 'Background keep-alive helper';
-
-  @override
-  String get guideStatusAndroidVersion => 'Android version';
-
-  @override
-  String get guideStatusVersionUnknown => 'Unknown';
-
-  @override
-  String get guideStatusIslandSystemSupport => 'Island system support';
-
-  @override
-  String get guideStatusIslandSystemRequirement =>
-      'Requires HyperOS 3.0.300 or above';
-
-  @override
-  String get guideStatusIslandHint =>
-      'If you mainly want to use the Island, first make sure your system version is at least HyperOS 3.0.300, then complete the permission checklist below in order';
-
-  @override
-  String get guidePermissionChecklistTitle => 'Permission checklist';
-
-  @override
-  String get guidePermissionChecklistSubtitle =>
-      'Follow this order for the easiest setup and the lowest chance of missing anything';
-
-  @override
-  String get guideChecklistRequestNotificationTitle =>
-      'Request notification permission';
-
-  @override
-  String get guideChecklistRequestNotificationSubtitle =>
-      'This is required for all reminders';
-
-  @override
-  String get guideChecklistOpenNotificationTitle =>
-      'Open notification settings';
-
-  @override
-  String get guideChecklistOpenNotificationSubtitle =>
-      'Check the master switch, lock-screen display, and live notification permission';
-
-  @override
-  String get guideChecklistOpenIslandTitle =>
-      'Open promoted notification settings';
-
-  @override
-  String get guideChecklistOpenIslandSubtitle =>
-      'On HyperOS 3.0.300 and above, also check promoted / Island notifications';
-
-  @override
-  String get guideChecklistOpenAutoStartTitle => 'Open auto-start settings';
-
-  @override
-  String get guideChecklistOpenAutoStartSubtitle =>
-      'Allow the app to launch on boot and stay active in the background';
-
-  @override
-  String get guideChecklistOpenBatteryTitle => 'Open battery settings';
-
-  @override
-  String get guideChecklistOpenBatterySubtitle =>
-      'Set it to Unrestricted to avoid missed reminders';
-
-  @override
-  String get guideChecklistOpenKeepAliveTitle => 'Open keep-alive helper';
-
-  @override
-  String get guideChecklistOpenKeepAliveSubtitle =>
-      'Further improves Island and reminder stability in the background';
-
-  @override
-  String get guideShortNameAdviceTitle => 'Course short-name tips';
-
-  @override
-  String get guideShortNameAdviceSubtitle =>
-      'The Island supports course short names. Short names are not generated automatically, so you need to fill them in on the course edit page yourself. Keeping them within 3 characters is usually the most stable';
-
-  @override
-  String get guideShortNameRecommended => 'Recommended';
-
-  @override
-  String get guideShortNameNotRecommended => 'Not recommended';
-
-  @override
-  String get guideShortNameRecommendedExample => 'Calc / Prob / CNC';
-
-  @override
-  String get guideShortNameNotRecommendedExample =>
-      'Advanced Mathematics A(1) / CNC Technology and Applications';
-
-  @override
-  String get guideSetCourseShortNameAction => 'Set course short name';
-
-  @override
-  String get guideImportMethodsTitle => 'Timetable import methods';
-
-  @override
-  String get guideImportMethodsSubtitle =>
-      'This version already supports web login import for some school systems. If your school is not supported yet, there are still other migration options';
-
-  @override
-  String get guideImportMethodStep1 =>
-      'Go to \"Import Courses > Academic System Import\" first, choose your school and adapter, then complete the import directly in the in-app web page.';
-
-  @override
-  String get guideImportMethodStep2 =>
-      'If your school is not supported yet, you can first import courses into WakeUp or another timetable app, export them as a calendar file, and then import them into this app.';
-
-  @override
-  String get guideImportMethodStep3 =>
-      'If someone else is already using this app, they can export a full backup and you can import it directly to restore courses and settings.';
-
-  @override
-  String get guideImportMethodExtra =>
-      'If you know packet capture, web debugging, or JavaScript, you are also welcome to help add school adapters so more schools can import directly.';
-
-  @override
-  String get guideFinalTipsTitle => 'Three final tips';
-
-  @override
-  String get guideFinalTip1 =>
-      '1. HyperOS 3.0.300 and above is required for the Island. If your system version is lower, the app can still send normal reminders.';
-
-  @override
-  String get guideFinalTip2 =>
-      '2. Adjust the before-class popup and in-class and near-end reminder thresholds in Settings first.';
-
-  @override
-  String get guideFinalTip3 =>
-      '3. After finishing the system permission setup, use a test notification to verify everything. If the Island still disappears occasionally, check auto-start and battery policy first.';
-
-  @override
-  String get guidePrivacyHelperRequireConsent =>
-      'By checking the box, you confirm that you have read and agreed to the Umeng-related privacy notes, privacy content, and disclaimer above';
-
-  @override
-  String get guidePrivacyHelperViewOnly =>
-      'This page keeps the same privacy, third-party SDK, and disclaimer information shown during first launch so you can review it at any time. You do not need to agree again here';
-
-  @override
-  String get guidePrivacySectionTitle =>
-      'Privacy, third-party SDKs, and disclaimer';
-
-  @override
-  String get guidePrivacyParagraph1 =>
-      'The core features of this app are designed to run locally. Timetables, time schemes, course records, and most settings are stored on your device by default.';
-
-  @override
-  String get guidePrivacyParagraph2 =>
-      'The app only exchanges data with external services when you actively use networked features such as update checks, update downloads, import/export, or when you agree to initialize Umeng-related SDKs.';
-
-  @override
-  String get guidePrivacyParagraph3 =>
-      'This app integrates the Umeng Mobile Analytics SDK, Umeng App Performance Monitoring SDK, and advanced operations analytics dependencies. They are used for analytics, app performance monitoring, and advanced operations analysis, and they are initialized only after you agree.';
-
-  @override
-  String get guidePrivacyParagraph4 =>
-      'According to Umeng documentation, these SDKs may process information such as device info (IMEI, MAC, Android ID, OAID, IDFA, OpenUDID, GUID, SIM IMSI, etc.), network status, device identifiers, and app list / location-related information used by advanced operations analytics dependencies.';
-
-  @override
-  String get guideRiskTitle => 'Disclaimer and risk notes';
-
-  @override
-  String get guideRiskParagraph1 =>
-      '1. Island behavior, promoted notifications, background reminders, and keep-alive effects depend on system version, device model, vendor policy, permissions, auto-start, battery policy, and other external conditions. Consistent behavior across all devices cannot be guaranteed.';
-
-  @override
-  String get guideRiskParagraph2 =>
-      '2. Update checks, mirror downloads, system downloader, import/export, and sharing depend on network conditions, third-party services, and system file capabilities. If failures, throttling, or file issues occur, please refer to the Release page, your own backups, and system prompts.';
-
-  @override
-  String get guideRiskParagraph3 =>
-      '3. Before migrating, importing, or overwriting data, please confirm that your backup files are complete and usable, and keep files containing timetable information safe. Risks caused by deletion, overwriting, sharing, or improper storage are the user\'s responsibility.';
-
-  @override
-  String get guideUmengPrivacyLink =>
-      'Umeng Privacy Policy: https://www.umeng.com/page/policy';
 
   @override
   String get liveDiagnosticsUnavailable => 'There are no app logs to view yet.';
@@ -3123,16 +2792,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get liveTestingSessionCanceled => 'Self-check test cancelled';
-
-  @override
-  String get liveTestingUmengHint =>
-      'The two buttons below are shown only in test builds and are used to verify Umeng U-APM crash and ANR reporting';
-
-  @override
-  String get liveTestingCrashAction => 'Crash test';
-
-  @override
-  String get liveTestingAnrAction => 'ANR test';
 
   @override
   String get liveTestingIslandStatusTitle => 'Island status diagnostics';
@@ -3249,14 +2908,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get liveTestingCurrentNativeFieldsSubtitle =>
       'Shows the current native diagnostic fields';
-
-  @override
-  String get liveTestingCrashSoon =>
-      'A Umeng U-APM test crash is about to be triggered. Reopen the app afterward to check whether it was reported.';
-
-  @override
-  String get liveTestingAnrSoon =>
-      'A ~30-second main-thread freeze is about to be triggered. Test outside flutter run, then reopen the app afterward to check Umeng.';
 
   @override
   String get liveTestingNoCourseAvailable =>
@@ -3475,10 +3126,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeWidgetCoupleModeOffMessage =>
-      'Couple mode is off. Tap the button below to turn it on';
+      'Couple mode is off. Turn it on with the switch below';
 
   @override
-  String get homeWidgetCoupleModeOffEnable => 'Turn on couple mode';
+  String get coupleModeTitle => 'Couple mode';
 
   @override
   String get homeWidgetBindingMissingToast =>
@@ -5859,57 +5510,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get thisWeekLabel => 'This week';
 
   @override
-  String get guidePrivacyPageTitle => 'Privacy Policy';
-
-  @override
-  String get guidePermissionsPageTitle => 'Permissions';
-
-  @override
-  String get guideTipsPageTitle => 'Tips';
-
-  @override
-  String get guidePersonalizePageTitle => 'Personalize';
-
-  @override
-  String get guidePersonalizeSubtitle =>
-      'These apply immediately and can be changed anytime in Settings → Appearance';
-
-  @override
-  String get guidePersonalizeMenuStyleTitle => 'Menu style';
-
-  @override
-  String get guidePersonalizeNavFormTitle => 'Navigation form';
-
-  @override
-  String get guidePersonalizeVisualEffectTitle => 'Visual effect';
-
-  @override
-  String get guidePersonalizeVisualEffectSolid => 'Solid cards';
-
-  @override
-  String get guideVisualEffectGaussianDesc =>
-      'Live gaussian blur behind surfaces — layered and translucent';
-
-  @override
-  String get guideVisualEffectLiquidDesc =>
-      'Liquid glass refraction with extra depth (slightly higher power use)';
-
-  @override
-  String get guideVisualEffectSolidDesc => 'No blur effects — best performance';
-
-  @override
-  String get guidePersonalizeThemeModeTitle => 'Theme mode';
-
-  @override
-  String get guidePersonalizeSeedColorTitle => 'Accent color';
-
-  @override
-  String get guidePrevButton => 'Previous';
-
-  @override
-  String get guideNextButton => 'Next';
-
-  @override
   String get guidePermissionsHeader => 'System Permissions';
 
   @override
@@ -5919,19 +5519,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get guidePermissionsFooterHint =>
       'Tap to open system settings. Statuses that can be detected will refresh automatically when you return. Auto-start is limited by the system; use the switch on the system page as the source of truth';
-
-  @override
-  String get guideTipsHeader => 'Tips';
-
-  @override
-  String get guideTipsSubtitle => 'These can always be found in Settings';
-
-  @override
-  String get guidePrivacyReadBeforeUse => 'Please read and agree before use';
-
-  @override
-  String get guidePrivacyViewOnly =>
-      'Privacy, third-party SDKs, and disclaimer';
 
   @override
   String holidayDataYearLabel(Object year) {
@@ -6018,146 +5605,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get textColorCurrentColor => 'Current color';
 
   @override
-  String get themeExport => 'Export Theme';
-
-  @override
-  String get themeImport => 'Import Theme';
-
-  @override
-  String get themeExportSuccess => 'Theme copied to clipboard';
-
-  @override
-  String get themeImportSuccess => 'Theme imported';
-
-  @override
-  String get themeImportFailed => 'Clipboard content format error';
-
-  @override
-  String get themeManageTitle => 'Theme Manager';
-
-  @override
-  String get themeManageSubtitle => 'Export, import and switch themes';
-
-  @override
-  String get themePreset => 'Preset Themes';
-
-  @override
-  String get themeSaved => 'My Themes';
-
-  @override
-  String get themeSaveCurrent => 'Save Current Theme';
-
-  @override
-  String get themeApply => 'Apply';
-
-  @override
-  String get themeDelete => 'Delete';
-
-  @override
-  String themeDeleteConfirmMessage(String name) {
-    return 'Are you sure you want to delete theme \"$name\"?';
-  }
-
-  @override
   String get textColorLowContrastWarning =>
       'Low color contrast may affect readability';
 
   @override
-  String get themeCurrentTheme => 'Current Theme';
-
-  @override
-  String themeBasedOnModified(String baseName) {
-    return 'Based on $baseName (modified)';
-  }
-
-  @override
-  String get themeResetToPreset => 'Reset';
-
-  @override
-  String get themeUnsavedChangesTitle => 'Unsaved Changes';
-
-  @override
-  String get themeUnsavedChangesMessage =>
-      'Current theme has unsaved changes. Do you want to save?';
-
-  @override
-  String get themeDiscardAndApply => 'Discard & Apply';
-
-  @override
-  String get themeNameHint => 'Enter theme name';
-
-  @override
-  String get themePresetBlue => 'Default Blue';
-
-  @override
-  String get themePresetPurple => 'Night Purple';
-
-  @override
-  String get themePresetGreen => 'Forest Green';
-
-  @override
-  String get themePresetOrange => 'Warm Orange';
-
-  @override
-  String get themePresetEyeCare => 'Eye Care';
-
-  @override
-  String get themePresetHighContrast => 'High Contrast';
-
-  @override
-  String get themePresetDarkMinimal => 'Dark Minimal';
-
-  @override
-  String get foruiThemeNeutral => 'Neutral';
-
-  @override
-  String get foruiThemeZinc => 'Zinc';
-
-  @override
-  String get foruiThemeSlate => 'Slate';
-
-  @override
-  String get foruiThemeBlue => 'Blue';
-
-  @override
-  String get foruiThemeGreen => 'Green';
-
-  @override
-  String get foruiThemeOrange => 'Orange';
-
-  @override
-  String get foruiThemeRed => 'Red';
-
-  @override
-  String get foruiThemeRose => 'Rose';
-
-  @override
-  String get foruiThemeViolet => 'Violet';
-
-  @override
-  String get foruiThemeYellow => 'Yellow';
-
-  @override
   String get themeUndo => 'Undo';
-
-  @override
-  String themeChanged(String themeName) {
-    return 'Switched to $themeName';
-  }
-
-  @override
-  String get themeRename => 'Rename';
-
-  @override
-  String get themeDuplicate => 'Duplicate';
-
-  @override
-  String themeDuplicateCopyName(String name) {
-    return '$name (copy)';
-  }
-
-  @override
-  String get themeMoreActions => 'More actions';
 
   @override
   String get courseNatureRequired => 'Required';
@@ -8128,9 +7580,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logAppLoggerInitialized => 'App log service initialized';
 
   @override
-  String get logPrivacyConsentUpdated => 'Privacy consent status updated';
-
-  @override
   String get logAppLogRecordingEnabled => 'App log recording enabled';
 
   @override
@@ -8551,9 +8000,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logCatAppLoggerInitialized => 'app log: ger initialized';
-
-  @override
-  String get logCatPrivacyConsentUpdated => 'privacy consent updated';
 
   @override
   String get logCatAppLogRecordingEnabled => 'app log: recording enabled';
@@ -9225,94 +8671,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Location match takes priority over date rules.';
 
   @override
-  String get frostedGlassModeLabel => 'Glass Mode';
-
-  @override
-  String get liquidGlassScopeSectionTitle => 'Liquid Glass Surfaces';
-
-  @override
-  String get liquidGlassScopePopupTitle => 'Dropdown popups';
-
-  @override
-  String get liquidGlassScopePopupSubtitle =>
-      'Small anchored menus opened from settings rows like Glass Mode';
-
-  @override
-  String get liquidGlassScopeSelectSheetTitle => 'Fullscreen picker panels';
-
-  @override
-  String get liquidGlassScopeSelectSheetSubtitle =>
-      'Long-list selection dialogs such as Preset Themes and Fonts; frosted by default';
-
-  @override
-  String get liquidGlassScopeSheetDialogTitle => 'Sheets & dialogs';
-
-  @override
-  String get liquidGlassScopeSheetDialogSubtitle =>
-      'Bottom sheets, confirm dialogs and action menus';
-
-  @override
-  String get liquidGlassScopeHomeChromeTitle => 'Home chrome glass';
-
-  @override
-  String get liquidGlassScopeHomeChromeSubtitle =>
-      'Glass band behind the title bar and weekday bar';
-
-  @override
-  String get liquidGlassScopeDockTitle => 'Glass dock navigation';
-
-  @override
-  String get liquidGlassScopeDockSubtitle =>
-      'Floating bottom pill and add-course button';
-
-  @override
-  String get liquidGlassScopePickerButtonsTitle => 'Wallpaper picker buttons';
-
-  @override
-  String get liquidGlassScopePickerButtonsSubtitle =>
-      'Floating glass buttons on the wallpaper position picker';
-
-  @override
-  String get frostedGlassModeFrosted => 'Classic Frosted';
-
-  @override
-  String get frostedGlassModeLiquid => 'Liquid Glass';
-
-  @override
-  String get frostedGlassModeGaussian => 'Gaussian Blur';
-
-  @override
-  String get frostedGlassModeTranslucent => 'Translucent';
-
-  @override
-  String get frostedLiquidGlassHint =>
-      'Liquid glass requires a high-performance device';
-
-  @override
-  String get advancedMaterialTitle => 'Advanced Material';
-
-  @override
-  String get advancedMaterialEntrySubtitle => 'Liquid glass parameter tuning';
-
-  @override
-  String get liquidGlassPresetLabel => 'Liquid Glass Preset';
-
-  @override
-  String get liquidGlassPresetClear => 'Clear';
-
-  @override
-  String get liquidGlassPresetLight => 'Light Mist';
-
-  @override
-  String get liquidGlassPresetStandard => 'Standard';
-
-  @override
-  String get liquidGlassPresetDense => 'Dense';
-
-  @override
-  String get liquidGlassPresetCustom => 'Custom';
-
-  @override
   String get courseCardSettingsTitle => 'Course Card';
 
   @override
@@ -9322,15 +8680,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get courseCardSectionLayout => 'Layout';
 
   @override
-  String get courseCardSurfaceStyleLabel => 'Card Appearance';
-
-  @override
-  String get courseCardSurfaceStyleSolid => 'Solid';
-
-  @override
-  String get courseCardSurfaceStyleGaussian => 'Gaussian Blur';
-
-  @override
   String get courseCardSectionColor => 'Color';
 
   @override
@@ -9338,42 +8687,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get collapsibleLargeTitle => 'Collapsible Large Title';
-
-  @override
-  String get liquidGlassCustomExpandedTitle => 'Custom Parameters';
-
-  @override
-  String get liquidGlassThicknessLabel => 'Thickness';
-
-  @override
-  String get liquidGlassBlurLabel => 'Blur Intensity';
-
-  @override
-  String get liquidGlassTintLabel => 'Tint Intensity';
-
-  @override
-  String get liquidGlassLightIntensityLabel => 'Light Intensity';
-
-  @override
-  String get liquidGlassAmbientStrengthLabel => 'Ambient Light Strength';
-
-  @override
-  String get liquidGlassRefractiveIndexLabel => 'Refractive Index';
-
-  @override
-  String get liquidGlassSaturationLabel => 'Saturation';
-
-  @override
-  String get liquidGlassChromaticAberrationLabel => 'Chromatic Aberration';
-
-  @override
-  String get liquidGlassLightAngleLabel => 'Light Angle';
-
-  @override
-  String get liquidGlassVisibilityLabel => 'Visibility';
-
-  @override
-  String get liquidGlassResetAction => 'Reset to Default';
 
   @override
   String get diagnosticsEntryTitle => 'Diagnostics';
@@ -9789,9 +9102,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeNavigationTitle => 'Home & Navigation';
 
   @override
-  String get homeMenuCustomizeSectionTitle => 'Top-right menu';
-
-  @override
   String get homeNavigationSubtitle => 'Bottom bar style, menu and home title';
 
   @override
@@ -9881,24 +9191,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get glassDockExtraButtonSemanticLabel => 'Add course';
 
   @override
-  String get homeMenuStyleLabel => 'Top-right menu style';
-
-  @override
-  String get homeMenuStyleList => 'List menu';
-
-  @override
-  String get homeMenuStyleGrid => 'Eight-tile grid menu';
-
-  @override
-  String get homeMenuStyleListSubtitle => 'Anchored list, customizable';
-
-  @override
-  String get homeMenuStyleGridSubtitle => 'Icon grid, customizable';
-
-  @override
-  String get homeMenuCustomizeTitle => 'Customize menu buttons';
-
-  @override
   String homeGridCustomizeDetails(int count, int max) {
     return '$count/$max enabled';
   }
@@ -9912,13 +9204,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeGridEditorEnabledTitle => 'Enabled';
 
   @override
-  String get homeGridEditorAvailableTitle => 'Available to add';
-
-  @override
   String get homeGridEditorRemoveTooltip => 'Remove';
-
-  @override
-  String get homeGridEditorAddTooltip => 'Add';
 
   @override
   String get homeGridEditorResetAction => 'Reset to default order';
@@ -9928,10 +9214,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeGridEditorMaxReached => 'Limit reached';
-
-  @override
-  String get homeGridEditorPinnedTooltip =>
-      'This entry reopens this page and cannot be removed';
 
   @override
   String get homeMenuCategoryFeatures => 'Features';
