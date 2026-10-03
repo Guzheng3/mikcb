@@ -218,6 +218,82 @@
   "withuCouplePartnerTimetableMissing": "Partner timetable not found. Ask them to upload first.",
   "withuCoupleRequestFailed": "withU request failed. Try again later.",
   "withuCoupleSessionCookieMissing": "withU did not return a login session",
+  "onboardingAuthTitle": "Sign in to Qingyu Timetable",
+  "onboardingAuthSubtitle": "Sign in to back up your timetable to the cloud; couple mode starts once you bind your partner",
+  "onboardingAuthAccountLabel": "Account",
+  "onboardingAuthAccountHint": "Username or phone number",
+  "onboardingAuthPasswordLabel": "Password",
+  "onboardingAuthPasswordHint": "Enter your password",
+  "onboardingAuthLoginAction": "Sign in",
+  "onboardingAuthRegisterEntry": "Create a new account",
+  "onboardingAuthOfflineAction": "Offline mode",
+  "onboardingAuthOfflineHint": "Data stays on this device only — no cloud upload, no couple sync",
+  "onboardingRegisterTitle": "Create a new account",
+  "onboardingRegisterSubtitle": "After signing up you can sign in, then invite or bind your partner",
+  "onboardingRegisterPhoneLabel": "Phone number",
+  "onboardingRegisterPhoneHint": "Used to sign in and to be found by your partner",
+  "onboardingRegisterNicknameLabel": "Nickname",
+  "onboardingRegisterNicknameHint": "The name shown in your timetable",
+  "onboardingRegisterGenderLabel": "I am",
+  "onboardingRegisterGenderMale": "Male",
+  "onboardingRegisterGenderFemale": "Female",
+  "onboardingRegisterPasswordLabel": "Password (at least 6 characters)",
+  "onboardingRegisterConfirmLabel": "Confirm password",
+  "onboardingRegisterInvalidPhone": "Please enter a valid phone number",
+  "onboardingRegisterPasswordMismatch": "Passwords do not match",
+  "onboardingRegisterMissingFields": "Please fill in all fields",
+  "onboardingRegisterAction": "Sign up & sign in",
+  "partnerBindingTitle": "Bind your partner",
+  "partnerBindingSubtitle": "Once bound you can see each other's timetable; you can also skip for now and finish later in Couple Center",
+  "partnerBindingSearchLabel": "Partner's phone number",
+  "partnerBindingSearchAction": "Search",
+  "partnerBindingSearchNotFound": "No account found for this phone number",
+  "partnerBindingSendRequestTo": "Send a bind request to {nickname}",
+  "@partnerBindingSendRequestTo": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "partnerBindingRequestSent": "Bind request sent — waiting for their approval",
+  "partnerBindingMyCodeLabel": "My invite code",
+  "partnerBindingMyCodeHint": "Share this code with your partner; entering it binds instantly",
+  "partnerBindingCopyAction": "Copy invite code",
+  "partnerBindingCopied": "Copied to clipboard",
+  "partnerBindingEnterCodeLabel": "Partner's invite code",
+  "partnerBindingBindByCodeAction": "Bind with invite code",
+  "partnerBindingInvalidCode": "Invite code should be 8 letters/digits",
+  "partnerBindingIncomingSection": "Requests received",
+  "partnerBindingAcceptAction": "Accept",
+  "partnerBindingRejectAction": "Decline",
+  "partnerBindingOutgoingSection": "Requests sent",
+  "partnerBindingWaitingRespond": "Waiting for their response",
+  "partnerBindingSkip": "Skip for now",
+  "partnerBindingBoundToast": "Bound with {nickname}",
+  "@partnerBindingBoundToast": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "partnerBindingLoadFailed": "Failed to load, tap to retry",
+  "homeTitleOfflineMode": "Offline mode · Data stays on device",
+  "coupleCenterBindEntryTitle": "Bind your partner",
+  "coupleCenterBindEntrySubtitle": "Search by phone number or use an invite code",
+  "coupleCenterBindRequestsBadge": "{count} pending request(s)",
+  "@coupleCenterBindRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsOfflineStateTitle": "Offline mode",
+  "settingsOfflineStateSubtitle": "Data stays on this device, no cloud upload",
+  "settingsOfflineExitAction": "Exit offline mode",
+  "withuInvalidPhone": "Please enter a valid phone number",
   "aboutSupportSectionTitle": "About & Support",
   "feedbackEntryTitle": "Feedback",
   "feedbackEntrySubtitle": "Issue tracker, community channels, and suggestion entry",

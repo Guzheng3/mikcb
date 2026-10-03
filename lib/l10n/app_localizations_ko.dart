@@ -484,6 +484,181 @@ class AppLocalizationsKo extends AppLocalizations {
   String get withuCoupleSessionCookieMissing => 'withU에서 로그인 세션을 반환하지 않았습니다';
 
   @override
+  String get onboardingAuthTitle => '경屿 시간표 로그인';
+
+  @override
+  String get onboardingAuthSubtitle =>
+      '로그인하면 시간표를 클라우드에 백업할 수 있습니다. 상대방과 연결하면 커플 모드가 활성화됩니다';
+
+  @override
+  String get onboardingAuthAccountLabel => '계정';
+
+  @override
+  String get onboardingAuthAccountHint => '사용자 이름 또는 휴대전화 번호';
+
+  @override
+  String get onboardingAuthPasswordLabel => '비밀번호';
+
+  @override
+  String get onboardingAuthPasswordHint => '비밀번호를 입력하세요';
+
+  @override
+  String get onboardingAuthLoginAction => '로그인';
+
+  @override
+  String get onboardingAuthRegisterEntry => '새 계정 등록';
+
+  @override
+  String get onboardingAuthOfflineAction => '오프라인 모드';
+
+  @override
+  String get onboardingAuthOfflineHint =>
+      '데이터는 이 기기에만 저장되며 클라우드에 업로드되지 않고 커플 동기화도 사용하지 않습니다';
+
+  @override
+  String get onboardingRegisterTitle => '새 계정 등록';
+
+  @override
+  String get onboardingRegisterSubtitle => '가입 후 로그인하고, 상대방을 초대하거나 연결할 수 있습니다';
+
+  @override
+  String get onboardingRegisterPhoneLabel => '휴대전화 번호';
+
+  @override
+  String get onboardingRegisterPhoneHint => '로그인과 상대방의 검색·연결에 사용됩니다';
+
+  @override
+  String get onboardingRegisterNicknameLabel => '닉네임';
+
+  @override
+  String get onboardingRegisterNicknameHint => '시간표에 표시될 이름';
+
+  @override
+  String get onboardingRegisterGenderLabel => '성별';
+
+  @override
+  String get onboardingRegisterGenderMale => '남성';
+
+  @override
+  String get onboardingRegisterGenderFemale => '여성';
+
+  @override
+  String get onboardingRegisterPasswordLabel => '비밀번호 (6자 이상)';
+
+  @override
+  String get onboardingRegisterConfirmLabel => '비밀번호 확인';
+
+  @override
+  String get onboardingRegisterInvalidPhone => '올바른 휴대전화 번호를 입력하세요';
+
+  @override
+  String get onboardingRegisterPasswordMismatch => '비밀번호가 일치하지 않습니다';
+
+  @override
+  String get onboardingRegisterMissingFields => '모든 항목을 입력해 주세요';
+
+  @override
+  String get onboardingRegisterAction => '가입 및 로그인';
+
+  @override
+  String get partnerBindingTitle => '파트너 연결';
+
+  @override
+  String get partnerBindingSubtitle =>
+      '연결하면 서로의 시간표를 볼 수 있습니다. 지금은 건너뛰고 나중에 커플 센터에서 완료할 수도 있습니다';
+
+  @override
+  String get partnerBindingSearchLabel => '상대방 휴대전화 번호';
+
+  @override
+  String get partnerBindingSearchAction => '검색';
+
+  @override
+  String get partnerBindingSearchNotFound => '이 번호로 등록된 계정을 찾을 수 없습니다';
+
+  @override
+  String partnerBindingSendRequestTo(String nickname) {
+    return '$nickname 님에게 연결 요청 보내기';
+  }
+
+  @override
+  String get partnerBindingRequestSent => '연결 요청을 보냈습니다. 상대방의 수락을 기다리는 중입니다';
+
+  @override
+  String get partnerBindingMyCodeLabel => '내 초대 코드';
+
+  @override
+  String get partnerBindingMyCodeHint => '초대 코드를 상대방에게 보내면, 상대방이 입력하는 순간 연결됩니다';
+
+  @override
+  String get partnerBindingCopyAction => '초대 코드 복사';
+
+  @override
+  String get partnerBindingCopied => '클립보드에 복사되었습니다';
+
+  @override
+  String get partnerBindingEnterCodeLabel => '상대방 초대 코드';
+
+  @override
+  String get partnerBindingBindByCodeAction => '초대 코드로 연결';
+
+  @override
+  String get partnerBindingInvalidCode => '초대 코드는 8자리 영문 숫자입니다';
+
+  @override
+  String get partnerBindingIncomingSection => '받은 요청';
+
+  @override
+  String get partnerBindingAcceptAction => '수락';
+
+  @override
+  String get partnerBindingRejectAction => '거절';
+
+  @override
+  String get partnerBindingOutgoingSection => '보낸 요청';
+
+  @override
+  String get partnerBindingWaitingRespond => '상대방의 응답 대기 중';
+
+  @override
+  String get partnerBindingSkip => '지금은 건너뛰기';
+
+  @override
+  String partnerBindingBoundToast(String nickname) {
+    return '$nickname 님과 연결되었습니다';
+  }
+
+  @override
+  String get partnerBindingLoadFailed => '불러오기에 실패했습니다. 다시 시도해 주세요';
+
+  @override
+  String get homeTitleOfflineMode => '오프라인 모드 · 데이터는 기기에만';
+
+  @override
+  String get coupleCenterBindEntryTitle => '파트너 연결';
+
+  @override
+  String get coupleCenterBindEntrySubtitle => '휴대전화 번호 검색 또는 초대 코드로 연결';
+
+  @override
+  String coupleCenterBindRequestsBadge(int count) {
+    return '처리 대기 중인 요청 $count건';
+  }
+
+  @override
+  String get settingsOfflineStateTitle => '오프라인 모드';
+
+  @override
+  String get settingsOfflineStateSubtitle =>
+      '데이터는 이 기기에만 저장되며 클라우드에 업로드되지 않습니다';
+
+  @override
+  String get settingsOfflineExitAction => '오프라인 모드 종료';
+
+  @override
+  String get withuInvalidPhone => '올바른 휴대전화 번호를 입력하세요';
+
+  @override
   String get aboutSupportSectionTitle => '앱 정보 및 지원';
 
   @override

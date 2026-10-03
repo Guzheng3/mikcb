@@ -486,6 +486,180 @@ class AppLocalizationsJa extends AppLocalizations {
   String get withuCoupleSessionCookieMissing => 'withU からログインセッションが返されませんでした';
 
   @override
+  String get onboardingAuthTitle => '軽屿時間割 にログイン';
+
+  @override
+  String get onboardingAuthSubtitle =>
+      'ログインすると時間割をクラウドにバックアップできます。パートナーと紐づくとカップルモードが有効になります';
+
+  @override
+  String get onboardingAuthAccountLabel => 'アカウント';
+
+  @override
+  String get onboardingAuthAccountHint => 'ユーザー名または電話番号';
+
+  @override
+  String get onboardingAuthPasswordLabel => 'パスワード';
+
+  @override
+  String get onboardingAuthPasswordHint => 'パスワードを入力してください';
+
+  @override
+  String get onboardingAuthLoginAction => 'ログイン';
+
+  @override
+  String get onboardingAuthRegisterEntry => '新規アカウント登録';
+
+  @override
+  String get onboardingAuthOfflineAction => 'オフラインモード';
+
+  @override
+  String get onboardingAuthOfflineHint =>
+      'データは端末内のみに保存され、クラウドへアップロードされず、カップル同期も無効になります';
+
+  @override
+  String get onboardingRegisterTitle => '新規アカウント登録';
+
+  @override
+  String get onboardingRegisterSubtitle => '登録後にログインし、パートナーを招待または紐づけできます';
+
+  @override
+  String get onboardingRegisterPhoneLabel => '電話番号';
+
+  @override
+  String get onboardingRegisterPhoneHint => 'ログインと相手からの検索・紐づけに使用します';
+
+  @override
+  String get onboardingRegisterNicknameLabel => 'ニックネーム';
+
+  @override
+  String get onboardingRegisterNicknameHint => '時間割に表示される名前';
+
+  @override
+  String get onboardingRegisterGenderLabel => '性別';
+
+  @override
+  String get onboardingRegisterGenderMale => '男性';
+
+  @override
+  String get onboardingRegisterGenderFemale => '女性';
+
+  @override
+  String get onboardingRegisterPasswordLabel => 'パスワード（6 文字以上）';
+
+  @override
+  String get onboardingRegisterConfirmLabel => 'パスワード（確認）';
+
+  @override
+  String get onboardingRegisterInvalidPhone => '正しい電話番号を入力してください';
+
+  @override
+  String get onboardingRegisterPasswordMismatch => 'パスワードが一致しません';
+
+  @override
+  String get onboardingRegisterMissingFields => 'すべての項目を入力してください';
+
+  @override
+  String get onboardingRegisterAction => '登録してログイン';
+
+  @override
+  String get partnerBindingTitle => 'パートナーを紐づける';
+
+  @override
+  String get partnerBindingSubtitle =>
+      '紐づけるとお互いの時間割を見られます。今はスキップして、後でカップルセンターから設定することもできます';
+
+  @override
+  String get partnerBindingSearchLabel => '相手の電話番号';
+
+  @override
+  String get partnerBindingSearchAction => '検索';
+
+  @override
+  String get partnerBindingSearchNotFound => 'この電話番号のアカウントが見つかりません';
+
+  @override
+  String partnerBindingSendRequestTo(String nickname) {
+    return '$nickname さんに紐づけ申請を送る';
+  }
+
+  @override
+  String get partnerBindingRequestSent => '紐づけ申請を送信しました。相手の承認を待っています';
+
+  @override
+  String get partnerBindingMyCodeLabel => '自分の招待コード';
+
+  @override
+  String get partnerBindingMyCodeHint => '招待コードを相手に送れば、相手が入力するだけで紐づけできます';
+
+  @override
+  String get partnerBindingCopyAction => '招待コードをコピー';
+
+  @override
+  String get partnerBindingCopied => 'クリップボードにコピーしました';
+
+  @override
+  String get partnerBindingEnterCodeLabel => '相手の招待コード';
+
+  @override
+  String get partnerBindingBindByCodeAction => '招待コードで紐づける';
+
+  @override
+  String get partnerBindingInvalidCode => '招待コードは 8 桁の英数字です';
+
+  @override
+  String get partnerBindingIncomingSection => '受信した申請';
+
+  @override
+  String get partnerBindingAcceptAction => '承認';
+
+  @override
+  String get partnerBindingRejectAction => '拒否';
+
+  @override
+  String get partnerBindingOutgoingSection => '送信した申請';
+
+  @override
+  String get partnerBindingWaitingRespond => '相手の回答待ち';
+
+  @override
+  String get partnerBindingSkip => '今はスキップ';
+
+  @override
+  String partnerBindingBoundToast(String nickname) {
+    return '$nickname さんと紐づきました';
+  }
+
+  @override
+  String get partnerBindingLoadFailed => '読み込みに失敗しました。再試行してください';
+
+  @override
+  String get homeTitleOfflineMode => 'オフラインモード · データは端末内のみ';
+
+  @override
+  String get coupleCenterBindEntryTitle => 'パートナーを紐づける';
+
+  @override
+  String get coupleCenterBindEntrySubtitle => '電話番号で検索、または招待コードで紐づけ';
+
+  @override
+  String coupleCenterBindRequestsBadge(int count) {
+    return '未処理の申請 $count 件';
+  }
+
+  @override
+  String get settingsOfflineStateTitle => 'オフラインモード';
+
+  @override
+  String get settingsOfflineStateSubtitle => 'データは端末内のみに保存され、クラウドへはアップロードされません';
+
+  @override
+  String get settingsOfflineExitAction => 'オフラインモードを解除';
+
+  @override
+  String get withuInvalidPhone => '正しい電話番号を入力してください';
+
+  @override
   String get aboutSupportSectionTitle => 'アプリ情報とサポート';
 
   @override

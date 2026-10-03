@@ -31,6 +31,7 @@ import '../models/schedule_item.dart';
 import '../models/timetable_settings.dart';
 import '../providers/timetable_provider.dart';
 import '../providers/withu_couple_session_provider.dart';
+import '../services/app_mode_service.dart';
 import '../services/withu_couple_timetable_service.dart';
 import '../services/partner_timetable_service.dart';
 import '../widgets/class_reminder_sheet.dart';
@@ -2375,6 +2376,10 @@ class _TimetableScreenState extends State<TimetableScreen>
     required Color foreground,
     required Color mutedForeground,
   }) {
+    // 离线模式：数据不上云，情侣标题 / 登录入口整体让位给离线状态提示。
+    if (AppModeService.instance.offlineMode) {
+      return _buildOfflineModeTitle(foreground: foreground);
+    }
     final session = context.watch<WithuCoupleSessionProvider?>();
     if (provider.settings.coupleTimetableOverlayEnabled) {
       // 只看登录态：退出登录后标题必须立刻回到「未登录 · 点击登录」。
@@ -2400,6 +2405,26 @@ class _TimetableScreenState extends State<TimetableScreen>
       provider,
       foreground: foreground,
       mutedForeground: mutedForeground,
+    );
+  }
+
+  /// 离线模式标题：仅作状态提示，不可点击。
+  Widget _buildOfflineModeTitle({required Color foreground}) {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Text(
+            l10n.homeTitleOfflineMode,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: foreground,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
     );
   }
 

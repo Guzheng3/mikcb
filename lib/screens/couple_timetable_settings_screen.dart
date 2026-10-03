@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../domain/couple_timetable_logic.dart';
 import '../providers/timetable_provider.dart';
 import '../providers/withu_couple_session_provider.dart';
+import '../services/app_mode_service.dart';
 import '../services/partner_timetable_service.dart';
 import '../services/home_widget_service.dart';
 import '../services/withu_couple_auth_service.dart';
@@ -327,6 +328,10 @@ class _CoupleTimetableSettingsScreenState
   }
 
   Widget _buildWithuCoupleControl(BuildContext context, AppLocalizations l10n) {
+    // 离线模式：情侣云同步整体停用，只展示状态与「退出离线模式」。
+    if (AppModeService.instance.offlineMode) {
+      return _buildOfflineModeControl(context, l10n);
+    }
     final connected = _isWithuCoupleConnected;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -389,6 +394,45 @@ class _CoupleTimetableSettingsScreenState
         ),
       ],
     );
+  }
+
+  /// 离线模式下的情侣区块：状态提示 + 退出离线模式（回登录流程）。
+  Widget _buildOfflineModeControl(BuildContext context, AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.settingsOfflineStateTitle,
+          style: HyperosTypography.listTitle(context),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          l10n.settingsOfflineStateSubtitle,
+          style: HyperosTypography.listDetail(context),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            HyperosButton(
+              label: l10n.settingsOfflineExitAction,
+              onPressed: _exitOfflineMode,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// 退出离线模式：清掉离线标记后直接进入登录流程（成功与否都会刷新
+  /// 页面状态；用户关掉登录弹窗即停留在已联网但未登录态）。
+  Future<void> _exitOfflineMode() async {
+    await AppModeService.instance.setOfflineMode(false);
+    if (!mounted) {
+      return;
+    }
+    await _connectWithuCouple();
   }
 
   Future<void> _connectWithuCouple() async {

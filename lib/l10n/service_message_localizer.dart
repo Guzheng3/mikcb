@@ -100,6 +100,8 @@ String localizeServiceMessage(
       return l10n.serviceMsgInvalidResponse;
     case 'withu_session_cookie_missing':
       return l10n.withuCoupleSessionCookieMissing;
+    case 'withu_invalid_phone':
+      return l10n.withuInvalidPhone;
     case 'withu_request_failed':
       return l10n.withuCoupleRequestFailed;
     case 'missing_settings_data':

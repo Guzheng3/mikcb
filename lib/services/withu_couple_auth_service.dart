@@ -60,6 +60,50 @@ class WithuCoupleLoginResult {
   });
 }
 
+/// 收到的绑定申请（对方的公开资料 + 申请 ID）。
+class WithuCoupleIncomingBindRequest {
+  final int id;
+  final WithuCoupleUser? fromUser;
+  final String createdAt;
+
+  const WithuCoupleIncomingBindRequest({
+    required this.id,
+    required this.fromUser,
+    required this.createdAt,
+  });
+}
+
+/// 我发出的绑定申请（服务端只回对方昵称，不回手机号）。
+class WithuCoupleOutgoingBindRequest {
+  final int id;
+  final String toNickname;
+  final String createdAt;
+
+  const WithuCoupleOutgoingBindRequest({
+    required this.id,
+    required this.toNickname,
+    required this.createdAt,
+  });
+}
+
+class WithuCoupleBindRequestLists {
+  final List<WithuCoupleIncomingBindRequest> incoming;
+  final List<WithuCoupleOutgoingBindRequest> outgoing;
+
+  const WithuCoupleBindRequestLists({
+    required this.incoming,
+    required this.outgoing,
+  });
+}
+
+/// 我的邀请码。
+class WithuCoupleBindCode {
+  final String code;
+  final String expiresAt;
+
+  const WithuCoupleBindCode({required this.code, required this.expiresAt});
+}
+
 class WithuCoupleAuthService {
   WithuCoupleAuthService({
     http.Client? client,
@@ -157,6 +201,52 @@ class WithuCoupleAuthService {
       method: 'POST',
       body: {'username': normalizedUsername, 'password': password},
     );
+    return _persistLogin(result, config);
+  }
+
+  /// 手机号注册：成功即自动登录，响应与 login 同构，复用同一段落盘逻辑。
+  ///
+  /// [inviteCode] 可选；无效邀请码由服务端忽略（不阻断注册）。
+  Future<WithuCoupleLoginResult> register({
+    required String baseUrl,
+    required String phone,
+    required String nickname,
+    required String password,
+    required String role,
+    String? inviteCode,
+  }) async {
+    final normalizedPhone = phone.trim();
+    if (baseUrl.trim().isEmpty ||
+        normalizedPhone.isEmpty ||
+        nickname.trim().isEmpty ||
+        password.isEmpty) {
+      throw const WithuCoupleApiException('withu_missing_credentials');
+    }
+    if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(normalizedPhone)) {
+      throw const WithuCoupleApiException('withu_invalid_phone');
+    }
+
+    final config = WithuCoupleConfig(baseUrl: baseUrl.trim());
+    final result = await _request(
+      uri: _actionUri(config.apiUri, 'register'),
+      method: 'POST',
+      body: {
+        'phone': normalizedPhone,
+        'nickname': nickname.trim(),
+        'password': password,
+        'role': role,
+        if (inviteCode != null && inviteCode.trim().isNotEmpty)
+          'inviteCode': inviteCode.trim(),
+      },
+    );
+    return _persistLogin(result, config);
+  }
+
+  /// 把 login/register 响应落盘为本地会话并解析用户与情侣资料。
+  Future<WithuCoupleLoginResult> _persistLogin(
+    ({http.Response response, Map<String, dynamic> payload}) result,
+    WithuCoupleConfig config,
+  ) async {
     final payload = result.payload;
 
     final rawUser = payload['user'];
@@ -172,8 +262,9 @@ class WithuCoupleAuthService {
 
     // 密码只用于本次登录请求；会话过期后由服务端凭 withu_device
     // 可信设备 Cookie 自动恢复，不落盘。
+    final user = WithuCoupleUser.fromJson(Map<String, dynamic>.from(rawUser));
     final session = WithuCoupleSession(
-      username: normalizedUsername,
+      username: user.username.isNotEmpty ? user.username : payload['username'] as String? ?? '',
       sessionId: sessionId,
       deviceToken: _cookieValue(result.response, 'withu_device'),
       csrfToken: csrfToken.trim(),
@@ -181,7 +272,6 @@ class WithuCoupleAuthService {
     await _configStore.save(config);
     await _sessionStore.save(session);
 
-    final user = WithuCoupleUser.fromJson(Map<String, dynamic>.from(rawUser));
     final rawPartner = payload['partner'];
     final partner = rawPartner is Map
         ? WithuCoupleUser.fromJson(Map<String, dynamic>.from(rawPartner))
@@ -203,11 +293,121 @@ class WithuCoupleAuthService {
     );
   }
 
-  Future<Map<String, dynamic>> getJson(String action) async {
+  /// 按手机号精确查找用户（服务端脱敏，只回 id + nickname）；查无此人返回 null。
+  Future<WithuCoupleUser?> searchByPhone(String phone) async {
+    final normalized = phone.trim();
+    if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(normalized)) {
+      throw const WithuCoupleApiException('withu_invalid_phone');
+    }
+    final payload = await getJson('search_by_phone', query: {'phone': normalized});
+    final rawUser = payload['user'];
+    if (rawUser is! Map) {
+      return null;
+    }
+    return WithuCoupleUser.fromJson(Map<String, dynamic>.from(rawUser));
+  }
+
+  /// 向指定用户发起绑定申请。[bound] 为 true 表示已经互为情侣（例如对方
+  /// 先前也给我发过申请，服务端自动完成了互绑），此时界面可直接收尾。
+  Future<({bool bound, String message})> sendBindRequest(int toUserId) async {
+    final payload = await postJson('send_bind_request', {'toUserId': toUserId});
+    return (
+      bound: payload['bound'] == true,
+      message: payload['message'] as String? ?? '',
+    );
+  }
+
+  /// 收到 / 发出的待处理绑定申请。
+  Future<WithuCoupleBindRequestLists> pendingBindRequests() async {
+    final payload = await getJson('pending_requests');
+    final incoming = <WithuCoupleIncomingBindRequest>[];
+    final outgoing = <WithuCoupleOutgoingBindRequest>[];
+    final rawIncoming = payload['incoming'];
+    if (rawIncoming is List) {
+      for (final item in rawIncoming) {
+        if (item is! Map) {
+          continue;
+        }
+        final map = Map<String, dynamic>.from(item);
+        final rawFrom = map['fromUser'];
+        incoming.add(
+          WithuCoupleIncomingBindRequest(
+            id: (map['id'] as num?)?.toInt() ?? 0,
+            fromUser: rawFrom is Map
+                ? WithuCoupleUser.fromJson(Map<String, dynamic>.from(rawFrom))
+                : null,
+            createdAt: map['createdAt'] as String? ?? '',
+          ),
+        );
+      }
+    }
+    final rawOutgoing = payload['outgoing'];
+    if (rawOutgoing is List) {
+      for (final item in rawOutgoing) {
+        if (item is! Map) {
+          continue;
+        }
+        final map = Map<String, dynamic>.from(item);
+        final rawTo = map['toUser'];
+        outgoing.add(
+          WithuCoupleOutgoingBindRequest(
+            id: (map['id'] as num?)?.toInt() ?? 0,
+            toNickname: rawTo is Map
+                ? (rawTo['nickname'] as String? ?? '')
+                : '',
+            createdAt: map['createdAt'] as String? ?? '',
+          ),
+        );
+      }
+    }
+    return WithuCoupleBindRequestLists(incoming: incoming, outgoing: outgoing);
+  }
+
+  /// 同意 / 拒绝收到的绑定申请；同意时返回绑定后的情侣资料。
+  Future<WithuCoupleUser?> respondBindRequest(
+    int requestId, {
+    required bool accept,
+  }) async {
+    final payload = await postJson('respond_bind_request', {
+      'requestId': requestId,
+      'accept': accept,
+    });
+    final rawPartner = payload['partner'];
+    return rawPartner is Map
+        ? WithuCoupleUser.fromJson(Map<String, dynamic>.from(rawPartner))
+        : null;
+  }
+
+  /// 我的邀请码（服务端无可用码时自动新建，7 天有效）。
+  Future<WithuCoupleBindCode> fetchMyBindCode() async {
+    final payload = await getJson('bind_code');
+    final code = payload['code'] as String?;
+    if (code == null || code.isEmpty) {
+      throw const WithuCoupleApiException('withu_invalid_response');
+    }
+    return WithuCoupleBindCode(
+      code: code,
+      expiresAt: payload['expiresAt'] as String? ?? '',
+    );
+  }
+
+  /// 凭对方邀请码完成绑定，返回绑定后的情侣资料。
+  Future<WithuCoupleUser?> bindByCode(String code) async {
+    final payload = await postJson('bind_by_code', {'code': code.trim()});
+    final rawPartner = payload['partner'];
+    return rawPartner is Map
+        ? WithuCoupleUser.fromJson(Map<String, dynamic>.from(rawPartner))
+        : null;
+  }
+
+  Future<Map<String, dynamic>> getJson(
+    String action, {
+    Map<String, String>? query,
+  }) async {
     final session = await _requireSession();
     final config = await _configStore.load();
     return (await _request(
-      uri: _actionUri(config.apiUri, action),
+      uri: _actionUri(config.apiUri, action, query),
       method: 'GET',
       session: session,
     )).payload;
@@ -382,9 +582,13 @@ class WithuCoupleAuthService {
     }
   }
 
-  Uri _actionUri(Uri base, String action) {
+  Uri _actionUri(Uri base, String action, [Map<String, String>? query]) {
     return base.replace(
-      queryParameters: {...base.queryParameters, 'action': action},
+      queryParameters: {
+        ...base.queryParameters,
+        ...?query,
+        'action': action,
+      },
     );
   }
 

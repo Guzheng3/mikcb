@@ -986,6 +986,336 @@ abstract class AppLocalizations {
   /// **'withU 未返回登录会话'**
   String get withuCoupleSessionCookieMissing;
 
+  /// No description provided for @onboardingAuthTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录轻屿课表'**
+  String get onboardingAuthTitle;
+
+  /// No description provided for @onboardingAuthSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录后可云备份课表；绑定另一半后即开启情侣模式'**
+  String get onboardingAuthSubtitle;
+
+  /// No description provided for @onboardingAuthAccountLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'账号'**
+  String get onboardingAuthAccountLabel;
+
+  /// No description provided for @onboardingAuthAccountHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户名或手机号'**
+  String get onboardingAuthAccountHint;
+
+  /// No description provided for @onboardingAuthPasswordLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码'**
+  String get onboardingAuthPasswordLabel;
+
+  /// No description provided for @onboardingAuthPasswordHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入密码'**
+  String get onboardingAuthPasswordHint;
+
+  /// No description provided for @onboardingAuthLoginAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录'**
+  String get onboardingAuthLoginAction;
+
+  /// No description provided for @onboardingAuthRegisterEntry.
+  ///
+  /// In zh, this message translates to:
+  /// **'注册新账号'**
+  String get onboardingAuthRegisterEntry;
+
+  /// No description provided for @onboardingAuthOfflineAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'离线模式'**
+  String get onboardingAuthOfflineAction;
+
+  /// No description provided for @onboardingAuthOfflineHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据仅保存在本机，不上传云端，也不启用情侣同步'**
+  String get onboardingAuthOfflineHint;
+
+  /// No description provided for @onboardingRegisterTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'注册新账号'**
+  String get onboardingRegisterTitle;
+
+  /// No description provided for @onboardingRegisterSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'注册后即可登录，再邀请或绑定另一半'**
+  String get onboardingRegisterSubtitle;
+
+  /// No description provided for @onboardingRegisterPhoneLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'手机号'**
+  String get onboardingRegisterPhoneLabel;
+
+  /// No description provided for @onboardingRegisterPhoneHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'用于登录和被对方搜索绑定'**
+  String get onboardingRegisterPhoneHint;
+
+  /// No description provided for @onboardingRegisterNicknameLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'昵称'**
+  String get onboardingRegisterNicknameLabel;
+
+  /// No description provided for @onboardingRegisterNicknameHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'课表中展示的名字'**
+  String get onboardingRegisterNicknameHint;
+
+  /// No description provided for @onboardingRegisterGenderLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'我是'**
+  String get onboardingRegisterGenderLabel;
+
+  /// No description provided for @onboardingRegisterGenderMale.
+  ///
+  /// In zh, this message translates to:
+  /// **'男生'**
+  String get onboardingRegisterGenderMale;
+
+  /// No description provided for @onboardingRegisterGenderFemale.
+  ///
+  /// In zh, this message translates to:
+  /// **'女生'**
+  String get onboardingRegisterGenderFemale;
+
+  /// No description provided for @onboardingRegisterPasswordLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码（至少 6 位）'**
+  String get onboardingRegisterPasswordLabel;
+
+  /// No description provided for @onboardingRegisterConfirmLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认密码'**
+  String get onboardingRegisterConfirmLabel;
+
+  /// No description provided for @onboardingRegisterInvalidPhone.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入正确的手机号'**
+  String get onboardingRegisterInvalidPhone;
+
+  /// No description provided for @onboardingRegisterPasswordMismatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'两次输入的密码不一致'**
+  String get onboardingRegisterPasswordMismatch;
+
+  /// No description provided for @onboardingRegisterMissingFields.
+  ///
+  /// In zh, this message translates to:
+  /// **'请填写完整信息'**
+  String get onboardingRegisterMissingFields;
+
+  /// No description provided for @onboardingRegisterAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'注册并登录'**
+  String get onboardingRegisterAction;
+
+  /// No description provided for @partnerBindingTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'绑定另一半'**
+  String get partnerBindingTitle;
+
+  /// No description provided for @partnerBindingSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'绑定后可以互看课表；暂时不想绑定也可以先跳过，之后在情侣中心完成'**
+  String get partnerBindingSubtitle;
+
+  /// No description provided for @partnerBindingSearchLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'对方手机号'**
+  String get partnerBindingSearchLabel;
+
+  /// No description provided for @partnerBindingSearchAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索'**
+  String get partnerBindingSearchAction;
+
+  /// No description provided for @partnerBindingSearchNotFound.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有找到该手机号对应的账号'**
+  String get partnerBindingSearchNotFound;
+
+  /// No description provided for @partnerBindingSendRequestTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'向 {nickname} 发送绑定申请'**
+  String partnerBindingSendRequestTo(String nickname);
+
+  /// No description provided for @partnerBindingRequestSent.
+  ///
+  /// In zh, this message translates to:
+  /// **'绑定申请已发送，等待对方同意'**
+  String get partnerBindingRequestSent;
+
+  /// No description provided for @partnerBindingMyCodeLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的邀请码'**
+  String get partnerBindingMyCodeLabel;
+
+  /// No description provided for @partnerBindingMyCodeHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'把邀请码发给 TA，TA 输入后即可直接绑定'**
+  String get partnerBindingMyCodeHint;
+
+  /// No description provided for @partnerBindingCopyAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制邀请码'**
+  String get partnerBindingCopyAction;
+
+  /// No description provided for @partnerBindingCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制到剪贴板'**
+  String get partnerBindingCopied;
+
+  /// No description provided for @partnerBindingEnterCodeLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'对方邀请码'**
+  String get partnerBindingEnterCodeLabel;
+
+  /// No description provided for @partnerBindingBindByCodeAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'凭邀请码绑定'**
+  String get partnerBindingBindByCodeAction;
+
+  /// No description provided for @partnerBindingInvalidCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'邀请码应为 8 位字母数字'**
+  String get partnerBindingInvalidCode;
+
+  /// No description provided for @partnerBindingIncomingSection.
+  ///
+  /// In zh, this message translates to:
+  /// **'收到的申请'**
+  String get partnerBindingIncomingSection;
+
+  /// No description provided for @partnerBindingAcceptAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'同意'**
+  String get partnerBindingAcceptAction;
+
+  /// No description provided for @partnerBindingRejectAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'拒绝'**
+  String get partnerBindingRejectAction;
+
+  /// No description provided for @partnerBindingOutgoingSection.
+  ///
+  /// In zh, this message translates to:
+  /// **'已发出的申请'**
+  String get partnerBindingOutgoingSection;
+
+  /// No description provided for @partnerBindingWaitingRespond.
+  ///
+  /// In zh, this message translates to:
+  /// **'等待对方处理'**
+  String get partnerBindingWaitingRespond;
+
+  /// No description provided for @partnerBindingSkip.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂时跳过'**
+  String get partnerBindingSkip;
+
+  /// No description provided for @partnerBindingBoundToast.
+  ///
+  /// In zh, this message translates to:
+  /// **'已和 {nickname} 绑定'**
+  String partnerBindingBoundToast(String nickname);
+
+  /// No description provided for @partnerBindingLoadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载失败，请重试'**
+  String get partnerBindingLoadFailed;
+
+  /// No description provided for @homeTitleOfflineMode.
+  ///
+  /// In zh, this message translates to:
+  /// **'离线模式 · 数据不上云'**
+  String get homeTitleOfflineMode;
+
+  /// No description provided for @coupleCenterBindEntryTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'绑定另一半'**
+  String get coupleCenterBindEntryTitle;
+
+  /// No description provided for @coupleCenterBindEntrySubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'手机号搜索或邀请码绑定'**
+  String get coupleCenterBindEntrySubtitle;
+
+  /// No description provided for @coupleCenterBindRequestsBadge.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 条待处理申请'**
+  String coupleCenterBindRequestsBadge(int count);
+
+  /// No description provided for @settingsOfflineStateTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'离线模式'**
+  String get settingsOfflineStateTitle;
+
+  /// No description provided for @settingsOfflineStateSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据仅保存在本机，不上传云端'**
+  String get settingsOfflineStateSubtitle;
+
+  /// No description provided for @settingsOfflineExitAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出离线模式'**
+  String get settingsOfflineExitAction;
+
+  /// No description provided for @withuInvalidPhone.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入正确的手机号'**
+  String get withuInvalidPhone;
+
   /// No description provided for @aboutSupportSectionTitle.
   ///
   /// In zh, this message translates to:

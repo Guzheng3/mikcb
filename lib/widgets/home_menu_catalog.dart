@@ -8,6 +8,7 @@ import 'package:university_timetable/providers/withu_couple_session_provider.dar
 import 'package:university_timetable/widgets/home_menu_route_catalog.dart';
 import 'package:university_timetable/providers/timetable_provider.dart';
 import 'package:university_timetable/screens/withu_couple_login_screen.dart';
+import 'package:university_timetable/services/app_mode_service.dart';
 import 'package:university_timetable/services/memory_stats_service.dart';
 import 'package:university_timetable/widgets/course_recolor_sheet.dart';
 import 'package:university_timetable/widgets/home_top_menu.dart';
@@ -395,9 +396,13 @@ List<HomeMenuEntry> resolveHomeMenuEntries() {
 
 /// Entries shown by the timetable top-right menu. The couple login action is
 /// transient: it leads the menu only while the overlay switch is on.
+/// 离线模式（数据不上云）下隐藏情侣登录入口。
 List<HomeMenuEntry> resolveHomeTopMenuEntries(TimetableSettings settings) {
   final entries = resolveHomeMenuEntries();
   if (!settings.coupleTimetableOverlayEnabled) {
+    return entries;
+  }
+  if (AppModeService.instance.offlineMode) {
     return entries;
   }
   return List.unmodifiable([coupleLoginHomeMenuEntry, ...entries]);

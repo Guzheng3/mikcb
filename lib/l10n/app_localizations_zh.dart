@@ -474,6 +474,177 @@ class AppLocalizationsZh extends AppLocalizations {
   String get withuCoupleSessionCookieMissing => 'withU 未返回登录会话';
 
   @override
+  String get onboardingAuthTitle => '登录轻屿课表';
+
+  @override
+  String get onboardingAuthSubtitle => '登录后可云备份课表；绑定另一半后即开启情侣模式';
+
+  @override
+  String get onboardingAuthAccountLabel => '账号';
+
+  @override
+  String get onboardingAuthAccountHint => '用户名或手机号';
+
+  @override
+  String get onboardingAuthPasswordLabel => '密码';
+
+  @override
+  String get onboardingAuthPasswordHint => '请输入密码';
+
+  @override
+  String get onboardingAuthLoginAction => '登录';
+
+  @override
+  String get onboardingAuthRegisterEntry => '注册新账号';
+
+  @override
+  String get onboardingAuthOfflineAction => '离线模式';
+
+  @override
+  String get onboardingAuthOfflineHint => '数据仅保存在本机，不上传云端，也不启用情侣同步';
+
+  @override
+  String get onboardingRegisterTitle => '注册新账号';
+
+  @override
+  String get onboardingRegisterSubtitle => '注册后即可登录，再邀请或绑定另一半';
+
+  @override
+  String get onboardingRegisterPhoneLabel => '手机号';
+
+  @override
+  String get onboardingRegisterPhoneHint => '用于登录和被对方搜索绑定';
+
+  @override
+  String get onboardingRegisterNicknameLabel => '昵称';
+
+  @override
+  String get onboardingRegisterNicknameHint => '课表中展示的名字';
+
+  @override
+  String get onboardingRegisterGenderLabel => '我是';
+
+  @override
+  String get onboardingRegisterGenderMale => '男生';
+
+  @override
+  String get onboardingRegisterGenderFemale => '女生';
+
+  @override
+  String get onboardingRegisterPasswordLabel => '密码（至少 6 位）';
+
+  @override
+  String get onboardingRegisterConfirmLabel => '确认密码';
+
+  @override
+  String get onboardingRegisterInvalidPhone => '请输入正确的手机号';
+
+  @override
+  String get onboardingRegisterPasswordMismatch => '两次输入的密码不一致';
+
+  @override
+  String get onboardingRegisterMissingFields => '请填写完整信息';
+
+  @override
+  String get onboardingRegisterAction => '注册并登录';
+
+  @override
+  String get partnerBindingTitle => '绑定另一半';
+
+  @override
+  String get partnerBindingSubtitle => '绑定后可以互看课表；暂时不想绑定也可以先跳过，之后在情侣中心完成';
+
+  @override
+  String get partnerBindingSearchLabel => '对方手机号';
+
+  @override
+  String get partnerBindingSearchAction => '搜索';
+
+  @override
+  String get partnerBindingSearchNotFound => '没有找到该手机号对应的账号';
+
+  @override
+  String partnerBindingSendRequestTo(String nickname) {
+    return '向 $nickname 发送绑定申请';
+  }
+
+  @override
+  String get partnerBindingRequestSent => '绑定申请已发送，等待对方同意';
+
+  @override
+  String get partnerBindingMyCodeLabel => '我的邀请码';
+
+  @override
+  String get partnerBindingMyCodeHint => '把邀请码发给 TA，TA 输入后即可直接绑定';
+
+  @override
+  String get partnerBindingCopyAction => '复制邀请码';
+
+  @override
+  String get partnerBindingCopied => '已复制到剪贴板';
+
+  @override
+  String get partnerBindingEnterCodeLabel => '对方邀请码';
+
+  @override
+  String get partnerBindingBindByCodeAction => '凭邀请码绑定';
+
+  @override
+  String get partnerBindingInvalidCode => '邀请码应为 8 位字母数字';
+
+  @override
+  String get partnerBindingIncomingSection => '收到的申请';
+
+  @override
+  String get partnerBindingAcceptAction => '同意';
+
+  @override
+  String get partnerBindingRejectAction => '拒绝';
+
+  @override
+  String get partnerBindingOutgoingSection => '已发出的申请';
+
+  @override
+  String get partnerBindingWaitingRespond => '等待对方处理';
+
+  @override
+  String get partnerBindingSkip => '暂时跳过';
+
+  @override
+  String partnerBindingBoundToast(String nickname) {
+    return '已和 $nickname 绑定';
+  }
+
+  @override
+  String get partnerBindingLoadFailed => '加载失败，请重试';
+
+  @override
+  String get homeTitleOfflineMode => '离线模式 · 数据不上云';
+
+  @override
+  String get coupleCenterBindEntryTitle => '绑定另一半';
+
+  @override
+  String get coupleCenterBindEntrySubtitle => '手机号搜索或邀请码绑定';
+
+  @override
+  String coupleCenterBindRequestsBadge(int count) {
+    return '$count 条待处理申请';
+  }
+
+  @override
+  String get settingsOfflineStateTitle => '离线模式';
+
+  @override
+  String get settingsOfflineStateSubtitle => '数据仅保存在本机，不上传云端';
+
+  @override
+  String get settingsOfflineExitAction => '退出离线模式';
+
+  @override
+  String get withuInvalidPhone => '请输入正确的手机号';
+
+  @override
   String get aboutSupportSectionTitle => '关于与支持';
 
   @override
@@ -9425,6 +9596,177 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get withuCoupleSessionCookieMissing => 'withU 未返回登入會話';
+
+  @override
+  String get onboardingAuthTitle => '登入輕嶼課表';
+
+  @override
+  String get onboardingAuthSubtitle => '登入後可雲端備份課表；綁定另一半後即開啟情侶模式';
+
+  @override
+  String get onboardingAuthAccountLabel => '帳號';
+
+  @override
+  String get onboardingAuthAccountHint => '用戶名稱或手機號碼';
+
+  @override
+  String get onboardingAuthPasswordLabel => '密碼';
+
+  @override
+  String get onboardingAuthPasswordHint => '請輸入密碼';
+
+  @override
+  String get onboardingAuthLoginAction => '登入';
+
+  @override
+  String get onboardingAuthRegisterEntry => '註冊新帳號';
+
+  @override
+  String get onboardingAuthOfflineAction => '離線模式';
+
+  @override
+  String get onboardingAuthOfflineHint => '資料只會保存在本機，不會上傳雲端，亦不會啟用情侶同步';
+
+  @override
+  String get onboardingRegisterTitle => '註冊新帳號';
+
+  @override
+  String get onboardingRegisterSubtitle => '註冊後即可登入，再邀請或綁定另一半';
+
+  @override
+  String get onboardingRegisterPhoneLabel => '手機號碼';
+
+  @override
+  String get onboardingRegisterPhoneHint => '用於登入同畀對方搜尋綁定';
+
+  @override
+  String get onboardingRegisterNicknameLabel => '暱稱';
+
+  @override
+  String get onboardingRegisterNicknameHint => '課表入面顯示嘅名字';
+
+  @override
+  String get onboardingRegisterGenderLabel => '我是';
+
+  @override
+  String get onboardingRegisterGenderMale => '男生';
+
+  @override
+  String get onboardingRegisterGenderFemale => '女生';
+
+  @override
+  String get onboardingRegisterPasswordLabel => '密碼（至少 6 位）';
+
+  @override
+  String get onboardingRegisterConfirmLabel => '確認密碼';
+
+  @override
+  String get onboardingRegisterInvalidPhone => '請輸入正確的手機號碼';
+
+  @override
+  String get onboardingRegisterPasswordMismatch => '兩次輸入的密碼不一致';
+
+  @override
+  String get onboardingRegisterMissingFields => '請填寫完整資料';
+
+  @override
+  String get onboardingRegisterAction => '註冊並登入';
+
+  @override
+  String get partnerBindingTitle => '綁定另一半';
+
+  @override
+  String get partnerBindingSubtitle => '綁定後可以互看課表；暫時不想綁定都可以先跳過，之後喺情侶中心完成';
+
+  @override
+  String get partnerBindingSearchLabel => '對方手機號碼';
+
+  @override
+  String get partnerBindingSearchAction => '搜尋';
+
+  @override
+  String get partnerBindingSearchNotFound => '搵唔到該手機號碼對應嘅帳號';
+
+  @override
+  String partnerBindingSendRequestTo(String nickname) {
+    return '向 $nickname 發送綁定申請';
+  }
+
+  @override
+  String get partnerBindingRequestSent => '綁定申請已發送，等待對方同意';
+
+  @override
+  String get partnerBindingMyCodeLabel => '我的邀請碼';
+
+  @override
+  String get partnerBindingMyCodeHint => '將邀請碼發畀 TA，TA 輸入後即可直接綁定';
+
+  @override
+  String get partnerBindingCopyAction => '複製邀請碼';
+
+  @override
+  String get partnerBindingCopied => '已複製到剪貼簿';
+
+  @override
+  String get partnerBindingEnterCodeLabel => '對方邀請碼';
+
+  @override
+  String get partnerBindingBindByCodeAction => '憑邀請碼綁定';
+
+  @override
+  String get partnerBindingInvalidCode => '邀請碼應為 8 位字母數字';
+
+  @override
+  String get partnerBindingIncomingSection => '收到的申請';
+
+  @override
+  String get partnerBindingAcceptAction => '同意';
+
+  @override
+  String get partnerBindingRejectAction => '拒絕';
+
+  @override
+  String get partnerBindingOutgoingSection => '已發出的申請';
+
+  @override
+  String get partnerBindingWaitingRespond => '等待對方處理';
+
+  @override
+  String get partnerBindingSkip => '暫時跳過';
+
+  @override
+  String partnerBindingBoundToast(String nickname) {
+    return '已同 $nickname 綁定';
+  }
+
+  @override
+  String get partnerBindingLoadFailed => '載入失敗，請重試';
+
+  @override
+  String get homeTitleOfflineMode => '離線模式 · 資料不上雲';
+
+  @override
+  String get coupleCenterBindEntryTitle => '綁定另一半';
+
+  @override
+  String get coupleCenterBindEntrySubtitle => '手機號碼搜尋或邀請碼綁定';
+
+  @override
+  String coupleCenterBindRequestsBadge(int count) {
+    return '$count 條待處理申請';
+  }
+
+  @override
+  String get settingsOfflineStateTitle => '離線模式';
+
+  @override
+  String get settingsOfflineStateSubtitle => '資料只會保存在本機，不會上傳雲端';
+
+  @override
+  String get settingsOfflineExitAction => '退出離線模式';
+
+  @override
+  String get withuInvalidPhone => '請輸入正確的手機號碼';
 
   @override
   String get aboutSupportSectionTitle => '關於與支持';
@@ -18416,6 +18758,177 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get withuCoupleSessionCookieMissing => 'withU 未返回登入會話';
+
+  @override
+  String get onboardingAuthTitle => '登入輕嶼課表';
+
+  @override
+  String get onboardingAuthSubtitle => '登入後可雲端備份課表；綁定另一半後即開啟情侶模式';
+
+  @override
+  String get onboardingAuthAccountLabel => '帳號';
+
+  @override
+  String get onboardingAuthAccountHint => '使用者名稱或手機號';
+
+  @override
+  String get onboardingAuthPasswordLabel => '密碼';
+
+  @override
+  String get onboardingAuthPasswordHint => '請輸入密碼';
+
+  @override
+  String get onboardingAuthLoginAction => '登入';
+
+  @override
+  String get onboardingAuthRegisterEntry => '註冊新帳號';
+
+  @override
+  String get onboardingAuthOfflineAction => '離線模式';
+
+  @override
+  String get onboardingAuthOfflineHint => '資料僅保存在本機，不上傳雲端，也不啟用情侶同步';
+
+  @override
+  String get onboardingRegisterTitle => '註冊新帳號';
+
+  @override
+  String get onboardingRegisterSubtitle => '註冊後即可登入，再邀請或綁定另一半';
+
+  @override
+  String get onboardingRegisterPhoneLabel => '手機號';
+
+  @override
+  String get onboardingRegisterPhoneHint => '用於登入和被對方搜尋綁定';
+
+  @override
+  String get onboardingRegisterNicknameLabel => '暱稱';
+
+  @override
+  String get onboardingRegisterNicknameHint => '課表中顯示的名字';
+
+  @override
+  String get onboardingRegisterGenderLabel => '我是';
+
+  @override
+  String get onboardingRegisterGenderMale => '男生';
+
+  @override
+  String get onboardingRegisterGenderFemale => '女生';
+
+  @override
+  String get onboardingRegisterPasswordLabel => '密碼（至少 6 位）';
+
+  @override
+  String get onboardingRegisterConfirmLabel => '確認密碼';
+
+  @override
+  String get onboardingRegisterInvalidPhone => '請輸入正確的手機號';
+
+  @override
+  String get onboardingRegisterPasswordMismatch => '兩次輸入的密碼不一致';
+
+  @override
+  String get onboardingRegisterMissingFields => '請填寫完整資訊';
+
+  @override
+  String get onboardingRegisterAction => '註冊並登入';
+
+  @override
+  String get partnerBindingTitle => '綁定另一半';
+
+  @override
+  String get partnerBindingSubtitle => '綁定後可以互看課表；暫時不想綁定也可以先跳過，之後在情侶中心完成';
+
+  @override
+  String get partnerBindingSearchLabel => '對方手機號';
+
+  @override
+  String get partnerBindingSearchAction => '搜尋';
+
+  @override
+  String get partnerBindingSearchNotFound => '沒有找到該手機號對應的帳號';
+
+  @override
+  String partnerBindingSendRequestTo(String nickname) {
+    return '向 $nickname 發送綁定申請';
+  }
+
+  @override
+  String get partnerBindingRequestSent => '綁定申請已發送，等待對方同意';
+
+  @override
+  String get partnerBindingMyCodeLabel => '我的邀請碼';
+
+  @override
+  String get partnerBindingMyCodeHint => '把邀請碼發給 TA，TA 輸入後即可直接綁定';
+
+  @override
+  String get partnerBindingCopyAction => '複製邀請碼';
+
+  @override
+  String get partnerBindingCopied => '已複製到剪貼簿';
+
+  @override
+  String get partnerBindingEnterCodeLabel => '對方邀請碼';
+
+  @override
+  String get partnerBindingBindByCodeAction => '憑邀請碼綁定';
+
+  @override
+  String get partnerBindingInvalidCode => '邀請碼應為 8 位字母數字';
+
+  @override
+  String get partnerBindingIncomingSection => '收到的申請';
+
+  @override
+  String get partnerBindingAcceptAction => '同意';
+
+  @override
+  String get partnerBindingRejectAction => '拒絕';
+
+  @override
+  String get partnerBindingOutgoingSection => '已發出的申請';
+
+  @override
+  String get partnerBindingWaitingRespond => '等待對方處理';
+
+  @override
+  String get partnerBindingSkip => '暫時跳過';
+
+  @override
+  String partnerBindingBoundToast(String nickname) {
+    return '已和 $nickname 綁定';
+  }
+
+  @override
+  String get partnerBindingLoadFailed => '載入失敗，請重試';
+
+  @override
+  String get homeTitleOfflineMode => '離線模式 · 資料不上雲';
+
+  @override
+  String get coupleCenterBindEntryTitle => '綁定另一半';
+
+  @override
+  String get coupleCenterBindEntrySubtitle => '手機號搜尋或邀請碼綁定';
+
+  @override
+  String coupleCenterBindRequestsBadge(int count) {
+    return '$count 條待處理申請';
+  }
+
+  @override
+  String get settingsOfflineStateTitle => '離線模式';
+
+  @override
+  String get settingsOfflineStateSubtitle => '資料僅保存在本機，不上傳雲端';
+
+  @override
+  String get settingsOfflineExitAction => '退出離線模式';
+
+  @override
+  String get withuInvalidPhone => '請輸入正確的手機號';
 
   @override
   String get aboutSupportSectionTitle => '關於與支持';

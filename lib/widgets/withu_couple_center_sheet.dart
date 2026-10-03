@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:university_timetable/l10n/app_localizations.dart';
 import 'package:university_timetable/l10n/service_message_localizer.dart';
 import 'package:university_timetable/providers/timetable_provider.dart';
 import 'package:university_timetable/providers/withu_couple_session_provider.dart';
 import 'package:university_timetable/screens/couple_timetable_settings_screen.dart';
+import 'package:university_timetable/screens/partner_binding_screen.dart';
+import 'package:university_timetable/services/withu_couple_auth_service.dart';
 import 'package:university_timetable/services/withu_couple_config.dart';
 import 'package:university_timetable/services/withu_couple_timetable_service.dart';
 import 'package:university_timetable/ui/hyperos/hyperos.dart';
@@ -45,6 +49,9 @@ class _WithuCoupleCenterSheetState extends State<WithuCoupleCenterSheet> {
   bool _isDisconnecting = false;
   WithuCoupleConfig _config = const WithuCoupleConfig();
 
+  /// 收到的待处理绑定申请数（未绑定时显示在入口角标上）。
+  int _pendingIncomingCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +60,24 @@ class _WithuCoupleCenterSheetState extends State<WithuCoupleCenterSheet> {
       authService: widget.sessionProvider.authService,
     );
     _loadConfig();
+    unawaited(_loadPendingRequests());
+  }
+
+  /// 未绑定时拉取收到的申请数；失败静默（角标只是增强信息）。
+  Future<void> _loadPendingRequests() async {
+    final sessionProvider = widget.sessionProvider;
+    if (!sessionProvider.isLoggedIn || sessionProvider.partnerNickname.isNotEmpty) {
+      return;
+    }
+    try {
+      final requests = await sessionProvider.authService.pendingBindRequests();
+      if (!mounted) {
+        return;
+      }
+      setState(() => _pendingIncomingCount = requests.incoming.length);
+    } catch (_) {
+      // 保持现有计数即可。
+    }
   }
 
   Future<void> _loadConfig() async {
@@ -83,6 +108,10 @@ class _WithuCoupleCenterSheetState extends State<WithuCoupleCenterSheet> {
           _buildAccountHeader(context, hasPartnerTimetable),
           const SizedBox(height: 16),
           _buildStatus(context, hasPartnerTimetable),
+          if (_showBindEntry) ...[
+            const SizedBox(height: 16),
+            _buildBindEntry(context),
+          ],
           const SizedBox(height: 16),
           _buildActions(context),
         ],
@@ -205,6 +234,49 @@ class _WithuCoupleCenterSheetState extends State<WithuCoupleCenterSheet> {
         ],
       ),
     );
+  }
+
+  /// 已登录但还没绑定对方（单人模式）：展示「绑定另一半」入口，
+  /// 有收到申请时把数量放到副标题提醒。
+  bool get _showBindEntry =>
+      widget.sessionProvider.isLoggedIn &&
+      widget.sessionProvider.partnerNickname.isEmpty;
+
+  Widget _buildBindEntry(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final pending = _pendingIncomingCount;
+    return HyperosNavTile(
+      icon: Icons.favorite_outline_rounded,
+      iconAccent: const Color(0xFFEA3A5D),
+      title: l10n.coupleCenterBindEntryTitle,
+      subtitle: pending > 0
+          ? l10n.coupleCenterBindRequestsBadge(pending)
+          : l10n.coupleCenterBindEntrySubtitle,
+      onTap: _openPartnerBinding,
+    );
+  }
+
+  Future<void> _openPartnerBinding() async {
+    final sessionProvider = widget.sessionProvider;
+    final bound = await Navigator.of(context).push<WithuCoupleUser?>(
+      HyperosPageRoute(
+        builder: (_) =>
+            PartnerBindingScreen(authService: sessionProvider.authService),
+        fullscreenDialog: true,
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+    if (bound != null) {
+      // 绑定成功：全局登录态与情侣资料立即刷新，入口随之下撤。
+      await sessionProvider.refreshFromLocal();
+      if (!mounted) {
+        return;
+      }
+    }
+    setState(() {});
+    unawaited(_loadPendingRequests());
   }
 
   Widget _buildActions(BuildContext context) {

@@ -21,6 +21,7 @@ import 'models/timetable_settings.dart';
 import 'providers/timetable_provider.dart';
 import 'providers/withu_couple_session_provider.dart';
 import 'screens/course_import_screen.dart';
+import 'screens/onboarding_auth_screen.dart';
 import 'screens/startup_flow_screens.dart';
 import 'screens/user_guide_screen.dart';
 import 'screens/timetable_screen.dart';
@@ -40,6 +41,7 @@ import 'services/app_migration_service.dart';
 import 'services/storage_service.dart';
 import 'services/android_animation_scale_service.dart';
 import 'services/app_diagnostic_service.dart';
+import 'services/app_mode_service.dart';
 import 'services/withu_couple_auth_service.dart';
 import 'services/withu_couple_auto_sync_service.dart';
 import 'services/withu_couple_timetable_service.dart';
@@ -860,6 +862,7 @@ class _AppEntryScreenState extends State<AppEntryScreen>
 
     try {
       await _storageService.init();
+      await AppModeService.instance.load();
       if (!mounted) {
         return;
       }
@@ -957,6 +960,13 @@ class _AppEntryScreenState extends State<AppEntryScreen>
         markGuideSeenAfterExit: !hasSeenGuide,
       );
       if (!mounted || !guideCompleted) {
+        return;
+      }
+
+      // 新用户引导后进入登录页：登录 / 注册 →（未绑定时）绑定引导；
+      // 离线模式直接进主界面（不上云）。
+      await _openOnboardingAuth();
+      if (!mounted) {
         return;
       }
 
@@ -1127,6 +1137,22 @@ class _AppEntryScreenState extends State<AppEntryScreen>
 
     await _storageService.setCompletedOnboarding(true);
     return true;
+  }
+
+  /// 新用户首启登录页：登录（未绑定接绑定引导）/ 注册（同）/ 离线三出口。
+  /// 返回后刷新全局会话状态，让首页立即呈现登录态。
+  Future<void> _openOnboardingAuth() async {
+    final completed = await Navigator.of(context).push<bool>(
+      HyperosPageRoute(
+        settings: const RouteSettings(name: '/onboarding-auth'),
+        builder: (_) => OnboardingAuthScreen(authService: _withuAuthService),
+        fullscreenDialog: true,
+      ),
+    );
+    if (!mounted || completed != true) {
+      return;
+    }
+    await context.read<WithuCoupleSessionProvider>().refreshFromLocal();
   }
 
   Future<bool> _runBackupImportFlow({

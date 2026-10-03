@@ -5255,6 +5255,82 @@
   "withuCouplePartnerTimetableMissing": "相手の時間割が見つかりません。先にアップロードしてもらってください",
   "withuCoupleRequestFailed": "withU のリクエストに失敗しました。後でもう一度お試しください",
   "withuCoupleSessionCookieMissing": "withU からログインセッションが返されませんでした",
+  "onboardingAuthTitle": "軽屿時間割 にログイン",
+  "onboardingAuthSubtitle": "ログインすると時間割をクラウドにバックアップできます。パートナーと紐づくとカップルモードが有効になります",
+  "onboardingAuthAccountLabel": "アカウント",
+  "onboardingAuthAccountHint": "ユーザー名または電話番号",
+  "onboardingAuthPasswordLabel": "パスワード",
+  "onboardingAuthPasswordHint": "パスワードを入力してください",
+  "onboardingAuthLoginAction": "ログイン",
+  "onboardingAuthRegisterEntry": "新規アカウント登録",
+  "onboardingAuthOfflineAction": "オフラインモード",
+  "onboardingAuthOfflineHint": "データは端末内のみに保存され、クラウドへアップロードされず、カップル同期も無効になります",
+  "onboardingRegisterTitle": "新規アカウント登録",
+  "onboardingRegisterSubtitle": "登録後にログインし、パートナーを招待または紐づけできます",
+  "onboardingRegisterPhoneLabel": "電話番号",
+  "onboardingRegisterPhoneHint": "ログインと相手からの検索・紐づけに使用します",
+  "onboardingRegisterNicknameLabel": "ニックネーム",
+  "onboardingRegisterNicknameHint": "時間割に表示される名前",
+  "onboardingRegisterGenderLabel": "性別",
+  "onboardingRegisterGenderMale": "男性",
+  "onboardingRegisterGenderFemale": "女性",
+  "onboardingRegisterPasswordLabel": "パスワード（6 文字以上）",
+  "onboardingRegisterConfirmLabel": "パスワード（確認）",
+  "onboardingRegisterInvalidPhone": "正しい電話番号を入力してください",
+  "onboardingRegisterPasswordMismatch": "パスワードが一致しません",
+  "onboardingRegisterMissingFields": "すべての項目を入力してください",
+  "onboardingRegisterAction": "登録してログイン",
+  "partnerBindingTitle": "パートナーを紐づける",
+  "partnerBindingSubtitle": "紐づけるとお互いの時間割を見られます。今はスキップして、後でカップルセンターから設定することもできます",
+  "partnerBindingSearchLabel": "相手の電話番号",
+  "partnerBindingSearchAction": "検索",
+  "partnerBindingSearchNotFound": "この電話番号のアカウントが見つかりません",
+  "partnerBindingSendRequestTo": "{nickname} さんに紐づけ申請を送る",
+  "@partnerBindingSendRequestTo": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "partnerBindingRequestSent": "紐づけ申請を送信しました。相手の承認を待っています",
+  "partnerBindingMyCodeLabel": "自分の招待コード",
+  "partnerBindingMyCodeHint": "招待コードを相手に送れば、相手が入力するだけで紐づけできます",
+  "partnerBindingCopyAction": "招待コードをコピー",
+  "partnerBindingCopied": "クリップボードにコピーしました",
+  "partnerBindingEnterCodeLabel": "相手の招待コード",
+  "partnerBindingBindByCodeAction": "招待コードで紐づける",
+  "partnerBindingInvalidCode": "招待コードは 8 桁の英数字です",
+  "partnerBindingIncomingSection": "受信した申請",
+  "partnerBindingAcceptAction": "承認",
+  "partnerBindingRejectAction": "拒否",
+  "partnerBindingOutgoingSection": "送信した申請",
+  "partnerBindingWaitingRespond": "相手の回答待ち",
+  "partnerBindingSkip": "今はスキップ",
+  "partnerBindingBoundToast": "{nickname} さんと紐づきました",
+  "@partnerBindingBoundToast": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "partnerBindingLoadFailed": "読み込みに失敗しました。再試行してください",
+  "homeTitleOfflineMode": "オフラインモード · データは端末内のみ",
+  "coupleCenterBindEntryTitle": "パートナーを紐づける",
+  "coupleCenterBindEntrySubtitle": "電話番号で検索、または招待コードで紐づけ",
+  "coupleCenterBindRequestsBadge": "未処理の申請 {count} 件",
+  "@coupleCenterBindRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsOfflineStateTitle": "オフラインモード",
+  "settingsOfflineStateSubtitle": "データは端末内のみに保存され、クラウドへはアップロードされません",
+  "settingsOfflineExitAction": "オフラインモードを解除",
+  "withuInvalidPhone": "正しい電話番号を入力してください",
   "appLogsSourceApp": "アプリ",
   "appLogsSourceNative": "スーパーアイランド",
   "timeCorrectionTitle": "ベル時間補正",

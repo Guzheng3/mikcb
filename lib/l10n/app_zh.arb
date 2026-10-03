@@ -223,6 +223,82 @@
   "withuCouplePartnerTimetableMissing": "未找到对方课表，请让对方先上传",
   "withuCoupleRequestFailed": "withU 请求失败，请稍后重试",
   "withuCoupleSessionCookieMissing": "withU 未返回登录会话",
+  "onboardingAuthTitle": "登录轻屿课表",
+  "onboardingAuthSubtitle": "登录后可云备份课表；绑定另一半后即开启情侣模式",
+  "onboardingAuthAccountLabel": "账号",
+  "onboardingAuthAccountHint": "用户名或手机号",
+  "onboardingAuthPasswordLabel": "密码",
+  "onboardingAuthPasswordHint": "请输入密码",
+  "onboardingAuthLoginAction": "登录",
+  "onboardingAuthRegisterEntry": "注册新账号",
+  "onboardingAuthOfflineAction": "离线模式",
+  "onboardingAuthOfflineHint": "数据仅保存在本机，不上传云端，也不启用情侣同步",
+  "onboardingRegisterTitle": "注册新账号",
+  "onboardingRegisterSubtitle": "注册后即可登录，再邀请或绑定另一半",
+  "onboardingRegisterPhoneLabel": "手机号",
+  "onboardingRegisterPhoneHint": "用于登录和被对方搜索绑定",
+  "onboardingRegisterNicknameLabel": "昵称",
+  "onboardingRegisterNicknameHint": "课表中展示的名字",
+  "onboardingRegisterGenderLabel": "我是",
+  "onboardingRegisterGenderMale": "男生",
+  "onboardingRegisterGenderFemale": "女生",
+  "onboardingRegisterPasswordLabel": "密码（至少 6 位）",
+  "onboardingRegisterConfirmLabel": "确认密码",
+  "onboardingRegisterInvalidPhone": "请输入正确的手机号",
+  "onboardingRegisterPasswordMismatch": "两次输入的密码不一致",
+  "onboardingRegisterMissingFields": "请填写完整信息",
+  "onboardingRegisterAction": "注册并登录",
+  "partnerBindingTitle": "绑定另一半",
+  "partnerBindingSubtitle": "绑定后可以互看课表；暂时不想绑定也可以先跳过，之后在情侣中心完成",
+  "partnerBindingSearchLabel": "对方手机号",
+  "partnerBindingSearchAction": "搜索",
+  "partnerBindingSearchNotFound": "没有找到该手机号对应的账号",
+  "partnerBindingSendRequestTo": "向 {nickname} 发送绑定申请",
+  "@partnerBindingSendRequestTo": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "partnerBindingRequestSent": "绑定申请已发送，等待对方同意",
+  "partnerBindingMyCodeLabel": "我的邀请码",
+  "partnerBindingMyCodeHint": "把邀请码发给 TA，TA 输入后即可直接绑定",
+  "partnerBindingCopyAction": "复制邀请码",
+  "partnerBindingCopied": "已复制到剪贴板",
+  "partnerBindingEnterCodeLabel": "对方邀请码",
+  "partnerBindingBindByCodeAction": "凭邀请码绑定",
+  "partnerBindingInvalidCode": "邀请码应为 8 位字母数字",
+  "partnerBindingIncomingSection": "收到的申请",
+  "partnerBindingAcceptAction": "同意",
+  "partnerBindingRejectAction": "拒绝",
+  "partnerBindingOutgoingSection": "已发出的申请",
+  "partnerBindingWaitingRespond": "等待对方处理",
+  "partnerBindingSkip": "暂时跳过",
+  "partnerBindingBoundToast": "已和 {nickname} 绑定",
+  "@partnerBindingBoundToast": {
+    "placeholders": {
+      "nickname": {
+        "type": "String"
+      }
+    }
+  },
+  "partnerBindingLoadFailed": "加载失败，请重试",
+  "homeTitleOfflineMode": "离线模式 · 数据不上云",
+  "coupleCenterBindEntryTitle": "绑定另一半",
+  "coupleCenterBindEntrySubtitle": "手机号搜索或邀请码绑定",
+  "coupleCenterBindRequestsBadge": "{count} 条待处理申请",
+  "@coupleCenterBindRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsOfflineStateTitle": "离线模式",
+  "settingsOfflineStateSubtitle": "数据仅保存在本机，不上传云端",
+  "settingsOfflineExitAction": "退出离线模式",
+  "withuInvalidPhone": "请输入正确的手机号",
   "aboutSupportSectionTitle": "关于与支持",
   "feedbackEntryTitle": "问题反馈",
   "feedbackEntrySubtitle": "Issue、社区渠道和建议反馈入口",

@@ -506,6 +506,191 @@ class AppLocalizationsEn extends AppLocalizations {
       'withU did not return a login session';
 
   @override
+  String get onboardingAuthTitle => 'Sign in to Qingyu Timetable';
+
+  @override
+  String get onboardingAuthSubtitle =>
+      'Sign in to back up your timetable to the cloud; couple mode starts once you bind your partner';
+
+  @override
+  String get onboardingAuthAccountLabel => 'Account';
+
+  @override
+  String get onboardingAuthAccountHint => 'Username or phone number';
+
+  @override
+  String get onboardingAuthPasswordLabel => 'Password';
+
+  @override
+  String get onboardingAuthPasswordHint => 'Enter your password';
+
+  @override
+  String get onboardingAuthLoginAction => 'Sign in';
+
+  @override
+  String get onboardingAuthRegisterEntry => 'Create a new account';
+
+  @override
+  String get onboardingAuthOfflineAction => 'Offline mode';
+
+  @override
+  String get onboardingAuthOfflineHint =>
+      'Data stays on this device only — no cloud upload, no couple sync';
+
+  @override
+  String get onboardingRegisterTitle => 'Create a new account';
+
+  @override
+  String get onboardingRegisterSubtitle =>
+      'After signing up you can sign in, then invite or bind your partner';
+
+  @override
+  String get onboardingRegisterPhoneLabel => 'Phone number';
+
+  @override
+  String get onboardingRegisterPhoneHint =>
+      'Used to sign in and to be found by your partner';
+
+  @override
+  String get onboardingRegisterNicknameLabel => 'Nickname';
+
+  @override
+  String get onboardingRegisterNicknameHint =>
+      'The name shown in your timetable';
+
+  @override
+  String get onboardingRegisterGenderLabel => 'I am';
+
+  @override
+  String get onboardingRegisterGenderMale => 'Male';
+
+  @override
+  String get onboardingRegisterGenderFemale => 'Female';
+
+  @override
+  String get onboardingRegisterPasswordLabel =>
+      'Password (at least 6 characters)';
+
+  @override
+  String get onboardingRegisterConfirmLabel => 'Confirm password';
+
+  @override
+  String get onboardingRegisterInvalidPhone =>
+      'Please enter a valid phone number';
+
+  @override
+  String get onboardingRegisterPasswordMismatch => 'Passwords do not match';
+
+  @override
+  String get onboardingRegisterMissingFields => 'Please fill in all fields';
+
+  @override
+  String get onboardingRegisterAction => 'Sign up & sign in';
+
+  @override
+  String get partnerBindingTitle => 'Bind your partner';
+
+  @override
+  String get partnerBindingSubtitle =>
+      'Once bound you can see each other\'s timetable; you can also skip for now and finish later in Couple Center';
+
+  @override
+  String get partnerBindingSearchLabel => 'Partner\'s phone number';
+
+  @override
+  String get partnerBindingSearchAction => 'Search';
+
+  @override
+  String get partnerBindingSearchNotFound =>
+      'No account found for this phone number';
+
+  @override
+  String partnerBindingSendRequestTo(String nickname) {
+    return 'Send a bind request to $nickname';
+  }
+
+  @override
+  String get partnerBindingRequestSent =>
+      'Bind request sent — waiting for their approval';
+
+  @override
+  String get partnerBindingMyCodeLabel => 'My invite code';
+
+  @override
+  String get partnerBindingMyCodeHint =>
+      'Share this code with your partner; entering it binds instantly';
+
+  @override
+  String get partnerBindingCopyAction => 'Copy invite code';
+
+  @override
+  String get partnerBindingCopied => 'Copied to clipboard';
+
+  @override
+  String get partnerBindingEnterCodeLabel => 'Partner\'s invite code';
+
+  @override
+  String get partnerBindingBindByCodeAction => 'Bind with invite code';
+
+  @override
+  String get partnerBindingInvalidCode =>
+      'Invite code should be 8 letters/digits';
+
+  @override
+  String get partnerBindingIncomingSection => 'Requests received';
+
+  @override
+  String get partnerBindingAcceptAction => 'Accept';
+
+  @override
+  String get partnerBindingRejectAction => 'Decline';
+
+  @override
+  String get partnerBindingOutgoingSection => 'Requests sent';
+
+  @override
+  String get partnerBindingWaitingRespond => 'Waiting for their response';
+
+  @override
+  String get partnerBindingSkip => 'Skip for now';
+
+  @override
+  String partnerBindingBoundToast(String nickname) {
+    return 'Bound with $nickname';
+  }
+
+  @override
+  String get partnerBindingLoadFailed => 'Failed to load, tap to retry';
+
+  @override
+  String get homeTitleOfflineMode => 'Offline mode · Data stays on device';
+
+  @override
+  String get coupleCenterBindEntryTitle => 'Bind your partner';
+
+  @override
+  String get coupleCenterBindEntrySubtitle =>
+      'Search by phone number or use an invite code';
+
+  @override
+  String coupleCenterBindRequestsBadge(int count) {
+    return '$count pending request(s)';
+  }
+
+  @override
+  String get settingsOfflineStateTitle => 'Offline mode';
+
+  @override
+  String get settingsOfflineStateSubtitle =>
+      'Data stays on this device, no cloud upload';
+
+  @override
+  String get settingsOfflineExitAction => 'Exit offline mode';
+
+  @override
+  String get withuInvalidPhone => 'Please enter a valid phone number';
+
+  @override
   String get aboutSupportSectionTitle => 'About & Support';
 
   @override

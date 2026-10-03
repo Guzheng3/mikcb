@@ -26,6 +26,7 @@ class StorageService {
       'schedule_date_rule_last_applied_signature';
   static const String _hasSeenUserGuideKey = 'has_seen_user_guide';
   static const String _hasCompletedOnboardingKey = 'has_completed_onboarding';
+  static const String _offlineModeKey = 'offline_mode';
   static const String _hasHandledPackageMigrationKey =
       'has_handled_package_migration';
   static const String _appLogsDefaultMigrationKey =
@@ -373,6 +374,17 @@ class StorageService {
     if (_prefs?.getBool(_hasSeenUserGuideKey) != value) {
       await _prefs?.setBool(_hasSeenUserGuideKey, value);
     }
+  }
+
+  /// 离线模式：数据仅存本机，不上云、隐藏情侣云入口。
+  Future<bool> isOfflineMode() async {
+    if (_prefs == null) await init();
+    return _prefs?.getBool(_offlineModeKey) ?? false;
+  }
+
+  Future<void> setOfflineMode(bool value) async {
+    if (_prefs == null) await init();
+    await _prefs?.setBool(_offlineModeKey, value);
   }
 
   Future<bool> hasCompletedOnboarding() async {
